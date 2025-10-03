@@ -44,7 +44,7 @@ services:
     plan: starter
     buildCommand: |
       cd frontend
-      npm install
+      npm install --include=dev
       npm run build
     startCommand: |
       cd frontend
