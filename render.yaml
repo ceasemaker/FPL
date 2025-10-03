@@ -27,21 +27,11 @@ services:
         fromDatabase:
           name: fpl-pulse-db
           property: connectionString
-      - key: REDIS_HOST
+      - key: REDIS_URL
         fromService:
           type: redis
           name: fpl-pulse-redis
-          property: host
-      - key: REDIS_PORT
-        fromService:
-          type: redis
-          name: fpl-pulse-redis
-          property: port
-      - key: REDIS_PASSWORD
-        fromService:
-          type: redis
-          name: fpl-pulse-redis
-          property: password
+          property: connectionString
     healthCheckPath: /api/landing/
 
   # Frontend Static Site
