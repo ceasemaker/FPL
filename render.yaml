@@ -54,6 +54,8 @@ services:
         value: 20.0.0
       - key: VITE_API_URL
         value: https://fpl-pulse-web.onrender.com
+      - key: NODE_ENV
+        value: production
 
   # Redis Key Value - Free Plan
   - type: keyvalue
