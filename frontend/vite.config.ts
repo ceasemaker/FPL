@@ -25,6 +25,13 @@ export default defineConfig(({ mode }) => {
         'fpl-pulse-frontend.onrender.com',
         '.onrender.com',
       ],
+      proxy: {
+        "/api": {
+          target: env.VITE_API_URL || "https://fpl-pulse-web.onrender.com",
+          changeOrigin: true,
+          secure: false,
+        },
+      },
     },
   };
 });
