@@ -1,0 +1,1 @@
+python get_player_stats.py 3

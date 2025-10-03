@@ -1,0 +1,163 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: fpl_postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - fpl_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: fpl_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - fpl_network
+
+  app:
+    build:
+      context: . # Assuming Dockerfile for 'app' is in ./Docker/Dockerfile
+      dockerfile: Docker/Dockerfile
+    container_name: fpl_app
+    volumes:
+      - ./epl-etl:/app
+      - ./epl-etl/requirements.txt:/app/requirements.txt # This maps ./epl-etl from host to /app in 'app' container
+      # If '.python-version' is specific to 'app' and located in its build context,
+      # it might be better copied into the image during build or mounted from its specific source.
+      # If it's meant to be shared or is in the root, this might be okay.
+      # Example: - ./.python-version:/app/.python-version # If .python-version is in the project root
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=postgres
+      - REDIS_HOST=redis
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - fpl_network
+
+  fpl_etl: # Moved fpl_etl service inside the 'services' block
+    build:
+      context: .
+      dockerfile: etl-pipeline/Dockerfile
+    container_name: fpl_etl
+    volumes:
+      # This maps the host's ./epl-etl directory to /app inside the fpl_etl container
+      - ./epl-etl:/app
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=postgres
+      - REDIS_HOST=redis
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - postgres # ETL depends on postgres
+      - redis    # ETL depends on redis
+      - app      # ETL depends on the main app (optional, remove if not needed)
+    networks:
+      - fpl_network
+    # The command will run after the container builds and starts.
+    # It installs/updates pip, installs requirements from /app/requirements.txt (inside the container),
+    # and then runs the Python script /app/fpl-etl.py.
+    # Ensure 'requirements.txt' and 'fpl-etl.py' are in your './etl-pipeline' directory on the host.
+    command: bash -c "python -m pip install --upgrade pip && pip install -r requirements.txt && python /app/fpl-etl.py"
+
+  django_etl:
+    build:
+      context: .
+      dockerfile: django_etl/Dockerfile
+    container_name: fpl_django_etl
+    env_file:
+      - local.env
+    environment:
+      - DJANGO_SETTINGS_MODULE=fpl_platform.settings
+      - PYTHONUNBUFFERED=1
+      - USE_POSTGRES=true
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+    volumes:
+      - ./django_etl:/app
+    entrypoint: ["/entrypoint.sh"]
+    depends_on:
+      - postgres
+    networks:
+      - fpl_network
+    command: ["python", "manage.py", "run_fpl_etl", "--loop"]
+
+  django-web:
+    build:
+      context: .
+      dockerfile: django_etl/Dockerfile
+    container_name: fpl_django_web
+    env_file:
+      - local.env
+    environment:
+      - DJANGO_SETTINGS_MODULE=fpl_platform.settings
+      - PYTHONUNBUFFERED=1
+      - USE_POSTGRES=true
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,django-web
+    volumes:
+      - ./django_etl:/app
+    entrypoint: ["/entrypoint.sh"]
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8000:8000"
+    networks:
+      - fpl_network
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: fpl_frontend
+    environment:
+      - VITE_API_BASE_URL=http://django-web:8000
+      - CHOKIDAR_USEPOLLING=1
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/tsconfig.json:/app/tsconfig.json
+      - ./frontend/tsconfig.node.json:/app/tsconfig.node.json
+      - ./frontend/vite.config.ts:/app/vite.config.ts
+      - ./frontend/package.json:/app/package.json
+      - ./frontend/package-lock.json:/app/package-lock.json
+    ports:
+      - "5173:5173"
+    depends_on:
+      - django-web
+    networks:
+      - fpl_network
+
+networks:
+  fpl_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

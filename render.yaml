@@ -1,0 +1,79 @@
+services:
+  # Django Web Service - Starter Plan ($7/month)
+  - type: web
+    name: fpl-pulse-web
+    env: python
+    region: oregon
+    plan: starter
+    buildCommand: |
+      pip install -r requirements.txt
+      pip install gunicorn
+    startCommand: |
+      cd django_etl
+      python manage.py migrate
+      gunicorn fpl_platform.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: false
+      - key: ALLOWED_HOSTS
+        value: '*'
+      - key: CORS_ALLOWED_ORIGINS
+        value: 'https://fpl-pulse-frontend.onrender.com'
+      - key: DATABASE_URL
+        fromDatabase:
+          name: fpl-pulse-db
+          property: connectionString
+      - key: REDIS_HOST
+        fromService:
+          type: redis
+          name: fpl-pulse-redis
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          type: redis
+          name: fpl-pulse-redis
+          property: port
+      - key: REDIS_PASSWORD
+        fromService:
+          type: redis
+          name: fpl-pulse-redis
+          property: password
+    healthCheckPath: /api/landing/
+
+  # Frontend Static Site
+  - type: web
+    name: fpl-pulse-frontend
+    env: node
+    region: oregon
+    plan: starter
+    buildCommand: |
+      cd frontend
+      npm install
+      npm run build
+    startCommand: |
+      cd frontend
+      npx vite preview --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: NODE_VERSION
+        value: 20.0.0
+      - key: VITE_API_URL
+        value: https://fpl-pulse-web.onrender.com
+
+# Redis - Free Plan
+databases:
+  - name: fpl-pulse-redis
+    region: oregon
+    plan: free
+    ipAllowList: []
+
+  # PostgreSQL - Starter Plan ($7/month - cheapest paid plan)
+  - name: fpl-pulse-db
+    databaseName: fpl_db
+    user: fpl_user
+    region: oregon
+    plan: starter
+    ipAllowList: []

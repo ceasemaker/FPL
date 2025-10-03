@@ -1,0 +1,1 @@
+# Additional dependencies specific to the Django ETL service
