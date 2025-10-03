@@ -4,7 +4,8 @@ from collections import defaultdict
 from dataclasses import asdict, dataclass
 from typing import Any
 
-from django.db.models import Count, F, Max, OuterRef, Q, Subquery, Sum, Value
+from django.core.cache import cache
+from django.db.models import Count, F, Max, OuterRef, Prefetch, Q, Subquery, Sum, Value
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
@@ -12,6 +13,10 @@ from django.views.decorators.http import require_GET
 from .models import Athlete, AthleteStat, Fixture, RawEndpointSnapshot, Team
 
 PLAYER_IMAGE_BASE = "https://resources.premierleague.com/premierleague25/photos/players/110x140/"
+
+# Cache timeouts (in seconds)
+CACHE_TIMEOUT_24H = 86400  # 24 hours - perfect for daily data refresh at 3 AM
+CACHE_TIMEOUT_1H = 3600  # 1 hour for more dynamic data
 
 
 @dataclass
@@ -397,6 +402,20 @@ def players_list(request):
     """Return all players with key stats for player grid view."""
     search = request.GET.get("search", "").strip()
     team_filter = request.GET.get("team", "").strip()
+    page = int(request.GET.get("page", "1"))
+    page_size = int(request.GET.get("page_size", "50"))  # Default 50 players per page
+    
+    # Validate pagination params
+    page = max(1, page)
+    page_size = min(max(10, page_size), 500)  # Between 10 and 500
+    
+    # Build cache key based on filters
+    cache_key = f"players_list:search={search}:team={team_filter}:page={page}:size={page_size}"
+    
+    # Try to get from cache first
+    cached_response = cache.get(cache_key)
+    if cached_response:
+        return JsonResponse(cached_response)
     
     # Default sorting by total_points descending
     players_qs = Athlete.objects.select_related("team").all().order_by("-total_points")
@@ -411,30 +430,49 @@ def players_list(request):
     if team_filter:
         players_qs = players_qs.filter(team__short_name__iexact=team_filter)
     
+    # Calculate pagination
+    total_count = players_qs.count()
+    total_pages = (total_count + page_size - 1) // page_size  # Ceiling division
+    start_idx = (page - 1) * page_size
+    end_idx = start_idx + page_size
+    
     # Get current gameweek for FDR calculation
     current_gw = (
         AthleteStat.objects.aggregate(max_gw=Max("game_week"))["max_gw"] or 1
     )
     
-    # Calculate average FDR for next 3 fixtures per player
+    # Pre-fetch all upcoming fixtures for all teams in ONE query
+    upcoming_fixtures = {}
+    fixtures_qs = Fixture.objects.filter(
+        event__gte=current_gw + 1,
+        event__lte=current_gw + 3,
+    ).select_related("team_h", "team_a").order_by("event")
+    
+    # Group fixtures by team_id for fast lookup
+    for fixture in fixtures_qs:
+        if fixture.team_h_id:
+            if fixture.team_h_id not in upcoming_fixtures:
+                upcoming_fixtures[fixture.team_h_id] = []
+            upcoming_fixtures[fixture.team_h_id].append(("home", fixture))
+        if fixture.team_a_id:
+            if fixture.team_a_id not in upcoming_fixtures:
+                upcoming_fixtures[fixture.team_a_id] = []
+            upcoming_fixtures[fixture.team_a_id].append(("away", fixture))
+    
+    # Calculate average FDR for next 3 fixtures per player (paginated)
     players_data = []
-    for player in players_qs[:500]:  # Limit to 500 for performance
+    for player in players_qs[start_idx:end_idx]:
         team = player.team
         team_id = team.id if team else None
         avg_fdr = None
         
-        if team_id:
-            upcoming_fixtures = Fixture.objects.filter(
-                Q(team_h_id=team_id) | Q(team_a_id=team_id),
-                event__gte=current_gw + 1,
-                event__lte=current_gw + 3,
-            ).order_by("event")[:3]
-            
+        if team_id and team_id in upcoming_fixtures:
+            # Get FDR values from pre-fetched fixtures
             fdr_values = []
-            for fixture in upcoming_fixtures:
-                if fixture.team_h and fixture.team_h.id == team_id and fixture.team_h_difficulty:
+            for location, fixture in upcoming_fixtures[team_id][:3]:
+                if location == "home" and fixture.team_h_difficulty:
                     fdr_values.append(fixture.team_h_difficulty)
-                elif fixture.team_a and fixture.team_a.id == team_id and fixture.team_a_difficulty:
+                elif location == "away" and fixture.team_a_difficulty:
                     fdr_values.append(fixture.team_a_difficulty)
             
             if fdr_values:
@@ -458,10 +496,21 @@ def players_list(request):
             "news_added": player.news_added.isoformat() if player.news_added else None,
         })
     
-    return JsonResponse({
+    response_data = {
         "players": players_data,
         "count": len(players_data),
-    })
+        "total": total_count,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": total_pages,
+        "has_next": page < total_pages,
+        "has_previous": page > 1,
+    }
+    
+    # Cache for 24 hours (data refreshes daily at 3 AM)
+    cache.set(cache_key, response_data, CACHE_TIMEOUT_24H)
+    
+    return JsonResponse(response_data)
 
 
 @require_GET
@@ -621,12 +670,36 @@ def dream_team(request):
     - Bench: 1 GKP, 1 DEF, 1 MID, 1 FWD
     - In case of tie, choose cheaper player
     """
+    # Check cache first - Dream Team calculation is expensive
+    cache_key = "dream_team:v1"
+    cached_response = cache.get(cache_key)
+    if cached_response:
+        return JsonResponse(cached_response)
+    
     # Get current gameweek for FDR calculation
     current_gw = (
         AthleteStat.objects.aggregate(max_gw=Max("game_week"))["max_gw"] or 1
     )
     
-    # Get all players with team info
+    # Pre-fetch all upcoming fixtures for all teams in ONE query
+    upcoming_fixtures = {}
+    fixtures_qs = Fixture.objects.filter(
+        event__gte=current_gw + 1,
+        event__lte=current_gw + 3,
+    ).select_related("team_h", "team_a").order_by("event")
+    
+    # Group fixtures by team_id for fast lookup
+    for fixture in fixtures_qs:
+        if fixture.team_h_id:
+            if fixture.team_h_id not in upcoming_fixtures:
+                upcoming_fixtures[fixture.team_h_id] = []
+            upcoming_fixtures[fixture.team_h_id].append(("home", fixture))
+        if fixture.team_a_id:
+            if fixture.team_a_id not in upcoming_fixtures:
+                upcoming_fixtures[fixture.team_a_id] = []
+            upcoming_fixtures[fixture.team_a_id].append(("away", fixture))
+    
+    # Get all players with team info - only those with points
     players_qs = Athlete.objects.select_related("team").filter(
         total_points__gt=0  # Only active players
     )
@@ -637,20 +710,14 @@ def dream_team(request):
         team = player.team
         team_id = team.id if team else None
         
-        # Calculate average FDR for next 3 fixtures
+        # Calculate average FDR for next 3 fixtures using pre-fetched data
         avg_fdr = 3.0  # Default neutral FDR
-        if team_id:
-            upcoming_fixtures = Fixture.objects.filter(
-                Q(team_h_id=team_id) | Q(team_a_id=team_id),
-                event__gte=current_gw + 1,
-                event__lte=current_gw + 3,
-            ).order_by("event")[:3]
-            
+        if team_id and team_id in upcoming_fixtures:
             fdr_values = []
-            for fixture in upcoming_fixtures:
-                if fixture.team_h and fixture.team_h.id == team_id and fixture.team_h_difficulty:
+            for location, fixture in upcoming_fixtures[team_id][:3]:
+                if location == "home" and fixture.team_h_difficulty:
                     fdr_values.append(fixture.team_h_difficulty)
-                elif fixture.team_a and fixture.team_a.id == team_id and fixture.team_a_difficulty:
+                elif location == "away" and fixture.team_a_difficulty:
                     fdr_values.append(fixture.team_a_difficulty)
             
             if fdr_values:
@@ -724,7 +791,7 @@ def dream_team(request):
     total_points = sum(p["total_points"] for p in all_selected)
     avg_form = sum(p["form"] for p in all_selected) / len(all_selected) if all_selected else 0
     
-    return JsonResponse({
+    response_data = {
         "starting_11": starting_11,
         "bench": bench,
         "team_stats": {
@@ -733,4 +800,9 @@ def dream_team(request):
             "avg_form": round(avg_form, 1),
             "formation": "1-4-3-3",
         }
-    })
+    }
+    
+    # Cache for 24 hours (data refreshes daily at 3 AM)
+    cache.set(cache_key, response_data, CACHE_TIMEOUT_24H)
+    
+    return JsonResponse(response_data)

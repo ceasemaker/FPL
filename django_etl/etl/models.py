@@ -182,6 +182,12 @@ class Athlete(TimestampedModel):
     class Meta(TimestampedModel.Meta):
         db_table = "athletes"
         ordering = ["id"]
+        indexes = [
+            models.Index(fields=["-total_points"]),  # For sorting by points (descending)
+            models.Index(fields=["element_type"]),  # For filtering by position
+            models.Index(fields=["team"]),  # For filtering by team (already has FK index, but explicit)
+            models.Index(fields=["element_type", "-total_points"]),  # Composite for Dream Team calculation
+        ]
 
     def __str__(self) -> str:
         team_code = self.team.short_name if self.team and self.team.short_name else "FA"
@@ -280,6 +286,11 @@ class Fixture(TimestampedModel):
     class Meta(TimestampedModel.Meta):
         db_table = "fixtures"
         ordering = ["kickoff_time"]
+        indexes = [
+            models.Index(fields=["event"]),  # For filtering by gameweek
+            models.Index(fields=["team_h", "event"]),  # For home team fixtures by gameweek
+            models.Index(fields=["team_a", "event"]),  # For away team fixtures by gameweek
+        ]
 
     def __str__(self) -> str:
         return f"GW{self.event}: {self.team_h} vs {self.team_a}"

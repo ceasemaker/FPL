@@ -77,6 +77,7 @@ services:
       cd django_etl
       python manage.py migrate
       python manage.py run_fpl_etl
+      python manage.py clear_cache
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
