@@ -60,23 +60,26 @@ ASGI_APPLICATION = "fpl_platform.asgi.application"
 from typing import Any
 
 
-def _postgres_database() -> dict[str, str]:
+def _postgres_database() -> dict[str, Any]:
     # Support Render's DATABASE_URL format
     database_url = os.getenv("DATABASE_URL")
     if database_url:
         # Parse DATABASE_URL (format: postgresql://user:password@host:port/dbname)
-        import re
-        match = re.match(r'postgresql://([^:]+):([^@]+)@([^:]+):(\d+)/(.+)', database_url)
-        if match:
-            user, password, host, port, dbname = match.groups()
-            return {
-                "ENGINE": "django.db.backends.postgresql",
-                "NAME": dbname,
-                "USER": user,
-                "PASSWORD": password,
-                "HOST": host,
-                "PORT": port,
-            }
+        try:
+            from urllib.parse import urlparse
+            result = urlparse(database_url)
+            if result.scheme in ['postgresql', 'postgres']:
+                return {
+                    "ENGINE": "django.db.backends.postgresql",
+                    "NAME": result.path[1:],  # Remove leading '/'
+                    "USER": result.username,
+                    "PASSWORD": result.password,
+                    "HOST": result.hostname,
+                    "PORT": result.port or 5432,
+                }
+        except Exception as e:
+            print(f"Failed to parse DATABASE_URL: {e}")
+            # Fall through to individual env vars
     
     # Fallback to individual environment variables
     return {
