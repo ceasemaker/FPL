@@ -29,7 +29,7 @@ services:
           property: connectionString
       - key: REDIS_URL
         fromService:
-          type: redis
+          type: keyvalue
           name: fpl-pulse-redis
           property: connectionString
     healthCheckPath: /api/landing/
@@ -53,13 +53,15 @@ services:
       - key: VITE_API_URL
         value: https://fpl-pulse-web.onrender.com
 
-# Redis - Free Plan
-databases:
-  - name: fpl-pulse-redis
+  # Redis Key Value - Free Plan
+  - type: keyvalue
+    name: fpl-pulse-redis
     region: oregon
     plan: free
     ipAllowList: []
 
+# PostgreSQL Database
+databases:
   # PostgreSQL - Basic 256MB Plan (cheapest paid plan)
   - name: fpl-pulse-db
     databaseName: fpl_db
