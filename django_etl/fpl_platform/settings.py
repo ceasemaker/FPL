@@ -96,7 +96,7 @@ def _sqlite_database() -> dict[str, Any]:
     }
 
 
-if os.getenv("POSTGRES_HOST") or env_bool("USE_POSTGRES", default=False):
+if os.getenv("DATABASE_URL") or os.getenv("POSTGRES_HOST") or env_bool("USE_POSTGRES", default=False):
     DATABASES = {"default": _postgres_database()}
 else:
     DATABASES = {"default": _sqlite_database()}
