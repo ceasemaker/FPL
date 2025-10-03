@@ -63,13 +63,16 @@ from typing import Any
 def _postgres_database() -> dict[str, Any]:
     # Support Render's DATABASE_URL format
     database_url = os.getenv("DATABASE_URL")
+    print(f"DEBUG: DATABASE_URL exists: {bool(database_url)}")
     if database_url:
+        print(f"DEBUG: DATABASE_URL value (masked): {database_url[:20]}...")
         # Parse DATABASE_URL (format: postgresql://user:password@host:port/dbname)
         try:
             from urllib.parse import urlparse
             result = urlparse(database_url)
+            print(f"DEBUG: Parsed scheme: {result.scheme}, hostname: {result.hostname}")
             if result.scheme in ['postgresql', 'postgres']:
-                return {
+                config = {
                     "ENGINE": "django.db.backends.postgresql",
                     "NAME": result.path[1:],  # Remove leading '/'
                     "USER": result.username,
@@ -77,12 +80,15 @@ def _postgres_database() -> dict[str, Any]:
                     "HOST": result.hostname,
                     "PORT": result.port or 5432,
                 }
+                print(f"DEBUG: Using parsed DATABASE_URL with host: {config['HOST']}")
+                return config
         except Exception as e:
-            print(f"Failed to parse DATABASE_URL: {e}")
+            print(f"ERROR: Failed to parse DATABASE_URL: {e}")
             # Fall through to individual env vars
     
     # Fallback to individual environment variables
-    return {
+    print("DEBUG: Using individual environment variables")
+    config = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.getenv("POSTGRES_DB", "fpl_db"),
         "USER": os.getenv("POSTGRES_USER", "fpl_user"),
@@ -90,6 +96,8 @@ def _postgres_database() -> dict[str, Any]:
         "HOST": os.getenv("POSTGRES_HOST", "localhost"),
         "PORT": os.getenv("POSTGRES_PORT", "5432"),
     }
+    print(f"DEBUG: Fallback config host: {config['HOST']}")
+    return config
 
 
 def _sqlite_database() -> dict[str, Any]:
@@ -99,9 +107,13 @@ def _sqlite_database() -> dict[str, Any]:
     }
 
 
+print(f"DEBUG: Checking database config - DATABASE_URL: {bool(os.getenv('DATABASE_URL'))}, POSTGRES_HOST: {bool(os.getenv('POSTGRES_HOST'))}, USE_POSTGRES: {env_bool('USE_POSTGRES', default=False)}")
+
 if os.getenv("DATABASE_URL") or os.getenv("POSTGRES_HOST") or env_bool("USE_POSTGRES", default=False):
+    print("DEBUG: Using PostgreSQL")
     DATABASES = {"default": _postgres_database()}
 else:
+    print("DEBUG: Using SQLite")
     DATABASES = {"default": _sqlite_database()}
 
 AUTH_PASSWORD_VALIDATORS = [
