@@ -20,6 +20,11 @@ export default defineConfig(({ mode }) => {
     },
     preview: {
       port: 5173,
+      host: true,
+      allowedHosts: [
+        'fpl-pulse-frontend.onrender.com',
+        '.onrender.com',
+      ],
     },
   };
 });
