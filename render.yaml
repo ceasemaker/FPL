@@ -60,10 +60,10 @@ databases:
     plan: free
     ipAllowList: []
 
-  # PostgreSQL - Basic Plan ($7/month - cheapest paid plan)
+  # PostgreSQL - Basic 256MB Plan (cheapest paid plan)
   - name: fpl-pulse-db
     databaseName: fpl_db
     user: fpl_user
     region: oregon
-    plan: basic
+    plan: basic-256mb
     ipAllowList: []
