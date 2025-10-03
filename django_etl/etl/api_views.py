@@ -494,6 +494,15 @@ def players_list(request):
             "image_url": _player_image(player.photo),
             "news": player.news,
             "news_added": player.news_added.isoformat() if player.news_added else None,
+            # Performance stats
+            "minutes": player.minutes,
+            "goals_scored": player.goals_scored,
+            "assists": player.assists,
+            "clean_sheets": player.clean_sheets,
+            "goals_conceded": player.goals_conceded,
+            "bonus": player.bonus,
+            "bps": player.bps,
+            "selected_by_percent": float(player.selected_by_percent) if player.selected_by_percent else None,
         })
     
     response_data = {
