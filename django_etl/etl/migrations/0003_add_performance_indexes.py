@@ -5,7 +5,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('etl', '0001_initial'),
+        ('etl', '0002_alter_setpiecenote_note'),
     ]
 
     operations = [

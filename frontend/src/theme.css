@@ -1254,6 +1254,38 @@ a {
   align-items: center;
 }
 
+.comparison-radar-section {
+  background: rgba(9, 12, 32, 0.5);
+  border-radius: 16px;
+  border: 1px solid rgba(79, 70, 229, 0.25);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.comparison-radar-section .section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(79, 70, 229, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.comparison-radar-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 500px;
+}
+
+.comparison-radar-wrapper .radar-chart-wrapper {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
 .comparison-stats-table {
   display: flex;
   flex-direction: column;
@@ -1458,7 +1490,7 @@ a {
 
 .modal-player-header {
   display: flex;
-  gap: 2rem;
+  gap: 1.5rem;
   align-items: flex-start;
   padding-bottom: 2rem;
   border-bottom: 1px solid rgba(79, 70, 229, 0.3);
@@ -1486,6 +1518,26 @@ a {
 
 .modal-player-info {
   flex: 1;
+  min-width: 0;
+}
+
+.modal-radar-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -1rem;
+  margin-top: -1rem;
+}
+
+.modal-radar-header .radar-chart-wrapper {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.modal-radar-header .radar-chart-legend {
+  display: none;
 }
 
 .modal-player-info h2 {
@@ -2744,6 +2796,13 @@ a {
     text-align: center;
   }
 
+  .modal-radar-header {
+    width: 100%;
+    max-width: 360px;
+    margin-left: 0;
+    margin-top: 0;
+  }
+
   .modal-player-info h2 {
     font-size: 1.5rem;
   }
@@ -3502,3 +3561,160 @@ a {
   width: 100%;
 }
 
+/* ============================================================================
+   Radar Chart Styles
+   ============================================================================ */
+
+.radar-chart-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: rgba(14, 18, 49, 0.6);
+  border: 1px solid rgba(79, 70, 229, 0.25);
+  border-radius: 16px;
+  margin: 1rem 0;
+}
+
+.radar-chart-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+.radar-chart-canvas {
+  display: block;
+  max-width: 100%;
+}
+
+.radar-chart-error {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 2rem;
+}
+
+.radar-chart-error p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.radar-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  padding: 1rem 0;
+  border-top: 1px solid rgba(79, 70, 229, 0.2);
+  width: 100%;
+}
+
+.radar-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.radar-legend-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.radar-legend-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.radar-legend-note {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.radar-attribute-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 500px;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(79, 70, 229, 0.2);
+}
+
+.radar-attribute-item {
+  display: grid;
+  grid-template-columns: 100px 1fr 50px;
+  align-items: center;
+  gap: 1rem;
+}
+
+.radar-attribute-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.radar-attribute-bar {
+  height: 8px;
+  background: rgba(79, 70, 229, 0.15);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.radar-attribute-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+.radar-attribute-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+/* Radar chart section in player modal */
+.modal-radar-section {
+  margin: 2rem 0;
+}
+
+.modal-radar-section h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.3rem;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.modal-radar-info {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+/* Responsive radar chart */
+@media (max-width: 600px) {
+  .radar-chart-wrapper {
+    padding: 1rem;
+  }
+
+  .radar-attribute-item {
+    grid-template-columns: 80px 1fr 40px;
+    gap: 0.75rem;
+  }
+
+  .radar-attribute-label {
+    font-size: 0.8rem;
+  }
+
+  .radar-attribute-value {
+    font-size: 0.85rem;
+  }
+}

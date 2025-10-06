@@ -1,0 +1,5522 @@
+{
+  "934235": {
+    "sofasport_id": "934235",
+    "sofasport_name": "Bukayo Saka",
+    "fpl_id": 16,
+    "fpl_web_name": "Saka",
+    "fpl_full_name": "Bukayo Saka",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "804508": {
+    "sofasport_id": "804508",
+    "sofasport_name": "Viktor Gy\u00f6keres",
+    "fpl_id": 666,
+    "fpl_web_name": "Gy\u00f6keres",
+    "fpl_full_name": "Viktor Gy\u00f6keres",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "794839": {
+    "sofasport_id": "794839",
+    "sofasport_name": "Gabriel Jesus",
+    "fpl_id": 31,
+    "fpl_web_name": "G.Jesus",
+    "fpl_full_name": "Gabriel Fernando de Jesus",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 93
+  },
+  "836705": {
+    "sofasport_id": "836705",
+    "sofasport_name": "Kai Havertz",
+    "fpl_id": 30,
+    "fpl_web_name": "Havertz",
+    "fpl_full_name": "Kai Havertz",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "922573": {
+    "sofasport_id": "922573",
+    "sofasport_name": "Gabriel Martinelli",
+    "fpl_id": 19,
+    "fpl_web_name": "Martinelli",
+    "fpl_full_name": "Gabriel Martinelli Silva",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "864921": {
+    "sofasport_id": "864921",
+    "sofasport_name": "Eberechi Eze",
+    "fpl_id": 266,
+    "fpl_web_name": "Eze",
+    "fpl_full_name": "Eberechi Eze",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "135666": {
+    "sofasport_id": "135666",
+    "sofasport_name": "Leandro Trossard",
+    "fpl_id": 20,
+    "fpl_web_name": "Trossard",
+    "fpl_full_name": "Leandro Trossard",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "547410": {
+    "sofasport_id": "547410",
+    "sofasport_name": "Martin \u00d8degaard",
+    "fpl_id": 17,
+    "fpl_web_name": "\u00d8degaard",
+    "fpl_full_name": "Martin \u00d8degaard",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "856714": {
+    "sofasport_id": "856714",
+    "sofasport_name": "Declan Rice",
+    "fpl_id": 21,
+    "fpl_web_name": "Rice",
+    "fpl_full_name": "Declan Rice",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "966547": {
+    "sofasport_id": "966547",
+    "sofasport_name": "Noni Madueke",
+    "fpl_id": 18,
+    "fpl_web_name": "Madueke",
+    "fpl_full_name": "Noni Madueke",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "966837": {
+    "sofasport_id": "966837",
+    "sofasport_name": "Mart\u00edn Zubimendi",
+    "fpl_id": 26,
+    "fpl_web_name": "Zubimendi",
+    "fpl_full_name": "Mart\u00edn Zubimendi Ib\u00e1\u00f1ez",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "592010": {
+    "sofasport_id": "592010",
+    "sofasport_name": "Mikel Merino",
+    "fpl_id": 22,
+    "fpl_web_name": "Merino",
+    "fpl_full_name": "Mikel Merino Zaz\u00f3n",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "1401702": {
+    "sofasport_id": "1401702",
+    "sofasport_name": "Ethan Nwaneri",
+    "fpl_id": 25,
+    "fpl_web_name": "Nwaneri",
+    "fpl_full_name": "Ethan Nwaneri",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "1917626": {
+    "sofasport_id": "1917626",
+    "sofasport_name": "Max Dowman",
+    "fpl_id": 700,
+    "fpl_web_name": "Dowman",
+    "fpl_full_name": "Max Dowman",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "135256": {
+    "sofasport_id": "135256",
+    "sofasport_name": "Christian N\u00f8rgaard",
+    "fpl_id": 24,
+    "fpl_web_name": "N\u00f8rgaard",
+    "fpl_full_name": "Christian N\u00f8rgaard",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "941168": {
+    "sofasport_id": "941168",
+    "sofasport_name": "William Saliba",
+    "fpl_id": 6,
+    "fpl_web_name": "Saliba",
+    "fpl_full_name": "William Saliba",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "869792": {
+    "sofasport_id": "869792",
+    "sofasport_name": "Gabriel Magalh\u00e3es",
+    "fpl_id": 5,
+    "fpl_web_name": "Gabriel",
+    "fpl_full_name": "Gabriel dos Santos Magalh\u00e3es",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 100
+  },
+  "957602": {
+    "sofasport_id": "957602",
+    "sofasport_name": "Riccardo Calafiori",
+    "fpl_id": 7,
+    "fpl_web_name": "Calafiori",
+    "fpl_full_name": "Riccardo Calafiori",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "1002837": {
+    "sofasport_id": "1002837",
+    "sofasport_name": "Piero Hincapi\u00e9",
+    "fpl_id": 725,
+    "fpl_web_name": "Hincapie",
+    "fpl_full_name": "Piero Hincapi\u00e9",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "958959": {
+    "sofasport_id": "958959",
+    "sofasport_name": "Jurri\u00ebn Timber",
+    "fpl_id": 8,
+    "fpl_web_name": "J.Timber",
+    "fpl_full_name": "Jurri\u00ebn Timber",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "1423711": {
+    "sofasport_id": "1423711",
+    "sofasport_name": "Myles Lewis-Skelly",
+    "fpl_id": 10,
+    "fpl_web_name": "Lewis-Skelly",
+    "fpl_full_name": "Myles Lewis-Skelly",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "846036": {
+    "sofasport_id": "846036",
+    "sofasport_name": "Ben White",
+    "fpl_id": 11,
+    "fpl_web_name": "White",
+    "fpl_full_name": "Benjamin White",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 78
+  },
+  "1144630": {
+    "sofasport_id": "1144630",
+    "sofasport_name": "Cristhian Mosquera",
+    "fpl_id": 662,
+    "fpl_web_name": "Mosquera",
+    "fpl_full_name": "Cristhian Mosquera",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "1411039": {
+    "sofasport_id": "1411039",
+    "sofasport_name": "Josh Nichols",
+    "fpl_id": 15,
+    "fpl_web_name": "Nichols",
+    "fpl_full_name": "Josh Nichols",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "232422": {
+    "sofasport_id": "232422",
+    "sofasport_name": "Kepa Arrizabalaga",
+    "fpl_id": 2,
+    "fpl_web_name": "Arrizabalaga",
+    "fpl_full_name": "Kepa Arrizabalaga Revuelta",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "581310": {
+    "sofasport_id": "581310",
+    "sofasport_name": "David Raya",
+    "fpl_id": 1,
+    "fpl_web_name": "Raya",
+    "fpl_full_name": "David Raya Mart\u00edn",
+    "fpl_team_id": 1,
+    "sofasport_team_id": "42",
+    "match_score": 105
+  },
+  "845286": {
+    "sofasport_id": "845286",
+    "sofasport_name": "Isma\u00efla Sarr",
+    "fpl_id": 267,
+    "fpl_web_name": "Sarr",
+    "fpl_full_name": "Isma\u00efla Sarr",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "858194": {
+    "sofasport_id": "858194",
+    "sofasport_name": "Edward Nketiah",
+    "fpl_id": 284,
+    "fpl_web_name": "Nketiah",
+    "fpl_full_name": "Eddie Nketiah",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 82
+  },
+  "848276": {
+    "sofasport_id": "848276",
+    "sofasport_name": "Jean-Philippe Mateta",
+    "fpl_id": 283,
+    "fpl_web_name": "Mateta",
+    "fpl_full_name": "Jean-Philippe Mateta",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "1884145": {
+    "sofasport_id": "1884145",
+    "sofasport_name": "Christantus Uche",
+    "fpl_id": 732,
+    "fpl_web_name": "Uche",
+    "fpl_full_name": "Christantus Uche",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "870360": {
+    "sofasport_id": "870360",
+    "sofasport_name": "Daniel Mu\u00f1oz",
+    "fpl_id": 256,
+    "fpl_web_name": "Mu\u00f1oz",
+    "fpl_full_name": "Daniel Mu\u00f1oz Mej\u00eda",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "794338": {
+    "sofasport_id": "794338",
+    "sofasport_name": "Daichi Kamada",
+    "fpl_id": 271,
+    "fpl_web_name": "Kamada",
+    "fpl_full_name": "Daichi Kamada",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "355796": {
+    "sofasport_id": "355796",
+    "sofasport_name": "Jefferson Lerma",
+    "fpl_id": 272,
+    "fpl_web_name": "Lerma",
+    "fpl_full_name": "Jefferson Lerma Sol\u00eds",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "984624": {
+    "sofasport_id": "984624",
+    "sofasport_name": "Y\u00e9remy Pino",
+    "fpl_id": 712,
+    "fpl_web_name": "Yeremy",
+    "fpl_full_name": "Y\u00e9remy Pino Santos",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "1109771": {
+    "sofasport_id": "1109771",
+    "sofasport_name": "Adam Wharton",
+    "fpl_id": 273,
+    "fpl_web_name": "Wharton",
+    "fpl_full_name": "Adam Wharton",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "357584": {
+    "sofasport_id": "357584",
+    "sofasport_name": "Borna Sosa",
+    "fpl_id": 259,
+    "fpl_web_name": "Sosa",
+    "fpl_full_name": "Borna Sosa",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "906047": {
+    "sofasport_id": "906047",
+    "sofasport_name": "Cheick Doucour\u00e9",
+    "fpl_id": 268,
+    "fpl_web_name": "Doucour\u00e9",
+    "fpl_full_name": "Cheick Doucour\u00e9",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "988275": {
+    "sofasport_id": "988275",
+    "sofasport_name": "Tyrick Mitchell",
+    "fpl_id": 258,
+    "fpl_web_name": "Mitchell",
+    "fpl_full_name": "Tyrick Mitchell",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "193554": {
+    "sofasport_id": "193554",
+    "sofasport_name": "Will Hughes",
+    "fpl_id": 270,
+    "fpl_web_name": "Hughes",
+    "fpl_full_name": "Will Hughes",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "1438837": {
+    "sofasport_id": "1438837",
+    "sofasport_name": "Romain Esse",
+    "fpl_id": 269,
+    "fpl_web_name": "Esse",
+    "fpl_full_name": "Romain Esse",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "1084311": {
+    "sofasport_id": "1084311",
+    "sofasport_name": "Justin Devenny",
+    "fpl_id": 276,
+    "fpl_web_name": "Devenny",
+    "fpl_full_name": "Justin Devenny",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "997104": {
+    "sofasport_id": "997104",
+    "sofasport_name": "Naouirou Ahamada",
+    "fpl_id": 275,
+    "fpl_web_name": "Ahamada",
+    "fpl_full_name": "Naouirou Ahamada",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "1185603": {
+    "sofasport_id": "1185603",
+    "sofasport_name": "Kaden Rodney",
+    "fpl_id": 281,
+    "fpl_web_name": "Rodney",
+    "fpl_full_name": "Kaden Rodney",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "2176022": {
+    "sofasport_id": "2176022",
+    "sofasport_name": "Rio Cardines",
+    "fpl_id": 690,
+    "fpl_web_name": "Cardines",
+    "fpl_full_name": "Rio Cardines",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "1064218": {
+    "sofasport_id": "1064218",
+    "sofasport_name": "Chadi Riad",
+    "fpl_id": 262,
+    "fpl_web_name": "Chadi Riad",
+    "fpl_full_name": "Chadi Riad Dnanou",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "877994": {
+    "sofasport_id": "877994",
+    "sofasport_name": "Marc Gu\u00e9hi",
+    "fpl_id": 260,
+    "fpl_web_name": "Gu\u00e9hi",
+    "fpl_full_name": "Marc Gu\u00e9hi",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "879674": {
+    "sofasport_id": "879674",
+    "sofasport_name": "Maxence Lacroix",
+    "fpl_id": 257,
+    "fpl_web_name": "Lacroix",
+    "fpl_full_name": "Maxence Lacroix",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "931844": {
+    "sofasport_id": "931844",
+    "sofasport_name": "Chris Richards",
+    "fpl_id": 261,
+    "fpl_web_name": "Richards",
+    "fpl_full_name": "Chris Richards",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "43215": {
+    "sofasport_id": "43215",
+    "sofasport_name": "Nathaniel Clyne",
+    "fpl_id": 263,
+    "fpl_web_name": "Clyne",
+    "fpl_full_name": "Nathaniel Clyne",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "1471671": {
+    "sofasport_id": "1471671",
+    "sofasport_name": "Jaydee Canvot",
+    "fpl_id": 723,
+    "fpl_web_name": "Canvot",
+    "fpl_full_name": "Jaydee Canvot",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "1465401": {
+    "sofasport_id": "1465401",
+    "sofasport_name": "Caleb Kporha",
+    "fpl_id": 265,
+    "fpl_web_name": "Kporha",
+    "fpl_full_name": "Caleb Kporha",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "1469007": {
+    "sofasport_id": "1469007",
+    "sofasport_name": "Rio Cardines",
+    "fpl_id": 690,
+    "fpl_web_name": "Cardines",
+    "fpl_full_name": "Rio Cardines",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "788134": {
+    "sofasport_id": "788134",
+    "sofasport_name": "Dean Henderson",
+    "fpl_id": 253,
+    "fpl_web_name": "Henderson",
+    "fpl_full_name": "Dean Henderson",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "249859": {
+    "sofasport_id": "249859",
+    "sofasport_name": "Walter Ben\u00edtez",
+    "fpl_id": 254,
+    "fpl_web_name": "Benitez",
+    "fpl_full_name": "Walter Ben\u00edtez",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "581610": {
+    "sofasport_id": "581610",
+    "sofasport_name": "Remi Matthews",
+    "fpl_id": 255,
+    "fpl_web_name": "Matthews",
+    "fpl_full_name": "Remi Matthews",
+    "fpl_team_id": 8,
+    "sofasport_team_id": "7",
+    "match_score": 105
+  },
+  "1395746": {
+    "sofasport_id": "1395746",
+    "sofasport_name": "Thierno Barry",
+    "fpl_id": 310,
+    "fpl_web_name": "Barry",
+    "fpl_full_name": "Thierno Barry",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 105
+  },
+  "987489": {
+    "sofasport_id": "987489",
+    "sofasport_name": "Beto",
+    "fpl_id": 311,
+    "fpl_web_name": "Beto",
+    "fpl_full_name": "Norberto Bercique Gomes Betuncal",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 100
+  },
+  "189061": {
+    "sofasport_id": "189061",
+    "sofasport_name": "Jack Grealish",
+    "fpl_id": 419,
+    "fpl_web_name": "Grealish",
+    "fpl_full_name": "Jack Grealish",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 105
+  },
+  "914309": {
+    "sofasport_id": "914309",
+    "sofasport_name": "Iliman Ndiaye",
+    "fpl_id": 299,
+    "fpl_web_name": "Ndiaye",
+    "fpl_full_name": "Iliman Ndiaye",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 105
+  },
+  "106337": {
+    "sofasport_id": "106337",
+    "sofasport_name": "Idrissa Gueye",
+    "fpl_id": 302,
+    "fpl_web_name": "Gana",
+    "fpl_full_name": "Idrissa Gana Gueye",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 84
+  },
+  "861970": {
+    "sofasport_id": "861970",
+    "sofasport_name": "Kiernan Dewsbury-Hall",
+    "fpl_id": 242,
+    "fpl_web_name": "Dewsbury-Hall",
+    "fpl_full_name": "Kiernan Dewsbury-Hall",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 105
+  },
+  "1017392": {
+    "sofasport_id": "1017392",
+    "sofasport_name": "Carlos Alcaraz",
+    "fpl_id": 301,
+    "fpl_web_name": "Alcaraz",
+    "fpl_full_name": "Carlos Alcaraz Dur\u00e1n",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 105
+  },
+  "1174472": {
+    "sofasport_id": "1174472",
+    "sofasport_name": "Tyler Dibling",
+    "fpl_id": 707,
+    "fpl_web_name": "Dibling",
+    "fpl_full_name": "Tyler Dibling",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 105
+  },
+  "927361": {
+    "sofasport_id": "927361",
+    "sofasport_name": "James Garner",
+    "fpl_id": 303,
+    "fpl_web_name": "Garner",
+    "fpl_full_name": "James Garner",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 105
+  },
+  "935543": {
+    "sofasport_id": "935543",
+    "sofasport_name": "Dwight McNeil",
+    "fpl_id": 300,
+    "fpl_web_name": "McNeil",
+    "fpl_full_name": "Dwight McNeil",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 105
+  },
+  "1085950": {
+    "sofasport_id": "1085950",
+    "sofasport_name": "Tim Iroegbunam",
+    "fpl_id": 304,
+    "fpl_web_name": "Iroegbunam",
+    "fpl_full_name": "Tim Iroegbunam",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 105
+  },
+  "1064082": {
+    "sofasport_id": "1064082",
+    "sofasport_name": "Merlin R\u00f6hl",
+    "fpl_id": 728,
+    "fpl_web_name": "R\u00f6hl",
+    "fpl_full_name": "Merlin R\u00f6hl",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 105
+  },
+  "1466124": {
+    "sofasport_id": "1466124",
+    "sofasport_name": "Adam Aznou",
+    "fpl_id": 667,
+    "fpl_web_name": "Aznou",
+    "fpl_full_name": "Adam Aznou",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 105
+  },
+  "876643": {
+    "sofasport_id": "876643",
+    "sofasport_name": "Vitaliy Mykolenko",
+    "fpl_id": 292,
+    "fpl_web_name": "Mykolenko",
+    "fpl_full_name": "Vitalii Mykolenko",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 99
+  },
+  "979563": {
+    "sofasport_id": "979563",
+    "sofasport_name": "Jarrad Branthwaite",
+    "fpl_id": 290,
+    "fpl_web_name": "Branthwaite",
+    "fpl_full_name": "Jarrad Branthwaite",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 105
+  },
+  "145188": {
+    "sofasport_id": "145188",
+    "sofasport_name": "James Tarkowski",
+    "fpl_id": 291,
+    "fpl_web_name": "Tarkowski",
+    "fpl_full_name": "James Tarkowski",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 105
+  },
+  "998253": {
+    "sofasport_id": "998253",
+    "sofasport_name": "Jake O'Brien",
+    "fpl_id": 293,
+    "fpl_web_name": "O'Brien",
+    "fpl_full_name": "Jake O'Brien",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 105
+  },
+  "110846": {
+    "sofasport_id": "110846",
+    "sofasport_name": "Michael Keane",
+    "fpl_id": 295,
+    "fpl_web_name": "Keane",
+    "fpl_full_name": "Michael Keane",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 105
+  },
+  "76632": {
+    "sofasport_id": "76632",
+    "sofasport_name": "S\u00e9amus Coleman",
+    "fpl_id": 294,
+    "fpl_web_name": "Coleman",
+    "fpl_full_name": "S\u00e9amus Coleman",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 105
+  },
+  "1020141": {
+    "sofasport_id": "1020141",
+    "sofasport_name": "Nathan Patterson",
+    "fpl_id": 296,
+    "fpl_web_name": "Patterson",
+    "fpl_full_name": "Nathan Patterson",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 105
+  },
+  "138530": {
+    "sofasport_id": "138530",
+    "sofasport_name": "Jordan Pickford",
+    "fpl_id": 287,
+    "fpl_web_name": "Pickford",
+    "fpl_full_name": "Jordan Pickford",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 105
+  },
+  "856720": {
+    "sofasport_id": "856720",
+    "sofasport_name": "Mark Travers",
+    "fpl_id": 288,
+    "fpl_web_name": "Travers",
+    "fpl_full_name": "Mark Travers",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 105
+  },
+  "603922": {
+    "sofasport_id": "603922",
+    "sofasport_name": "Tom King",
+    "fpl_id": 630,
+    "fpl_web_name": "King",
+    "fpl_full_name": "Tom King",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 105
+  },
+  "993438": {
+    "sofasport_id": "993438",
+    "sofasport_name": "Harry Tyrer",
+    "fpl_id": 289,
+    "fpl_web_name": "Tyrer",
+    "fpl_full_name": "Harry Tyrer",
+    "fpl_team_id": 9,
+    "sofasport_team_id": "48",
+    "match_score": 105
+  },
+  "840217": {
+    "sofasport_id": "840217",
+    "sofasport_name": "Richarlison",
+    "fpl_id": 597,
+    "fpl_web_name": "Richarlison",
+    "fpl_full_name": "Richarlison de Andrade",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "871706": {
+    "sofasport_id": "871706",
+    "sofasport_name": "Randal Kolo Muani",
+    "fpl_id": 726,
+    "fpl_web_name": "Kolo Muani",
+    "fpl_full_name": "Randal Kolo Muani",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "1048888": {
+    "sofasport_id": "1048888",
+    "sofasport_name": "Mathys Tel",
+    "fpl_id": 584,
+    "fpl_web_name": "Tel",
+    "fpl_full_name": "Mathys Tel",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "361420": {
+    "sofasport_id": "361420",
+    "sofasport_name": "Dominic Solanke",
+    "fpl_id": 596,
+    "fpl_web_name": "Solanke",
+    "fpl_full_name": "Dominic Solanke-Mitchell",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "1085180": {
+    "sofasport_id": "1085180",
+    "sofasport_name": "Brennan Johnson",
+    "fpl_id": 580,
+    "fpl_web_name": "Johnson",
+    "fpl_full_name": "Brennan Johnson",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "1142679": {
+    "sofasport_id": "1142679",
+    "sofasport_name": "Wilson Odobert",
+    "fpl_id": 588,
+    "fpl_web_name": "Odobert",
+    "fpl_full_name": "Wilson Odobert",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "998772": {
+    "sofasport_id": "998772",
+    "sofasport_name": "Dane Scarlett",
+    "fpl_id": 599,
+    "fpl_web_name": "Scarlett",
+    "fpl_full_name": "Dane Scarlett",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "905163": {
+    "sofasport_id": "905163",
+    "sofasport_name": "Mohammed Kudus",
+    "fpl_id": 582,
+    "fpl_web_name": "Kudus",
+    "fpl_full_name": "Mohammed Kudus",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "997183": {
+    "sofasport_id": "997183",
+    "sofasport_name": "Xavi Simons",
+    "fpl_id": 717,
+    "fpl_web_name": "Xavi",
+    "fpl_full_name": "Xavi Simons",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "1002711": {
+    "sofasport_id": "1002711",
+    "sofasport_name": "Pape Matar Sarr",
+    "fpl_id": 593,
+    "fpl_web_name": "P.M.Sarr",
+    "fpl_full_name": "Pape Matar Sarr",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "356398": {
+    "sofasport_id": "356398",
+    "sofasport_name": "James Maddison",
+    "fpl_id": 581,
+    "fpl_web_name": "Maddison",
+    "fpl_full_name": "James Maddison",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "364612": {
+    "sofasport_id": "364612",
+    "sofasport_name": "Jo\u00e3o Palhinha",
+    "fpl_id": 673,
+    "fpl_web_name": "J.Palhinha",
+    "fpl_full_name": "Jo\u00e3o Maria Lobo Alves Palhares Costa Palhinha Gon\u00e7alves",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 95
+  },
+  "844842": {
+    "sofasport_id": "844842",
+    "sofasport_name": "Yves Bissouma",
+    "fpl_id": 587,
+    "fpl_web_name": "Bissouma",
+    "fpl_full_name": "Yves Bissouma",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "928124": {
+    "sofasport_id": "928124",
+    "sofasport_name": "Dejan Kulusevski",
+    "fpl_id": 583,
+    "fpl_web_name": "Kulusevski",
+    "fpl_full_name": "Dejan Kulusevski",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "1391251": {
+    "sofasport_id": "1391251",
+    "sofasport_name": "Lucas Bergvall",
+    "fpl_id": 586,
+    "fpl_web_name": "Bergvall",
+    "fpl_full_name": "Lucas Bergvall",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "791190": {
+    "sofasport_id": "791190",
+    "sofasport_name": "Rodrigo Bentancur",
+    "fpl_id": 585,
+    "fpl_web_name": "Bentancur",
+    "fpl_full_name": "Rodrigo Bentancur",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "1403190": {
+    "sofasport_id": "1403190",
+    "sofasport_name": "Callum Olusesi",
+    "fpl_id": 595,
+    "fpl_web_name": "Olusesi",
+    "fpl_full_name": "Callum Olusesi",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "829932": {
+    "sofasport_id": "829932",
+    "sofasport_name": "Cristian Romero",
+    "fpl_id": 569,
+    "fpl_web_name": "Romero",
+    "fpl_full_name": "Cristian Romero",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "997103": {
+    "sofasport_id": "997103",
+    "sofasport_name": "Radu Dr\u0103gu\u015fin",
+    "fpl_id": 572,
+    "fpl_web_name": "Dragusin",
+    "fpl_full_name": "Radu Dr\u0103gu\u0219in",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 97
+  },
+  "913654": {
+    "sofasport_id": "913654",
+    "sofasport_name": "Pedro Porro",
+    "fpl_id": 568,
+    "fpl_web_name": "Pedro Porro",
+    "fpl_full_name": "Pedro Porro Sauceda",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "998247": {
+    "sofasport_id": "998247",
+    "sofasport_name": "Micky van de Ven",
+    "fpl_id": 575,
+    "fpl_web_name": "Van de Ven",
+    "fpl_full_name": "Micky van de Ven",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "983572": {
+    "sofasport_id": "983572",
+    "sofasport_name": "Destiny Udogie",
+    "fpl_id": 574,
+    "fpl_web_name": "Udogie",
+    "fpl_full_name": "Destiny Udogie",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "1142335": {
+    "sofasport_id": "1142335",
+    "sofasport_name": "Archie Gray",
+    "fpl_id": 591,
+    "fpl_web_name": "Gray",
+    "fpl_full_name": "Archie Gray",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "945798": {
+    "sofasport_id": "945798",
+    "sofasport_name": "Djed Spence",
+    "fpl_id": 573,
+    "fpl_web_name": "Spence",
+    "fpl_full_name": "Djed Spence",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "794953": {
+    "sofasport_id": "794953",
+    "sofasport_name": "Kevin Danso",
+    "fpl_id": 570,
+    "fpl_web_name": "Danso",
+    "fpl_full_name": "Kevin Danso",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "94758": {
+    "sofasport_id": "94758",
+    "sofasport_name": "Ben Davies",
+    "fpl_id": 571,
+    "fpl_web_name": "Davies",
+    "fpl_full_name": "Ben Davies",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "1144143": {
+    "sofasport_id": "1144143",
+    "sofasport_name": "Kota Takai",
+    "fpl_id": 577,
+    "fpl_web_name": "Takai",
+    "fpl_full_name": "Takai K\u014dta",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 95
+  },
+  "553606": {
+    "sofasport_id": "553606",
+    "sofasport_name": "Guglielmo Vicario",
+    "fpl_id": 565,
+    "fpl_web_name": "Vicario",
+    "fpl_full_name": "Guglielmo Vicario",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "1031251": {
+    "sofasport_id": "1031251",
+    "sofasport_name": "Anton\u00edn Kinsk\u00fd",
+    "fpl_id": 567,
+    "fpl_web_name": "Kinsky",
+    "fpl_full_name": "Anton\u00edn Kinsk\u00fd",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "859896": {
+    "sofasport_id": "859896",
+    "sofasport_name": "Brandon Austin",
+    "fpl_id": 566,
+    "fpl_web_name": "Austin",
+    "fpl_full_name": "Brandon Austin",
+    "fpl_team_id": 18,
+    "sofasport_team_id": "33",
+    "match_score": 105
+  },
+  "991478": {
+    "sofasport_id": "991478",
+    "sofasport_name": "Amine Adli",
+    "fpl_id": 697,
+    "fpl_web_name": "Adli",
+    "fpl_full_name": "Amine Adli",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "998490": {
+    "sofasport_id": "998490",
+    "sofasport_name": "Evanilson",
+    "fpl_id": 97,
+    "fpl_web_name": "Evanilson",
+    "fpl_full_name": "Francisco Evanilson de Lima Barbosa",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "336655": {
+    "sofasport_id": "336655",
+    "sofasport_name": "Enes \u00dcnal",
+    "fpl_id": 98,
+    "fpl_web_name": "Enes \u00dcnal",
+    "fpl_full_name": "Enes \u00dcnal",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "1426228": {
+    "sofasport_id": "1426228",
+    "sofasport_name": "Eli Junior Kroupi",
+    "fpl_id": 100,
+    "fpl_web_name": "Kroupi.Jr",
+    "fpl_full_name": "Eli Junior Kroupi",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "2023409": {
+    "sofasport_id": "2023409",
+    "sofasport_name": "Remy Rees-Dottin",
+    "fpl_id": 687,
+    "fpl_web_name": "Rees-Dottin",
+    "fpl_full_name": "Remy Rees-Dottin",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "934354": {
+    "sofasport_id": "934354",
+    "sofasport_name": "Antoine Semenyo",
+    "fpl_id": 82,
+    "fpl_web_name": "Semenyo",
+    "fpl_full_name": "Antoine Semenyo",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "851596": {
+    "sofasport_id": "851596",
+    "sofasport_name": "Justin Kluivert",
+    "fpl_id": 81,
+    "fpl_web_name": "Kluivert",
+    "fpl_full_name": "Justin Kluivert",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "800419": {
+    "sofasport_id": "800419",
+    "sofasport_name": "Tyler Adams",
+    "fpl_id": 85,
+    "fpl_web_name": "Adams",
+    "fpl_full_name": "Tyler Adams",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "1104986": {
+    "sofasport_id": "1104986",
+    "sofasport_name": "Alex Scott",
+    "fpl_id": 90,
+    "fpl_web_name": "Scott",
+    "fpl_full_name": "Alex Scott",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "895576": {
+    "sofasport_id": "895576",
+    "sofasport_name": "Marcus Tavernier",
+    "fpl_id": 84,
+    "fpl_web_name": "Tavernier",
+    "fpl_full_name": "Marcus Tavernier",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "999028": {
+    "sofasport_id": "999028",
+    "sofasport_name": "Adrien Truffert",
+    "fpl_id": 74,
+    "fpl_web_name": "Truffert",
+    "fpl_full_name": "Adrien Truffert",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "322391": {
+    "sofasport_id": "322391",
+    "sofasport_name": "Ryan Christie",
+    "fpl_id": 87,
+    "fpl_web_name": "Christie",
+    "fpl_full_name": "Ryan Christie",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "855731": {
+    "sofasport_id": "855731",
+    "sofasport_name": "David Brooks",
+    "fpl_id": 86,
+    "fpl_web_name": "Brooks",
+    "fpl_full_name": "David Brooks",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "548188": {
+    "sofasport_id": "548188",
+    "sofasport_name": "Lewis Cook",
+    "fpl_id": 88,
+    "fpl_web_name": "Cook",
+    "fpl_full_name": "Lewis Cook",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "978150": {
+    "sofasport_id": "978150",
+    "sofasport_name": "Juli\u00e1n Araujo",
+    "fpl_id": 78,
+    "fpl_web_name": "J.Araujo",
+    "fpl_full_name": "Juli\u00e1n Araujo Z\u00fa\u00f1iga",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "830659": {
+    "sofasport_id": "830659",
+    "sofasport_name": "Marcos Senesi",
+    "fpl_id": 72,
+    "fpl_web_name": "Senesi",
+    "fpl_full_name": "Marcos Senesi Bar\u00f3n",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "1184308": {
+    "sofasport_id": "1184308",
+    "sofasport_name": "\u00c1lex Jim\u00e9nez",
+    "fpl_id": 713,
+    "fpl_web_name": "A.Jimenez",
+    "fpl_full_name": "\u00c1lex Jim\u00e9nez S\u00e1nchez",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "1201520": {
+    "sofasport_id": "1201520",
+    "sofasport_name": "Julio Soler",
+    "fpl_id": 80,
+    "fpl_web_name": "Soler",
+    "fpl_full_name": "Julio Soler Barreto",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "962408": {
+    "sofasport_id": "962408",
+    "sofasport_name": "Bafod\u00e9 Diakit\u00e9",
+    "fpl_id": 685,
+    "fpl_web_name": "Diakit\u00e9",
+    "fpl_full_name": "Bafod\u00e9 Diakit\u00e9",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "1406130": {
+    "sofasport_id": "1406130",
+    "sofasport_name": "Veljko Milosavljevi\u0107",
+    "fpl_id": 721,
+    "fpl_web_name": "Milosavljevi\u0107",
+    "fpl_full_name": "Veljko Milosavljevic",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 100
+  },
+  "44566": {
+    "sofasport_id": "44566",
+    "sofasport_name": "Adam Smith",
+    "fpl_id": 73,
+    "fpl_web_name": "Smith",
+    "fpl_full_name": "Adam Smith",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "1156586": {
+    "sofasport_id": "1156586",
+    "sofasport_name": "James Hill",
+    "fpl_id": 77,
+    "fpl_web_name": "Hill",
+    "fpl_full_name": "James Hill",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "1190712": {
+    "sofasport_id": "1190712",
+    "sofasport_name": "Matai Akinmboni",
+    "fpl_id": 75,
+    "fpl_web_name": "Akinmboni",
+    "fpl_full_name": "Matai Akinmboni",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "1130222": {
+    "sofasport_id": "1130222",
+    "sofasport_name": "Owen Bevan",
+    "fpl_id": 76,
+    "fpl_web_name": "Bevan",
+    "fpl_full_name": "Owen Bevan",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "882604": {
+    "sofasport_id": "882604",
+    "sofasport_name": "\u0110or\u0111e Petrovi\u0107",
+    "fpl_id": 67,
+    "fpl_web_name": "Petrovi\u0107",
+    "fpl_full_name": "\u0110or\u0111e Petrovi\u0107",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "991001": {
+    "sofasport_id": "991001",
+    "sofasport_name": "Will Dennis",
+    "fpl_id": 68,
+    "fpl_web_name": "Dennis",
+    "fpl_full_name": "Will Dennis",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "1214988": {
+    "sofasport_id": "1214988",
+    "sofasport_name": "Callan McKenna",
+    "fpl_id": 69,
+    "fpl_web_name": "McKenna",
+    "fpl_full_name": "Callan McKenna",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 105
+  },
+  "218160": {
+    "sofasport_id": "218160",
+    "sofasport_name": "Bertrand Traor\u00e9",
+    "fpl_id": 735,
+    "fpl_web_name": "Traor\u00e9",
+    "fpl_full_name": "Bertrand Traor\u00e9",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "877980": {
+    "sofasport_id": "877980",
+    "sofasport_name": "Wilson Isidor",
+    "fpl_id": 560,
+    "fpl_web_name": "Isidor",
+    "fpl_full_name": "Wilson Isidor",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "910048": {
+    "sofasport_id": "910048",
+    "sofasport_name": "Brian Brobbey",
+    "fpl_id": 730,
+    "fpl_web_name": "Brobbey",
+    "fpl_full_name": "Brian Brobbey",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "1168588": {
+    "sofasport_id": "1168588",
+    "sofasport_name": "Eliezer Mayenda",
+    "fpl_id": 561,
+    "fpl_web_name": "Mayenda",
+    "fpl_full_name": "Eliezer Mayenda Dossou",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "1094440": {
+    "sofasport_id": "1094440",
+    "sofasport_name": "Romaine Mundle",
+    "fpl_id": 548,
+    "fpl_web_name": "Mundle",
+    "fpl_full_name": "Romaine Mundle",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "1442017": {
+    "sofasport_id": "1442017",
+    "sofasport_name": "Ahmed Abdullahi",
+    "fpl_id": 562,
+    "fpl_web_name": "Abdullahi",
+    "fpl_full_name": "Ahmed Abdullahi",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "1110842": {
+    "sofasport_id": "1110842",
+    "sofasport_name": "Simon Adingra",
+    "fpl_id": 543,
+    "fpl_web_name": "Adingra",
+    "fpl_full_name": "Simon Adingra",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "117777": {
+    "sofasport_id": "117777",
+    "sofasport_name": "Granit Xhaka",
+    "fpl_id": 668,
+    "fpl_web_name": "Xhaka",
+    "fpl_full_name": "Granit Xhaka",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "1171539": {
+    "sofasport_id": "1171539",
+    "sofasport_name": "Noah Sadiki",
+    "fpl_id": 552,
+    "fpl_web_name": "Sadiki",
+    "fpl_full_name": "Noah Sadiki",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "1142675": {
+    "sofasport_id": "1142675",
+    "sofasport_name": "Chemsdine Talbi",
+    "fpl_id": 553,
+    "fpl_web_name": "Talbi",
+    "fpl_full_name": "Chemsdine Talbi",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "1128532": {
+    "sofasport_id": "1128532",
+    "sofasport_name": "Habib Diarra",
+    "fpl_id": 544,
+    "fpl_web_name": "Diarra",
+    "fpl_full_name": "Habib Diarra",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "984014": {
+    "sofasport_id": "984014",
+    "sofasport_name": "Enzo Le F\u00e9e",
+    "fpl_id": 547,
+    "fpl_web_name": "E.Le F\u00e9e",
+    "fpl_full_name": "Enzo Le F\u00e9e",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "1394089": {
+    "sofasport_id": "1394089",
+    "sofasport_name": "Chris Rigg",
+    "fpl_id": 551,
+    "fpl_web_name": "Rigg",
+    "fpl_full_name": "Chris Rigg",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "964106": {
+    "sofasport_id": "964106",
+    "sofasport_name": "Dan Neil",
+    "fpl_id": 549,
+    "fpl_web_name": "Neil",
+    "fpl_full_name": "Dan Neil",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "1000139": {
+    "sofasport_id": "1000139",
+    "sofasport_name": "Abdoullah Ba",
+    "fpl_id": 554,
+    "fpl_web_name": "Ba",
+    "fpl_full_name": "Abdoullah Ba",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "998019": {
+    "sofasport_id": "998019",
+    "sofasport_name": "Jay Matete",
+    "fpl_id": 558,
+    "fpl_web_name": "Matete",
+    "fpl_full_name": "Jay Matete",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "1186076": {
+    "sofasport_id": "1186076",
+    "sofasport_name": "Harrison Jones",
+    "fpl_id": 557,
+    "fpl_web_name": "H.Jones",
+    "fpl_full_name": "Harrison Jones",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "1891914": {
+    "sofasport_id": "1891914",
+    "sofasport_name": "Jaydon Jones",
+    "fpl_id": 557,
+    "fpl_web_name": "H.Jones",
+    "fpl_full_name": "Harrison Jones",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 80
+  },
+  "174975": {
+    "sofasport_id": "174975",
+    "sofasport_name": "Arthur Masuaku",
+    "fpl_id": 678,
+    "fpl_web_name": "Masuaku",
+    "fpl_full_name": "Arthur Masuaku",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "831424": {
+    "sofasport_id": "831424",
+    "sofasport_name": "Reinildo Mandava",
+    "fpl_id": 541,
+    "fpl_web_name": "Reinildo",
+    "fpl_full_name": "Reinildo Mandava",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "780014": {
+    "sofasport_id": "780014",
+    "sofasport_name": "Nordi Mukiele",
+    "fpl_id": 694,
+    "fpl_web_name": "Mukiele",
+    "fpl_full_name": "Nordi Mukiele",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "805137": {
+    "sofasport_id": "805137",
+    "sofasport_name": "Omar Alderete",
+    "fpl_id": 683,
+    "fpl_web_name": "Alderete",
+    "fpl_full_name": "Omar Alderete",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "958878": {
+    "sofasport_id": "958878",
+    "sofasport_name": "Daniel Ballard",
+    "fpl_id": 531,
+    "fpl_web_name": "Ballard",
+    "fpl_full_name": "Daniel Ballard",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "856739": {
+    "sofasport_id": "856739",
+    "sofasport_name": "Lutsharel Geertruida",
+    "fpl_id": 724,
+    "fpl_web_name": "Geertruida",
+    "fpl_full_name": "Lutsharel Geertruida",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "989034": {
+    "sofasport_id": "989034",
+    "sofasport_name": "Trai Hume",
+    "fpl_id": 532,
+    "fpl_web_name": "Hume",
+    "fpl_full_name": "Trai Hume",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "1014987": {
+    "sofasport_id": "1014987",
+    "sofasport_name": "Dennis Cirkin",
+    "fpl_id": 535,
+    "fpl_web_name": "Cirkin",
+    "fpl_full_name": "Dennis Cirkin",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "1824137": {
+    "sofasport_id": "1824137",
+    "sofasport_name": "Timothee Pembele",
+    "fpl_id": 540,
+    "fpl_web_name": "Pembele",
+    "fpl_full_name": "Timoth\u00e9e Pemb\u00e9l\u00e9",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 95
+  },
+  "365812": {
+    "sofasport_id": "365812",
+    "sofasport_name": "Luke O'Nien",
+    "fpl_id": 539,
+    "fpl_web_name": "O'Nien",
+    "fpl_full_name": "Luke O'Nien",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "1097848": {
+    "sofasport_id": "1097848",
+    "sofasport_name": "Leo Fuhr Hjelde",
+    "fpl_id": 536,
+    "fpl_web_name": "Hjelde",
+    "fpl_full_name": "Leo Fuhr Hjelde",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "934228": {
+    "sofasport_id": "934228",
+    "sofasport_name": "Ajibola-Joshua Alese",
+    "fpl_id": 533,
+    "fpl_web_name": "Alese",
+    "fpl_full_name": "Aji Alese",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 78
+  },
+  "993434": {
+    "sofasport_id": "993434",
+    "sofasport_name": "Joseph Anderson",
+    "fpl_id": 534,
+    "fpl_web_name": "Anderson",
+    "fpl_full_name": "Joe Anderson",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 94
+  },
+  "1147186": {
+    "sofasport_id": "1147186",
+    "sofasport_name": "Zak Johnson",
+    "fpl_id": 538,
+    "fpl_web_name": "Johnson",
+    "fpl_full_name": "Zak Johnson",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "1012928": {
+    "sofasport_id": "1012928",
+    "sofasport_name": "Robin Roefs",
+    "fpl_id": 670,
+    "fpl_web_name": "Roefs",
+    "fpl_full_name": "Robin Roefs",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "958718": {
+    "sofasport_id": "958718",
+    "sofasport_name": "Anthony Patterson",
+    "fpl_id": 528,
+    "fpl_web_name": "Patterson",
+    "fpl_full_name": "Anthony Patterson",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "1007038": {
+    "sofasport_id": "1007038",
+    "sofasport_name": "Blondy Nna Noukeu",
+    "fpl_id": 530,
+    "fpl_web_name": "Nna Noukeu",
+    "fpl_full_name": "Blondy Nna Noukeu",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "95461": {
+    "sofasport_id": "95461",
+    "sofasport_name": "Simon Moore",
+    "fpl_id": 529,
+    "fpl_web_name": "Moore",
+    "fpl_full_name": "Simon Moore",
+    "fpl_team_id": 17,
+    "sofasport_team_id": "41",
+    "match_score": 105
+  },
+  "1019322": {
+    "sofasport_id": "1019322",
+    "sofasport_name": "Florian Wirtz",
+    "fpl_id": 382,
+    "fpl_web_name": "Wirtz",
+    "fpl_full_name": "Florian Wirtz",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "823941": {
+    "sofasport_id": "823941",
+    "sofasport_name": "Alexander Isak",
+    "fpl_id": 499,
+    "fpl_web_name": "Isak",
+    "fpl_full_name": "Alexander Isak",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "1048422": {
+    "sofasport_id": "1048422",
+    "sofasport_name": "Hugo Ekitik\u00e9",
+    "fpl_id": 661,
+    "fpl_web_name": "Ekitik\u00e9",
+    "fpl_full_name": "Hugo Ekitik\u00e9",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "845386": {
+    "sofasport_id": "845386",
+    "sofasport_name": "Federico Chiesa",
+    "fpl_id": 385,
+    "fpl_web_name": "Chiesa",
+    "fpl_full_name": "Federico Chiesa",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "1881902": {
+    "sofasport_id": "1881902",
+    "sofasport_name": "Rio Ngumoha",
+    "fpl_id": 686,
+    "fpl_web_name": "Ngumoha",
+    "fpl_full_name": "Rio Ngumoha",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "159665": {
+    "sofasport_id": "159665",
+    "sofasport_name": "Mohamed Salah",
+    "fpl_id": 381,
+    "fpl_web_name": "M.Salah",
+    "fpl_full_name": "Mohamed Salah",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "895324": {
+    "sofasport_id": "895324",
+    "sofasport_name": "Alexis Mac Allister",
+    "fpl_id": 386,
+    "fpl_web_name": "Mac Allister",
+    "fpl_full_name": "Alexis Mac Allister",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "869856": {
+    "sofasport_id": "869856",
+    "sofasport_name": "Dominik Szoboszlai",
+    "fpl_id": 387,
+    "fpl_web_name": "Szoboszlai",
+    "fpl_full_name": "Dominik Szoboszlai",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "862967": {
+    "sofasport_id": "862967",
+    "sofasport_name": "Cody Gakpo",
+    "fpl_id": 384,
+    "fpl_web_name": "Gakpo",
+    "fpl_full_name": "Cody Gakpo",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "970361": {
+    "sofasport_id": "970361",
+    "sofasport_name": "Jeremie Frimpong",
+    "fpl_id": 370,
+    "fpl_web_name": "Frimpong",
+    "fpl_full_name": "Jeremie Frimpong",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "904897": {
+    "sofasport_id": "904897",
+    "sofasport_name": "Ryan Gravenberch",
+    "fpl_id": 390,
+    "fpl_web_name": "Gravenberch",
+    "fpl_full_name": "Ryan Gravenberch",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "143040": {
+    "sofasport_id": "143040",
+    "sofasport_name": "Wataru Endo",
+    "fpl_id": 392,
+    "fpl_web_name": "Endo",
+    "fpl_full_name": "Endo Wataru",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "927353": {
+    "sofasport_id": "927353",
+    "sofasport_name": "Curtis Jones",
+    "fpl_id": 388,
+    "fpl_web_name": "C.Jones",
+    "fpl_full_name": "Curtis Jones",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "1142636": {
+    "sofasport_id": "1142636",
+    "sofasport_name": "Stefan Baj\u010deti\u0107",
+    "fpl_id": 393,
+    "fpl_web_name": "Bajcetic",
+    "fpl_full_name": "Stefan Baj\u010deti\u0107 Maquieira",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "1445945": {
+    "sofasport_id": "1445945",
+    "sofasport_name": "Trey Nyoni",
+    "fpl_id": 396,
+    "fpl_web_name": "Nyoni",
+    "fpl_full_name": "Trey Nyoni",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "151545": {
+    "sofasport_id": "151545",
+    "sofasport_name": "Virgil van Dijk",
+    "fpl_id": 373,
+    "fpl_web_name": "Virgil",
+    "fpl_full_name": "Virgil van Dijk",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "826215": {
+    "sofasport_id": "826215",
+    "sofasport_name": "Ibrahima Konat\u00e9",
+    "fpl_id": 374,
+    "fpl_web_name": "Konat\u00e9",
+    "fpl_full_name": "Ibrahima Konat\u00e9",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "262911": {
+    "sofasport_id": "262911",
+    "sofasport_name": "Andrew Robertson",
+    "fpl_id": 372,
+    "fpl_web_name": "Robertson",
+    "fpl_full_name": "Andrew Robertson",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "1097425": {
+    "sofasport_id": "1097425",
+    "sofasport_name": "Milo\u0161 Kerkez",
+    "fpl_id": 371,
+    "fpl_web_name": "Kerkez",
+    "fpl_full_name": "Milos Kerkez",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 97
+  },
+  "1008402": {
+    "sofasport_id": "1008402",
+    "sofasport_name": "Conor Bradley",
+    "fpl_id": 375,
+    "fpl_web_name": "Bradley",
+    "fpl_full_name": "Conor Bradley",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "318927": {
+    "sofasport_id": "318927",
+    "sofasport_name": "Joe Gomez",
+    "fpl_id": 376,
+    "fpl_web_name": "Gomez",
+    "fpl_full_name": "Joe Gomez",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "1473137": {
+    "sofasport_id": "1473137",
+    "sofasport_name": "Giovanni Leoni",
+    "fpl_id": 692,
+    "fpl_web_name": "Leoni",
+    "fpl_full_name": "Giovanni Leoni",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "902091": {
+    "sofasport_id": "902091",
+    "sofasport_name": "Rhys Williams",
+    "fpl_id": 379,
+    "fpl_web_name": "R.Williams",
+    "fpl_full_name": "Rhys Williams",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "243609": {
+    "sofasport_id": "243609",
+    "sofasport_name": "Alisson",
+    "fpl_id": 366,
+    "fpl_web_name": "A.Becker",
+    "fpl_full_name": "Alisson Becker",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "930997": {
+    "sofasport_id": "930997",
+    "sofasport_name": "Giorgi Mamardashvili",
+    "fpl_id": 367,
+    "fpl_web_name": "Mamardashvili",
+    "fpl_full_name": "Giorgi Mamardashvili",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "284417": {
+    "sofasport_id": "284417",
+    "sofasport_name": "Freddie Woodman",
+    "fpl_id": 369,
+    "fpl_web_name": "Woodman",
+    "fpl_full_name": "Freddie Woodman",
+    "fpl_team_id": 12,
+    "sofasport_team_id": "44",
+    "match_score": 105
+  },
+  "980623": {
+    "sofasport_id": "980623",
+    "sofasport_name": "Nick Woltemade",
+    "fpl_id": 714,
+    "fpl_web_name": "Woltemade",
+    "fpl_full_name": "Nick Woltemade",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "805123": {
+    "sofasport_id": "805123",
+    "sofasport_name": "Yoane Wissa",
+    "fpl_id": 135,
+    "fpl_web_name": "Wissa",
+    "fpl_full_name": "Yoane Wissa",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "914902": {
+    "sofasport_id": "914902",
+    "sofasport_name": "Anthony Gordon",
+    "fpl_id": 485,
+    "fpl_web_name": "Gordon",
+    "fpl_full_name": "Anthony Gordon",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "855647": {
+    "sofasport_id": "855647",
+    "sofasport_name": "Harvey Barnes",
+    "fpl_id": 487,
+    "fpl_web_name": "Barnes",
+    "fpl_full_name": "Harvey Barnes",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "372336": {
+    "sofasport_id": "372336",
+    "sofasport_name": "Jacob Murphy",
+    "fpl_id": 489,
+    "fpl_web_name": "J.Murphy",
+    "fpl_full_name": "Jacob Murphy",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "1122603": {
+    "sofasport_id": "1122603",
+    "sofasport_name": "William Osula",
+    "fpl_id": 500,
+    "fpl_web_name": "Osula",
+    "fpl_full_name": "William Osula",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "866469": {
+    "sofasport_id": "866469",
+    "sofasport_name": "Bruno Guimar\u00e3es",
+    "fpl_id": 488,
+    "fpl_web_name": "Bruno G.",
+    "fpl_full_name": "Bruno Guimar\u00e3es Rodriguez Moura",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "892673": {
+    "sofasport_id": "892673",
+    "sofasport_name": "Sandro Tonali",
+    "fpl_id": 491,
+    "fpl_web_name": "Tonali",
+    "fpl_full_name": "Sandro Tonali",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "979232": {
+    "sofasport_id": "979232",
+    "sofasport_name": "Anthony Elanga",
+    "fpl_id": 486,
+    "fpl_web_name": "Elanga",
+    "fpl_full_name": "Anthony Elanga",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "560128": {
+    "sofasport_id": "560128",
+    "sofasport_name": "Joelinton",
+    "fpl_id": 490,
+    "fpl_web_name": "Joelinton",
+    "fpl_full_name": "Joelinton C\u00e1ssio Apolin\u00e1rio de Lira",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "975937": {
+    "sofasport_id": "975937",
+    "sofasport_name": "Jacob Ramsey",
+    "fpl_id": 52,
+    "fpl_web_name": "J.Ramsey",
+    "fpl_full_name": "Jacob Ramsey",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "1400650": {
+    "sofasport_id": "1400650",
+    "sofasport_name": "Lewis Miley",
+    "fpl_id": 497,
+    "fpl_web_name": "L.Miley",
+    "fpl_full_name": "Lewis Miley",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "888550": {
+    "sofasport_id": "888550",
+    "sofasport_name": "Joe Willock",
+    "fpl_id": 494,
+    "fpl_web_name": "Willock",
+    "fpl_full_name": "Joe Willock",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "69256": {
+    "sofasport_id": "69256",
+    "sofasport_name": "Kieran Trippier",
+    "fpl_id": 478,
+    "fpl_web_name": "Trippier",
+    "fpl_full_name": "Kieran Trippier",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "1014286": {
+    "sofasport_id": "1014286",
+    "sofasport_name": "Malick Thiaw",
+    "fpl_id": 684,
+    "fpl_web_name": "Thiaw",
+    "fpl_full_name": "Malick Thiaw",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "980634": {
+    "sofasport_id": "980634",
+    "sofasport_name": "Valentino Livramento",
+    "fpl_id": 477,
+    "fpl_web_name": "Livramento",
+    "fpl_full_name": "Tino Livramento",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "1136730": {
+    "sofasport_id": "1136730",
+    "sofasport_name": "Lewis Hall",
+    "fpl_id": 473,
+    "fpl_web_name": "Hall",
+    "fpl_full_name": "Lewis Hall",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "99090": {
+    "sofasport_id": "99090",
+    "sofasport_name": "Dan Burn",
+    "fpl_id": 476,
+    "fpl_web_name": "Burn",
+    "fpl_full_name": "Dan Burn",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "910046": {
+    "sofasport_id": "910046",
+    "sofasport_name": "Sven Botman",
+    "fpl_id": 475,
+    "fpl_web_name": "Botman",
+    "fpl_full_name": "Sven Botman",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "101882": {
+    "sofasport_id": "101882",
+    "sofasport_name": "Fabian Sch\u00e4r",
+    "fpl_id": 474,
+    "fpl_web_name": "Sch\u00e4r",
+    "fpl_full_name": "Fabian Sch\u00e4r",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "153444": {
+    "sofasport_id": "153444",
+    "sofasport_name": "Jamaal Lascelles",
+    "fpl_id": 480,
+    "fpl_web_name": "Lascelles",
+    "fpl_full_name": "Jamaal Lascelles",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "150396": {
+    "sofasport_id": "150396",
+    "sofasport_name": "Emil Krafth",
+    "fpl_id": 479,
+    "fpl_web_name": "Krafth",
+    "fpl_full_name": "Emil Krafth",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "1125214": {
+    "sofasport_id": "1125214",
+    "sofasport_name": "Alex Murphy",
+    "fpl_id": 481,
+    "fpl_web_name": "A.Murphy",
+    "fpl_full_name": "Alex Murphy",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "1084284": {
+    "sofasport_id": "1084284",
+    "sofasport_name": "Harrison Ashby",
+    "fpl_id": 482,
+    "fpl_web_name": "Ashby",
+    "fpl_full_name": "Harrison Ashby",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "839410": {
+    "sofasport_id": "839410",
+    "sofasport_name": "Aaron Ramsdale",
+    "fpl_id": 674,
+    "fpl_web_name": "Ramsdale",
+    "fpl_full_name": "Aaron Ramsdale",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "162653": {
+    "sofasport_id": "162653",
+    "sofasport_name": "Nick Pope",
+    "fpl_id": 469,
+    "fpl_web_name": "Pope",
+    "fpl_full_name": "Nick Pope",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "108508": {
+    "sofasport_id": "108508",
+    "sofasport_name": "Mark Gillespie",
+    "fpl_id": 471,
+    "fpl_web_name": "Gillespie",
+    "fpl_full_name": "Mark Gillespie",
+    "fpl_team_id": 15,
+    "sofasport_team_id": "39",
+    "match_score": 105
+  },
+  "1135873": {
+    "sofasport_id": "1135873",
+    "sofasport_name": "Alejandro Garnacho",
+    "fpl_id": 453,
+    "fpl_web_name": "Garnacho",
+    "fpl_full_name": "Alejandro Garnacho Ferreyra",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "975079": {
+    "sofasport_id": "975079",
+    "sofasport_name": "Jo\u00e3o Pedro",
+    "fpl_id": 249,
+    "fpl_web_name": "Jo\u00e3o Pedro",
+    "fpl_full_name": "Jo\u00e3o Pedro Junqueira de Jesus",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "1414933": {
+    "sofasport_id": "1414933",
+    "sofasport_name": "Marc Guiu",
+    "fpl_id": 252,
+    "fpl_web_name": "Marc Guiu",
+    "fpl_full_name": "Marc Guiu Paz",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "997087": {
+    "sofasport_id": "997087",
+    "sofasport_name": "Liam Delap",
+    "fpl_id": 250,
+    "fpl_web_name": "Delap",
+    "fpl_full_name": "Liam Delap",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "982780": {
+    "sofasport_id": "982780",
+    "sofasport_name": "Cole Palmer",
+    "fpl_id": 235,
+    "fpl_web_name": "Palmer",
+    "fpl_full_name": "Cole Palmer",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "974505": {
+    "sofasport_id": "974505",
+    "sofasport_name": "Enzo Fern\u00e1ndez",
+    "fpl_id": 237,
+    "fpl_web_name": "Enzo",
+    "fpl_full_name": "Enzo Fern\u00e1ndez",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "1597265": {
+    "sofasport_id": "1597265",
+    "sofasport_name": "Est\u00eav\u00e3o Willian",
+    "fpl_id": 238,
+    "fpl_web_name": "Est\u00eav\u00e3o",
+    "fpl_full_name": "Est\u00eav\u00e3o Almeida de Oliveira Gon\u00e7alves",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 100
+  },
+  "987650": {
+    "sofasport_id": "987650",
+    "sofasport_name": "Mois\u00e9s Caicedo",
+    "fpl_id": 241,
+    "fpl_web_name": "Caicedo",
+    "fpl_full_name": "Mois\u00e9s Caicedo Corozo",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "958966": {
+    "sofasport_id": "958966",
+    "sofasport_name": "Mykhaylo Mudryk",
+    "fpl_id": 245,
+    "fpl_web_name": "Mudryk",
+    "fpl_full_name": "Mykhailo Mudryk",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 98
+  },
+  "879349": {
+    "sofasport_id": "879349",
+    "sofasport_name": "Pedro Neto",
+    "fpl_id": 236,
+    "fpl_web_name": "Neto",
+    "fpl_full_name": "Pedro Lomba Neto",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 77
+  },
+  "1140599": {
+    "sofasport_id": "1140599",
+    "sofasport_name": "Jamie Gittens",
+    "fpl_id": 239,
+    "fpl_web_name": "Gittens",
+    "fpl_full_name": "Jamie Bynoe-Gittens",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 82
+  },
+  "1117025": {
+    "sofasport_id": "1117025",
+    "sofasport_name": "Facundo Buonanotte",
+    "fpl_id": 168,
+    "fpl_web_name": "Buonanotte",
+    "fpl_full_name": "Facundo Buonanotte",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "1069488": {
+    "sofasport_id": "1069488",
+    "sofasport_name": "Rom\u00e9o Lavia",
+    "fpl_id": 244,
+    "fpl_web_name": "Lavia",
+    "fpl_full_name": "Rom\u00e9o Lavia",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "1403061": {
+    "sofasport_id": "1403061",
+    "sofasport_name": "Tyrique George",
+    "fpl_id": 243,
+    "fpl_web_name": "George",
+    "fpl_full_name": "Tyrique George",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "1110006": {
+    "sofasport_id": "1110006",
+    "sofasport_name": "D\u00e1rio Essugo",
+    "fpl_id": 247,
+    "fpl_web_name": "D.Essugo",
+    "fpl_full_name": "D\u00e1rio Lu\u00eds Essugo",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 94
+  },
+  "1881891": {
+    "sofasport_id": "1881891",
+    "sofasport_name": "Landon Emenalo",
+    "fpl_id": 743,
+    "fpl_web_name": "Emenalo",
+    "fpl_full_name": "Landon Emenalo",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "885908": {
+    "sofasport_id": "885908",
+    "sofasport_name": "Reece James",
+    "fpl_id": 225,
+    "fpl_web_name": "James",
+    "fpl_full_name": "Reece James",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "794939": {
+    "sofasport_id": "794939",
+    "sofasport_name": "Marc Cucurella",
+    "fpl_id": 224,
+    "fpl_web_name": "Cucurella",
+    "fpl_full_name": "Marc Cucurella Saseta",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "996958": {
+    "sofasport_id": "996958",
+    "sofasport_name": "Malo Gusto",
+    "fpl_id": 228,
+    "fpl_web_name": "Gusto",
+    "fpl_full_name": "Malo Gusto",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "996911": {
+    "sofasport_id": "996911",
+    "sofasport_name": "Levi Colwill",
+    "fpl_id": 227,
+    "fpl_web_name": "Colwill",
+    "fpl_full_name": "Levi Samuels Colwill",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 82
+  },
+  "923894": {
+    "sofasport_id": "923894",
+    "sofasport_name": "Wesley Fofana",
+    "fpl_id": 230,
+    "fpl_web_name": "Fofana",
+    "fpl_full_name": "Wesley Fofana",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "1153079": {
+    "sofasport_id": "1153079",
+    "sofasport_name": "Jorrel Hato",
+    "fpl_id": 672,
+    "fpl_web_name": "Hato",
+    "fpl_full_name": "Jorrel Hato",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "826134": {
+    "sofasport_id": "826134",
+    "sofasport_name": "Trevoh Chalobah",
+    "fpl_id": 226,
+    "fpl_web_name": "Chalobah",
+    "fpl_full_name": "Trevoh Chalobah",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "1403050": {
+    "sofasport_id": "1403050",
+    "sofasport_name": "Josh Acheampong",
+    "fpl_id": 233,
+    "fpl_web_name": "Acheampong",
+    "fpl_full_name": "Josh Acheampong",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "904827": {
+    "sofasport_id": "904827",
+    "sofasport_name": "Beno\u00eet Badiashile",
+    "fpl_id": 229,
+    "fpl_web_name": "B.Badiashile",
+    "fpl_full_name": "Beno\u00eet Badiashile Mukinayi",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "352668": {
+    "sofasport_id": "352668",
+    "sofasport_name": "Tosin Adarabioyo",
+    "fpl_id": 232,
+    "fpl_web_name": "Tosin",
+    "fpl_full_name": "Tosin Adarabioyo",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "920546": {
+    "sofasport_id": "920546",
+    "sofasport_name": "Robert S\u00e1nchez",
+    "fpl_id": 220,
+    "fpl_web_name": "S\u00e1nchez",
+    "fpl_full_name": "Robert Lynch S\u00e1nchez",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 82
+  },
+  "962053": {
+    "sofasport_id": "962053",
+    "sofasport_name": "Filip J\u00f8rgensen",
+    "fpl_id": 221,
+    "fpl_web_name": "J\u00f6rgensen",
+    "fpl_full_name": "Filip J\u00f6rgensen",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "978787": {
+    "sofasport_id": "978787",
+    "sofasport_name": "Gabriel S\u0142onina",
+    "fpl_id": 223,
+    "fpl_web_name": "Slonina",
+    "fpl_full_name": "Gabriel S\u0142onina",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 105
+  },
+  "555386": {
+    "sofasport_id": "555386",
+    "sofasport_name": "Ollie Watkins",
+    "fpl_id": 64,
+    "fpl_web_name": "Watkins",
+    "fpl_full_name": "Ollie Watkins",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "803039": {
+    "sofasport_id": "803039",
+    "sofasport_name": "Donyell Malen",
+    "fpl_id": 53,
+    "fpl_web_name": "Malen",
+    "fpl_full_name": "Donyell Malen",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "930245": {
+    "sofasport_id": "930245",
+    "sofasport_name": "Evann Guessand",
+    "fpl_id": 677,
+    "fpl_web_name": "Guessand",
+    "fpl_full_name": "Evann Guessand",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "851100": {
+    "sofasport_id": "851100",
+    "sofasport_name": "Jadon Sancho",
+    "fpl_id": 456,
+    "fpl_web_name": "Sancho",
+    "fpl_full_name": "Jadon Sancho",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "955245": {
+    "sofasport_id": "955245",
+    "sofasport_name": "Harvey Elliott",
+    "fpl_id": 389,
+    "fpl_web_name": "Elliott",
+    "fpl_full_name": "Harvey Elliott",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "331737": {
+    "sofasport_id": "331737",
+    "sofasport_name": "Youri Tielemans",
+    "fpl_id": 48,
+    "fpl_web_name": "Tielemans",
+    "fpl_full_name": "Youri Tielemans",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "948261": {
+    "sofasport_id": "948261",
+    "sofasport_name": "Morgan Rogers",
+    "fpl_id": 47,
+    "fpl_web_name": "Rogers",
+    "fpl_full_name": "Morgan Rogers",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "923973": {
+    "sofasport_id": "923973",
+    "sofasport_name": "Amadou Onana",
+    "fpl_id": 59,
+    "fpl_web_name": "Onana",
+    "fpl_full_name": "Amadou Onana",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "783126": {
+    "sofasport_id": "783126",
+    "sofasport_name": "Emiliano Buend\u00eda",
+    "fpl_id": 50,
+    "fpl_web_name": "Buend\u00eda",
+    "fpl_full_name": "Emiliano Buend\u00eda Stati",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "250223": {
+    "sofasport_id": "250223",
+    "sofasport_name": "John McGinn",
+    "fpl_id": 54,
+    "fpl_web_name": "McGinn",
+    "fpl_full_name": "John McGinn",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "826204": {
+    "sofasport_id": "826204",
+    "sofasport_name": "Boubacar Kamara",
+    "fpl_id": 58,
+    "fpl_web_name": "Kamara",
+    "fpl_full_name": "Boubacar Kamara",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "98435": {
+    "sofasport_id": "98435",
+    "sofasport_name": "Ross Barkley",
+    "fpl_id": 55,
+    "fpl_web_name": "Barkley",
+    "fpl_full_name": "Ross Barkley",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "1410178": {
+    "sofasport_id": "1410178",
+    "sofasport_name": "Jamaldeen Jimoh",
+    "fpl_id": 62,
+    "fpl_web_name": "Jimoh-Aloba",
+    "fpl_full_name": "Jamaldeen Jimoh-Aloba",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "143334": {
+    "sofasport_id": "143334",
+    "sofasport_name": "Victor Lindel\u00f6f",
+    "fpl_id": 719,
+    "fpl_web_name": "Lindel\u00f6f",
+    "fpl_full_name": "Victor Lindel\u00f6f",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "833956": {
+    "sofasport_id": "833956",
+    "sofasport_name": "Matty Cash",
+    "fpl_id": 36,
+    "fpl_web_name": "Cash",
+    "fpl_full_name": "Matty Cash",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "976263": {
+    "sofasport_id": "976263",
+    "sofasport_name": "Ian Maatsen",
+    "fpl_id": 39,
+    "fpl_web_name": "Maatsen",
+    "fpl_full_name": "Ian Maatsen",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "96538": {
+    "sofasport_id": "96538",
+    "sofasport_name": "Lucas Digne",
+    "fpl_id": 37,
+    "fpl_web_name": "Digne",
+    "fpl_full_name": "Lucas Digne",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "864169": {
+    "sofasport_id": "864169",
+    "sofasport_name": "Pau Torres",
+    "fpl_id": 41,
+    "fpl_web_name": "Pau",
+    "fpl_full_name": "Pau Torres",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "827679": {
+    "sofasport_id": "827679",
+    "sofasport_name": "Ezri Konsa",
+    "fpl_id": 38,
+    "fpl_web_name": "Konsa",
+    "fpl_full_name": "Ezri Konsa Ngoyo",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "303638": {
+    "sofasport_id": "303638",
+    "sofasport_name": "Tyrone Mings",
+    "fpl_id": 40,
+    "fpl_web_name": "Mings",
+    "fpl_full_name": "Tyrone Mings",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "1089388": {
+    "sofasport_id": "1089388",
+    "sofasport_name": "Lamare Bogarde",
+    "fpl_id": 44,
+    "fpl_web_name": "Bogarde",
+    "fpl_full_name": "Lamare Bogarde",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "1457536": {
+    "sofasport_id": "1457536",
+    "sofasport_name": "Andr\u00e9s Garc\u00eda",
+    "fpl_id": 42,
+    "fpl_web_name": "A.Garc\u00eda",
+    "fpl_full_name": "Andr\u00e9s Garc\u00eda",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "158263": {
+    "sofasport_id": "158263",
+    "sofasport_name": "Emiliano Mart\u00ednez",
+    "fpl_id": 32,
+    "fpl_web_name": "Martinez",
+    "fpl_full_name": "Emiliano Mart\u00ednez Romero",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "100390": {
+    "sofasport_id": "100390",
+    "sofasport_name": "Marco Bizot",
+    "fpl_id": 33,
+    "fpl_web_name": "M.Bizot",
+    "fpl_full_name": "Marco Bizot",
+    "fpl_team_id": 2,
+    "sofasport_team_id": "40",
+    "match_score": 105
+  },
+  "1155321": {
+    "sofasport_id": "1155321",
+    "sofasport_name": "Stefanos Tzimas",
+    "fpl_id": 180,
+    "fpl_web_name": "Tzimas",
+    "fpl_full_name": "Stefanos Tzimas",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "33902": {
+    "sofasport_id": "33902",
+    "sofasport_name": "Danny Welbeck",
+    "fpl_id": 178,
+    "fpl_web_name": "Welbeck",
+    "fpl_full_name": "Danny Welbeck",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "936849": {
+    "sofasport_id": "936849",
+    "sofasport_name": "Kaoru Mitoma",
+    "fpl_id": 157,
+    "fpl_web_name": "Mitoma",
+    "fpl_full_name": "Mitoma Kaoru",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "1199043": {
+    "sofasport_id": "1199043",
+    "sofasport_name": "Carlos Baleba",
+    "fpl_id": 167,
+    "fpl_web_name": "Baleba",
+    "fpl_full_name": "Carlos Baleba",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "1065588": {
+    "sofasport_id": "1065588",
+    "sofasport_name": "Diego G\u00f3mez",
+    "fpl_id": 169,
+    "fpl_web_name": "Gomez",
+    "fpl_full_name": "Diego G\u00f3mez Amarilla",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "1400106": {
+    "sofasport_id": "1400106",
+    "sofasport_name": "Yankuba Minteh",
+    "fpl_id": 160,
+    "fpl_web_name": "Minteh",
+    "fpl_full_name": "Yankuba Minteh",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "1416535": {
+    "sofasport_id": "1416535",
+    "sofasport_name": "Charalampos Kostoulas",
+    "fpl_id": 181,
+    "fpl_web_name": "Kostoulas",
+    "fpl_full_name": "Charalampos Kostoulas",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "946695": {
+    "sofasport_id": "946695",
+    "sofasport_name": "Georginio Rutter",
+    "fpl_id": 158,
+    "fpl_web_name": "Georginio",
+    "fpl_full_name": "Georginio Rutter",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "791": {
+    "sofasport_id": "791",
+    "sofasport_name": "James Milner",
+    "fpl_id": 170,
+    "fpl_web_name": "Milner",
+    "fpl_full_name": "James Milner",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "1198075": {
+    "sofasport_id": "1198075",
+    "sofasport_name": "Brajan Gruda",
+    "fpl_id": 162,
+    "fpl_web_name": "Gruda",
+    "fpl_full_name": "Brajan Gruda",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "1036269": {
+    "sofasport_id": "1036269",
+    "sofasport_name": "Yasin Ayari",
+    "fpl_id": 166,
+    "fpl_web_name": "Ayari",
+    "fpl_full_name": "Yasin Ayari",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "959628": {
+    "sofasport_id": "959628",
+    "sofasport_name": "Mats Wieffer",
+    "fpl_id": 173,
+    "fpl_web_name": "Wieffer",
+    "fpl_full_name": "Mats Wieffer",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "301288": {
+    "sofasport_id": "301288",
+    "sofasport_name": "Solly March",
+    "fpl_id": 159,
+    "fpl_web_name": "March",
+    "fpl_full_name": "Solly March",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "1167066": {
+    "sofasport_id": "1167066",
+    "sofasport_name": "Tom Watson",
+    "fpl_id": 172,
+    "fpl_web_name": "Watson",
+    "fpl_full_name": "Tom Watson",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "825844": {
+    "sofasport_id": "825844",
+    "sofasport_name": "Ferdi Kad\u0131o\u011flu",
+    "fpl_id": 148,
+    "fpl_web_name": "F.Kad\u0131o\u011flu",
+    "fpl_full_name": "Ferdi Kad\u0131o\u011flu",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "997152": {
+    "sofasport_id": "997152",
+    "sofasport_name": "Maxim De Cuyper",
+    "fpl_id": 145,
+    "fpl_web_name": "De Cuyper",
+    "fpl_full_name": "Maxim De Cuyper",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "962012": {
+    "sofasport_id": "962012",
+    "sofasport_name": "Jan Paul van Hecke",
+    "fpl_id": 151,
+    "fpl_web_name": "Van Hecke",
+    "fpl_full_name": "Jan Paul van Hecke",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "115365": {
+    "sofasport_id": "115365",
+    "sofasport_name": "Lewis Dunk",
+    "fpl_id": 146,
+    "fpl_web_name": "Dunk",
+    "fpl_full_name": "Lewis Dunk",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "1142315": {
+    "sofasport_id": "1142315",
+    "sofasport_name": "Jack Hinshelwood",
+    "fpl_id": 163,
+    "fpl_web_name": "Hinshelwood",
+    "fpl_full_name": "Jack Hinshelwood",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "1050692": {
+    "sofasport_id": "1050692",
+    "sofasport_name": "Diego Coppola",
+    "fpl_id": 144,
+    "fpl_web_name": "Coppola",
+    "fpl_full_name": "Diego Coppola",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "219572": {
+    "sofasport_id": "219572",
+    "sofasport_name": "Jo\u00ebl Veltman",
+    "fpl_id": 152,
+    "fpl_web_name": "Veltman",
+    "fpl_full_name": "Jo\u00ebl Veltman",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "788784": {
+    "sofasport_id": "788784",
+    "sofasport_name": "Olivier Boscagli",
+    "fpl_id": 143,
+    "fpl_web_name": "Boscagli",
+    "fpl_full_name": "Olivier Boscagli",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "216308": {
+    "sofasport_id": "216308",
+    "sofasport_name": "Adam Webster",
+    "fpl_id": 153,
+    "fpl_web_name": "Webster",
+    "fpl_full_name": "Adam Webster",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "994363": {
+    "sofasport_id": "994363",
+    "sofasport_name": "Bart Verbruggen",
+    "fpl_id": 139,
+    "fpl_web_name": "Verbruggen",
+    "fpl_full_name": "Bart Verbruggen",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "31867": {
+    "sofasport_id": "31867",
+    "sofasport_name": "Jason Steele",
+    "fpl_id": 138,
+    "fpl_web_name": "Steele",
+    "fpl_full_name": "Jason Steele",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "1007073": {
+    "sofasport_id": "1007073",
+    "sofasport_name": "Tom McGill",
+    "fpl_id": 140,
+    "fpl_web_name": "McGill",
+    "fpl_full_name": "Tom McGill",
+    "fpl_team_id": 6,
+    "sofasport_team_id": "30",
+    "match_score": 105
+  },
+  "192442": {
+    "sofasport_id": "192442",
+    "sofasport_name": "Ra\u00fal Jim\u00e9nez",
+    "fpl_id": 337,
+    "fpl_web_name": "Ra\u00fal",
+    "fpl_full_name": "Ra\u00fal Jim\u00e9nez Rodr\u00edguez",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "822470": {
+    "sofasport_id": "822470",
+    "sofasport_name": "Samuel Chukwueze",
+    "fpl_id": 727,
+    "fpl_web_name": "Chukwueze",
+    "fpl_full_name": "Samuel Chukwueze",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "286165": {
+    "sofasport_id": "286165",
+    "sofasport_name": "Adama Traor\u00e9",
+    "fpl_id": 326,
+    "fpl_web_name": "Adama",
+    "fpl_full_name": "Adama Traor\u00e9 Diarra",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "1015256": {
+    "sofasport_id": "1015256",
+    "sofasport_name": "Rodrigo Muniz",
+    "fpl_id": 338,
+    "fpl_web_name": "Muniz",
+    "fpl_full_name": "Rodrigo Muniz Carvalho",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "1503757": {
+    "sofasport_id": "1503757",
+    "sofasport_name": "Jonah Kusi-Asare",
+    "fpl_id": 737,
+    "fpl_web_name": "Kusi-Asare",
+    "fpl_full_name": "Jonah Kusi-Asare",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "867445": {
+    "sofasport_id": "867445",
+    "sofasport_name": "Emile Smith Rowe",
+    "fpl_id": 325,
+    "fpl_web_name": "Smith Rowe",
+    "fpl_full_name": "Emile Smith Rowe",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "352770": {
+    "sofasport_id": "352770",
+    "sofasport_name": "Alex Iwobi",
+    "fpl_id": 324,
+    "fpl_web_name": "Iwobi",
+    "fpl_full_name": "Alex Iwobi",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "1112879": {
+    "sofasport_id": "1112879",
+    "sofasport_name": "Kevin",
+    "fpl_id": 731,
+    "fpl_web_name": "Kevin",
+    "fpl_full_name": "Kevin Santos Lopes de Macedo",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "355528": {
+    "sofasport_id": "355528",
+    "sofasport_name": "Harry Wilson",
+    "fpl_id": 329,
+    "fpl_web_name": "Wilson",
+    "fpl_full_name": "Harry Wilson",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "371222": {
+    "sofasport_id": "371222",
+    "sofasport_name": "Sa\u0161a Luki\u0107",
+    "fpl_id": 332,
+    "fpl_web_name": "Luki\u0107",
+    "fpl_full_name": "Sa\u0161a Luki\u0107",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "793167": {
+    "sofasport_id": "793167",
+    "sofasport_name": "Sander Berge",
+    "fpl_id": 330,
+    "fpl_web_name": "Berge",
+    "fpl_full_name": "Sander Berge",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "1546231": {
+    "sofasport_id": "1546231",
+    "sofasport_name": "Joshua King",
+    "fpl_id": 335,
+    "fpl_web_name": "King",
+    "fpl_full_name": "Josh King",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 95
+  },
+  "82566": {
+    "sofasport_id": "82566",
+    "sofasport_name": "Tom Cairney",
+    "fpl_id": 331,
+    "fpl_web_name": "Cairney",
+    "fpl_full_name": "Tom Cairney",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "365802": {
+    "sofasport_id": "365802",
+    "sofasport_name": "Harrison Reed",
+    "fpl_id": 336,
+    "fpl_web_name": "Reed",
+    "fpl_full_name": "Harrison Reed",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "861972": {
+    "sofasport_id": "861972",
+    "sofasport_name": "Calvin Bassey",
+    "fpl_id": 318,
+    "fpl_web_name": "Bassey",
+    "fpl_full_name": "Calvin Bassey",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "803174": {
+    "sofasport_id": "803174",
+    "sofasport_name": "Antonee Robinson",
+    "fpl_id": 316,
+    "fpl_web_name": "Robinson",
+    "fpl_full_name": "Antonee Robinson",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "329417": {
+    "sofasport_id": "329417",
+    "sofasport_name": "Timothy Castagne",
+    "fpl_id": 319,
+    "fpl_web_name": "Castagne",
+    "fpl_full_name": "Timothy Castagne",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "362682": {
+    "sofasport_id": "362682",
+    "sofasport_name": "Joachim Andersen",
+    "fpl_id": 317,
+    "fpl_web_name": "Andersen",
+    "fpl_full_name": "Joachim Andersen",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "836698": {
+    "sofasport_id": "836698",
+    "sofasport_name": "Ryan Sessegnon",
+    "fpl_id": 328,
+    "fpl_web_name": "Sessegnon",
+    "fpl_full_name": "Ryan Sessegnon",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "190877": {
+    "sofasport_id": "190877",
+    "sofasport_name": "Kenny Tete",
+    "fpl_id": 322,
+    "fpl_web_name": "Tete",
+    "fpl_full_name": "Kenny Tete",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "825719": {
+    "sofasport_id": "825719",
+    "sofasport_name": "Issa Diop",
+    "fpl_id": 320,
+    "fpl_web_name": "Diop",
+    "fpl_full_name": "Issa Diop",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "868715": {
+    "sofasport_id": "868715",
+    "sofasport_name": "Jorge Cuenca",
+    "fpl_id": 321,
+    "fpl_web_name": "J.Cuenca",
+    "fpl_full_name": "Jorge Cuenca Barreno",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "103335": {
+    "sofasport_id": "103335",
+    "sofasport_name": "Bernd Leno",
+    "fpl_id": 314,
+    "fpl_web_name": "Leno",
+    "fpl_full_name": "Bernd Leno",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "123207": {
+    "sofasport_id": "123207",
+    "sofasport_name": "Benjamin Lecomte",
+    "fpl_id": 664,
+    "fpl_web_name": "Lecomte",
+    "fpl_full_name": "Benjamin Lecomte",
+    "fpl_team_id": 10,
+    "sofasport_team_id": "43",
+    "match_score": 105
+  },
+  "981619": {
+    "sofasport_id": "981619",
+    "sofasport_name": "Igor Jesus",
+    "fpl_id": 526,
+    "fpl_web_name": "Igor Jesus",
+    "fpl_full_name": "Igor Jesus Maciel da Cruz",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "50480": {
+    "sofasport_id": "50480",
+    "sofasport_name": "Chris Wood",
+    "fpl_id": 525,
+    "fpl_web_name": "Wood",
+    "fpl_full_name": "Chris Wood",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "359664": {
+    "sofasport_id": "359664",
+    "sofasport_name": "Taiwo Awoniyi",
+    "fpl_id": 527,
+    "fpl_web_name": "Awoniyi",
+    "fpl_full_name": "Taiwo Awoniyi",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "954061": {
+    "sofasport_id": "954061",
+    "sofasport_name": "Arnaud Kalimuendo",
+    "fpl_id": 696,
+    "fpl_web_name": "Kalimuendo",
+    "fpl_full_name": "Arnaud Kalimuendo",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "867887": {
+    "sofasport_id": "867887",
+    "sofasport_name": "Douglas Luiz",
+    "fpl_id": 699,
+    "fpl_web_name": "Douglas Luiz",
+    "fpl_full_name": "Douglas Luiz Soares de Paulo",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "1003334": {
+    "sofasport_id": "1003334",
+    "sofasport_name": "James McAtee",
+    "fpl_id": 426,
+    "fpl_web_name": "McAtee",
+    "fpl_full_name": "James McAtee",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "843754": {
+    "sofasport_id": "843754",
+    "sofasport_name": "Ibrahim Sangar\u00e9",
+    "fpl_id": 521,
+    "fpl_web_name": "Sangar\u00e9",
+    "fpl_full_name": "Ibrahim Sangar\u00e9",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "867442": {
+    "sofasport_id": "867442",
+    "sofasport_name": "Callum Hudson-Odoi",
+    "fpl_id": 516,
+    "fpl_web_name": "Hudson-Odoi",
+    "fpl_full_name": "Callum Hudson-Odoi",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "865912": {
+    "sofasport_id": "865912",
+    "sofasport_name": "Morgan Gibbs-White",
+    "fpl_id": 515,
+    "fpl_web_name": "Gibbs-White",
+    "fpl_full_name": "Morgan Gibbs-White",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "944327": {
+    "sofasport_id": "944327",
+    "sofasport_name": "Dan Ndoye",
+    "fpl_id": 669,
+    "fpl_web_name": "Ndoye",
+    "fpl_full_name": "Dan Ndoye",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "994546": {
+    "sofasport_id": "994546",
+    "sofasport_name": "Elliot Anderson",
+    "fpl_id": 517,
+    "fpl_web_name": "Anderson",
+    "fpl_full_name": "Elliot Anderson",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "1090963": {
+    "sofasport_id": "1090963",
+    "sofasport_name": "Omari Hutchinson",
+    "fpl_id": 693,
+    "fpl_web_name": "Hutchinson",
+    "fpl_full_name": "Omari Hutchinson",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "871765": {
+    "sofasport_id": "871765",
+    "sofasport_name": "Nicol\u00e1s Dom\u00ednguez",
+    "fpl_id": 519,
+    "fpl_web_name": "Dominguez",
+    "fpl_full_name": "Nicol\u00e1s Dom\u00ednguez",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "963298": {
+    "sofasport_id": "963298",
+    "sofasport_name": "Dilane Bakwa",
+    "fpl_id": 734,
+    "fpl_web_name": "Bakwa",
+    "fpl_full_name": "Dilane Bakwa",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "846252": {
+    "sofasport_id": "846252",
+    "sofasport_name": "Ryan Yates",
+    "fpl_id": 522,
+    "fpl_web_name": "Yates",
+    "fpl_full_name": "Ryan Yates",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "287643": {
+    "sofasport_id": "287643",
+    "sofasport_name": "Oleksandr Zinchenko",
+    "fpl_id": 12,
+    "fpl_web_name": "Zinchenko",
+    "fpl_full_name": "Oleksandr Zinchenko",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "1199282": {
+    "sofasport_id": "1199282",
+    "sofasport_name": "Murillo",
+    "fpl_id": 506,
+    "fpl_web_name": "Murillo",
+    "fpl_full_name": "Murillo Costa dos Santos",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "836168": {
+    "sofasport_id": "836168",
+    "sofasport_name": "Nikola Milenkovi\u0107",
+    "fpl_id": 505,
+    "fpl_web_name": "Milenkovi\u0107",
+    "fpl_full_name": "Nikola Milenkovi\u0107",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "800417": {
+    "sofasport_id": "800417",
+    "sofasport_name": "Ola Aina",
+    "fpl_id": 507,
+    "fpl_web_name": "Aina",
+    "fpl_full_name": "Ola Aina",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "927356": {
+    "sofasport_id": "927356",
+    "sofasport_name": "Neco Williams",
+    "fpl_id": 508,
+    "fpl_web_name": "N.Williams",
+    "fpl_full_name": "Neco Williams",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "1170722": {
+    "sofasport_id": "1170722",
+    "sofasport_name": "Jair",
+    "fpl_id": 510,
+    "fpl_web_name": "Jair Cunha",
+    "fpl_full_name": "Jair Paula da Cunha Filho",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "1010220": {
+    "sofasport_id": "1010220",
+    "sofasport_name": "Nicol\u00f2 Savona",
+    "fpl_id": 716,
+    "fpl_web_name": "Savona",
+    "fpl_full_name": "Nicol\u00f2 Savona",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "985086": {
+    "sofasport_id": "985086",
+    "sofasport_name": "Morato",
+    "fpl_id": 511,
+    "fpl_web_name": "Morato",
+    "fpl_full_name": "Felipe Rodrigues da Silva",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 80
+  },
+  "139310": {
+    "sofasport_id": "139310",
+    "sofasport_name": "Willy Boly",
+    "fpl_id": 514,
+    "fpl_web_name": "Boly",
+    "fpl_full_name": "Willy Boly",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "1390490": {
+    "sofasport_id": "1390490",
+    "sofasport_name": "Zach Abbott",
+    "fpl_id": 513,
+    "fpl_web_name": "Abbott",
+    "fpl_full_name": "Zach Abbott",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "78152": {
+    "sofasport_id": "78152",
+    "sofasport_name": "Matz Sels",
+    "fpl_id": 502,
+    "fpl_web_name": "Sels",
+    "fpl_full_name": "Matz Sels",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "840103": {
+    "sofasport_id": "840103",
+    "sofasport_name": "John Victor",
+    "fpl_id": 715,
+    "fpl_web_name": "John",
+    "fpl_full_name": "John Victor Maciel Furtado",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "227946": {
+    "sofasport_id": "227946",
+    "sofasport_name": "Angus Gunn",
+    "fpl_id": 675,
+    "fpl_web_name": "Gunn",
+    "fpl_full_name": "Angus Gunn",
+    "fpl_team_id": 16,
+    "sofasport_team_id": "14",
+    "match_score": 105
+  },
+  "865523": {
+    "sofasport_id": "865523",
+    "sofasport_name": "Noah Okafor",
+    "fpl_id": 698,
+    "fpl_web_name": "Okafor",
+    "fpl_full_name": "Noah Okafor",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "372344": {
+    "sofasport_id": "372344",
+    "sofasport_name": "Dominic Calvert-Lewin",
+    "fpl_id": 691,
+    "fpl_web_name": "Calvert-Lewin",
+    "fpl_full_name": "Dominic Calvert-Lewin",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "803185": {
+    "sofasport_id": "803185",
+    "sofasport_name": "Lukas Nmecha",
+    "fpl_id": 365,
+    "fpl_web_name": "Nmecha",
+    "fpl_full_name": "Lukas Nmecha",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "850823": {
+    "sofasport_id": "850823",
+    "sofasport_name": "Jo\u00ebl Piroe",
+    "fpl_id": 362,
+    "fpl_web_name": "Piroe",
+    "fpl_full_name": "Jo\u00ebl Piroe",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "828639": {
+    "sofasport_id": "828639",
+    "sofasport_name": "Daniel James",
+    "fpl_id": 353,
+    "fpl_web_name": "James",
+    "fpl_full_name": "Daniel James",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "871886": {
+    "sofasport_id": "871886",
+    "sofasport_name": "Ao Tanaka",
+    "fpl_id": 358,
+    "fpl_web_name": "Tanaka",
+    "fpl_full_name": "Tanaka Ao",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "998951": {
+    "sofasport_id": "998951",
+    "sofasport_name": "Wilfried Gnonto",
+    "fpl_id": 351,
+    "fpl_web_name": "Gnonto",
+    "fpl_full_name": "Wilfried Gnonto",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "911679": {
+    "sofasport_id": "911679",
+    "sofasport_name": "Ilia Gruev",
+    "fpl_id": 356,
+    "fpl_web_name": "Gruev",
+    "fpl_full_name": "Ilia Gruev",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "973431": {
+    "sofasport_id": "973431",
+    "sofasport_name": "Brenden Aaronson",
+    "fpl_id": 350,
+    "fpl_web_name": "Aaronson",
+    "fpl_full_name": "Brenden Aaronson",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "866191": {
+    "sofasport_id": "866191",
+    "sofasport_name": "Sean Longstaff",
+    "fpl_id": 493,
+    "fpl_web_name": "Longstaff",
+    "fpl_full_name": "Sean Longstaff",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "829570": {
+    "sofasport_id": "829570",
+    "sofasport_name": "Jack Harrison",
+    "fpl_id": 352,
+    "fpl_web_name": "Harrison",
+    "fpl_full_name": "Jack Harrison",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "889861": {
+    "sofasport_id": "889861",
+    "sofasport_name": "Anton Stach",
+    "fpl_id": 660,
+    "fpl_web_name": "Stach",
+    "fpl_full_name": "Anton Stach",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "886930": {
+    "sofasport_id": "886930",
+    "sofasport_name": "Jaka Bijol",
+    "fpl_id": 344,
+    "fpl_web_name": "Bijol",
+    "fpl_full_name": "Jaka Bijol",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "847097": {
+    "sofasport_id": "847097",
+    "sofasport_name": "Ethan Ampadu",
+    "fpl_id": 354,
+    "fpl_web_name": "Ampadu",
+    "fpl_full_name": "Ethan Ampadu",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "836675": {
+    "sofasport_id": "836675",
+    "sofasport_name": "Pascal Struijk",
+    "fpl_id": 343,
+    "fpl_web_name": "Struijk",
+    "fpl_full_name": "Pascal Struijk",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "834308": {
+    "sofasport_id": "834308",
+    "sofasport_name": "Gabriel Gudmundsson",
+    "fpl_id": 347,
+    "fpl_web_name": "Gudmundsson",
+    "fpl_full_name": "Gabriel Gudmundsson",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "827681": {
+    "sofasport_id": "827681",
+    "sofasport_name": "James Justin",
+    "fpl_id": 706,
+    "fpl_web_name": "Justin",
+    "fpl_full_name": "James Justin",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "828640": {
+    "sofasport_id": "828640",
+    "sofasport_name": "Joe Rodon",
+    "fpl_id": 348,
+    "fpl_web_name": "Rodon",
+    "fpl_full_name": "Joe Rodon",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "826167": {
+    "sofasport_id": "826167",
+    "sofasport_name": "Sebastiaan Bornauw",
+    "fpl_id": 345,
+    "fpl_web_name": "Bornauw",
+    "fpl_full_name": "Sebastiaan Bornauw",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "929132": {
+    "sofasport_id": "929132",
+    "sofasport_name": "Jayden Bogle",
+    "fpl_id": 342,
+    "fpl_web_name": "Bogle",
+    "fpl_full_name": "Jayden Bogle",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "254713": {
+    "sofasport_id": "254713",
+    "sofasport_name": "Sam Byram",
+    "fpl_id": 346,
+    "fpl_web_name": "Byram",
+    "fpl_full_name": "Sam Byram",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "871290": {
+    "sofasport_id": "871290",
+    "sofasport_name": "Lucas Perri",
+    "fpl_id": 665,
+    "fpl_web_name": "Perri",
+    "fpl_full_name": "Lucas Estella Perri",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 77
+  },
+  "906076": {
+    "sofasport_id": "906076",
+    "sofasport_name": "Illan Meslier",
+    "fpl_id": 339,
+    "fpl_web_name": "Meslier",
+    "fpl_full_name": "Illan Meslier",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "123689": {
+    "sofasport_id": "123689",
+    "sofasport_name": "Karl Darlow",
+    "fpl_id": 341,
+    "fpl_web_name": "Darlow",
+    "fpl_full_name": "Karl Darlow",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "162417": {
+    "sofasport_id": "162417",
+    "sofasport_name": "Alex Cairns",
+    "fpl_id": 340,
+    "fpl_web_name": "Cairns",
+    "fpl_full_name": "Alex Cairns",
+    "fpl_team_id": 11,
+    "sofasport_team_id": "34",
+    "match_score": 105
+  },
+  "1106451": {
+    "sofasport_id": "1106451",
+    "sofasport_name": "Dango Ouattara",
+    "fpl_id": 83,
+    "fpl_web_name": "O.Dango",
+    "fpl_full_name": "Dango Ouattara",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "1016907": {
+    "sofasport_id": "1016907",
+    "sofasport_name": "Igor Thiago",
+    "fpl_id": 136,
+    "fpl_web_name": "Thiago",
+    "fpl_full_name": "Igor Thiago Nascimento Rodrigues",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "991604": {
+    "sofasport_id": "991604",
+    "sofasport_name": "Fabio Carvalho",
+    "fpl_id": 123,
+    "fpl_web_name": "Carvalho",
+    "fpl_full_name": "F\u00e1bio Freitas Gouveia Carvalho",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 84
+  },
+  "1586020": {
+    "sofasport_id": "1586020",
+    "sofasport_name": "Romelle Donovan",
+    "fpl_id": 130,
+    "fpl_web_name": "Donovan",
+    "fpl_full_name": "Romelle Donovan",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "42694": {
+    "sofasport_id": "42694",
+    "sofasport_name": "Jordan Henderson",
+    "fpl_id": 124,
+    "fpl_web_name": "Henderson",
+    "fpl_full_name": "Jordan Henderson",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "826139": {
+    "sofasport_id": "826139",
+    "sofasport_name": "Reiss Nelson",
+    "fpl_id": 27,
+    "fpl_web_name": "Nelson",
+    "fpl_full_name": "Reiss Nelson",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "907072": {
+    "sofasport_id": "907072",
+    "sofasport_name": "Mikkel Damsgaard",
+    "fpl_id": 121,
+    "fpl_web_name": "Damsgaard",
+    "fpl_full_name": "Mikkel Damsgaard",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "1031258": {
+    "sofasport_id": "1031258",
+    "sofasport_name": "Yehor Yarmolyuk",
+    "fpl_id": 129,
+    "fpl_web_name": "Yarmoliuk",
+    "fpl_full_name": "Yehor Yarmoliuk",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 98
+  },
+  "1006387": {
+    "sofasport_id": "1006387",
+    "sofasport_name": "Kevin Schade",
+    "fpl_id": 120,
+    "fpl_web_name": "Schade",
+    "fpl_full_name": "Kevin Schade",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "1514747": {
+    "sofasport_id": "1514747",
+    "sofasport_name": "Gustavo Nunes",
+    "fpl_id": 127,
+    "fpl_web_name": "Nunes",
+    "fpl_full_name": "Gustavo Nunes Fernandes Gomes",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "885864": {
+    "sofasport_id": "885864",
+    "sofasport_name": "Frank Onyeka",
+    "fpl_id": 128,
+    "fpl_web_name": "Onyeka",
+    "fpl_full_name": "Frank Onyeka",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "1126692": {
+    "sofasport_id": "1126692",
+    "sofasport_name": "Antoni Milambo",
+    "fpl_id": 122,
+    "fpl_web_name": "Milambo",
+    "fpl_full_name": "Antoni Milambo",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "1518589": {
+    "sofasport_id": "1518589",
+    "sofasport_name": "Yunus Konak",
+    "fpl_id": 131,
+    "fpl_web_name": "Konak",
+    "fpl_full_name": "Yunus Emre Konak",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 81
+  },
+  "814873": {
+    "sofasport_id": "814873",
+    "sofasport_name": "Vitaly Janelt",
+    "fpl_id": 125,
+    "fpl_web_name": "Janelt",
+    "fpl_full_name": "Vitaly Janelt",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "799251": {
+    "sofasport_id": "799251",
+    "sofasport_name": "Mathias Jensen",
+    "fpl_id": 126,
+    "fpl_web_name": "Jensen",
+    "fpl_full_name": "Mathias Jensen",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "907500": {
+    "sofasport_id": "907500",
+    "sofasport_name": "Edmond-Paris Maghoma",
+    "fpl_id": 132,
+    "fpl_web_name": "Maghoma",
+    "fpl_full_name": "Paris Maghoma",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "980649": {
+    "sofasport_id": "980649",
+    "sofasport_name": "Myles Peart-Harris",
+    "fpl_id": 133,
+    "fpl_web_name": "Peart-Harris",
+    "fpl_full_name": "Myles Peart-Harris",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "924378": {
+    "sofasport_id": "924378",
+    "sofasport_name": "Sepp van den Berg",
+    "fpl_id": 113,
+    "fpl_web_name": "Van den Berg",
+    "fpl_full_name": "Sepp van den Berg",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "1137431": {
+    "sofasport_id": "1137431",
+    "sofasport_name": "Michael Kayode",
+    "fpl_id": 110,
+    "fpl_web_name": "Kayode",
+    "fpl_full_name": "Michael Kayode",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "958916": {
+    "sofasport_id": "958916",
+    "sofasport_name": "Nathan Collins",
+    "fpl_id": 106,
+    "fpl_web_name": "Collins",
+    "fpl_full_name": "Nathan Collins",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "576384": {
+    "sofasport_id": "576384",
+    "sofasport_name": "Kristoffer Ajer",
+    "fpl_id": 108,
+    "fpl_web_name": "Ajer",
+    "fpl_full_name": "Kristoffer Ajer",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "855864": {
+    "sofasport_id": "855864",
+    "sofasport_name": "Ethan Pinnock",
+    "fpl_id": 111,
+    "fpl_web_name": "Pinnock",
+    "fpl_full_name": "Ethan Pinnock",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "972421": {
+    "sofasport_id": "972421",
+    "sofasport_name": "Keane Lewis-Potter",
+    "fpl_id": 107,
+    "fpl_web_name": "Lewis-Potter",
+    "fpl_full_name": "Keane Lewis-Potter",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "966869": {
+    "sofasport_id": "966869",
+    "sofasport_name": "Aaron Hickey",
+    "fpl_id": 116,
+    "fpl_web_name": "Hickey",
+    "fpl_full_name": "Aaron Hickey",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "599128": {
+    "sofasport_id": "599128",
+    "sofasport_name": "Rico Henry",
+    "fpl_id": 109,
+    "fpl_web_name": "Henry",
+    "fpl_full_name": "Rico Henry",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "1500529": {
+    "sofasport_id": "1500529",
+    "sofasport_name": "Benjamin Arthur",
+    "fpl_id": 114,
+    "fpl_web_name": "Arthur",
+    "fpl_full_name": "Benjamin Arthur",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "827362": {
+    "sofasport_id": "827362",
+    "sofasport_name": "Caoimhin Kelleher",
+    "fpl_id": 101,
+    "fpl_web_name": "Kelleher",
+    "fpl_full_name": "Caoimh\u00edn Kelleher",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 102
+  },
+  "1005959": {
+    "sofasport_id": "1005959",
+    "sofasport_name": "H\u00e1kon Rafn Valdimarsson",
+    "fpl_id": 105,
+    "fpl_web_name": "Valdimarsson",
+    "fpl_full_name": "H\u00e1kon Rafn Valdimarsson",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "1065525": {
+    "sofasport_id": "1065525",
+    "sofasport_name": "Matthew Cox",
+    "fpl_id": 103,
+    "fpl_web_name": "Cox",
+    "fpl_full_name": "Matthew Cox",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "1411132": {
+    "sofasport_id": "1411132",
+    "sofasport_name": "Julian Eyestone",
+    "fpl_id": 104,
+    "fpl_web_name": "Eyestone",
+    "fpl_full_name": "Julian Eyestone",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "860205": {
+    "sofasport_id": "860205",
+    "sofasport_name": "Ellery Balcombe",
+    "fpl_id": 102,
+    "fpl_web_name": "Balcombe",
+    "fpl_full_name": "Ellery Balcombe",
+    "fpl_team_id": 5,
+    "sofasport_team_id": "50",
+    "match_score": 105
+  },
+  "786186": {
+    "sofasport_id": "786186",
+    "sofasport_name": "Hee-Chan Hwang",
+    "fpl_id": 642,
+    "fpl_web_name": "Hee Chan",
+    "fpl_full_name": "Hwang Hee-chan",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "987734": {
+    "sofasport_id": "987734",
+    "sofasport_name": "Tolu Arokodare",
+    "fpl_id": 720,
+    "fpl_web_name": "Tolu",
+    "fpl_full_name": "Tolu Arokodare",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "876599": {
+    "sofasport_id": "876599",
+    "sofasport_name": "J\u00f8rgen Strand Larsen",
+    "fpl_id": 654,
+    "fpl_web_name": "Strand Larsen",
+    "fpl_full_name": "J\u00f8rgen Strand Larsen",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "1402232": {
+    "sofasport_id": "1402232",
+    "sofasport_name": "Enso Gonz\u00e1lez",
+    "fpl_id": 652,
+    "fpl_web_name": "Gonzalez",
+    "fpl_full_name": "Enso Gonz\u00e1lez Medina",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "1166679": {
+    "sofasport_id": "1166679",
+    "sofasport_name": "Nathan Fraser",
+    "fpl_id": 658,
+    "fpl_web_name": "Fraser",
+    "fpl_full_name": "Nathan Fraser",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "1400646": {
+    "sofasport_id": "1400646",
+    "sofasport_name": "Leon Chiwome",
+    "fpl_id": 657,
+    "fpl_web_name": "Chiwome",
+    "fpl_full_name": "Leon Chiwome",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "844096": {
+    "sofasport_id": "844096",
+    "sofasport_name": "Jhon Arias",
+    "fpl_id": 663,
+    "fpl_web_name": "J.Arias",
+    "fpl_full_name": "Jhon Arias",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "1015267": {
+    "sofasport_id": "1015267",
+    "sofasport_name": "Jo\u00e3o Gomes",
+    "fpl_id": 646,
+    "fpl_web_name": "Gomes",
+    "fpl_full_name": "Jo\u00e3o Victor Gomes da Silva",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 77
+  },
+  "845273": {
+    "sofasport_id": "845273",
+    "sofasport_name": "Jean-Ricner Bellegarde",
+    "fpl_id": 644,
+    "fpl_web_name": "Bellegarde",
+    "fpl_full_name": "Jean-Ricner Bellegarde",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "1035996": {
+    "sofasport_id": "1035996",
+    "sofasport_name": "Andr\u00e9",
+    "fpl_id": 643,
+    "fpl_web_name": "Andr\u00e9",
+    "fpl_full_name": "Andr\u00e9 Trindade da Costa Neto",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "1096210": {
+    "sofasport_id": "1096210",
+    "sofasport_name": "Jackson Tchatchoua",
+    "fpl_id": 695,
+    "fpl_web_name": "Tchatchoua",
+    "fpl_full_name": "Jackson Tchatchoua",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "894733": {
+    "sofasport_id": "894733",
+    "sofasport_name": "Marshall Munetsi",
+    "fpl_id": 648,
+    "fpl_web_name": "Munetsi",
+    "fpl_full_name": "Marshall Munetsi",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "1006073": {
+    "sofasport_id": "1006073",
+    "sofasport_name": "Rodrigo Gomes",
+    "fpl_id": 635,
+    "fpl_web_name": "R.Gomes",
+    "fpl_full_name": "Rodrigo Martins Gomes",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 93
+  },
+  "1005725": {
+    "sofasport_id": "1005725",
+    "sofasport_name": "Tawanda Chirewa",
+    "fpl_id": 650,
+    "fpl_web_name": "Chirewa",
+    "fpl_full_name": "Tawanda Chirewa",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "1526628": {
+    "sofasport_id": "1526628",
+    "sofasport_name": "Fer L\u00f3pez",
+    "fpl_id": 645,
+    "fpl_web_name": "Fer L\u00f3pez",
+    "fpl_full_name": "Fer L\u00f3pez Gonz\u00e1lez",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "1014835": {
+    "sofasport_id": "1014835",
+    "sofasport_name": "Yerson Mosquera",
+    "fpl_id": 634,
+    "fpl_web_name": "Mosquera",
+    "fpl_full_name": "Yerson Mosquera Valdelamar",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "856250": {
+    "sofasport_id": "856250",
+    "sofasport_name": "Ladislav Krej\u010d\u00ed",
+    "fpl_id": 709,
+    "fpl_web_name": "Krej\u010d\u00ed",
+    "fpl_full_name": "Ladislav Krejc\u00ed",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 98
+  },
+  "1013842": {
+    "sofasport_id": "1013842",
+    "sofasport_name": "Emmanuel Agbadou",
+    "fpl_id": 631,
+    "fpl_web_name": "Agbadou",
+    "fpl_full_name": "Emmanuel Agbadou",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "143047": {
+    "sofasport_id": "143047",
+    "sofasport_name": "Matt Doherty",
+    "fpl_id": 632,
+    "fpl_web_name": "Doherty",
+    "fpl_full_name": "Matt Doherty",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "973418": {
+    "sofasport_id": "973418",
+    "sofasport_name": "Toti Gomes",
+    "fpl_id": 637,
+    "fpl_web_name": "Toti",
+    "fpl_full_name": "Toti Gomes",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "846308": {
+    "sofasport_id": "846308",
+    "sofasport_name": "Santiago Bueno",
+    "fpl_id": 636,
+    "fpl_web_name": "S.Bueno",
+    "fpl_full_name": "Santiago Ignacio Bueno",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 93
+  },
+  "954044": {
+    "sofasport_id": "954044",
+    "sofasport_name": "Ki-Jana Hoever",
+    "fpl_id": 638,
+    "fpl_web_name": "Hoever",
+    "fpl_full_name": "Ki-Jana Hoever",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "1031283": {
+    "sofasport_id": "1031283",
+    "sofasport_name": "David M\u00f6ller Wolfe",
+    "fpl_id": 682,
+    "fpl_web_name": "M\u00f8ller Wolfe",
+    "fpl_full_name": "David M\u00f8ller Wolfe",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "1013928": {
+    "sofasport_id": "1013928",
+    "sofasport_name": "Hugo Bueno",
+    "fpl_id": 633,
+    "fpl_web_name": "H.Bueno",
+    "fpl_full_name": "Hugo Bueno L\u00f3pez",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "98427": {
+    "sofasport_id": "98427",
+    "sofasport_name": "Sam Johnstone",
+    "fpl_id": 627,
+    "fpl_web_name": "Johnstone",
+    "fpl_full_name": "Sam Johnstone",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "101367": {
+    "sofasport_id": "101367",
+    "sofasport_name": "Daniel Bentley",
+    "fpl_id": 629,
+    "fpl_web_name": "Bentley",
+    "fpl_full_name": "Daniel Bentley",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 105
+  },
+  "132645": {
+    "sofasport_id": "132645",
+    "sofasport_name": "Niclas F\u00fcllkrug",
+    "fpl_id": 625,
+    "fpl_web_name": "F\u00fcllkrug",
+    "fpl_full_name": "Niclas F\u00fcllkrug",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 105
+  },
+  "113956": {
+    "sofasport_id": "113956",
+    "sofasport_name": "Callum Wilson",
+    "fpl_id": 671,
+    "fpl_web_name": "Wilson",
+    "fpl_full_name": "Callum Wilson",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 105
+  },
+  "1394099": {
+    "sofasport_id": "1394099",
+    "sofasport_name": "Callum Marshall",
+    "fpl_id": 626,
+    "fpl_web_name": "Marshall",
+    "fpl_full_name": "Callum Marshall",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 105
+  },
+  "839981": {
+    "sofasport_id": "839981",
+    "sofasport_name": "Lucas Paquet\u00e1",
+    "fpl_id": 612,
+    "fpl_web_name": "L.Paquet\u00e1",
+    "fpl_full_name": "Lucas Tolentino Coelho de Lima",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 95
+  },
+  "552884": {
+    "sofasport_id": "552884",
+    "sofasport_name": "Jarrod Bowen",
+    "fpl_id": 624,
+    "fpl_web_name": "Bowen",
+    "fpl_full_name": "Jarrod Bowen",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 105
+  },
+  "1471764": {
+    "sofasport_id": "1471764",
+    "sofasport_name": "El Hadji Malick Diouf",
+    "fpl_id": 603,
+    "fpl_web_name": "Diouf",
+    "fpl_full_name": "El Hadji Malick Diouf",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 105
+  },
+  "161717": {
+    "sofasport_id": "161717",
+    "sofasport_name": "James Ward-Prowse",
+    "fpl_id": 614,
+    "fpl_web_name": "Ward-Prowse",
+    "fpl_full_name": "James Ward-Prowse",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 105
+  },
+  "609752": {
+    "sofasport_id": "609752",
+    "sofasport_name": "Guido Rodr\u00edguez",
+    "fpl_id": 618,
+    "fpl_web_name": "G.Rodriguez",
+    "fpl_full_name": "Guido Rodr\u00edguez",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 105
+  },
+  "917005": {
+    "sofasport_id": "917005",
+    "sofasport_name": "Crysencio Summerville",
+    "fpl_id": 615,
+    "fpl_web_name": "Summerville",
+    "fpl_full_name": "Crysencio Summerville",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 105
+  },
+  "1464248": {
+    "sofasport_id": "1464248",
+    "sofasport_name": "Luis Guilherme",
+    "fpl_id": 619,
+    "fpl_web_name": "L.Guilherme",
+    "fpl_full_name": "Luis Guilherme Lira dos Santos",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 105
+  },
+  "799041": {
+    "sofasport_id": "799041",
+    "sofasport_name": "Tom\u00e1\u0161 Sou\u010dek",
+    "fpl_id": 613,
+    "fpl_web_name": "Sou\u010dek",
+    "fpl_full_name": "Tom\u00e1\u0161 Sou\u010dek",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 105
+  },
+  "1142562": {
+    "sofasport_id": "1142562",
+    "sofasport_name": "Mateus Fernandes",
+    "fpl_id": 708,
+    "fpl_web_name": "M.Fernandes",
+    "fpl_full_name": "Mateus Gon\u00e7alo Espanha Fernandes",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 96
+  },
+  "1170560": {
+    "sofasport_id": "1170560",
+    "sofasport_name": "Soungoutou Magassa",
+    "fpl_id": 718,
+    "fpl_web_name": "S.Magassa",
+    "fpl_full_name": "Soungoutou Magassa",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 105
+  },
+  "1150952": {
+    "sofasport_id": "1150952",
+    "sofasport_name": "Oliver Scarles",
+    "fpl_id": 608,
+    "fpl_web_name": "Scarles",
+    "fpl_full_name": "Ollie Scarles",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 94
+  },
+  "845464": {
+    "sofasport_id": "845464",
+    "sofasport_name": "Andy Irving",
+    "fpl_id": 621,
+    "fpl_web_name": "Irving",
+    "fpl_full_name": "Andy Irving",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 105
+  },
+  "1212165": {
+    "sofasport_id": "1212165",
+    "sofasport_name": "George Earthy",
+    "fpl_id": 620,
+    "fpl_web_name": "Earthy",
+    "fpl_full_name": "George Earthy",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 105
+  },
+  "1089582": {
+    "sofasport_id": "1089582",
+    "sofasport_name": "Freddie Potts",
+    "fpl_id": 623,
+    "fpl_web_name": "Potts",
+    "fpl_full_name": "Freddie Potts",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 105
+  },
+  "863653": {
+    "sofasport_id": "863653",
+    "sofasport_name": "Aaron Wan-Bissaka",
+    "fpl_id": 610,
+    "fpl_web_name": "Wan-Bissaka",
+    "fpl_full_name": "Aaron Wan-Bissaka",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 105
+  },
+  "829022": {
+    "sofasport_id": "829022",
+    "sofasport_name": "Konstantinos Mavropanos",
+    "fpl_id": 606,
+    "fpl_web_name": "Mavropanos",
+    "fpl_full_name": "Konstantinos Mavropanos",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 105
+  },
+  "945217": {
+    "sofasport_id": "945217",
+    "sofasport_name": "Jean-Clair Todibo",
+    "fpl_id": 609,
+    "fpl_web_name": "Todibo",
+    "fpl_full_name": "Jean-Clair Todibo",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 105
+  },
+  "823085": {
+    "sofasport_id": "823085",
+    "sofasport_name": "Kyle Walker-Peters",
+    "fpl_id": 659,
+    "fpl_web_name": "Walker-Peters",
+    "fpl_full_name": "Kyle Walker-Peters",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 105
+  },
+  "842513": {
+    "sofasport_id": "842513",
+    "sofasport_name": "Igor J\u00falio",
+    "fpl_id": 149,
+    "fpl_web_name": "Igor",
+    "fpl_full_name": "Igor Julio dos Santos de Paulo",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 95
+  },
+  "894474": {
+    "sofasport_id": "894474",
+    "sofasport_name": "Max Kilman",
+    "fpl_id": 605,
+    "fpl_web_name": "Kilman",
+    "fpl_full_name": "Maximilian Kilman",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 80
+  },
+  "15479": {
+    "sofasport_id": "15479",
+    "sofasport_name": "\u0141ukasz Fabia\u0144ski",
+    "fpl_id": 738,
+    "fpl_web_name": "Fabianski",
+    "fpl_full_name": "Lukasz Fabianski",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 93
+  },
+  "96531": {
+    "sofasport_id": "96531",
+    "sofasport_name": "Alphonse Ar\u00e9ola",
+    "fpl_id": 600,
+    "fpl_web_name": "Areola",
+    "fpl_full_name": "Alphonse Areola",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 102
+  },
+  "856640": {
+    "sofasport_id": "856640",
+    "sofasport_name": "Mads Hermansen",
+    "fpl_id": 679,
+    "fpl_web_name": "Hermansen",
+    "fpl_full_name": "Mads Hermansen",
+    "fpl_team_id": 19,
+    "sofasport_team_id": "37",
+    "match_score": 105
+  },
+  "996985": {
+    "sofasport_id": "996985",
+    "sofasport_name": "Armando Broja",
+    "fpl_id": 680,
+    "fpl_web_name": "Broja",
+    "fpl_full_name": "Armando Broja",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "990550": {
+    "sofasport_id": "990550",
+    "sofasport_name": "Zeki Amdouni",
+    "fpl_id": 216,
+    "fpl_web_name": "Amdouni",
+    "fpl_full_name": "Zeki Amdouni",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "901907": {
+    "sofasport_id": "901907",
+    "sofasport_name": "Lyle Foster",
+    "fpl_id": 217,
+    "fpl_web_name": "Foster",
+    "fpl_full_name": "Lyle Foster",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "1004505": {
+    "sofasport_id": "1004505",
+    "sofasport_name": "Loum Tchaouna",
+    "fpl_id": 210,
+    "fpl_web_name": "Tchaouna",
+    "fpl_full_name": "Loum Tchaouna",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "875137": {
+    "sofasport_id": "875137",
+    "sofasport_name": "Zian Flemming",
+    "fpl_id": 215,
+    "fpl_web_name": "Flemming",
+    "fpl_full_name": "Zian Flemming",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "1142573": {
+    "sofasport_id": "1142573",
+    "sofasport_name": "Jaydon Banel",
+    "fpl_id": 213,
+    "fpl_web_name": "Banel",
+    "fpl_full_name": "Jaydon Banel",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "1195757": {
+    "sofasport_id": "1195757",
+    "sofasport_name": "Enock Agyei",
+    "fpl_id": 203,
+    "fpl_web_name": "Boateng",
+    "fpl_full_name": "Enock Agyei",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "1009386": {
+    "sofasport_id": "1009386",
+    "sofasport_name": "Hannibal Mejbri",
+    "fpl_id": 207,
+    "fpl_web_name": "Hannibal",
+    "fpl_full_name": "Hannibal Mejbri",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "1048916": {
+    "sofasport_id": "1048916",
+    "sofasport_name": "Lesley Ugochukwu",
+    "fpl_id": 676,
+    "fpl_web_name": "Ugochukwu",
+    "fpl_full_name": "Lesley Ugochukwu",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "795066": {
+    "sofasport_id": "795066",
+    "sofasport_name": "Marcus Edwards",
+    "fpl_id": 206,
+    "fpl_web_name": "Edwards",
+    "fpl_full_name": "Marcus Edwards",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "826183": {
+    "sofasport_id": "826183",
+    "sofasport_name": "Mike Tr\u00e9sor",
+    "fpl_id": 214,
+    "fpl_web_name": "Tr\u00e9sor",
+    "fpl_full_name": "Mike Tr\u00e9sor Ndayishimiye",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "1020680": {
+    "sofasport_id": "1020680",
+    "sofasport_name": "Jaidon Anthony",
+    "fpl_id": 200,
+    "fpl_web_name": "Anthony",
+    "fpl_full_name": "Jaidon Anthony",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "792122": {
+    "sofasport_id": "792122",
+    "sofasport_name": "Josh Cullen",
+    "fpl_id": 205,
+    "fpl_web_name": "Cullen",
+    "fpl_full_name": "Josh Cullen",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "809276": {
+    "sofasport_id": "809276",
+    "sofasport_name": "Jacob Bruun Larsen",
+    "fpl_id": 202,
+    "fpl_web_name": "Bruun Larsen",
+    "fpl_full_name": "Jacob Bruun Larsen",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "27028": {
+    "sofasport_id": "27028",
+    "sofasport_name": "Ashley Barnes",
+    "fpl_id": 218,
+    "fpl_web_name": "Barnes",
+    "fpl_full_name": "Ashley Barnes",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "552036": {
+    "sofasport_id": "552036",
+    "sofasport_name": "Josh Laurent",
+    "fpl_id": 209,
+    "fpl_web_name": "Laurent",
+    "fpl_full_name": "Josh Laurent",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "44614": {
+    "sofasport_id": "44614",
+    "sofasport_name": "Kyle Walker",
+    "fpl_id": 187,
+    "fpl_web_name": "Walker",
+    "fpl_full_name": "Kyle Walker",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "1008456": {
+    "sofasport_id": "1008456",
+    "sofasport_name": "Oliver Sonne",
+    "fpl_id": 197,
+    "fpl_web_name": "Sonne",
+    "fpl_full_name": "Oliver Sonne",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "817979": {
+    "sofasport_id": "817979",
+    "sofasport_name": "Axel Tuanzebe",
+    "fpl_id": 198,
+    "fpl_web_name": "Tuanzebe",
+    "fpl_full_name": "Axel Tuanzebe",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "1117223": {
+    "sofasport_id": "1117223",
+    "sofasport_name": "Maxime Est\u00e8ve",
+    "fpl_id": 191,
+    "fpl_web_name": "Est\u00e8ve",
+    "fpl_full_name": "Maxime Est\u00e8ve",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "996910": {
+    "sofasport_id": "996910",
+    "sofasport_name": "Bashir Humphreys",
+    "fpl_id": 193,
+    "fpl_web_name": "Humphreys",
+    "fpl_full_name": "Bashir Humphreys",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "1392044": {
+    "sofasport_id": "1392044",
+    "sofasport_name": "Quilindschy Hartman",
+    "fpl_id": 192,
+    "fpl_web_name": "Hartman",
+    "fpl_full_name": "Quilindschy Hartman",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "826169": {
+    "sofasport_id": "826169",
+    "sofasport_name": "Hannes Delcroix",
+    "fpl_id": 188,
+    "fpl_web_name": "Delcroix",
+    "fpl_full_name": "Hannes Delcroix",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "875360": {
+    "sofasport_id": "875360",
+    "sofasport_name": "Hjalmar Ekdal",
+    "fpl_id": 190,
+    "fpl_web_name": "Ekdal",
+    "fpl_full_name": "Hjalmar Ekdal",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "1136896": {
+    "sofasport_id": "1136896",
+    "sofasport_name": "Lucas Pires",
+    "fpl_id": 195,
+    "fpl_web_name": "Lucas Pires",
+    "fpl_full_name": "Lucas Pires Silva",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "804613": {
+    "sofasport_id": "804613",
+    "sofasport_name": "Connor Roberts",
+    "fpl_id": 186,
+    "fpl_web_name": "Roberts",
+    "fpl_full_name": "Connor Roberts",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "838399": {
+    "sofasport_id": "838399",
+    "sofasport_name": "Joe Worrall",
+    "fpl_id": 199,
+    "fpl_web_name": "Worrall",
+    "fpl_full_name": "Joe Worrall",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "927175": {
+    "sofasport_id": "927175",
+    "sofasport_name": "Jordan Beyer",
+    "fpl_id": 194,
+    "fpl_web_name": "Jordan",
+    "fpl_full_name": "Jordan Beyer",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "42209": {
+    "sofasport_id": "42209",
+    "sofasport_name": "Martin D\u00fabravka",
+    "fpl_id": 470,
+    "fpl_web_name": "D\u00fabravka",
+    "fpl_full_name": "Martin D\u00fabravka",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "1128801": {
+    "sofasport_id": "1128801",
+    "sofasport_name": "Max Weiss",
+    "fpl_id": 183,
+    "fpl_web_name": "Weiss",
+    "fpl_full_name": "Max Wei\u00df",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 93
+  },
+  "151518": {
+    "sofasport_id": "151518",
+    "sofasport_name": "V\u00e1clav Hladk\u00fd",
+    "fpl_id": 185,
+    "fpl_web_name": "Hladk\u00fd",
+    "fpl_full_name": "V\u00e1clav Hladk\u00fd",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 105
+  },
+  "839956": {
+    "sofasport_id": "839956",
+    "sofasport_name": "Erling Haaland",
+    "fpl_id": 430,
+    "fpl_web_name": "Haaland",
+    "fpl_full_name": "Erling Haaland",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "873554": {
+    "sofasport_id": "873554",
+    "sofasport_name": "Omar Marmoush",
+    "fpl_id": 413,
+    "fpl_web_name": "Marmoush",
+    "fpl_full_name": "Omar Marmoush",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "859765": {
+    "sofasport_id": "859765",
+    "sofasport_name": "Phil Foden",
+    "fpl_id": 414,
+    "fpl_web_name": "Foden",
+    "fpl_full_name": "Phil Foden",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "827606": {
+    "sofasport_id": "827606",
+    "sofasport_name": "Rodri",
+    "fpl_id": 421,
+    "fpl_web_name": "Rodrigo",
+    "fpl_full_name": "Rodrigo 'Rodri' Hernandez Cascante",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "934386": {
+    "sofasport_id": "934386",
+    "sofasport_name": "J\u00e9r\u00e9my Doku",
+    "fpl_id": 418,
+    "fpl_web_name": "Doku",
+    "fpl_full_name": "J\u00e9r\u00e9my Doku",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "1046795": {
+    "sofasport_id": "1046795",
+    "sofasport_name": "Savinho",
+    "fpl_id": 415,
+    "fpl_web_name": "Savinho",
+    "fpl_full_name": "S\u00e1vio Moreira de Oliveira",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 100
+  },
+  "979128": {
+    "sofasport_id": "979128",
+    "sofasport_name": "Rayan Cherki",
+    "fpl_id": 417,
+    "fpl_web_name": "Cherki",
+    "fpl_full_name": "Rayan Cherki",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "136710": {
+    "sofasport_id": "136710",
+    "sofasport_name": "Mateo Kova\u010di\u0107",
+    "fpl_id": 422,
+    "fpl_web_name": "Kova\u010di\u0107",
+    "fpl_full_name": "Mateo Kova\u010di\u0107",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "893549": {
+    "sofasport_id": "893549",
+    "sofasport_name": "Tijjani Reijnders",
+    "fpl_id": 427,
+    "fpl_web_name": "Reijnders",
+    "fpl_full_name": "Tijjani Reijnders",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "931278": {
+    "sofasport_id": "931278",
+    "sofasport_name": "Rayan A\u00eft-Nouri",
+    "fpl_id": 402,
+    "fpl_web_name": "A\u00eft-Nouri",
+    "fpl_full_name": "Rayan A\u00eft-Nouri",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "1065216": {
+    "sofasport_id": "1065216",
+    "sofasport_name": "Oscar Bobb",
+    "fpl_id": 424,
+    "fpl_web_name": "Bobb",
+    "fpl_full_name": "Oscar Bobb",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "954056": {
+    "sofasport_id": "954056",
+    "sofasport_name": "Nico Gonz\u00e1lez",
+    "fpl_id": 423,
+    "fpl_web_name": "N.Gonzalez",
+    "fpl_full_name": "Nico Gonz\u00e1lez Iglesias",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "786028": {
+    "sofasport_id": "786028",
+    "sofasport_name": "Kalvin Phillips",
+    "fpl_id": 429,
+    "fpl_web_name": "Phillips",
+    "fpl_full_name": "Kalvin Phillips",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "1194333": {
+    "sofasport_id": "1194333",
+    "sofasport_name": "Abdukodir Khusanov",
+    "fpl_id": 406,
+    "fpl_web_name": "Khusanov",
+    "fpl_full_name": "Abdukodir Khusanov",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "964994": {
+    "sofasport_id": "964994",
+    "sofasport_name": "Jo\u0161ko Gvardiol",
+    "fpl_id": 403,
+    "fpl_web_name": "Gvardiol",
+    "fpl_full_name": "Jo\u0161ko Gvardiol",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "318941": {
+    "sofasport_id": "318941",
+    "sofasport_name": "R\u00faben Dias",
+    "fpl_id": 408,
+    "fpl_web_name": "R\u00faben",
+    "fpl_full_name": "R\u00faben dos Santos Gato Alves Dias",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 80
+  },
+  "152077": {
+    "sofasport_id": "152077",
+    "sofasport_name": "John Stones",
+    "fpl_id": 409,
+    "fpl_web_name": "Stones",
+    "fpl_full_name": "John Stones",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "149663": {
+    "sofasport_id": "149663",
+    "sofasport_name": "Nathan Ak\u00e9",
+    "fpl_id": 405,
+    "fpl_web_name": "Ak\u00e9",
+    "fpl_full_name": "Nathan Ak\u00e9",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "945122": {
+    "sofasport_id": "945122",
+    "sofasport_name": "Matheus Nunes",
+    "fpl_id": 407,
+    "fpl_web_name": "Matheus N.",
+    "fpl_full_name": "Matheus Nunes",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "1136731": {
+    "sofasport_id": "1136731",
+    "sofasport_name": "Rico Lewis",
+    "fpl_id": 410,
+    "fpl_web_name": "Lewis",
+    "fpl_full_name": "Rico Lewis",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "1142703": {
+    "sofasport_id": "1142703",
+    "sofasport_name": "Nico O'Reilly",
+    "fpl_id": 411,
+    "fpl_web_name": "O\u2019Reilly",
+    "fpl_full_name": "Nico O'Reilly",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "1402791": {
+    "sofasport_id": "1402791",
+    "sofasport_name": "Stephen Mfuni",
+    "fpl_id": 740,
+    "fpl_web_name": "Mfuni",
+    "fpl_full_name": "Stephen Mfuni",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "824509": {
+    "sofasport_id": "824509",
+    "sofasport_name": "Gianluigi Donnarumma",
+    "fpl_id": 736,
+    "fpl_web_name": "Donnarumma",
+    "fpl_full_name": "Gianluigi Donnarumma",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "980643": {
+    "sofasport_id": "980643",
+    "sofasport_name": "James Trafford",
+    "fpl_id": 182,
+    "fpl_web_name": "Trafford",
+    "fpl_full_name": "James Trafford",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "125274": {
+    "sofasport_id": "125274",
+    "sofasport_name": "Stefan Ortega",
+    "fpl_id": 400,
+    "fpl_web_name": "Ortega Moreno",
+    "fpl_full_name": "Stefan Ortega Moreno",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "257993": {
+    "sofasport_id": "257993",
+    "sofasport_name": "Marcus Bettinelli",
+    "fpl_id": 401,
+    "fpl_web_name": "Bettinelli",
+    "fpl_full_name": "Marcus Bettinelli",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 105
+  },
+  "971037": {
+    "sofasport_id": "971037",
+    "sofasport_name": "Amad Diallo",
+    "fpl_id": 452,
+    "fpl_web_name": "Amad",
+    "fpl_full_name": "Amad Diallo",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "986397": {
+    "sofasport_id": "986397",
+    "sofasport_name": "Benjamin \u0160e\u0161ko",
+    "fpl_id": 681,
+    "fpl_web_name": "\u0160e\u0161ko",
+    "fpl_full_name": "Benjamin Sesko",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 91
+  },
+  "886363": {
+    "sofasport_id": "886363",
+    "sofasport_name": "Matheus Cunha",
+    "fpl_id": 450,
+    "fpl_web_name": "Cunha",
+    "fpl_full_name": "Matheus Santos Carneiro da Cunha",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 77
+  },
+  "917007": {
+    "sofasport_id": "917007",
+    "sofasport_name": "Joshua Zirkzee",
+    "fpl_id": 466,
+    "fpl_web_name": "Zirkzee",
+    "fpl_full_name": "Joshua Zirkzee",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "1566204": {
+    "sofasport_id": "1566204",
+    "sofasport_name": "Chido Obi-Martin",
+    "fpl_id": 467,
+    "fpl_web_name": "Obi",
+    "fpl_full_name": "Chido Obi",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "288205": {
+    "sofasport_id": "288205",
+    "sofasport_name": "Bruno Fernandes",
+    "fpl_id": 449,
+    "fpl_web_name": "B.Fernandes",
+    "fpl_full_name": "Bruno Borges Fernandes",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 96
+  },
+  "122951": {
+    "sofasport_id": "122951",
+    "sofasport_name": "Casemiro",
+    "fpl_id": 457,
+    "fpl_web_name": "Casemiro",
+    "fpl_full_name": "Carlos Henrique Casimiro",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 100
+  },
+  "1142175": {
+    "sofasport_id": "1142175",
+    "sofasport_name": "Kobbie Mainoo",
+    "fpl_id": 458,
+    "fpl_web_name": "Mainoo",
+    "fpl_full_name": "Kobbie Mainoo",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "927083": {
+    "sofasport_id": "927083",
+    "sofasport_name": "Bryan Mbeumo",
+    "fpl_id": 119,
+    "fpl_web_name": "Mbeumo",
+    "fpl_full_name": "Bryan Mbeumo",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "836694": {
+    "sofasport_id": "836694",
+    "sofasport_name": "Mason Mount",
+    "fpl_id": 455,
+    "fpl_web_name": "Mount",
+    "fpl_full_name": "Mason Mount",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "843200": {
+    "sofasport_id": "843200",
+    "sofasport_name": "Diogo Dalot",
+    "fpl_id": 440,
+    "fpl_web_name": "Dalot",
+    "fpl_full_name": "Diogo Dalot Teixeira",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "846425": {
+    "sofasport_id": "846425",
+    "sofasport_name": "Manuel Ugarte",
+    "fpl_id": 459,
+    "fpl_web_name": "Ugarte",
+    "fpl_full_name": "Manuel Ugarte Ribeiro",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "1397168": {
+    "sofasport_id": "1397168",
+    "sofasport_name": "Patrick Dorgu",
+    "fpl_id": 441,
+    "fpl_web_name": "Dorgu",
+    "fpl_full_name": "Patrick Dorgu",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "859999": {
+    "sofasport_id": "859999",
+    "sofasport_name": "Lisandro Mart\u00ednez",
+    "fpl_id": 437,
+    "fpl_web_name": "Martinez",
+    "fpl_full_name": "Lisandro Mart\u00ednez",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "847030": {
+    "sofasport_id": "847030",
+    "sofasport_name": "Noussair Mazraoui",
+    "fpl_id": 438,
+    "fpl_web_name": "Mazraoui",
+    "fpl_full_name": "Noussair Mazraoui",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "803031": {
+    "sofasport_id": "803031",
+    "sofasport_name": "Matthijs de Ligt",
+    "fpl_id": 436,
+    "fpl_web_name": "De Ligt",
+    "fpl_full_name": "Matthijs de Ligt",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "149380": {
+    "sofasport_id": "149380",
+    "sofasport_name": "Harry Maguire",
+    "fpl_id": 442,
+    "fpl_web_name": "Maguire",
+    "fpl_full_name": "Harry Maguire",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "1153315": {
+    "sofasport_id": "1153315",
+    "sofasport_name": "Leny Yoro",
+    "fpl_id": 444,
+    "fpl_web_name": "Yoro",
+    "fpl_full_name": "Leny Yoro",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "190839": {
+    "sofasport_id": "190839",
+    "sofasport_name": "Luke Shaw",
+    "fpl_id": 443,
+    "fpl_web_name": "Shaw",
+    "fpl_full_name": "Luke Shaw",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "825839": {
+    "sofasport_id": "825839",
+    "sofasport_name": "Tyrell Malacia",
+    "fpl_id": 448,
+    "fpl_web_name": "Malacia",
+    "fpl_full_name": "Tyrell Malacia",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "1900795": {
+    "sofasport_id": "1900795",
+    "sofasport_name": "Diego Le\u00f3n",
+    "fpl_id": 439,
+    "fpl_web_name": "D.Leon",
+    "fpl_full_name": "Diego Le\u00f3n Blanco",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "1445799": {
+    "sofasport_id": "1445799",
+    "sofasport_name": "Ayden Heaven",
+    "fpl_id": 447,
+    "fpl_web_name": "Heaven",
+    "fpl_full_name": "Ayden Heaven",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "1142182": {
+    "sofasport_id": "1142182",
+    "sofasport_name": "Tyler Fredricson",
+    "fpl_id": 446,
+    "fpl_web_name": "Fredricson",
+    "fpl_full_name": "Tyler Fredricson",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "815890": {
+    "sofasport_id": "815890",
+    "sofasport_name": "Altay Bay\u0131nd\u0131r",
+    "fpl_id": 431,
+    "fpl_web_name": "Bayindir",
+    "fpl_full_name": "Altay Bay\u0131nd\u0131r",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "964753": {
+    "sofasport_id": "964753",
+    "sofasport_name": "Senne Lammens",
+    "fpl_id": 733,
+    "fpl_web_name": "Lammens",
+    "fpl_full_name": "Senne Lammens",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "18122": {
+    "sofasport_id": "18122",
+    "sofasport_name": "Tom Heaton",
+    "fpl_id": 434,
+    "fpl_web_name": "Heaton",
+    "fpl_full_name": "Tom Heaton",
+    "fpl_team_id": 14,
+    "sofasport_team_id": "35",
+    "match_score": 105
+  },
+  "331209": {
+    "sofasport_id": "331209",
+    "sofasport_name": "Bernardo Silva",
+    "fpl_id": 416,
+    "fpl_web_name": "Bernardo",
+    "fpl_full_name": "Bernardo Mota Veiga de Carvalho e Silva",
+    "fpl_team_id": 13,
+    "sofasport_team_id": "17",
+    "match_score": 75
+  },
+  "855845": {
+    "sofasport_id": "855845",
+    "sofasport_name": "Florentino Lu\u00eds",
+    "fpl_id": 722,
+    "fpl_web_name": "Florentino",
+    "fpl_full_name": "Florentino Ibrain Morris Lu\u00eds",
+    "fpl_team_id": 3,
+    "sofasport_team_id": "6",
+    "match_score": 73
+  },
+  "1105779": {
+    "sofasport_id": "1105779",
+    "sofasport_name": "Andrey Santos",
+    "fpl_id": 246,
+    "fpl_web_name": "Andrey Santos",
+    "fpl_full_name": "Andrey Nascimento dos Santos",
+    "fpl_team_id": 7,
+    "sofasport_team_id": "38",
+    "match_score": 78
+  },
+  "1154861": {
+    "sofasport_id": "1154861",
+    "sofasport_name": "Ben Doak",
+    "fpl_id": 391,
+    "fpl_web_name": "Gannon-Doak",
+    "fpl_full_name": "Ben Gannon-Doak",
+    "fpl_team_id": 4,
+    "sofasport_team_id": "60",
+    "match_score": 70
+  },
+  "252669": {
+    "sofasport_id": "252669",
+    "sofasport_name": "Jos\u00e9 S\u00e1",
+    "fpl_id": 628,
+    "fpl_web_name": "Jos\u00e9 S\u00e1",
+    "fpl_full_name": "Jos\u00e9 Malheiro de S\u00e1",
+    "fpl_team_id": 20,
+    "sofasport_team_id": "3",
+    "match_score": 71
+  }
+}

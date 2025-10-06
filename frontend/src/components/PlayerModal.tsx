@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { RadarChart } from "./RadarChart";
 
 const TEAM_BADGE_BASE = "https://resources.premierleague.com/premierleague25/badges-alt/";
 
@@ -317,6 +318,9 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
                 </div>
               )}
             </div>
+          </div>
+          <div className="modal-radar-header">
+            <RadarChart playerIds={[player.id]} height={360} width={360} showBreakdown={false} hideOnError={true} />
           </div>
         </div>
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { RadarChart } from "../components/RadarChart";
 
 // Use empty string for API base URL to use relative paths (proxied through Vite)
 const API_BASE_URL = "";
@@ -253,6 +254,20 @@ export function ComparePage() {
               </div>
             );
           })}
+        </div>
+
+        {/* Radar Chart Comparison */}
+        <div className="comparison-radar-section">
+          <h3 className="section-title">Player Attributes</h3>
+          <div className="comparison-radar-wrapper">
+            <RadarChart 
+              playerIds={players.map(p => p.id)} 
+              height={500} 
+              width={500} 
+              showBreakdown={true}
+              hideOnError={false}
+            />
+          </div>
         </div>
 
         {/* Stats Comparison Table */}

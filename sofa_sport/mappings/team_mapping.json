@@ -1,0 +1,142 @@
+{
+  "42": {
+    "sofasport_id": "42",
+    "sofasport_name": "Arsenal",
+    "fpl_id": 1,
+    "fpl_name": "Arsenal",
+    "match_score": 100
+  },
+  "7": {
+    "sofasport_id": "7",
+    "sofasport_name": "Crystal Palace",
+    "fpl_id": 8,
+    "fpl_name": "Crystal Palace",
+    "match_score": 100
+  },
+  "48": {
+    "sofasport_id": "48",
+    "sofasport_name": "Everton",
+    "fpl_id": 9,
+    "fpl_name": "Everton",
+    "match_score": 100
+  },
+  "33": {
+    "sofasport_id": "33",
+    "sofasport_name": "Tottenham Hotspur",
+    "fpl_id": 18,
+    "fpl_name": "Spurs",
+    "match_score": 89
+  },
+  "60": {
+    "sofasport_id": "60",
+    "sofasport_name": "Bournemouth",
+    "fpl_id": 4,
+    "fpl_name": "Bournemouth",
+    "match_score": 100
+  },
+  "41": {
+    "sofasport_id": "41",
+    "sofasport_name": "Sunderland",
+    "fpl_id": 17,
+    "fpl_name": "Sunderland",
+    "match_score": 100
+  },
+  "44": {
+    "sofasport_id": "44",
+    "sofasport_name": "Liverpool",
+    "fpl_id": 12,
+    "fpl_name": "Liverpool",
+    "match_score": 100
+  },
+  "39": {
+    "sofasport_id": "39",
+    "sofasport_name": "Newcastle United",
+    "fpl_id": 15,
+    "fpl_name": "Newcastle",
+    "match_score": 100
+  },
+  "38": {
+    "sofasport_id": "38",
+    "sofasport_name": "Chelsea",
+    "fpl_id": 7,
+    "fpl_name": "Chelsea",
+    "match_score": 100
+  },
+  "40": {
+    "sofasport_id": "40",
+    "sofasport_name": "Aston Villa",
+    "fpl_id": 2,
+    "fpl_name": "Aston Villa",
+    "match_score": 100
+  },
+  "30": {
+    "sofasport_id": "30",
+    "sofasport_name": "Brighton & Hove Albion",
+    "fpl_id": 6,
+    "fpl_name": "Brighton",
+    "match_score": 100
+  },
+  "43": {
+    "sofasport_id": "43",
+    "sofasport_name": "Fulham",
+    "fpl_id": 10,
+    "fpl_name": "Fulham",
+    "match_score": 100
+  },
+  "14": {
+    "sofasport_id": "14",
+    "sofasport_name": "Nottingham Forest",
+    "fpl_id": 16,
+    "fpl_name": "Nott'm Forest",
+    "match_score": 80
+  },
+  "34": {
+    "sofasport_id": "34",
+    "sofasport_name": "Leeds United",
+    "fpl_id": 11,
+    "fpl_name": "Leeds",
+    "match_score": 100
+  },
+  "50": {
+    "sofasport_id": "50",
+    "sofasport_name": "Brentford",
+    "fpl_id": 5,
+    "fpl_name": "Brentford",
+    "match_score": 100
+  },
+  "3": {
+    "sofasport_id": "3",
+    "sofasport_name": "Wolverhampton",
+    "fpl_id": 20,
+    "fpl_name": "Wolves",
+    "match_score": 83
+  },
+  "37": {
+    "sofasport_id": "37",
+    "sofasport_name": "West Ham United",
+    "fpl_id": 19,
+    "fpl_name": "West Ham",
+    "match_score": 100
+  },
+  "6": {
+    "sofasport_id": "6",
+    "sofasport_name": "Burnley",
+    "fpl_id": 3,
+    "fpl_name": "Burnley",
+    "match_score": 100
+  },
+  "17": {
+    "sofasport_id": "17",
+    "sofasport_name": "Manchester City",
+    "fpl_id": 13,
+    "fpl_name": "Man City",
+    "match_score": 100
+  },
+  "35": {
+    "sofasport_id": "35",
+    "sofasport_name": "Manchester United",
+    "fpl_id": 14,
+    "fpl_name": "Man Utd",
+    "match_score": 100
+  }
+}

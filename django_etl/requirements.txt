@@ -1,1 +1,22 @@
 # Additional dependencies specific to the Django ETL service
+
+# Core Django dependencies
+Django>=4.2,<5.0
+psycopg2-binary>=2.9
+requests>=2.31
+python-dotenv>=1.0
+
+# Celery for task scheduling
+celery>=5.3
+redis>=5.0
+
+# Django Redis cache
+django-redis>=5.4
+
+# API & CORS
+django-cors-headers>=4.3
+
+# Production server
+gunicorn>=21.2
+whitenoise>=6.6
+supervisor>=4.2

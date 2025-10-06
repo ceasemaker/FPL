@@ -815,3 +815,339 @@ def dream_team(request):
     cache.set(cache_key, response_data, CACHE_TIMEOUT_24H)
     
     return JsonResponse(response_data)
+
+
+# ============================================================================
+# SofaSport API Endpoints
+# ============================================================================
+
+@require_GET
+def player_radar_attributes(request, player_id: int):
+    """
+    Get player attribute ratings for radar chart visualization.
+    
+    Returns:
+        {
+            "player_id": 123,
+            "player_name": "Salah",
+            "position": "F",
+            "attributes": {
+                "attacking": 71,
+                "technical": 64,
+                "tactical": 46,
+                "defending": 33,
+                "creativity": 69
+            },
+            "is_average": false,
+            "year_shift": 0
+        }
+    """
+    from .models import SofasportPlayerAttributes
+    
+    cache_key = f"radar_attributes_{player_id}"
+    cached_data = cache.get(cache_key)
+    if cached_data:
+        return JsonResponse(cached_data)
+    
+    try:
+        # Try to get current season attributes first
+        attrs = SofasportPlayerAttributes.objects.filter(
+            athlete_id=player_id,
+            year_shift=0,
+            is_average=False
+        ).select_related('athlete').first()
+        
+        # Fallback to career average
+        if not attrs:
+            attrs = SofasportPlayerAttributes.objects.filter(
+                athlete_id=player_id,
+                is_average=True
+            ).select_related('athlete').first()
+        
+        if not attrs:
+            return JsonResponse({"error": "No radar attributes found for this player"}, status=404)
+        
+        data = {
+            "player_id": player_id,
+            "player_name": attrs.athlete.web_name,
+            "full_name": f"{attrs.athlete.first_name} {attrs.athlete.second_name}",
+            "position": attrs.position,
+            "attributes": {
+                "attacking": attrs.attacking,
+                "technical": attrs.technical,
+                "tactical": attrs.tactical,
+                "defending": attrs.defending,
+                "creativity": attrs.creativity
+            },
+            "is_average": attrs.is_average,
+            "year_shift": attrs.year_shift
+        }
+        
+        # Cache for 24 hours
+        cache.set(cache_key, data, CACHE_TIMEOUT_24H)
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@require_GET
+def player_season_stats(request, player_id: int):
+    """
+    Get aggregated season statistics for a player.
+    
+    Returns comprehensive season stats including rating, goals, assists, etc.
+    """
+    from .models import SofasportPlayerSeasonStats
+    
+    cache_key = f"season_stats_{player_id}"
+    cached_data = cache.get(cache_key)
+    if cached_data:
+        return JsonResponse(cached_data)
+    
+    try:
+        stats = SofasportPlayerSeasonStats.objects.filter(
+            athlete_id=player_id,
+            display_stats=True
+        ).select_related('athlete', 'team').first()
+        
+        if not stats:
+            return JsonResponse({"error": "No season stats found for this player"}, status=404)
+        
+        data = {
+            "player_id": player_id,
+            "player_name": stats.athlete.web_name,
+            "team": stats.team.name if stats.team else None,
+            "season_id": stats.season_id,
+            "category": stats.category,
+            
+            # Core stats
+            "rating": float(stats.rating) if stats.rating else None,
+            "minutes_played": stats.minutes_played,
+            "appearances": stats.appearances,
+            
+            # Attacking
+            "goals": stats.goals,
+            "assists": stats.assists,
+            "expected_assists": float(stats.expected_assists) if stats.expected_assists else None,
+            "shots": stats.shots,
+            "big_chances": stats.big_chances,
+            
+            # Passing
+            "accurate_passes": stats.accurate_passes,
+            "total_passes": stats.total_passes,
+            "pass_percentage": float(stats.pass_percentage) if stats.pass_percentage else None,
+            "key_passes": stats.key_passes,
+            "accurate_long_balls": stats.accurate_long_balls,
+            "accurate_long_balls_percentage": float(stats.accurate_long_balls_percentage) if stats.accurate_long_balls_percentage else None,
+            
+            # Defensive
+            "tackles": stats.tackles,
+            "interceptions": stats.interceptions,
+            "clearances": stats.clearances,
+            
+            # Duels
+            "total_duels_won": stats.total_duels_won,
+            "total_duels_won_percentage": float(stats.total_duels_won_percentage) if stats.total_duels_won_percentage else None,
+            "aerial_duels_won": stats.aerial_duels_won,
+            "ground_duels_won": stats.ground_duels_won,
+            
+            # Discipline
+            "yellow_cards": stats.yellow_cards,
+            "red_cards": stats.red_cards,
+            "fouls": stats.fouls,
+            "was_fouled": stats.was_fouled,
+            
+            # Goalkeeper
+            "saves": stats.saves,
+            "saves_percentage": float(stats.saves_percentage) if stats.saves_percentage else None,
+            "clean_sheets": stats.clean_sheets,
+            "goals_conceded": stats.goals_conceded,
+            
+            # Full statistics object
+            "all_stats": stats.statistics
+        }
+        
+        # Cache for 24 hours
+        cache.set(cache_key, data, CACHE_TIMEOUT_24H)
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@require_GET
+def player_heatmap(request, player_id: int, gameweek: int):
+    """
+    Get player heatmap coordinates for a specific gameweek.
+    
+    Returns:
+        {
+            "player_id": 123,
+            "player_name": "Salah",
+            "gameweek": 3,
+            "coordinates": [{x: 45, y: 50}, {x: 46, y: 50}, ...],
+            "point_count": 52
+        }
+    """
+    from .models import SofasportHeatmap
+    
+    cache_key = f"heatmap_{player_id}_gw{gameweek}"
+    cached_data = cache.get(cache_key)
+    if cached_data:
+        return JsonResponse(cached_data)
+    
+    try:
+        heatmap = SofasportHeatmap.objects.filter(
+            athlete_id=player_id,
+            fixture__fixture__event=gameweek
+        ).select_related('athlete', 'fixture__fixture').first()
+        
+        if not heatmap:
+            return JsonResponse({"error": "No heatmap data found for this player/gameweek"}, status=404)
+        
+        data = {
+            "player_id": player_id,
+            "player_name": heatmap.athlete.web_name,
+            "gameweek": gameweek,
+            "coordinates": heatmap.coordinates,
+            "point_count": heatmap.point_count
+        }
+        
+        # Cache for 24 hours
+        cache.set(cache_key, data, CACHE_TIMEOUT_24H)
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@require_GET
+def player_match_stats(request, player_id: int, gameweek: int):
+    """
+    Get detailed per-match statistics for a player in a specific gameweek.
+    
+    Returns lineup data with embedded statistics JSONField.
+    """
+    from .models import SofasportLineup
+    
+    cache_key = f"match_stats_{player_id}_gw{gameweek}"
+    cached_data = cache.get(cache_key)
+    if cached_data:
+        return JsonResponse(cached_data)
+    
+    try:
+        lineup = SofasportLineup.objects.filter(
+            athlete_id=player_id,
+            fixture__fixture__event=gameweek
+        ).select_related('athlete', 'team', 'fixture__fixture').first()
+        
+        if not lineup:
+            return JsonResponse({"error": "No match stats found for this player/gameweek"}, status=404)
+        
+        data = {
+            "player_id": player_id,
+            "player_name": lineup.player_name,
+            "gameweek": gameweek,
+            "position": lineup.position,
+            "shirt_number": lineup.shirt_number,
+            "substitute": lineup.substitute,
+            "minutes_played": lineup.minutes_played,
+            "team": lineup.team.name if lineup.team else None,
+            
+            # All match statistics (20-60 fields depending on position)
+            "statistics": lineup.statistics
+        }
+        
+        # Cache for 24 hours
+        cache.set(cache_key, data, CACHE_TIMEOUT_24H)
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@require_GET
+def compare_players_radar(request):
+    """
+    Compare multiple players' radar attributes.
+    
+    Query params: player_ids=123,456,789
+    
+    Returns:
+        {
+            "players": [
+                {
+                    "player_id": 123,
+                    "player_name": "Salah",
+                    "position": "F",
+                    "attributes": {...},
+                    "is_average": false
+                },
+                ...
+            ]
+        }
+    """
+    from .models import SofasportPlayerAttributes
+    
+    player_ids_str = request.GET.get('player_ids', '')
+    if not player_ids_str:
+        return JsonResponse({"error": "player_ids query parameter required"}, status=400)
+    
+    try:
+        player_ids = [int(pid.strip()) for pid in player_ids_str.split(',')]
+    except ValueError:
+        return JsonResponse({"error": "Invalid player_ids format"}, status=400)
+    
+    cache_key = f"compare_radar_{'_'.join(map(str, sorted(player_ids)))}"
+    cached_data = cache.get(cache_key)
+    if cached_data:
+        return JsonResponse(cached_data)
+    
+    try:
+        players_data = []
+        
+        for player_id in player_ids:
+            # Try current season first, fallback to career average
+            attrs = SofasportPlayerAttributes.objects.filter(
+                athlete_id=player_id,
+                year_shift=0,
+                is_average=False
+            ).select_related('athlete').first()
+            
+            if not attrs:
+                attrs = SofasportPlayerAttributes.objects.filter(
+                    athlete_id=player_id,
+                    is_average=True
+                ).select_related('athlete').first()
+            
+            if attrs:
+                players_data.append({
+                    "player_id": player_id,
+                    "player_name": attrs.athlete.web_name,
+                    "full_name": f"{attrs.athlete.first_name} {attrs.athlete.second_name}",
+                    "position": attrs.position,
+                    "attributes": {
+                        "attacking": attrs.attacking,
+                        "technical": attrs.technical,
+                        "tactical": attrs.tactical,
+                        "defending": attrs.defending,
+                        "creativity": attrs.creativity
+                    },
+                    "is_average": attrs.is_average,
+                    "year_shift": attrs.year_shift
+                })
+        
+        response_data = {"players": players_data}
+        
+        # Cache for 24 hours
+        cache.set(cache_key, response_data, CACHE_TIMEOUT_24H)
+        
+        return JsonResponse(response_data)
+        
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

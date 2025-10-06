@@ -1,7 +1,19 @@
 from django.contrib import admin
 from django.urls import path
 
-from etl.api_views import landing_snapshot, fixtures_by_gameweek, players_list, player_detail, dream_team
+from etl.api_views import (
+    landing_snapshot,
+    fixtures_by_gameweek,
+    players_list,
+    player_detail,
+    dream_team,
+    # SofaSport endpoints
+    player_radar_attributes,
+    player_season_stats,
+    player_heatmap,
+    player_match_stats,
+    compare_players_radar,
+)
 from etl.fpl_proxy_views import (
     proxy_manager_summary,
     proxy_manager_history,
@@ -19,6 +31,14 @@ urlpatterns = [
     path("api/players/", players_list, name="players-list"),
     path("api/players/<int:player_id>/", player_detail, name="player-detail"),
     path("api/dream-team/", dream_team, name="dream-team"),
+    
+    # SofaSport API endpoints
+    path("api/sofasport/player/<int:player_id>/radar/", player_radar_attributes, name="player-radar-attributes"),
+    path("api/sofasport/player/<int:player_id>/season-stats/", player_season_stats, name="player-season-stats"),
+    path("api/sofasport/player/<int:player_id>/heatmap/<int:gameweek>/", player_heatmap, name="player-heatmap"),
+    path("api/sofasport/player/<int:player_id>/match-stats/<int:gameweek>/", player_match_stats, name="player-match-stats"),
+    path("api/sofasport/compare/radar/", compare_players_radar, name="compare-players-radar"),
+    
     # FPL API Proxy endpoints
     path("api/fpl/entry/<int:manager_id>/", proxy_manager_summary, name="fpl-manager-summary"),
     path("api/fpl/entry/<int:manager_id>/history/", proxy_manager_history, name="fpl-manager-history"),
