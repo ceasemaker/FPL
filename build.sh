@@ -4,13 +4,17 @@ set -o errexit
 
 echo "🚀 Starting build process..."
 
-# Navigate to Django directory
-cd django_etl
-
 echo "📦 Installing Python dependencies..."
 pip install --upgrade pip
-pip install -r requirements.txt
-pip install gunicorn supervisor
+
+# Install from django_etl requirements
+pip install -r django_etl/requirements.txt
+
+# Ensure critical packages are installed
+pip install gunicorn supervisor celery redis
+
+# Navigate to Django directory for management commands
+cd django_etl
 
 echo "🗄️  Running database migrations..."
 python manage.py migrate --noinput

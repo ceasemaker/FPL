@@ -3,8 +3,6 @@
 
 echo "🚀 Starting FPL Pulse production services..."
 
-# Navigate to Django directory
-cd django_etl
-
 # Start supervisord with all services (Django, Celery Worker, Celery Beat)
-exec supervisord -n -c ../supervisord.conf
+# supervisord.conf is in root, but programs will run from django_etl directory
+exec supervisord -n -c ./supervisord.conf
