@@ -5,13 +5,8 @@ services:
     env: python
     region: oregon
     plan: starter
-    buildCommand: |
-      pip install -r requirements.txt
-      pip install gunicorn
-    startCommand: |
-      cd django_etl
-      python manage.py migrate
-      gunicorn fpl_platform.wsgi:application --bind 0.0.0.0:$PORT
+    buildCommand: ./build.sh
+    startCommand: ./start-django-only.sh
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
