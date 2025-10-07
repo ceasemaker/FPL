@@ -5,6 +5,7 @@ Scheduled tasks for weekly data collection and updates.
 """
 import subprocess
 import logging
+import os
 from pathlib import Path
 from celery import shared_task
 from django.conf import settings
@@ -31,24 +32,15 @@ def run_etl_script(script_name, timeout):
     script_path = ETL_DIR / script_name
     
     try:
-        # Build Python command that adds scripts directory to path, 
-        # loads the script, and explicitly calls main()
-        python_code = f"""
-import sys
-sys.path.insert(0, '{ETL_DIR}')
-exec(open('{script_path}').read())
-# Explicitly call main() since __name__ != '__main__' when using exec()
-if 'main' in dir():
-    main()
-"""
-        
-        # Run script using Django's manage.py shell to ensure proper context
+        # Run the script directly with Python, not through Django shell
+        # The scripts already have Django setup code in them
         result = subprocess.run(
-            ['python', 'manage.py', 'shell', '-c', python_code],
+            ['python', str(script_path)],
             capture_output=True,
             text=True,
             timeout=timeout,
-            cwd=str(DJANGO_DIR)
+            cwd=str(ETL_DIR),
+            env={**os.environ}  # Pass all environment variables
         )
         
         return {
