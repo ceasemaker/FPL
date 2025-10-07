@@ -12,7 +12,7 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 # Base directory for ETL scripts
-ETL_DIR = Path(__file__).parent.parent / 'sofasport_etl'
+ETL_DIR = Path(__file__).parent.parent / 'sofa_sport' / 'scripts'
 
 
 @shared_task(name='etl.tasks.update_fixture_mappings')
