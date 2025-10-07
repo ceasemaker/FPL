@@ -145,7 +145,8 @@ def update_radar_attributes():
     """
     logger.info("Starting radar attributes update...")
     
-    result = run_etl_script('build_radar_attributes_etl.py', timeout=600)
+    # Increased timeout to 3600s (60 minutes) to allow long API runs
+    result = run_etl_script('build_radar_attributes_etl.py', timeout=3600)
     
     if result["returncode"] == 0:
         logger.info(f"✅ Radar attributes update completed: {result['stdout']}")
@@ -174,12 +175,17 @@ def run_manual_update(script_name: str):
         return {"status": "error", "output": f"Script {script_name} not found"}
     
     try:
+        # Align manual runner with run_etl_script
+        env = os.environ.copy()
+        env['PYTHONPATH'] = str(DJANGO_DIR)
+        
         result = subprocess.run(
             ['python', str(script_path)],
             capture_output=True,
             text=True,
             timeout=3600,  # 1 hour max
-            cwd=str(ETL_DIR)
+            cwd=str(DJANGO_DIR),  # Run from Django root
+            env=env
         )
         
         if result.returncode == 0:
