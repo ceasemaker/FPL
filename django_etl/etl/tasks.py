@@ -148,44 +148,9 @@ def update_radar_attributes():
     else:
         logger.error(f"❌ Radar attributes update failed: {result['stderr']}")
         return {"status": "error", "output": result['stderr']}
-    logger.error(f"❌ Radar attributes update failed: {result['stderr']}")
-        return {"status": "error", "output": result['stderr']}
 
 
 # Celery Beat Schedule Configuration
-
-
-@shared_task(name='etl.tasks.update_radar_attributes')
-def update_radar_attributes():
-    """
-    Update player radar chart attributes.
-    Runs: Wednesday 3:00 AM (after season stats complete)
-    """
-    logger.info("Starting radar attributes update...")
-    script_path = ETL_DIR / 'build_radar_attributes_etl.py'
-    
-    try:
-        result = subprocess.run(
-            ['python', str(script_path)],
-            capture_output=True,
-            text=True,
-            timeout=900,  # 15 minutes
-            cwd=str(ETL_DIR)
-        )
-        
-        if result.returncode == 0:
-            logger.info(f"✅ Radar attributes update completed: {result.stdout}")
-            return {"status": "success", "output": result.stdout}
-        else:
-            logger.error(f"❌ Radar attributes update failed: {result.stderr}")
-            return {"status": "error", "output": result.stderr}
-            
-    except subprocess.TimeoutExpired:
-        logger.error("❌ Radar attributes update timed out")
-        return {"status": "timeout", "output": "Task exceeded 15 minutes"}
-    except Exception as e:
-        logger.error(f"❌ Radar attributes update error: {str(e)}")
-        return {"status": "error", "output": str(e)}
 
 
 @shared_task(name='etl.tasks.run_manual_update')
