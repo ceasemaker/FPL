@@ -13,6 +13,51 @@ logger = logging.getLogger(__name__)
 
 # Base directory for ETL scripts
 ETL_DIR = Path(__file__).parent.parent / 'sofa_sport' / 'scripts'
+# Django project directory
+DJANGO_DIR = Path(__file__).parent.parent
+
+
+def run_etl_script(script_name, timeout):
+    """
+    Helper function to run ETL scripts with Django context.
+    
+    Args:
+        script_name: Name of the script file
+        timeout: Timeout in seconds
+    
+    Returns:
+        dict: Status and output of the script execution
+    """
+    script_path = ETL_DIR / script_name
+    
+    try:
+        # Run script using Django's manage.py shell to ensure proper context
+        result = subprocess.run(
+            ['python', 'manage.py', 'shell', '-c', 
+             f"exec(open('{script_path}').read())"],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            cwd=str(DJANGO_DIR)
+        )
+        
+        return {
+            "returncode": result.returncode,
+            "stdout": result.stdout,
+            "stderr": result.stderr
+        }
+    except subprocess.TimeoutExpired:
+        return {
+            "returncode": -1,
+            "stdout": "",
+            "stderr": f"Task exceeded {timeout} seconds"
+        }
+    except Exception as e:
+        return {
+            "returncode": -1,
+            "stdout": "",
+            "stderr": str(e)
+        }
 
 
 @shared_task(name='etl.tasks.update_fixture_mappings')
@@ -22,30 +67,15 @@ def update_fixture_mappings():
     Runs: Monday 2:00 AM
     """
     logger.info("Starting fixture mapping update...")
-    script_path = ETL_DIR / 'build_fixture_mapping.py'
     
-    try:
-        result = subprocess.run(
-            ['python', str(script_path)],
-            capture_output=True,
-            text=True,
-            timeout=600,  # 10 minutes
-            cwd=str(ETL_DIR)
-        )
-        
-        if result.returncode == 0:
-            logger.info(f"✅ Fixture mapping completed: {result.stdout}")
-            return {"status": "success", "output": result.stdout}
-        else:
-            logger.error(f"❌ Fixture mapping failed: {result.stderr}")
-            return {"status": "error", "output": result.stderr}
-            
-    except subprocess.TimeoutExpired:
-        logger.error("❌ Fixture mapping timed out")
-        return {"status": "timeout", "output": "Task exceeded 10 minutes"}
-    except Exception as e:
-        logger.error(f"❌ Fixture mapping error: {str(e)}")
-        return {"status": "error", "output": str(e)}
+    result = run_etl_script('build_fixture_mapping.py', timeout=600)
+    
+    if result["returncode"] == 0:
+        logger.info(f"✅ Fixture mapping completed: {result['stdout']}")
+        return {"status": "success", "output": result['stdout']}
+    else:
+        logger.error(f"❌ Fixture mapping failed: {result['stderr']}")
+        return {"status": "error", "output": result['stderr']}
 
 
 @shared_task(name='etl.tasks.update_lineups')
@@ -55,30 +85,15 @@ def update_lineups():
     Runs: Tuesday 3:00 AM
     """
     logger.info("Starting lineups update...")
-    script_path = ETL_DIR / 'build_lineups_etl.py'
     
-    try:
-        result = subprocess.run(
-            ['python', str(script_path)],
-            capture_output=True,
-            text=True,
-            timeout=900,  # 15 minutes
-            cwd=str(ETL_DIR)
-        )
-        
-        if result.returncode == 0:
-            logger.info(f"✅ Lineups update completed: {result.stdout}")
-            return {"status": "success", "output": result.stdout}
-        else:
-            logger.error(f"❌ Lineups update failed: {result.stderr}")
-            return {"status": "error", "output": result.stderr}
-            
-    except subprocess.TimeoutExpired:
-        logger.error("❌ Lineups update timed out")
-        return {"status": "timeout", "output": "Task exceeded 15 minutes"}
-    except Exception as e:
-        logger.error(f"❌ Lineups update error: {str(e)}")
-        return {"status": "error", "output": str(e)}
+    result = run_etl_script('build_lineups_etl.py', timeout=900)
+    
+    if result["returncode"] == 0:
+        logger.info(f"✅ Lineups update completed: {result['stdout']}")
+        return {"status": "success", "output": result['stdout']}
+    else:
+        logger.error(f"❌ Lineups update failed: {result['stderr']}")
+        return {"status": "error", "output": result['stderr']}
 
 
 @shared_task(name='etl.tasks.collect_heatmaps')
@@ -88,30 +103,15 @@ def collect_heatmaps():
     Runs: Tuesday 4:00 AM (after lineups complete)
     """
     logger.info("Starting heatmap collection...")
-    script_path = ETL_DIR / 'build_heatmap_etl.py'
     
-    try:
-        result = subprocess.run(
-            ['python', str(script_path)],
-            capture_output=True,
-            text=True,
-            timeout=1800,  # 30 minutes
-            cwd=str(ETL_DIR)
-        )
-        
-        if result.returncode == 0:
-            logger.info(f"✅ Heatmap collection completed: {result.stdout}")
-            return {"status": "success", "output": result.stdout}
-        else:
-            logger.error(f"❌ Heatmap collection failed: {result.stderr}")
-            return {"status": "error", "output": result.stderr}
-            
-    except subprocess.TimeoutExpired:
-        logger.error("❌ Heatmap collection timed out")
-        return {"status": "timeout", "output": "Task exceeded 30 minutes"}
-    except Exception as e:
-        logger.error(f"❌ Heatmap collection error: {str(e)}")
-        return {"status": "error", "output": str(e)}
+    result = run_etl_script('build_heatmap_etl.py', timeout=1800)
+    
+    if result["returncode"] == 0:
+        logger.info(f"✅ Heatmap collection completed: {result['stdout']}")
+        return {"status": "success", "output": result['stdout']}
+    else:
+        logger.error(f"❌ Heatmap collection failed: {result['stderr']}")
+        return {"status": "error", "output": result['stderr']}
 
 
 @shared_task(name='etl.tasks.update_season_stats')
@@ -121,30 +121,38 @@ def update_season_stats():
     Runs: Wednesday 2:00 AM
     """
     logger.info("Starting season stats update...")
-    script_path = ETL_DIR / 'build_season_stats_etl.py'
     
-    try:
-        result = subprocess.run(
-            ['python', str(script_path)],
-            capture_output=True,
-            text=True,
-            timeout=1200,  # 20 minutes
-            cwd=str(ETL_DIR)
-        )
-        
-        if result.returncode == 0:
-            logger.info(f"✅ Season stats update completed: {result.stdout}")
-            return {"status": "success", "output": result.stdout}
-        else:
-            logger.error(f"❌ Season stats update failed: {result.stderr}")
-            return {"status": "error", "output": result.stderr}
-            
-    except subprocess.TimeoutExpired:
-        logger.error("❌ Season stats update timed out")
-        return {"status": "timeout", "output": "Task exceeded 20 minutes"}
-    except Exception as e:
-        logger.error(f"❌ Season stats update error: {str(e)}")
-        return {"status": "error", "output": str(e)}
+    result = run_etl_script('build_season_stats_etl.py', timeout=1200)
+    
+    if result["returncode"] == 0:
+        logger.info(f"✅ Season stats update completed: {result['stdout']}")
+        return {"status": "success", "output": result['stdout']}
+    else:
+        logger.error(f"❌ Season stats update failed: {result['stderr']}")
+        return {"status": "error", "output": result['stderr']}
+
+
+@shared_task(name='etl.tasks.update_radar_attributes')
+def update_radar_attributes():
+    """
+    Update player radar chart attributes.
+    Runs: Wednesday 3:00 AM (after season stats complete)
+    """
+    logger.info("Starting radar attributes update...")
+    
+    result = run_etl_script('build_radar_attributes_etl.py', timeout=600)
+    
+    if result["returncode"] == 0:
+        logger.info(f"✅ Radar attributes update completed: {result['stdout']}")
+        return {"status": "success", "output": result['stdout']}
+    else:
+        logger.error(f"❌ Radar attributes update failed: {result['stderr']}")
+        return {"status": "error", "output": result['stderr']}
+    logger.error(f"❌ Radar attributes update failed: {result['stderr']}")
+        return {"status": "error", "output": result['stderr']}
+
+
+# Celery Beat Schedule Configuration
 
 
 @shared_task(name='etl.tasks.update_radar_attributes')
