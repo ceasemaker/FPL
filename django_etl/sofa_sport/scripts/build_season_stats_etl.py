@@ -8,6 +8,7 @@ import os
 import sys
 import json
 from decimal import Decimal, InvalidOperation
+from pathlib import Path
 from typing import Dict, Optional
 
 # Add Django app to path
@@ -21,10 +22,14 @@ from django.db import transaction
 from etl.models import Athlete, Team, SofasportPlayerSeasonStats
 from api_client import SofaSportClient
 
+# Get the directory where this script is located
+SCRIPT_DIR = Path(__file__).parent
+MAPPINGS_DIR = SCRIPT_DIR.parent / 'mappings'
+
 
 def load_player_mapping() -> Dict[str, Dict]:
     """Load the player mapping from JSON file."""
-    mapping_path = "/app/sofa_sport/mappings/player_mapping.json"
+    mapping_path = MAPPINGS_DIR / "player_mapping.json"
     with open(mapping_path, 'r') as f:
         return json.load(f)
 

@@ -9,6 +9,7 @@ import os
 import sys
 import json
 from datetime import datetime
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 # Add Django app to path
@@ -22,10 +23,14 @@ from django.db import transaction
 from etl.models import Fixture, Team, SofasportFixture
 from api_client import SofaSportClient
 
+# Get the directory where this script is located
+SCRIPT_DIR = Path(__file__).parent
+MAPPINGS_DIR = SCRIPT_DIR.parent / 'mappings'
+
 
 def load_team_mapping() -> Dict[int, Dict]:
     """Load the team mapping from JSON file."""
-    mapping_path = "/app/sofa_sport/mappings/team_mapping.json"
+    mapping_path = MAPPINGS_DIR / "team_mapping.json"
     with open(mapping_path, 'r') as f:
         return json.load(f)
 
@@ -242,7 +247,7 @@ def main():
     
     # Save unmatched events to file for review
     if unmatched_events:
-        output_path = "/app/sofa_sport/mappings/unmatched_fixtures.json"
+        output_path = MAPPINGS_DIR / "unmatched_fixtures.json"
         with open(output_path, 'w') as f:
             json.dump(unmatched_events, f, indent=2)
         print(f"📝 Unmatched fixtures saved to: {output_path}")

@@ -63,6 +63,7 @@ import os
 import sys
 import json
 import django
+from pathlib import Path
 from typing import Dict, Optional
 
 # Setup Django
@@ -73,10 +74,14 @@ django.setup()
 from api_client import SofaSportClient
 from etl.models import Athlete, SofasportPlayerAttributes
 
+# Get the directory where this script is located
+SCRIPT_DIR = Path(__file__).parent
+MAPPINGS_DIR = SCRIPT_DIR.parent / 'mappings'
+
 
 def load_player_mapping() -> Dict:
     """Load player mapping file."""
-    mapping_path = '/app/sofa_sport/mappings/player_mapping.json'
+    mapping_path = MAPPINGS_DIR / 'player_mapping.json'
     with open(mapping_path, 'r') as f:
         return json.load(f)
 
