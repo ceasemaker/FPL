@@ -4,17 +4,24 @@ set -o errexit
 
 echo "🚀 Starting build process..."
 
-echo "📦 Installing Python dependencies..."
-pip install --upgrade pip
+# Ensure we're using the right Python and pip
+echo "🐍 Python version: $(python --version)"
+echo "� Python location: $(which python)"
+echo "📍 Pip location: $(which pip)"
+
+echo "�📦 Installing Python dependencies..."
+python -m pip install --upgrade pip
 
 # Install from django_etl requirements
-pip install -r django_etl/requirements.txt
+echo "📦 Installing from requirements.txt..."
+python -m pip install -r django_etl/requirements.txt
 
 # Ensure critical packages are installed explicitly
-pip install gunicorn supervisor celery redis whitenoise django-cors-headers
+echo "📦 Installing critical packages explicitly..."
+python -m pip install gunicorn supervisor celery[redis] redis whitenoise django-cors-headers psycopg2-binary
 
-echo "📋 Installed packages:"
-pip list | grep -E "(celery|redis|whitenoise|gunicorn|supervisor|django-cors)"
+echo "📋 Verifying installed packages:"
+python -m pip list | grep -E "(celery|redis|whitenoise|gunicorn|supervisor|django-cors|psycopg2)"
 
 # Navigate to Django directory for management commands
 cd django_etl
