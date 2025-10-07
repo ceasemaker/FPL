@@ -14,7 +14,7 @@ from typing import Dict, List, Optional, Tuple
 
 # Add Django app to path
 sys.path.insert(0, '/app')
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'fpl_django.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'fpl_platform.settings')
 
 import django
 django.setup()

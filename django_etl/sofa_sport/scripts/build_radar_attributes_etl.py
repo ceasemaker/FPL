@@ -68,7 +68,7 @@ from typing import Dict, Optional
 
 # Setup Django
 sys.path.append('/app')
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'fpl_django.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'fpl_platform.settings')
 django.setup()
 
 from api_client import SofaSportClient
