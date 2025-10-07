@@ -72,11 +72,11 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'fpl_django.settings')
 django.setup()
 
 from api_client import SofaSportClient
+from django.conf import settings
 from etl.models import Athlete, SofasportPlayerAttributes
 
-# Get the directory where this script is located
-SCRIPT_DIR = Path(__file__).parent
-MAPPINGS_DIR = SCRIPT_DIR.parent / 'mappings'
+# Get mappings directory relative to Django project root
+MAPPINGS_DIR = Path(settings.BASE_DIR) / 'sofa_sport' / 'mappings'
 
 
 def load_player_mapping() -> Dict:

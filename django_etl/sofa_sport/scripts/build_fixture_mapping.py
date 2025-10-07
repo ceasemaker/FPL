@@ -20,12 +20,13 @@ import django
 django.setup()
 
 from django.db import transaction
+from django.conf import settings
 from etl.models import Fixture, Team, SofasportFixture
 from api_client import SofaSportClient
 
-# Get the directory where this script is located
-SCRIPT_DIR = Path(__file__).parent
-MAPPINGS_DIR = SCRIPT_DIR.parent / 'mappings'
+# Get mappings directory relative to Django project root
+# settings.BASE_DIR is /opt/render/project/src/django_etl on Render
+MAPPINGS_DIR = Path(settings.BASE_DIR) / 'sofa_sport' / 'mappings'
 
 
 def load_team_mapping() -> Dict[int, Dict]:
