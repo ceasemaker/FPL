@@ -31,11 +31,15 @@ def run_etl_script(script_name, timeout):
     script_path = ETL_DIR / script_name
     
     try:
-        # Build Python command that adds scripts directory to path and runs the script
+        # Build Python command that adds scripts directory to path, 
+        # loads the script, and explicitly calls main()
         python_code = f"""
 import sys
 sys.path.insert(0, '{ETL_DIR}')
 exec(open('{script_path}').read())
+# Explicitly call main() since __name__ != '__main__' when using exec()
+if 'main' in dir():
+    main()
 """
         
         # Run script using Django's manage.py shell to ensure proper context
