@@ -32,15 +32,18 @@ def run_etl_script(script_name, timeout):
     script_path = ETL_DIR / script_name
     
     try:
-        # Run the script directly with Python, not through Django shell
-        # The scripts already have Django setup code in them
+        # Run the script from Django root directory so imports work correctly
+        # Add Django root to PYTHONPATH so scripts can import fpl_platform
+        env = os.environ.copy()
+        env['PYTHONPATH'] = str(DJANGO_DIR)
+        
         result = subprocess.run(
             ['python', str(script_path)],
             capture_output=True,
             text=True,
             timeout=timeout,
-            cwd=str(ETL_DIR),
-            env={**os.environ}  # Pass all environment variables
+            cwd=str(DJANGO_DIR),  # Run from Django root, not scripts dir
+            env=env
         )
         
         return {
