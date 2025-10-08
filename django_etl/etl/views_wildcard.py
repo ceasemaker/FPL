@@ -10,7 +10,7 @@ Hybrid storage approach:
 import json
 from decimal import Decimal
 from django.http import JsonResponse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
@@ -121,18 +121,15 @@ def save_wildcard_team(request, code):
 @require_http_methods(["GET"])
 def wildcard_view(request, code):
     """
-    Render the wildcard team page with the given code.
+    Redirect to React frontend to view the wildcard team.
+    The frontend will fetch the team data via the API.
     """
-    simulation = get_object_or_404(WildcardSimulation, code=code)
+    # Verify the code exists (404 if not)
+    get_object_or_404(WildcardSimulation, code=code)
     
-    # Increment view count
-    simulation.view_count += 1
-    simulation.save(update_fields=['view_count'])
-    
-    return render(request, 'wildcard/view.html', {
-        'simulation': simulation,
-        'code': code,
-    })
+    # Redirect to React frontend
+    frontend_url = f"https://fpl-pulse-frontend.onrender.com/wildcard?code={code}"
+    return redirect(frontend_url)
 
 
 # Helper functions

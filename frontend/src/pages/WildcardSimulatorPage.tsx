@@ -249,36 +249,46 @@ export function WildcardSimulatorPage() {
       });
   }, []);
 
-  // Load from localStorage
+  // Load from localStorage OR URL parameter
   useEffect(() => {
-    const stored = localStorage.getItem("wildcard_draft");
-    const storedCode = localStorage.getItem("wildcard_code");
-
-    if (stored) {
-      try {
-        const draft = JSON.parse(stored);
-        if (draft.team) {
-          setGoalkeepers(draft.team.goalkeepers || []);
-          setDefenders(draft.team.defenders || []);
-          setMidfielders(draft.team.midfielders || []);
-          setForwards(draft.team.forwards || []);
-          setBench(draft.team.bench || []);
-          setCaptain(draft.team.captain || null);
-          setViceCaptain(draft.team.viceCaptain || null);
-          if (draft.team.formation) {
-            const savedFormation = FORMATIONS.find(f => f.name === draft.team.formation);
-            if (savedFormation) setFormation(savedFormation);
-          }
-        }
-      } catch (e) {
-        console.error("Failed to load draft:", e);
-      }
-    }
-
-    if (storedCode) {
-      setCode(storedCode);
+    // Check if we have a code in the URL (e.g., ?code=WC-ABC123)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlCode = urlParams.get("code");
+    
+    if (urlCode) {
+      // Load shared wildcard from API
+      loadSharedWildcard(urlCode);
     } else {
-      createTrackingEntry();
+      // Load from localStorage as before
+      const stored = localStorage.getItem("wildcard_draft");
+      const storedCode = localStorage.getItem("wildcard_code");
+
+      if (stored) {
+        try {
+          const draft = JSON.parse(stored);
+          if (draft.team) {
+            setGoalkeepers(draft.team.goalkeepers || []);
+            setDefenders(draft.team.defenders || []);
+            setMidfielders(draft.team.midfielders || []);
+            setForwards(draft.team.forwards || []);
+            setBench(draft.team.bench || []);
+            setCaptain(draft.team.captain || null);
+            setViceCaptain(draft.team.viceCaptain || null);
+            if (draft.team.formation) {
+              const savedFormation = FORMATIONS.find(f => f.name === draft.team.formation);
+              if (savedFormation) setFormation(savedFormation);
+            }
+          }
+        } catch (e) {
+          console.error("Failed to load draft:", e);
+        }
+      }
+
+      if (storedCode) {
+        setCode(storedCode);
+      } else {
+        createTrackingEntry();
+      }
     }
   }, []);
 
@@ -303,6 +313,55 @@ export function WildcardSimulatorPage() {
       }
     } catch (error) {
       console.error("Failed to create tracking entry:", error);
+    }
+  };
+
+  const loadSharedWildcard = async (wildcardCode: string) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/wildcard/${wildcardCode}/`);
+      if (!response.ok) {
+        throw new Error("Failed to load wildcard team");
+      }
+      
+      const data = await response.json();
+      if (data.success && data.squad_data) {
+        setCode(wildcardCode);
+        
+        // Load the squad data
+        const squad = data.squad_data;
+        if (squad.players && Array.isArray(squad.players)) {
+          // Separate players by position
+          const gks = squad.players.filter((p: Player) => p.element_type === 1);
+          const defs = squad.players.filter((p: Player) => p.element_type === 2);
+          const mids = squad.players.filter((p: Player) => p.element_type === 3);
+          const fwds = squad.players.filter((p: Player) => p.element_type === 4);
+          
+          setGoalkeepers(gks.slice(0, 2));
+          setDefenders(defs.slice(0, 5));
+          setMidfielders(mids.slice(0, 5));
+          setForwards(fwds.slice(0, 3));
+          
+          // Handle bench - any remaining players
+          const starting = gks.slice(0, 2).length + defs.slice(0, 5).length + mids.slice(0, 5).length + fwds.slice(0, 3).length;
+          setBench(squad.players.slice(starting));
+        }
+        
+        // Load formation if available
+        if (squad.formation) {
+          const loadedFormation = FORMATIONS.find(f => f.name === squad.formation);
+          if (loadedFormation) setFormation(loadedFormation);
+        }
+        
+        // Load captain/vice if available
+        if (squad.captain) setCaptain(squad.captain);
+        if (squad.viceCaptain) setViceCaptain(squad.viceCaptain);
+        
+        // Show a message that this is a shared team
+        alert(`📋 Viewing shared wildcard: ${data.team_name || wildcardCode}\nTotal Cost: £${data.total_cost}m | Views: ${data.view_count || 1}`);
+      }
+    } catch (error) {
+      console.error("Failed to load shared wildcard:", error);
+      alert("Failed to load this wildcard team. It may not exist or the link is incorrect.");
     }
   };
 
