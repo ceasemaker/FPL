@@ -19,8 +19,9 @@ export default defineConfig(({ mode }) => {
       },
     },
     preview: {
-      port: 5173,
+      port: parseInt(env.PORT || "5173"),
       host: true,
+      strictPort: false, // Allow Render to use alternative port if needed
       allowedHosts: [
         'fpl-pulse-frontend.onrender.com',
         '.onrender.com',
