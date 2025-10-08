@@ -1,44 +1,275 @@
 import { useState, useEffect, useRef } from "react";
 import html2canvas from "html2canvas";
+import { PlayerModal } from "../components/PlayerModal";
+
+const TEAM_BADGE_BASE = "https://resources.premierleague.com/premierleague25/badges-alt/";
+const TOTAL_BUDGET = 100.0; // £100m
 
 interface Player {
   id: number;
-  name?: string;
-  web_name?: string;
-  team_name?: string;
-  price?: number;
-  position?: string;
+  first_name: string;
+  second_name: string;
+  web_name: string;
+  team: string | null;
+  team_id: number | null;
+  team_code: number | null;
+  element_type: number; // 1=GK, 2=DEF, 3=MID, 4=FWD
+  now_cost: number;
+  total_points: number;
+  form: string;
+  image_url: string | null;
 }
 
-interface WildcardTeam {
-  players: Player[];
-  formation: string | null;
-  captain: number | null;
-  viceCaptain: number | null;
+interface Formation {
+  name: string;
+  def: number;
+  mid: number;
+  fwd: number;
+}
+
+const FORMATIONS: Formation[] = [
+  { name: "3-4-3", def: 3, mid: 4, fwd: 3 },
+  { name: "3-5-2", def: 3, mid: 5, fwd: 2 },
+  { name: "4-3-3", def: 4, mid: 3, fwd: 3 },
+  { name: "4-4-2", def: 4, mid: 4, fwd: 2 }, // Default
+  { name: "4-5-1", def: 4, mid: 5, fwd: 1 },
+  { name: "5-3-2", def: 5, mid: 3, fwd: 2 },
+  { name: "5-4-1", def: 5, mid: 4, fwd: 1 },
+];
+
+function getTeamBadgeUrl(teamCode: number | null): string | null {
+  if (!teamCode) return null;
+  return `${TEAM_BADGE_BASE}${teamCode}.svg`;
+}
+
+function getPositionName(elementType: number): string {
+  switch (elementType) {
+    case 1: return "GK";
+    case 2: return "DEF";
+    case 3: return "MID";
+    case 4: return "FWD";
+    default: return "UNK";
+  }
+}
+
+function PlayerCard({ 
+  player, 
+  isCaptain, 
+  isVice, 
+  onClick, 
+  onRemove,
+  showRemove = true 
+}: { 
+  player: Player | null; 
+  isCaptain?: boolean;
+  isVice?: boolean;
+  onClick: () => void;
+  onRemove?: () => void;
+  showRemove?: boolean;
+}) {
+  if (!player) {
+    return (
+      <div className="dream-player-card empty-slot" onClick={onClick}>
+        <div className="empty-slot-content">
+          <span className="empty-slot-icon">+</span>
+          <span className="empty-slot-text">Add Player</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="dream-player-card" onClick={onClick}>
+      {showRemove && onRemove && (
+        <button 
+          className="remove-player-btn"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove();
+          }}
+        >
+          ×
+        </button>
+      )}
+      {isCaptain && <div className="captain-badge">C</div>}
+      {isVice && <div className="vice-badge">V</div>}
+      <div className="dream-player-image">
+        <img
+          src={player.image_url || `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${player.team_code}-110.webp`}
+          alt={player.web_name}
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.onerror = null;
+            target.src = `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${player.team_code}-110.webp`;
+          }}
+        />
+      </div>
+      <div className="dream-player-name">{player.web_name}</div>
+      <div className="dream-player-stats">
+        <span className="dream-stat-badge">£{(player.now_cost / 10).toFixed(1)}m</span>
+        <span className="dream-stat-badge">{player.total_points} pts</span>
+      </div>
+      {player.team_code && (
+        <img 
+          src={getTeamBadgeUrl(player.team_code)!}
+          alt={player.team || ''}
+          className="dream-player-badge"
+        />
+      )}
+    </div>
+  );
+}
+
+function PlayerSelectionModal({
+  position,
+  allPlayers,
+  selectedPlayers,
+  onSelect,
+  onClose,
+}: {
+  position: "GK" | "DEF" | "MID" | "FWD";
+  allPlayers: Player[];
+  selectedPlayers: Player[];
+  onSelect: (player: Player) => void;
+  onClose: () => void;
+}) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"cost" | "points" | "form">("points");
+
+  const elementType = { GK: 1, DEF: 2, MID: 3, FWD: 4 }[position];
+  
+  let filteredPlayers = allPlayers.filter(
+    (p) => p.element_type === elementType && !selectedPlayers.find(sp => sp.id === p.id)
+  );
+
+  if (searchTerm) {
+    filteredPlayers = filteredPlayers.filter((p) =>
+      p.web_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.team && p.team.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }
+
+  filteredPlayers.sort((a, b) => {
+    if (sortBy === "cost") return b.now_cost - a.now_cost;
+    if (sortBy === "points") return b.total_points - a.total_points;
+    if (sortBy === "form") return parseFloat(b.form) - parseFloat(a.form);
+    return 0;
+  });
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="player-selection-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>Select {position}</h2>
+          <button className="close-modal-btn" onClick={onClose}>×</button>
+        </div>
+
+        <div className="modal-filters">
+          <input
+            type="text"
+            placeholder="Search player or team..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value as any)} className="sort-select">
+            <option value="points">Sort by Points</option>
+            <option value="cost">Sort by Cost</option>
+            <option value="form">Sort by Form</option>
+          </select>
+        </div>
+
+        <div className="player-list">
+          {filteredPlayers.map((player) => (
+            <div
+              key={player.id}
+              className="player-list-item"
+              onClick={() => {
+                onSelect(player);
+                onClose();
+              }}
+            >
+              <img
+                src={player.image_url || `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${player.team_code}-110.webp`}
+                alt={player.web_name}
+                className="player-list-image"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.onerror = null;
+                  target.src = `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${player.team_code}-110.webp`;
+                }}
+              />
+              <div className="player-list-info">
+                <div className="player-list-name">{player.web_name}</div>
+                <div className="player-list-team">{player.team}</div>
+              </div>
+              <div className="player-list-stats">
+                <span>£{(player.now_cost / 10).toFixed(1)}m</span>
+                <span>{player.total_points} pts</span>
+                <span>Form: {player.form}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function WildcardSimulatorPage() {
-  const [team, setTeam] = useState<WildcardTeam>({
-    players: [],
-    formation: null,
-    captain: null,
-    viceCaptain: null,
-  });
+  const [allPlayers, setAllPlayers] = useState<Player[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [formation, setFormation] = useState<Formation>(FORMATIONS[3]); // 4-4-2
+  const [goalkeepers, setGoalkeepers] = useState<Player[]>([]);
+  const [defenders, setDefenders] = useState<Player[]>([]);
+  const [midfielders, setMidfielders] = useState<Player[]>([]);
+  const [forwards, setForwards] = useState<Player[]>([]);
+  const [bench, setBench] = useState<Player[]>([]);
+  const [captain, setCaptain] = useState<number | null>(null);
+  const [viceCaptain, setViceCaptain] = useState<number | null>(null);
   const [code, setCode] = useState<string | null>(null);
-  const [autoSaveStatus, setAutoSaveStatus] = useState<string>("");
+  const [autoSaveStatus, setAutoSaveStatus] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [savedData, setSavedData] = useState<any>(null);
+  const [selectionModal, setSelectionModal] = useState<{ position: "GK" | "DEF" | "MID" | "FWD"; benchSlot?: boolean } | null>(null);
+  const [detailPlayerId, setDetailPlayerId] = useState<number | null>(null);
   const teamDisplayRef = useRef<HTMLDivElement>(null);
 
-  // Load from localStorage on mount
+  // Load players
   useEffect(() => {
-    const storedDraft = localStorage.getItem("wildcard_draft");
+    fetch("/api/players/")
+      .then((res) => res.json())
+      .then((data) => {
+        setAllPlayers(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to load players:", err);
+        setLoading(false);
+      });
+  }, []);
+
+  // Load from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem("wildcard_draft");
     const storedCode = localStorage.getItem("wildcard_code");
 
-    if (storedDraft) {
+    if (stored) {
       try {
-        const draft = JSON.parse(storedDraft);
-        setTeam(draft.team || team);
+        const draft = JSON.parse(stored);
+        if (draft.team) {
+          setGoalkeepers(draft.team.goalkeepers || []);
+          setDefenders(draft.team.defenders || []);
+          setMidfielders(draft.team.midfielders || []);
+          setForwards(draft.team.forwards || []);
+          setBench(draft.team.bench || []);
+          setCaptain(draft.team.captain || null);
+          setViceCaptain(draft.team.viceCaptain || null);
+          if (draft.team.formation) {
+            const savedFormation = FORMATIONS.find(f => f.name === draft.team.formation);
+            if (savedFormation) setFormation(savedFormation);
+          }
+        }
       } catch (e) {
         console.error("Failed to load draft:", e);
       }
@@ -47,7 +278,6 @@ export function WildcardSimulatorPage() {
     if (storedCode) {
       setCode(storedCode);
     } else {
-      // Create tracking entry
       createTrackingEntry();
     }
   }, []);
@@ -57,9 +287,8 @@ export function WildcardSimulatorPage() {
     const interval = setInterval(() => {
       autoSave();
     }, 30000);
-
     return () => clearInterval(interval);
-  }, [team]);
+  }, [goalkeepers, defenders, midfielders, forwards, bench, captain, viceCaptain, formation]);
 
   const createTrackingEntry = async () => {
     try {
@@ -81,16 +310,148 @@ export function WildcardSimulatorPage() {
     const data = {
       version: 1,
       lastSaved: new Date().toISOString(),
-      team,
+      team: {
+        goalkeepers,
+        defenders,
+        midfielders,
+        forwards,
+        bench,
+        captain,
+        viceCaptain,
+        formation: formation.name,
+      },
     };
     localStorage.setItem("wildcard_draft", JSON.stringify(data));
     setAutoSaveStatus("💾 Saved");
     setTimeout(() => setAutoSaveStatus(""), 2000);
   };
 
+  const getAllSelectedPlayers = () => {
+    return [...goalkeepers, ...defenders, ...midfielders, ...forwards, ...bench];
+  };
+
+  const getTotalCost = () => {
+    return getAllSelectedPlayers().reduce((sum, p) => sum + p.now_cost, 0) / 10;
+  };
+
+  const getBudgetRemaining = () => {
+    return TOTAL_BUDGET - getTotalCost();
+  };
+
+  const getTeamCounts = () => {
+    const counts: Record<number, number> = {};
+    getAllSelectedPlayers().forEach((p) => {
+      if (p.team_id) {
+        counts[p.team_id] = (counts[p.team_id] || 0) + 1;
+      }
+    });
+    return counts;
+  };
+
+  const canAddPlayer = (player: Player) => {
+    const teamCounts = getTeamCounts();
+    if (player.team_id && (teamCounts[player.team_id] || 0) >= 3) {
+      alert("You can't have more than 3 players from the same team!");
+      return false;
+    }
+    if (getBudgetRemaining() < player.now_cost / 10) {
+      alert("Not enough budget!");
+      return false;
+    }
+    return true;
+  };
+
+  const handlePlayerSelect = (player: Player) => {
+    if (!canAddPlayer(player)) return;
+
+    if (selectionModal?.position === "GK") {
+      if (selectionModal.benchSlot) {
+        const benchGKs = bench.filter(p => p.element_type === 1);
+        if (benchGKs.length < 1) {
+          setBench([...bench, player]);
+        }
+      } else {
+        if (goalkeepers.length < 1) {
+          setGoalkeepers([player]);
+        }
+      }
+    } else if (selectionModal?.position === "DEF") {
+      if (selectionModal.benchSlot) {
+        const benchDEFs = bench.filter(p => p.element_type === 2);
+        if (benchDEFs.length < 1) {
+          setBench([...bench, player]);
+        }
+      } else {
+        if (defenders.length < formation.def) {
+          setDefenders([...defenders, player]);
+        }
+      }
+    } else if (selectionModal?.position === "MID") {
+      if (selectionModal.benchSlot) {
+        const benchMIDs = bench.filter(p => p.element_type === 3);
+        if (benchMIDs.length < 1) {
+          setBench([...bench, player]);
+        }
+      } else {
+        if (midfielders.length < formation.mid) {
+          setMidfielders([...midfielders, player]);
+        }
+      }
+    } else if (selectionModal?.position === "FWD") {
+      if (selectionModal.benchSlot) {
+        const benchFWDs = bench.filter(p => p.element_type === 4);
+        if (benchFWDs.length < 1) {
+          setBench([...bench, player]);
+        }
+      } else {
+        if (forwards.length < formation.fwd) {
+          setForwards([...forwards, player]);
+        }
+      }
+    }
+  };
+
+  const removePlayer = (playerId: number) => {
+    setGoalkeepers(goalkeepers.filter(p => p.id !== playerId));
+    setDefenders(defenders.filter(p => p.id !== playerId));
+    setMidfielders(midfielders.filter(p => p.id !== playerId));
+    setForwards(forwards.filter(p => p.id !== playerId));
+    setBench(bench.filter(p => p.id !== playerId));
+    if (captain === playerId) setCaptain(null);
+    if (viceCaptain === playerId) setViceCaptain(null);
+  };
+
+  const handleFormationChange = (newFormation: Formation) => {
+    // Adjust defenders
+    if (newFormation.def < defenders.length) {
+      const removed = defenders.slice(newFormation.def);
+      setDefenders(defenders.slice(0, newFormation.def));
+      setBench([...bench, ...removed]);
+    }
+    // Adjust midfielders
+    if (newFormation.mid < midfielders.length) {
+      const removed = midfielders.slice(newFormation.mid);
+      setMidfielders(midfielders.slice(0, newFormation.mid));
+      setBench([...bench, ...removed]);
+    }
+    // Adjust forwards
+    if (newFormation.fwd < forwards.length) {
+      const removed = forwards.slice(newFormation.fwd);
+      setForwards(forwards.slice(0, newFormation.fwd));
+      setBench([...bench, ...removed]);
+    }
+    setFormation(newFormation);
+  };
+
   const saveToCloud = async () => {
     if (!code) {
       alert("No team code found. Please refresh the page.");
+      return;
+    }
+
+    const allSelected = getAllSelectedPlayers();
+    if (allSelected.length < 15) {
+      alert("Please select all 15 players before saving!");
       return;
     }
 
@@ -102,10 +463,10 @@ export function WildcardSimulatorPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           squad_data: {
-            players: team.players,
-            formation: team.formation,
-            captain: team.captain,
-            viceCaptain: team.viceCaptain,
+            players: allSelected,
+            formation: formation.name,
+            captain,
+            viceCaptain,
           },
           team_name: teamName || "",
         }),
@@ -126,7 +487,7 @@ export function WildcardSimulatorPage() {
 
   const copyShareLink = () => {
     if (!code) return;
-    const shareUrl = `${window.location.origin}/wildcard/${code}`;
+    const shareUrl = `${import.meta.env.VITE_API_URL}/wildcard/${code}/`;
     navigator.clipboard.writeText(shareUrl).then(() => {
       alert("✅ Link copied to clipboard!");
     });
@@ -134,14 +495,12 @@ export function WildcardSimulatorPage() {
 
   const shareAsImage = async () => {
     if (!teamDisplayRef.current) return;
-
     try {
       const canvas = await html2canvas(teamDisplayRef.current, {
-        backgroundColor: "#37003c",
+        backgroundColor: "#050714",
         scale: 2,
         logging: false,
       });
-
       canvas.toBlob((blob) => {
         if (!blob) return;
         const url = URL.createObjectURL(blob);
@@ -160,7 +519,7 @@ export function WildcardSimulatorPage() {
 
   const shareOnTwitter = () => {
     if (!code) return;
-    const shareUrl = `${window.location.origin}/wildcard/${code}`;
+    const shareUrl = `${import.meta.env.VITE_API_URL}/wildcard/${code}/`;
     const text = "Check out my FPL Wildcard team! 🔥⚽";
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
     window.open(twitterUrl, "_blank", "width=550,height=420");
@@ -168,7 +527,7 @@ export function WildcardSimulatorPage() {
 
   const shareOnFacebook = () => {
     if (!code) return;
-    const shareUrl = `${window.location.origin}/wildcard/${code}`;
+    const shareUrl = `${import.meta.env.VITE_API_URL}/wildcard/${code}/`;
     const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
     window.open(facebookUrl, "_blank", "width=550,height=420");
   };
@@ -176,344 +535,382 @@ export function WildcardSimulatorPage() {
   const clearDraft = () => {
     if (confirm("Are you sure you want to clear your draft? This cannot be undone.")) {
       localStorage.removeItem("wildcard_draft");
-      setTeam({
-        players: [],
-        formation: null,
-        captain: null,
-        viceCaptain: null,
-      });
+      setGoalkeepers([]);
+      setDefenders([]);
+      setMidfielders([]);
+      setForwards([]);
+      setBench([]);
+      setCaptain(null);
+      setViceCaptain(null);
+      setFormation(FORMATIONS[3]);
     }
   };
 
-  return (
-    <div className="page">
-      <div className="wildcard-container">
-        <header className="wildcard-header">
-          <h1>⚽ Wildcard Simulator</h1>
-          <p className="subtitle">Build and test your perfect wildcard team</p>
-        </header>
+  if (loading) {
+    return (
+      <div className="page">
+        <div className="dream-team-loading">Loading players...</div>
+      </div>
+    );
+  }
 
-        <div className="controls">
+  const allSelected = getAllSelectedPlayers();
+  const totalCost = getTotalCost();
+  const budgetRemaining = getBudgetRemaining();
+  const isSquadComplete = allSelected.length === 15;
+
+  return (
+    <div className="page dream-team-page">
+      <div className="dream-team-header">
+        <h1>⚡ Wildcard Simulator</h1>
+        <p className="dream-team-subtitle">
+          Build your perfect wildcard team • Auto-saves every 30s
+        </p>
+
+        <div className="wildcard-controls">
+          <div className="formation-selector">
+            <label>Formation:</label>
+            <select 
+              value={formation.name} 
+              onChange={(e) => {
+                const newFormation = FORMATIONS.find(f => f.name === e.target.value);
+                if (newFormation) handleFormationChange(newFormation);
+              }}
+              className="formation-select"
+            >
+              {FORMATIONS.map((f) => (
+                <option key={f.name} value={f.name}>{f.name}</option>
+              ))}
+            </select>
+          </div>
+
           <div className="autosave-indicator" style={{ opacity: autoSaveStatus ? 1 : 0 }}>
             {autoSaveStatus}
           </div>
-          <div className="button-group">
-            <button className="secondary-btn" onClick={clearDraft}>
-              🗑️ Clear Draft
-            </button>
-            <button className="primary-btn" onClick={saveToCloud}>
-              💾 Save & Share
-            </button>
+        </div>
+
+        <div className="dream-team-stats">
+          <div className="dream-stat-item">
+            <span className="dream-stat-label">Players</span>
+            <span className="dream-stat-value">{allSelected.length}/15</span>
+          </div>
+          <div className="dream-stat-item">
+            <span className="dream-stat-label">Budget Used</span>
+            <span className="dream-stat-value">£{totalCost.toFixed(1)}m</span>
+          </div>
+          <div className="dream-stat-item">
+            <span className="dream-stat-label">Remaining</span>
+            <span className="dream-stat-value" style={{ color: budgetRemaining < 0 ? "#ef4444" : "var(--accent-cyan)" }}>
+              £{budgetRemaining.toFixed(1)}m
+            </span>
           </div>
         </div>
 
-        <div className="team-display" ref={teamDisplayRef}>
-          <div className="pitch">
-            <div className="center-circle"></div>
-            <div className="empty-team">
-              <h3>🎯 Start Building Your Team</h3>
-              <p>Your selections are automatically saved</p>
-              <p>Click "Save & Share" when you're ready to get a shareable code</p>
-              <p style={{ marginTop: "20px", fontSize: "0.9em", opacity: 0.7 }}>
-                (Player selection UI coming soon - for now, this demonstrates the auto-save and sharing features)
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="info-text">
-          <p>💡 Your draft is saved automatically every 30 seconds</p>
-          <p>Close this page and come back anytime - your team will be here!</p>
+        <div className="wildcard-action-btns">
+          <button className="secondary-btn" onClick={clearDraft}>
+            🗑️ Clear Draft
+          </button>
+          <button 
+            className="share-dream-team-btn" 
+            onClick={saveToCloud}
+            disabled={!isSquadComplete || budgetRemaining < 0}
+          >
+            💾 Save & Share
+          </button>
         </div>
       </div>
+
+      <div ref={teamDisplayRef} className="dream-team-capture">
+        <div className="football-field">
+          {/* Goalkeeper */}
+          <div className="field-row goalkeeper-row">
+            {goalkeepers[0] ? (
+              <PlayerCard
+                player={goalkeepers[0]}
+                isCaptain={captain === goalkeepers[0].id}
+                isVice={viceCaptain === goalkeepers[0].id}
+                onClick={() => setDetailPlayerId(goalkeepers[0].id)}
+                onRemove={() => removePlayer(goalkeepers[0].id)}
+              />
+            ) : (
+              <PlayerCard
+                player={null}
+                onClick={() => setSelectionModal({ position: "GK" })}
+                onRemove={() => {}}
+                showRemove={false}
+              />
+            )}
+          </div>
+
+          {/* Defenders */}
+          <div className="field-row defenders-row">
+            {Array.from({ length: formation.def }).map((_, i) => (
+              <div key={`def-${i}`}>
+                {defenders[i] ? (
+                  <PlayerCard
+                    player={defenders[i]}
+                    isCaptain={captain === defenders[i].id}
+                    isVice={viceCaptain === defenders[i].id}
+                    onClick={() => setDetailPlayerId(defenders[i].id)}
+                    onRemove={() => removePlayer(defenders[i].id)}
+                  />
+                ) : (
+                  <PlayerCard
+                    player={null}
+                    onClick={() => setSelectionModal({ position: "DEF" })}
+                    onRemove={() => {}}
+                    showRemove={false}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Midfielders */}
+          <div className="field-row midfielders-row">
+            {Array.from({ length: formation.mid }).map((_, i) => (
+              <div key={`mid-${i}`}>
+                {midfielders[i] ? (
+                  <PlayerCard
+                    player={midfielders[i]}
+                    isCaptain={captain === midfielders[i].id}
+                    isVice={viceCaptain === midfielders[i].id}
+                    onClick={() => setDetailPlayerId(midfielders[i].id)}
+                    onRemove={() => removePlayer(midfielders[i].id)}
+                  />
+                ) : (
+                  <PlayerCard
+                    player={null}
+                    onClick={() => setSelectionModal({ position: "MID" })}
+                    onRemove={() => {}}
+                    showRemove={false}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Forwards */}
+          <div className="field-row forwards-row">
+            {Array.from({ length: formation.fwd }).map((_, i) => (
+              <div key={`fwd-${i}`}>
+                {forwards[i] ? (
+                  <PlayerCard
+                    player={forwards[i]}
+                    isCaptain={captain === forwards[i].id}
+                    isVice={viceCaptain === forwards[i].id}
+                    onClick={() => setDetailPlayerId(forwards[i].id)}
+                    onRemove={() => removePlayer(forwards[i].id)}
+                  />
+                ) : (
+                  <PlayerCard
+                    player={null}
+                    onClick={() => setSelectionModal({ position: "FWD" })}
+                    onRemove={() => {}}
+                    showRemove={false}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bench */}
+        <div className="bench-section">
+          <h2>Bench (4 players)</h2>
+          <div className="bench-players">
+            {/* GK */}
+            {bench.find(p => p.element_type === 1) ? (
+              <PlayerCard
+                player={bench.find(p => p.element_type === 1)!}
+                onClick={() => setDetailPlayerId(bench.find(p => p.element_type === 1)!.id)}
+                onRemove={() => removePlayer(bench.find(p => p.element_type === 1)!.id)}
+              />
+            ) : (
+              <PlayerCard
+                player={null}
+                onClick={() => setSelectionModal({ position: "GK", benchSlot: true })}
+                onRemove={() => {}}
+                showRemove={false}
+              />
+            )}
+
+            {/* Outfield players */}
+            {[2, 3, 4].map((_, idx) => {
+              const benchOutfield = bench.filter(p => p.element_type !== 1);
+              return benchOutfield[idx] ? (
+                <PlayerCard
+                  key={`bench-${idx}`}
+                  player={benchOutfield[idx]}
+                  onClick={() => setDetailPlayerId(benchOutfield[idx].id)}
+                  onRemove={() => removePlayer(benchOutfield[idx].id)}
+                />
+              ) : (
+                <PlayerCard
+                  key={`bench-empty-${idx}`}
+                  player={null}
+                  onClick={() => {
+                    // Allow any outfield position for bench
+                    const missing = ["DEF", "MID", "FWD"].find(pos => {
+                      const count = benchOutfield.filter(p => getPositionName(p.element_type) === pos).length;
+                      return count < 1;
+                    });
+                    if (missing) {
+                      setSelectionModal({ position: missing as any, benchSlot: true });
+                    } else {
+                      setSelectionModal({ position: "DEF", benchSlot: true });
+                    }
+                  }}
+                  onRemove={() => {}}
+                  showRemove={false}
+                />
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Player Selection Modal */}
+      {selectionModal && (
+        <PlayerSelectionModal
+          position={selectionModal.position}
+          allPlayers={allPlayers}
+          selectedPlayers={getAllSelectedPlayers()}
+          onSelect={handlePlayerSelect}
+          onClose={() => setSelectionModal(null)}
+        />
+      )}
+
+      {/* Player Detail Modal */}
+      {detailPlayerId && (
+        <PlayerModal
+          playerId={detailPlayerId}
+          onClose={() => setDetailPlayerId(null)}
+        />
+      )}
 
       {/* Success Modal */}
       {showSuccessModal && savedData && (
         <div className="modal-overlay" onClick={() => setShowSuccessModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content success-modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>✅ Team Saved!</h2>
             <p>Your wildcard team has been saved and is ready to share!</p>
 
-            <div className="code-box">
+            <div className="code-box" style={{
+              background: "rgba(0, 255, 135, 0.1)",
+              padding: "20px",
+              margin: "20px 0",
+              borderRadius: "8px",
+              fontSize: "1.5em",
+              fontWeight: "bold",
+              color: "var(--accent-cyan)",
+              border: "1px solid var(--accent-cyan)"
+            }}>
               <strong>Code:</strong> {savedData.code}
             </div>
 
-            <div className="share-url">
+            <div className="share-url" style={{
+              background: "rgba(255, 255, 255, 0.05)",
+              padding: "15px",
+              borderRadius: "8px",
+              wordBreak: "break-all",
+              fontFamily: "monospace",
+              fontSize: "0.9em",
+              margin: "15px 0",
+              border: "2px solid var(--accent-cyan)"
+            }}>
               {`${import.meta.env.VITE_API_URL}/wildcard/${savedData.code}/`}
             </div>
 
-            <div className="team-stats">
-              <p>
-                <strong>Total Cost:</strong> £{savedData.total_cost}m
-              </p>
-              <p>
-                <strong>Predicted Points:</strong> {savedData.predicted_points}
-              </p>
+            <div className="team-stats" style={{
+              margin: "20px 0",
+              padding: "20px",
+              background: "rgba(255, 255, 255, 0.05)",
+              borderRadius: "8px"
+            }}>
+              <p><strong>Total Cost:</strong> £{savedData.total_cost}m</p>
+              <p><strong>Predicted Points:</strong> {savedData.predicted_points}</p>
             </div>
 
             <h3 style={{ marginTop: "20px", marginBottom: "10px" }}>Share Your Team:</h3>
 
-            <div className="share-buttons">
-              <button className="share-btn copy" onClick={copyShareLink}>
+            <div className="share-buttons" style={{
+              display: "flex",
+              gap: "10px",
+              justifyContent: "center",
+              margin: "20px 0",
+              flexWrap: "wrap"
+            }}>
+              <button className="share-btn-modal copy" onClick={copyShareLink} style={{
+                padding: "10px 20px",
+                borderRadius: "5px",
+                border: "none",
+                fontWeight: "bold",
+                cursor: "pointer",
+                fontSize: "0.95em",
+                background: "var(--accent-cyan)",
+                color: "var(--bg-primary)"
+              }}>
                 📋 Copy Link
               </button>
-              <button className="share-btn image" onClick={shareAsImage}>
+              <button className="share-btn-modal image" onClick={shareAsImage} style={{
+                padding: "10px 20px",
+                borderRadius: "5px",
+                border: "none",
+                fontWeight: "bold",
+                cursor: "pointer",
+                fontSize: "0.95em",
+                background: "var(--accent-purple)",
+                color: "white"
+              }}>
                 📸 Download Image
               </button>
-              <button className="share-btn twitter" onClick={shareOnTwitter}>
+              <button className="share-btn-modal twitter" onClick={shareOnTwitter} style={{
+                padding: "10px 20px",
+                borderRadius: "5px",
+                border: "none",
+                fontWeight: "bold",
+                cursor: "pointer",
+                fontSize: "0.95em",
+                background: "#1da1f2",
+                color: "white"
+              }}>
                 🐦 Twitter
               </button>
-              <button className="share-btn facebook" onClick={shareOnFacebook}>
+              <button className="share-btn-modal facebook" onClick={shareOnFacebook} style={{
+                padding: "10px 20px",
+                borderRadius: "5px",
+                border: "none",
+                fontWeight: "bold",
+                cursor: "pointer",
+                fontSize: "0.95em",
+                background: "#4267B2",
+                color: "white"
+              }}>
                 📘 Facebook
               </button>
             </div>
 
-            <div className="modal-actions">
-              <button onClick={() => setShowSuccessModal(false)}>Close</button>
+            <div className="modal-actions" style={{ marginTop: "20px" }}>
+              <button onClick={() => setShowSuccessModal(false)} style={{
+                background: "rgba(255, 255, 255, 0.1)",
+                color: "var(--text-primary)",
+                padding: "12px 30px",
+                borderRadius: "8px",
+                border: "none",
+                cursor: "pointer",
+                fontSize: "1em"
+              }}>Close</button>
             </div>
 
-            <p className="note">💡 Your team is saved! Anyone with this link can view it.</p>
+            <p className="note" style={{
+              marginTop: "20px",
+              fontSize: "0.9em",
+              color: "var(--text-muted)"
+            }}>💡 Your team is saved! Anyone with this link can view it.</p>
           </div>
         </div>
       )}
-
-      <style>{`
-        .wildcard-container {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 20px;
-        }
-
-        .wildcard-header {
-          text-align: center;
-          margin-bottom: 40px;
-        }
-
-        .wildcard-header h1 {
-          font-size: 2.5em;
-          margin-bottom: 10px;
-        }
-
-        .wildcard-header .subtitle {
-          color: var(--accent-cyan);
-          font-size: 1.3em;
-        }
-
-        .controls {
-          background: rgba(255, 255, 255, 0.05);
-          padding: 20px;
-          border-radius: 10px;
-          margin-bottom: 30px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .autosave-indicator {
-          color: var(--accent-cyan);
-          transition: opacity 0.3s;
-        }
-
-        .button-group {
-          display: flex;
-          gap: 10px;
-        }
-
-        .primary-btn, .secondary-btn {
-          padding: 12px 24px;
-          border-radius: 8px;
-          font-size: 1em;
-          font-weight: bold;
-          cursor: pointer;
-          transition: transform 0.2s;
-          border: none;
-        }
-
-        .primary-btn {
-          background: var(--accent-cyan);
-          color: var(--bg-primary);
-        }
-
-        .secondary-btn {
-          background: rgba(255, 255, 255, 0.1);
-          color: var(--text-primary);
-        }
-
-        .primary-btn:hover, .secondary-btn:hover {
-          transform: scale(1.05);
-        }
-
-        .team-display {
-          background: rgba(255, 255, 255, 0.05);
-          padding: 30px;
-          border-radius: 10px;
-          min-height: 400px;
-          margin-bottom: 30px;
-        }
-
-        .pitch {
-          background: linear-gradient(90deg, #38003c 50%, #550044 50%);
-          border-radius: 10px;
-          padding: 40px;
-          min-height: 500px;
-          position: relative;
-        }
-
-        .center-circle {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 100px;
-          height: 100px;
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          border-radius: 50%;
-        }
-
-        .empty-team {
-          text-align: center;
-          padding: 60px 20px;
-          color: rgba(255, 255, 255, 0.8);
-        }
-
-        .empty-team h3 {
-          font-size: 1.5em;
-          margin-bottom: 10px;
-        }
-
-        .info-text {
-          text-align: center;
-          color: var(--text-muted);
-        }
-
-        .info-text p {
-          margin: 10px 0;
-        }
-
-        .modal-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.8);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 2000;
-        }
-
-        .modal-content {
-          background: var(--bg-secondary);
-          color: var(--text-primary);
-          padding: 40px;
-          border-radius: 15px;
-          max-width: 600px;
-          max-height: 90vh;
-          overflow-y: auto;
-          text-align: center;
-          border: 1px solid var(--border-glow);
-        }
-
-        .modal-content h2 {
-          margin-bottom: 20px;
-        }
-
-        .code-box {
-          background: rgba(0, 255, 135, 0.1);
-          padding: 20px;
-          margin: 20px 0;
-          border-radius: 8px;
-          font-size: 1.5em;
-          font-weight: bold;
-          color: var(--accent-cyan);
-          border: 1px solid var(--accent-cyan);
-        }
-
-        .share-url {
-          background: rgba(255, 255, 255, 0.05);
-          padding: 15px;
-          border-radius: 8px;
-          word-break: break-all;
-          font-family: monospace;
-          font-size: 0.9em;
-          margin: 15px 0;
-          border: 2px solid var(--accent-cyan);
-        }
-
-        .team-stats {
-          margin: 20px 0;
-          padding: 20px;
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 8px;
-        }
-
-        .team-stats p {
-          margin: 10px 0;
-        }
-
-        .share-buttons {
-          display: flex;
-          gap: 10px;
-          justify-content: center;
-          margin: 20px 0;
-          flex-wrap: wrap;
-        }
-
-        .share-btn {
-          padding: 10px 20px;
-          border-radius: 5px;
-          border: none;
-          font-weight: bold;
-          cursor: pointer;
-          transition: transform 0.2s;
-          font-size: 0.95em;
-        }
-
-        .share-btn:hover {
-          transform: scale(1.05);
-        }
-
-        .share-btn.copy {
-          background: var(--accent-cyan);
-          color: var(--bg-primary);
-        }
-
-        .share-btn.image {
-          background: var(--accent-purple);
-          color: white;
-        }
-
-        .share-btn.twitter {
-          background: #1da1f2;
-          color: white;
-        }
-
-        .share-btn.facebook {
-          background: #4267B2;
-          color: white;
-        }
-
-        .modal-actions {
-          margin-top: 20px;
-        }
-
-        .modal-actions button {
-          background: rgba(255, 255, 255, 0.1);
-          color: var(--text-primary);
-          padding: 12px 30px;
-          border-radius: 8px;
-          border: none;
-          cursor: pointer;
-          font-size: 1em;
-        }
-
-        .note {
-          margin-top: 20px;
-          font-size: 0.9em;
-          color: var(--text-muted);
-        }
-      `}</style>
     </div>
   );
 }

@@ -3718,3 +3718,339 @@ a {
     font-size: 0.85rem;
   }
 }
+
+/* Wildcard Simulator Styles */
+.wildcard-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 2rem auto;
+  max-width: 600px;
+  padding: 1rem 2rem;
+  background: rgba(19, 24, 60, 0.6);
+  border: 1px solid var(--border-glow);
+  border-radius: 12px;
+}
+
+.formation-selector {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.formation-selector label {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.formation-select {
+  padding: 0.5rem 1rem;
+  background: rgba(79, 70, 229, 0.3);
+  border: 1px solid var(--border-glow);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.wildcard-action-btns {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.secondary-btn {
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-glow);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.secondary-btn:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.empty-slot {
+  background: rgba(79, 70, 229, 0.2) !important;
+  border: 2px dashed var(--accent-cyan) !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+}
+
+.empty-slot:hover {
+  background: rgba(79, 70, 229, 0.3) !important;
+  border-color: var(--accent-purple) !important;
+}
+
+.empty-slot-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 120px;
+}
+
+.empty-slot-icon {
+  font-size: 2rem;
+  color: var(--accent-cyan);
+  margin-bottom: 0.5rem;
+}
+
+.empty-slot-text {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.remove-player-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: white;
+  border: 2px solid var(--bg-primary);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.remove-player-btn:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+.captain-badge {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #000;
+  border: 2px solid var(--bg-primary);
+  font-size: 0.85rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.vice-badge {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c0c0c0, #e0e0e0);
+  color: #000;
+  border: 2px solid var(--bg-primary);
+  font-size: 0.85rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+/* Player Selection Modal */
+.player-selection-modal {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-glow);
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 800px;
+  width: 90vw;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.modal-header h2 {
+  font-size: 1.8rem;
+  margin: 0;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.close-modal-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.close-modal-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.modal-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: rgba(19, 24, 60, 0.6);
+  border: 1px solid var(--border-glow);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.sort-select {
+  padding: 0.75rem 1rem;
+  background: rgba(79, 70, 229, 0.3);
+  border: 1px solid var(--border-glow);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.player-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.player-list-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(19, 24, 60, 0.6);
+  border: 1px solid var(--border-glow);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.player-list-item:hover {
+  border-color: var(--accent-cyan);
+  background: rgba(79, 70, 229, 0.2);
+  transform: translateX(5px);
+}
+
+.player-list-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(22, 242, 255, 0.1);
+}
+
+.player-list-info {
+  flex: 1;
+}
+
+.player-list-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.player-list-team {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.player-list-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  color: var(--accent-cyan);
+}
+
+.player-list-stats span {
+  padding: 0.25rem 0.5rem;
+  background: rgba(79, 70, 229, 0.3);
+  border-radius: 4px;
+}
+
+.success-modal-content {
+  max-width: 600px;
+}
+
+@media (max-width: 768px) {
+  .wildcard-controls {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .wildcard-action-btns {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .wildcard-action-btns button {
+    width: 100%;
+  }
+
+  .player-selection-modal {
+    width: 95vw;
+    padding: 1.5rem;
+  }
+
+  .modal-filters {
+    flex-direction: column;
+  }
+
+  .player-list-item {
+    flex-wrap: wrap;
+  }
+
+  .player-list-stats {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
