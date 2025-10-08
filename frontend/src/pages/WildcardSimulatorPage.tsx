@@ -237,10 +237,10 @@ export function WildcardSimulatorPage() {
 
   // Load players
   useEffect(() => {
-    fetch("/api/players/")
+    fetch("/api/players/?page_size=700")
       .then((res) => res.json())
       .then((data) => {
-        setAllPlayers(data);
+        setAllPlayers(data.players || []);
         setLoading(false);
       })
       .catch((err) => {
