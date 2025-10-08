@@ -733,3 +733,75 @@ class SofasportPlayerAttributes(TimestampedModel):
         avg_str = " (avg)" if self.is_average else ""
         return f"{self.athlete.web_name} - YearShift {self.year_shift}{avg_str}"
 
+
+class WildcardSimulation(TimestampedModel):
+    """
+    Wildcard team simulator - tracks user-created wildcard drafts.
+    Uses hybrid storage: minimal DB entry for tracking, localStorage for editing.
+    """
+    code = models.CharField(
+        max_length=10,
+        unique=True,
+        db_index=True,
+        help_text="Unique shareable code (e.g., WC-ABC123)"
+    )
+    
+    # Team data
+    squad_data = models.JSONField(
+        default=dict,
+        help_text="Player selections, formation, captain choices"
+    )
+    
+    # Cached calculations
+    total_cost = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        default=Decimal('0.0'),
+        help_text="Total squad cost in millions"
+    )
+    predicted_points = models.IntegerField(
+        default=0,
+        help_text="Predicted total points for next gameweek"
+    )
+    
+    # Metadata
+    gameweek = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Target gameweek for this wildcard"
+    )
+    team_name = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Optional user-provided team name"
+    )
+    
+    # Tracking
+    is_saved = models.BooleanField(
+        default=False,
+        help_text="True if user clicked 'Save & Share', False if just drafting"
+    )
+    view_count = models.IntegerField(
+        default=1,
+        help_text="Number of times this team has been viewed"
+    )
+    
+    class Meta(TimestampedModel.Meta):
+        db_table = "wildcard_simulations"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["code"]),
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["is_saved"]),
+        ]
+    
+    def __str__(self) -> str:
+        status = "Saved" if self.is_saved else "Draft"
+        return f"{self.code} - {status} ({self.created_at.strftime('%Y-%m-%d')})"
+    
+    @staticmethod
+    def generate_code():
+        """Generate a unique wildcard code."""
+        import uuid
+        return f"WC-{uuid.uuid4().hex[:6].upper()}"
+

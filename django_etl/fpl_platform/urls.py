@@ -23,6 +23,14 @@ from etl.fpl_proxy_views import (
     proxy_fixtures,
     proxy_player_summary,
 )
+from etl.views_wildcard import (
+    wildcard_home,
+    wildcard_view,
+    track_wildcard_start,
+    get_wildcard_team,
+    save_wildcard_team,
+    wildcard_stats,
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -47,4 +55,12 @@ urlpatterns = [
     path("api/fpl/event/<int:event_id>/live/", proxy_event_live, name="fpl-event-live"),
     path("api/fpl/fixtures/", proxy_fixtures, name="fpl-fixtures"),
     path("api/fpl/element-summary/<int:player_id>/", proxy_player_summary, name="fpl-player-summary"),
+    
+    # Wildcard Simulator endpoints
+    path("wildcard/", wildcard_home, name="wildcard-home"),
+    path("wildcard/<str:code>/", wildcard_view, name="wildcard-view"),
+    path("api/wildcard/track/", track_wildcard_start, name="wildcard-track-start"),
+    path("api/wildcard/<str:code>/", get_wildcard_team, name="wildcard-get"),
+    path("api/wildcard/<str:code>/save/", save_wildcard_team, name="wildcard-save"),
+    path("api/wildcard/stats/", wildcard_stats, name="wildcard-stats"),
 ]

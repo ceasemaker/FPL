@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wildcard Simulator - FPL Pulse</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #37003c;
+            color: #fff;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            color: #00ff87;
+            font-size: 1.1em;
+        }
+        
+        .controls {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .autosave-indicator {
+            opacity: 0;
+            transition: opacity 0.3s;
+            color: #00ff87;
+        }
+        
+        button {
+            background: #00ff87;
+            color: #37003c;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: scale(1.05);
+        }
+        
+        button:active {
+            transform: scale(0.95);
+        }
+        
+        .secondary-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+        
+        .team-display {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 10px;
+            min-height: 400px;
+        }
+        
+        .pitch {
+            background: linear-gradient(90deg, #38003c 50%, #550044 50%);
+            border-radius: 10px;
+            padding: 40px;
+            min-height: 500px;
+            position: relative;
+        }
+        
+        .pitch-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+        
+        .center-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+        }
+        
+        .player-slot {
+            background: rgba(255, 255, 255, 0.9);
+            color: #37003c;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .player-slot:hover {
+            background: #00ff87;
+            transform: scale(1.05);
+        }
+        
+        .empty-team {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .empty-team h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #00ff87;
+            color: #37003c;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .success-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        
+        .modal-content {
+            background: #fff;
+            color: #37003c;
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        .modal-content h2 {
+            margin-bottom: 20px;
+        }
+        
+        .code-box {
+            background: #f4f4f4;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #00ff87;
+        }
+        
+        .team-stats {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .note {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .note a {
+            color: #37003c;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚽ Wildcard Simulator</h1>
+            <p>Build and test your perfect wildcard team</p>
+        </header>
+        
+        <div class="controls">
+            <div>
+                <span id="autosave-indicator" class="autosave-indicator">💾 Saved</span>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="secondary-btn" onclick="wildcardManager.clearDraft()">
+                    🗑️ Clear Draft
+                </button>
+                <button onclick="wildcardManager.saveToCloud()">
+                    💾 Save & Share
+                </button>
+            </div>
+        </div>
+        
+        <div class="team-display">
+            <div class="pitch">
+                <div class="pitch-lines">
+                    <div class="center-circle"></div>
+                </div>
+                <div id="team-container" class="empty-team">
+                    <h3>🎯 Start Building Your Team</h3>
+                    <p>Your selections are automatically saved</p>
+                    <p>Click "Save & Share" when you're ready to get a shareable code</p>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px; color: rgba(255, 255, 255, 0.6);">
+            <p>💡 Your draft is saved automatically every 30 seconds</p>
+            <p>Close this page and come back anytime - your team will be here!</p>
+        </div>
+    </div>
+    
+    <script src="/static/js/wildcard-manager.js"></script>
+</body>
+</html>
