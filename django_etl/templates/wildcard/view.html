@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ simulation.team_name|default:"Wildcard Team" }} - {{ code }} - FPL Pulse</title>
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:title" content="{{ simulation.team_name|default:"Wildcard Team" }} - FPL Pulse">
+    <meta property="og:description" content="Check out this FPL wildcard team! Total Cost: £{{ simulation.total_cost }}m | Predicted Points: {{ simulation.predicted_points }}">
+    <meta property="og:image" content="https://fplpulse.com/static/images/wildcard-og.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ request.build_absolute_uri }}">
+    <meta property="twitter:title" content="{{ simulation.team_name|default:"Wildcard Team" }} - FPL Pulse">
+    <meta property="twitter:description" content="Check out this FPL wildcard team! Total Cost: £{{ simulation.total_cost }}m | Predicted Points: {{ simulation.predicted_points }}">
+    <meta property="twitter:image" content="https://fplpulse.com/static/images/wildcard-og.png">
+    
+    <!-- html2canvas for image generation -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #37003c;
+            color: #fff;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        header .subtitle {
+            color: #00ff87;
+            font-size: 1.3em;
+            margin-bottom: 5px;
+        }
+        
+        header .code {
+            color: rgba(255, 255, 255, 0.7);
+            font-family: monospace;
+            font-size: 1.1em;
+        }
+        
+        .team-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .info-card {
+            text-align: center;
+        }
+        
+        .info-card .label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .info-card .value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #00ff87;
+        }
+        
+        .share-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        button, .button {
+            background: #00ff87;
+            color: #37003c;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        button:hover, .button:hover {
+            transform: scale(1.05);
+        }
+        
+        .share-btn {
+            background: #1da1f2;
+            color: white;
+        }
+        
+        .share-btn.facebook {
+            background: #4267B2;
+        }
+        
+        .share-btn.image {
+            background: #8e44ad;
+        }
+        
+        .team-display {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 10px;
+            min-height: 400px;
+            margin-bottom: 30px;
+        }
+        
+        .pitch {
+            background: linear-gradient(90deg, #38003c 50%, #550044 50%);
+            border-radius: 10px;
+            padding: 40px;
+            min-height: 500px;
+            position: relative;
+        }
+        
+        .center-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+        }
+        
+        .player-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .player-card {
+            background: rgba(255, 255, 255, 0.9);
+            color: #37003c;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .player-card .player-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        
+        .player-card .player-team {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .player-card .player-price {
+            color: #00ff87;
+            font-weight: bold;
+        }
+        
+        .captain-badge {
+            background: #ffd700;
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        
+        .vice-badge {
+            background: #c0c0c0;
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        
+        .create-own {
+            text-align: center;
+            margin-top: 40px;
+            padding: 30px;
+            background: rgba(0, 255, 135, 0.1);
+            border-radius: 10px;
+        }
+        
+        .create-own h2 {
+            margin-bottom: 15px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #00ff87;
+            color: #37003c;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚽ {{ simulation.team_name|default:"Wildcard Team" }}</h1>
+            <p class="subtitle">FPL Wildcard Simulator</p>
+            <p class="code">Code: {{ code }}</p>
+        </header>
+        
+        <div class="team-info">
+            <div class="info-card">
+                <div class="label">Total Cost</div>
+                <div class="value">£{{ simulation.total_cost }}m</div>
+            </div>
+            <div class="info-card">
+                <div class="label">Predicted Points</div>
+                <div class="value">{{ simulation.predicted_points }}</div>
+            </div>
+            <div class="info-card">
+                <div class="label">Views</div>
+                <div class="value">{{ simulation.view_count }}</div>
+            </div>
+            {% if simulation.gameweek %}
+            <div class="info-card">
+                <div class="label">Gameweek</div>
+                <div class="value">{{ simulation.gameweek }}</div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="share-controls">
+            <button onclick="copyShareLink()">📋 Copy Link</button>
+            <button class="share-btn image" onclick="downloadAsImage()">📸 Download Image</button>
+            <button class="share-btn" onclick="shareOnTwitter()">🐦 Share on Twitter</button>
+            <button class="share-btn facebook" onclick="shareOnFacebook()">📘 Share on Facebook</button>
+        </div>
+        
+        <div class="team-display" id="team-capture">
+            <h2 style="margin-bottom: 20px;">Squad ({{ simulation.squad_data.players|length }} players)</h2>
+            
+            {% if simulation.squad_data.players %}
+                <div class="player-grid">
+                    {% for player in simulation.squad_data.players %}
+                    <div class="player-card">
+                        <div class="player-name">{{ player.web_name|default:player.name|default:"Player" }}</div>
+                        <div class="player-team">{{ player.team_name|default:"Unknown" }}</div>
+                        <div class="player-price">£{{ player.price|default:"0.0" }}m</div>
+                        {% if player.id == simulation.squad_data.captain %}
+                            <span class="captain-badge">CAPTAIN</span>
+                        {% elif player.id == simulation.squad_data.viceCaptain %}
+                            <span class="vice-badge">VICE</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="pitch">
+                    <div class="center-circle"></div>
+                    <p style="text-align: center; padding: 60px 20px; color: rgba(255, 255, 255, 0.6);">
+                        No players in this team yet
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="create-own">
+            <h2>💡 Create Your Own Wildcard Team</h2>
+            <p style="margin-bottom: 20px;">Build, save, and share your perfect FPL wildcard strategy!</p>
+            <a href="/wildcard/" class="button">🔥 Create My Team</a>
+        </div>
+    </div>
+    
+    <script>
+        function copyShareLink() {
+            const url = window.location.href;
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url)
+                    .then(() => showNotification('✅ Link copied to clipboard!'))
+                    .catch(() => fallbackCopy(url));
+            } else {
+                fallbackCopy(url);
+            }
+        }
+        
+        function fallbackCopy(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                showNotification('✅ Link copied to clipboard!');
+            } catch (err) {
+                alert('Failed to copy. Please copy manually: ' + text);
+            }
+            
+            document.body.removeChild(textarea);
+        }
+        
+        async function downloadAsImage() {
+            const element = document.getElementById('team-capture');
+            if (!element) return;
+            
+            showNotification('📸 Generating image...');
+            
+            try {
+                const canvas = await html2canvas(element, {
+                    backgroundColor: '#37003c',
+                    scale: 2,
+                    logging: false
+                });
+                
+                canvas.toBlob((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.download = 'wildcard-team-{{ code }}.png';
+                    link.href = url;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                    showNotification('✅ Image downloaded!');
+                }, 'image/png');
+            } catch (error) {
+                console.error('Failed to generate image:', error);
+                alert('Failed to generate image. Please try again.');
+            }
+        }
+        
+        function shareOnTwitter() {
+            const url = window.location.href;
+            const text = 'Check out my FPL Wildcard team! 🔥⚽';
+            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+            window.open(twitterUrl, '_blank', 'width=550,height=420');
+        }
+        
+        function shareOnFacebook() {
+            const url = window.location.href;
+            const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+            window.open(facebookUrl, '_blank', 'width=550,height=420');
+        }
+        
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

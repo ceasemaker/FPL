@@ -4,6 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wildcard Simulator - FPL Pulse</title>
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://fplpulse.com/wildcard/">
+    <meta property="og:title" content="Wildcard Simulator - FPL Pulse">
+    <meta property="og:description" content="Build and share your perfect FPL wildcard team">
+    <meta property="og:image" content="https://fplpulse.com/static/images/wildcard-og.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://fplpulse.com/wildcard/">
+    <meta property="twitter:title" content="Wildcard Simulator - FPL Pulse">
+    <meta property="twitter:description" content="Build and share your perfect FPL wildcard team">
+    <meta property="twitter:image" content="https://fplpulse.com/static/images/wildcard-og.png">
+    
+    <!-- html2canvas for image generation -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -212,6 +230,52 @@
             gap: 10px;
             justify-content: center;
             margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .share-btn {
+            background: #1da1f2;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            border: none;
+            font-size: 0.95em;
+            transition: transform 0.2s;
+        }
+        
+        .share-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .share-btn.facebook {
+            background: #4267B2;
+        }
+        
+        .share-btn.copy {
+            background: #00ff87;
+            color: #37003c;
+        }
+        
+        .share-btn.image {
+            background: #8e44ad;
+        }
+        
+        .share-url {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 8px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 0.9em;
+            color: #333;
+            margin: 15px 0;
+            border: 2px solid #00ff87;
         }
         
         .note {

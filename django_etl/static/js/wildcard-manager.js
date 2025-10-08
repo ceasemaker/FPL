@@ -143,6 +143,111 @@ class WildcardManager {
         }
     }
     
+    async shareAsImage() {
+        // Capture the team display as an image
+        const teamContainer = document.querySelector('.team-display');
+        if (!teamContainer) {
+            this.showError('Team container not found');
+            return;
+        }
+        
+        try {
+            this.showNotification('📸 Generating image...');
+            
+            const canvas = await html2canvas(teamContainer, {
+                backgroundColor: '#37003c',
+                scale: 2, // Higher quality
+                logging: false
+            });
+            
+            // Convert to blob
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                
+                // Create download link
+                const link = document.createElement('a');
+                link.download = `wildcard-team-${this.code || 'draft'}.png`;
+                link.href = url;
+                link.click();
+                
+                // Cleanup
+                URL.revokeObjectURL(url);
+                
+                this.showNotification('✅ Image downloaded!');
+            }, 'image/png');
+            
+        } catch (error) {
+            console.error('❌ Failed to generate image:', error);
+            this.showError('Failed to generate image. Please try again.');
+        }
+    }
+    
+    copyShareLink() {
+        if (!this.code) {
+            this.showError('No team code found');
+            return;
+        }
+        
+        const shareUrl = `${window.location.origin}/wildcard/${this.code}/`;
+        
+        // Try modern clipboard API first
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(shareUrl)
+                .then(() => {
+                    this.showNotification('✅ Link copied to clipboard!');
+                })
+                .catch(() => {
+                    this.fallbackCopyToClipboard(shareUrl);
+                });
+        } else {
+            this.fallbackCopyToClipboard(shareUrl);
+        }
+    }
+    
+    fallbackCopyToClipboard(text) {
+        // Fallback for older browsers
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        
+        try {
+            document.execCommand('copy');
+            this.showNotification('✅ Link copied to clipboard!');
+        } catch (err) {
+            this.showError('Failed to copy link. Please copy manually.');
+        }
+        
+        document.body.removeChild(textarea);
+    }
+    
+    shareOnTwitter() {
+        if (!this.code) {
+            this.showError('No team code found');
+            return;
+        }
+        
+        const shareUrl = `${window.location.origin}/wildcard/${this.code}/`;
+        const text = `Check out my FPL Wildcard team! 🔥⚽`;
+        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
+        
+        window.open(twitterUrl, '_blank', 'width=550,height=420');
+    }
+    
+    shareOnFacebook() {
+        if (!this.code) {
+            this.showError('No team code found');
+            return;
+        }
+        
+        const shareUrl = `${window.location.origin}/wildcard/${this.code}/`;
+        const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+        
+        window.open(facebookUrl, '_blank', 'width=550,height=420');
+    }
+    
     addPlayer(playerId) {
         // Add player logic
         this.currentTeam.players.push({
@@ -222,28 +327,63 @@ class WildcardManager {
     }
     
     showSuccessModal(data) {
+        const shareUrl = `${window.location.origin}/wildcard/${data.code}/`;
+        
         const modal = document.createElement('div');
         modal.className = 'success-modal';
+        modal.id = 'success-modal';
         modal.innerHTML = `
             <div class="modal-content">
                 <h2>✅ Team Saved!</h2>
-                <p>Your wildcard team has been saved.</p>
+                <p>Your wildcard team has been saved and is ready to share!</p>
+                
                 <div class="code-box">
-                    <strong>Your Code:</strong> ${data.code}
+                    <strong>Code:</strong> ${data.code}
                 </div>
+                
+                <div class="share-url">
+                    ${shareUrl}
+                </div>
+                
                 <div class="team-stats">
-                    <p>Total Cost: £${data.total_cost}m</p>
-                    <p>Predicted Points: ${data.predicted_points}</p>
+                    <p><strong>Total Cost:</strong> £${data.total_cost}m</p>
+                    <p><strong>Predicted Points:</strong> ${data.predicted_points}</p>
                 </div>
+                
+                <h3 style="margin-top: 20px; margin-bottom: 10px;">Share Your Team:</h3>
+                
                 <div class="actions">
-                    <button onclick="copyCode('${data.code}')">📋 Copy Code</button>
-                    <button onclick="shareTeam('${data.code}')">🔗 Share</button>
-                    <button onclick="closeModal()">Close</button>
+                    <button class="share-btn copy" onclick="wildcardManager.copyShareLink()">
+                        📋 Copy Link
+                    </button>
+                    <button class="share-btn image" onclick="wildcardManager.shareAsImage()">
+                        📸 Download Image
+                    </button>
+                    <button class="share-btn" onclick="wildcardManager.shareOnTwitter()">
+                        � Twitter
+                    </button>
+                    <button class="share-btn facebook" onclick="wildcardManager.shareOnFacebook()">
+                        📘 Facebook
+                    </button>
                 </div>
-                <p class="note">Bookmark this link: <a href="/wildcard/${data.code}/" target="_blank">/wildcard/${data.code}/</a></p>
+                
+                <div class="actions" style="margin-top: 15px;">
+                    <button onclick="wildcardManager.closeModal()">Close</button>
+                </div>
+                
+                <p class="note">
+                    💡 Your team is saved! Anyone with this link can view it.
+                </p>
             </div>
         `;
         document.body.appendChild(modal);
+    }
+    
+    closeModal() {
+        const modal = document.getElementById('success-modal');
+        if (modal) {
+            modal.remove();
+        }
     }
     
     showError(message) {
@@ -259,6 +399,13 @@ class WildcardManager {
         return `${Math.floor(seconds / 86400)} days ago`;
     }
 }
+
+// Initialize on page load
+let wildcardManager;
+document.addEventListener('DOMContentLoaded', () => {
+    wildcardManager = new WildcardManager();
+    wildcardManager.init();
+});
 
 // Global helper functions for modal
 
