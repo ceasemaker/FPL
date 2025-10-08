@@ -109,7 +109,8 @@ def collect_heatmaps():
     """
     logger.info("Starting heatmap collection...")
     
-    result = run_etl_script('build_heatmap_etl.py', timeout=1800)
+    # Increased timeout to 3600s (60 minutes) to allow long API runs
+    result = run_etl_script('build_heatmap_etl.py', timeout=3600)
     
     if result["returncode"] == 0:
         logger.info(f"✅ Heatmap collection completed: {result['stdout']}")
