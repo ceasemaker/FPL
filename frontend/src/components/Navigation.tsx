@@ -35,15 +35,13 @@ export function Navigation() {
           >
             Analyze Manager
           </Link>
-          <a
-            href={`${import.meta.env.VITE_API_URL}/wildcard/`}
-            className="nav-link wildcard-link"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            to="/wildcard"
+            className={location.pathname === "/wildcard" ? "nav-link active" : "nav-link"}
             title="Build and share your perfect wildcard team. Auto-saves every 30s. Get a shareable link to compare teams with friends!"
           >
             Wildcard Simulator ⚡
-          </a>
+          </Link>
         </div>
       </div>
     </nav>

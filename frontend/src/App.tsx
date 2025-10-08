@@ -6,6 +6,7 @@ import { PlayersPage } from "./pages/PlayersPage";
 import { ComparePage } from "./pages/ComparePage";
 import { AnalyzeManagerPage } from "./pages/AnalyzeManagerPage";
 import { DreamTeamPage } from "./pages/DreamTeamPage";
+import { WildcardSimulatorPage } from "./pages/WildcardSimulatorPage";
 import { Navigation } from "./components/Navigation";
 import { MobileBlocker } from "./components/MobileBlocker";
 
@@ -34,6 +35,7 @@ export default function App() {
         <Route path="/compare" element={<ComparePage />} />
         <Route path="/analyze" element={<AnalyzeManagerPage />} />
         <Route path="/dream-team" element={<DreamTeamPage />} />
+        <Route path="/wildcard" element={<WildcardSimulatorPage />} />
       </Routes>
     </MobileBlocker>
   );
