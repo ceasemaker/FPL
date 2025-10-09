@@ -102,12 +102,56 @@ export function DreamTeamPage() {
   const [isSharing, setIsSharing] = useState(false);
   const dreamTeamRef = useRef<HTMLDivElement>(null);
 
+  // Helper function to convert images to base64 to bypass CORS
+  const convertImagesToBase64 = async (container: HTMLElement) => {
+    const images = container.querySelectorAll('img');
+    const originalSources: Map<HTMLImageElement, string> = new Map();
+    
+    // Store original sources and convert to base64
+    for (const img of Array.from(images)) {
+      const originalSrc = img.src;
+      originalSources.set(img, originalSrc);
+      
+      try {
+        // Fetch the image and convert to base64
+        const response = await fetch(originalSrc);
+        const blob = await response.blob();
+        const base64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(blob);
+        });
+        
+        // Replace with base64
+        img.src = base64;
+      } catch (error) {
+        console.warn(`Failed to convert image: ${originalSrc}`, error);
+        // Keep original if conversion fails
+      }
+    }
+    
+    return originalSources;
+  };
+
+  // Helper function to restore original image sources
+  const restoreImageSources = (originalSources: Map<HTMLImageElement, string>) => {
+    for (const [img, src] of originalSources.entries()) {
+      img.src = src;
+    }
+  };
+
   const handleShare = async () => {
     if (!dreamTeamRef.current) return;
     
     setIsSharing(true);
     
     try {
+      // Convert images to base64 to bypass CORS
+      const originalSources = await convertImagesToBase64(dreamTeamRef.current);
+      
+      // Small delay to ensure images are loaded
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       const canvas = await html2canvas(dreamTeamRef.current, {
         backgroundColor: "#050714",
         scale: 2,
@@ -117,6 +161,9 @@ export function DreamTeamPage() {
         foreignObjectRendering: false,
         imageTimeout: 15000,
       });
+      
+      // Restore original image sources
+      restoreImageSources(originalSources);
       
       canvas.toBlob((blob) => {
         if (blob) {
