@@ -234,6 +234,15 @@ export function WildcardSimulatorPage() {
   const [selectionModal, setSelectionModal] = useState<{ position: "GK" | "DEF" | "MID" | "FWD"; benchSlot?: boolean } | null>(null);
   const [detailPlayerId, setDetailPlayerId] = useState<number | null>(null);
   const teamDisplayRef = useRef<HTMLDivElement>(null);
+  
+  // Draft management
+  const [currentDraftId, setCurrentDraftId] = useState<string>("draft_1");
+  const [showDraftMenu, setShowDraftMenu] = useState(false);
+  const [draftNames, setDraftNames] = useState<Record<string, string>>({
+    draft_1: "Draft 1",
+    draft_2: "Draft 2",
+    draft_3: "Draft 3",
+  });
 
   // Load players
   useEffect(() => {
@@ -251,6 +260,16 @@ export function WildcardSimulatorPage() {
 
   // Load from localStorage OR URL parameter
   useEffect(() => {
+    // Load draft names from localStorage
+    const storedNames = localStorage.getItem("wildcard_draft_names");
+    if (storedNames) {
+      try {
+        setDraftNames(JSON.parse(storedNames));
+      } catch (e) {
+        console.error("Failed to load draft names:", e);
+      }
+    }
+    
     // Check if we have a code in the URL (e.g., ?code=WC-ABC123)
     const urlParams = new URLSearchParams(window.location.search);
     const urlCode = urlParams.get("code");
@@ -259,36 +278,8 @@ export function WildcardSimulatorPage() {
       // Load shared wildcard from API
       loadSharedWildcard(urlCode);
     } else {
-      // Load from localStorage as before
-      const stored = localStorage.getItem("wildcard_draft");
-      const storedCode = localStorage.getItem("wildcard_code");
-
-      if (stored) {
-        try {
-          const draft = JSON.parse(stored);
-          if (draft.team) {
-            setGoalkeepers(draft.team.goalkeepers || []);
-            setDefenders(draft.team.defenders || []);
-            setMidfielders(draft.team.midfielders || []);
-            setForwards(draft.team.forwards || []);
-            setBench(draft.team.bench || []);
-            setCaptain(draft.team.captain || null);
-            setViceCaptain(draft.team.viceCaptain || null);
-            if (draft.team.formation) {
-              const savedFormation = FORMATIONS.find(f => f.name === draft.team.formation);
-              if (savedFormation) setFormation(savedFormation);
-            }
-          }
-        } catch (e) {
-          console.error("Failed to load draft:", e);
-        }
-      }
-
-      if (storedCode) {
-        setCode(storedCode);
-      } else {
-        createTrackingEntry();
-      }
+      // Load current draft from localStorage
+      loadDraft(currentDraftId);
     }
   }, []);
 
@@ -298,7 +289,7 @@ export function WildcardSimulatorPage() {
       autoSave();
     }, 30000);
     return () => clearInterval(interval);
-  }, [goalkeepers, defenders, midfielders, forwards, bench, captain, viceCaptain, formation]);
+  }, [goalkeepers, defenders, midfielders, forwards, bench, captain, viceCaptain, formation, currentDraftId]);
 
   const createTrackingEntry = async () => {
     try {
@@ -329,27 +320,42 @@ export function WildcardSimulatorPage() {
         
         // Load the squad data
         const squad = data.squad_data;
-        if (squad.players && Array.isArray(squad.players)) {
-          // Separate players by position
-          const gks = squad.players.filter((p: Player) => p.element_type === 1);
-          const defs = squad.players.filter((p: Player) => p.element_type === 2);
-          const mids = squad.players.filter((p: Player) => p.element_type === 3);
-          const fwds = squad.players.filter((p: Player) => p.element_type === 4);
-          
-          setGoalkeepers(gks.slice(0, 2));
-          setDefenders(defs.slice(0, 5));
-          setMidfielders(mids.slice(0, 5));
-          setForwards(fwds.slice(0, 3));
-          
-          // Handle bench - any remaining players
-          const starting = gks.slice(0, 2).length + defs.slice(0, 5).length + mids.slice(0, 5).length + fwds.slice(0, 3).length;
-          setBench(squad.players.slice(starting));
-        }
         
-        // Load formation if available
+        // Load formation first
+        let targetFormation = FORMATIONS[3]; // Default 4-4-2
         if (squad.formation) {
           const loadedFormation = FORMATIONS.find(f => f.name === squad.formation);
-          if (loadedFormation) setFormation(loadedFormation);
+          if (loadedFormation) targetFormation = loadedFormation;
+        }
+        setFormation(targetFormation);
+        
+        if (squad.players && Array.isArray(squad.players)) {
+          // Separate all players by position
+          const allGKs = squad.players.filter((p: Player) => p.element_type === 1);
+          const allDefs = squad.players.filter((p: Player) => p.element_type === 2);
+          const allMids = squad.players.filter((p: Player) => p.element_type === 3);
+          const allFwds = squad.players.filter((p: Player) => p.element_type === 4);
+          
+          // Starting XI based on formation
+          // 1 GK + formation.def + formation.mid + formation.fwd = 11 players
+          const startingGK = allGKs.slice(0, 1);
+          const startingDefs = allDefs.slice(0, targetFormation.def);
+          const startingMids = allMids.slice(0, targetFormation.mid);
+          const startingFwds = allFwds.slice(0, targetFormation.fwd);
+          
+          // Bench: remaining players (should be 1 GK + 3 outfield = 4 total)
+          const benchGK = allGKs.slice(1, 2); // 2nd goalkeeper
+          const benchDefs = allDefs.slice(targetFormation.def); // Extra defenders
+          const benchMids = allMids.slice(targetFormation.mid); // Extra midfielders
+          const benchFwds = allFwds.slice(targetFormation.fwd); // Extra forwards
+          const benchPlayers = [...benchGK, ...benchDefs, ...benchMids, ...benchFwds];
+          
+          // Set the state
+          setGoalkeepers([...startingGK, ...benchGK]); // Keep both GKs in GK array for easier management
+          setDefenders(startingDefs);
+          setMidfielders(startingMids);
+          setForwards(startingFwds);
+          setBench(benchPlayers);
         }
         
         // Load captain/vice if available
@@ -379,10 +385,99 @@ export function WildcardSimulatorPage() {
         viceCaptain,
         formation: formation.name,
       },
+      code,
     };
-    localStorage.setItem("wildcard_draft", JSON.stringify(data));
+    localStorage.setItem(`wildcard_${currentDraftId}`, JSON.stringify(data));
     setAutoSaveStatus("💾 Saved");
     setTimeout(() => setAutoSaveStatus(""), 2000);
+  };
+
+  const loadDraft = (draftId: string) => {
+    const stored = localStorage.getItem(`wildcard_${draftId}`);
+    
+    if (stored) {
+      try {
+        const draft = JSON.parse(stored);
+        if (draft.team) {
+          setGoalkeepers(draft.team.goalkeepers || []);
+          setDefenders(draft.team.defenders || []);
+          setMidfielders(draft.team.midfielders || []);
+          setForwards(draft.team.forwards || []);
+          setBench(draft.team.bench || []);
+          setCaptain(draft.team.captain || null);
+          setViceCaptain(draft.team.viceCaptain || null);
+          if (draft.team.formation) {
+            const savedFormation = FORMATIONS.find(f => f.name === draft.team.formation);
+            if (savedFormation) setFormation(savedFormation);
+          }
+        }
+        if (draft.code) {
+          setCode(draft.code);
+        } else {
+          createTrackingEntry();
+        }
+      } catch (e) {
+        console.error("Failed to load draft:", e);
+        createTrackingEntry();
+      }
+    } else {
+      // New draft - reset everything
+      setGoalkeepers([]);
+      setDefenders([]);
+      setMidfielders([]);
+      setForwards([]);
+      setBench([]);
+      setCaptain(null);
+      setViceCaptain(null);
+      setFormation(FORMATIONS[3]); // Reset to 4-4-2
+      createTrackingEntry();
+    }
+  };
+
+  const switchDraft = (draftId: string) => {
+    // Save current draft before switching
+    autoSave();
+    
+    // Load the new draft
+    setCurrentDraftId(draftId);
+    loadDraft(draftId);
+    setShowDraftMenu(false);
+  };
+
+  const renameDraft = (draftId: string) => {
+    const newName = prompt(`Rename "${draftNames[draftId]}":`, draftNames[draftId]);
+    if (newName && newName.trim()) {
+      const updatedNames = { ...draftNames, [draftId]: newName.trim() };
+      setDraftNames(updatedNames);
+      localStorage.setItem("wildcard_draft_names", JSON.stringify(updatedNames));
+    }
+  };
+
+  const deleteDraft = (draftId: string) => {
+    if (draftId === currentDraftId) {
+      alert("Cannot delete the currently active draft. Switch to another draft first.");
+      return;
+    }
+    
+    if (confirm(`Are you sure you want to delete "${draftNames[draftId]}"?`)) {
+      localStorage.removeItem(`wildcard_${draftId}`);
+      alert(`Deleted ${draftNames[draftId]}`);
+    }
+  };
+
+  const clearCurrentDraft = () => {
+    if (confirm("Are you sure you want to clear this draft? This cannot be undone.")) {
+      setGoalkeepers([]);
+      setDefenders([]);
+      setMidfielders([]);
+      setForwards([]);
+      setBench([]);
+      setCaptain(null);
+      setViceCaptain(null);
+      setFormation(FORMATIONS[3]);
+      localStorage.removeItem(`wildcard_${currentDraftId}`);
+      createTrackingEntry();
+    }
   };
 
   const getAllSelectedPlayers = () => {
@@ -626,6 +721,47 @@ export function WildcardSimulatorPage() {
           Build your perfect wildcard team • Auto-saves every 30s
         </p>
 
+        {/* Draft Management Menu */}
+        <div className="draft-manager">
+          <button 
+            className="draft-selector-btn"
+            onClick={() => setShowDraftMenu(!showDraftMenu)}
+          >
+            📁 {draftNames[currentDraftId]} <span style={{marginLeft: '8px'}}>▼</span>
+          </button>
+          
+          {showDraftMenu && (
+            <div className="draft-menu">
+              {Object.entries(draftNames).map(([draftId, name]) => (
+                <div key={draftId} className="draft-menu-item">
+                  <button 
+                    className={`draft-option ${draftId === currentDraftId ? 'active' : ''}`}
+                    onClick={() => switchDraft(draftId)}
+                  >
+                    {name} {draftId === currentDraftId && '✓'}
+                  </button>
+                  <button 
+                    className="draft-action-btn"
+                    onClick={() => renameDraft(draftId)}
+                    title="Rename"
+                  >
+                    ✏️
+                  </button>
+                  {draftId !== currentDraftId && (
+                    <button 
+                      className="draft-action-btn delete"
+                      onClick={() => deleteDraft(draftId)}
+                      title="Delete"
+                    >
+                      🗑️
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         <div className="wildcard-controls">
           <div className="formation-selector">
             <label>Formation:</label>
@@ -666,7 +802,7 @@ export function WildcardSimulatorPage() {
         </div>
 
         <div className="wildcard-action-btns">
-          <button className="secondary-btn" onClick={clearDraft}>
+          <button className="secondary-btn" onClick={clearCurrentDraft}>
             🗑️ Clear Draft
           </button>
           <button 
