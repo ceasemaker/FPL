@@ -4124,6 +4124,84 @@ a {
   max-width: 600px;
 }
 
+/* Compact Wildcard View - Make team visible without scrolling */
+.wildcard-compact .football-field {
+  min-height: auto;
+  padding: 1.5rem 1rem;
+  gap: 1rem;
+}
+
+.wildcard-compact .field-row {
+  gap: 0.75rem;
+}
+
+.wildcard-compact .dream-player-card {
+  min-width: 90px;
+  max-width: 110px;
+  padding: 0.5rem;
+  gap: 0.4rem;
+  border-radius: 8px;
+}
+
+.wildcard-compact .dream-player-image {
+  width: 50px;
+  height: 50px;
+}
+
+.wildcard-compact .dream-player-name {
+  font-size: 0.75rem;
+  line-height: 1.1;
+}
+
+.wildcard-compact .dream-player-stats {
+  gap: 0.25rem;
+}
+
+.wildcard-compact .dream-stat-badge {
+  font-size: 0.65rem;
+  padding: 0.2rem 0.35rem;
+}
+
+.wildcard-compact .captain-badge,
+.wildcard-compact .vice-badge {
+  width: 22px;
+  height: 22px;
+  font-size: 0.7rem;
+  top: -6px;
+  left: -6px;
+}
+
+.wildcard-compact .remove-player-btn {
+  width: 22px;
+  height: 22px;
+  font-size: 0.8rem;
+  top: -6px;
+  right: -6px;
+}
+
+.wildcard-compact .bench-section {
+  margin-top: 1.5rem;
+}
+
+.wildcard-compact .bench-section h3 {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.wildcard-compact .bench-players {
+  gap: 0.75rem;
+}
+
+.wildcard-compact .empty-slot {
+  min-width: 90px;
+  max-width: 110px;
+  padding: 1rem 0.5rem;
+}
+
+.wildcard-compact .empty-slot-icon {
+  font-size: 1.5rem;
+}
+
 @media (max-width: 768px) {
   .wildcard-controls {
     flex-direction: column;

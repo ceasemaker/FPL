@@ -671,19 +671,86 @@ export function WildcardSimulatorPage() {
     }
   };
 
-  const shareOnTwitter = () => {
+  const shareOnTwitter = async () => {
     if (!code) return;
-    const shareUrl = `${import.meta.env.VITE_API_URL}/wildcard/${code}/`;
-    const text = "Check out my FPL Wildcard team! 🔥⚽";
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
-    window.open(twitterUrl, "_blank", "width=550,height=420");
+    
+    // First, generate and download the image
+    if (teamDisplayRef.current) {
+      try {
+        const canvas = await html2canvas(teamDisplayRef.current, {
+          backgroundColor: "#050714",
+          scale: 2,
+          logging: false,
+        });
+        
+        // Download the image
+        canvas.toBlob((blob) => {
+          if (!blob) return;
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.download = `wildcard-team-${code}.png`;
+          link.href = url;
+          link.click();
+          URL.revokeObjectURL(url);
+          
+          // Show instruction to user
+          alert("📸 Image downloaded! Please attach it to your tweet.\n\nClick OK to open Twitter...");
+          
+          // Then open Twitter
+          const shareUrl = `${import.meta.env.VITE_API_URL}/wildcard/${code}/`;
+          const text = "Check out my FPL Wildcard team! 🔥⚽";
+          const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
+          window.open(twitterUrl, "_blank", "width=550,height=420");
+        }, "image/png");
+      } catch (error) {
+        console.error("Failed to generate image:", error);
+        // Fallback to just text sharing
+        const shareUrl = `${import.meta.env.VITE_API_URL}/wildcard/${code}/`;
+        const text = "Check out my FPL Wildcard team! 🔥⚽";
+        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
+        window.open(twitterUrl, "_blank", "width=550,height=420");
+      }
+    }
   };
 
-  const shareOnFacebook = () => {
+  const shareOnFacebook = async () => {
     if (!code) return;
-    const shareUrl = `${import.meta.env.VITE_API_URL}/wildcard/${code}/`;
-    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
-    window.open(facebookUrl, "_blank", "width=550,height=420");
+    
+    // First, generate and download the image
+    if (teamDisplayRef.current) {
+      try {
+        const canvas = await html2canvas(teamDisplayRef.current, {
+          backgroundColor: "#050714",
+          scale: 2,
+          logging: false,
+        });
+        
+        // Download the image
+        canvas.toBlob((blob) => {
+          if (!blob) return;
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.download = `wildcard-team-${code}.png`;
+          link.href = url;
+          link.click();
+          URL.revokeObjectURL(url);
+          
+          // Show instruction to user
+          alert("📸 Image downloaded! Please attach it to your Facebook post.\n\nClick OK to open Facebook...");
+          
+          // Then open Facebook
+          const shareUrl = `${import.meta.env.VITE_API_URL}/wildcard/${code}/`;
+          const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+          window.open(facebookUrl, "_blank", "width=550,height=420");
+        }, "image/png");
+      } catch (error) {
+        console.error("Failed to generate image:", error);
+        // Fallback to just text sharing
+        const shareUrl = `${import.meta.env.VITE_API_URL}/wildcard/${code}/`;
+        const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+        window.open(facebookUrl, "_blank", "width=550,height=420");
+      }
+    }
   };
 
   const clearDraft = () => {
@@ -815,7 +882,7 @@ export function WildcardSimulatorPage() {
         </div>
       </div>
 
-      <div ref={teamDisplayRef} className="dream-team-capture">
+      <div ref={teamDisplayRef} className="dream-team-capture wildcard-compact">
         <div className="football-field">
           {/* Goalkeeper */}
           <div className="field-row goalkeeper-row">
