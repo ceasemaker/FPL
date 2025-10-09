@@ -654,6 +654,7 @@ export function WildcardSimulatorPage() {
         backgroundColor: "#050714",
         scale: 2,
         logging: false,
+        useCORS: true,
       });
       canvas.toBlob((blob) => {
         if (!blob) return;
@@ -681,6 +682,7 @@ export function WildcardSimulatorPage() {
           backgroundColor: "#050714",
           scale: 2,
           logging: false,
+          useCORS: true,
         });
         
         // Download the image
@@ -723,6 +725,7 @@ export function WildcardSimulatorPage() {
           backgroundColor: "#050714",
           scale: 2,
           logging: false,
+          useCORS: true,
         });
         
         // Download the image
