@@ -25,6 +25,9 @@ export default defineConfig(({ mode }) => {
       allowedHosts: [
         'fpl-pulse-frontend.onrender.com',
         '.onrender.com',
+        'www.aerofpl.net',
+        'aerofpl.net',
+        '.aerofpl.net',
       ],
       proxy: {
         "/api": {
