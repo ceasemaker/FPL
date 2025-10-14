@@ -73,7 +73,7 @@ export function HeroIndex({ data, loading, error }: HeroIndexProps) {
       <div className="glow-card-content">
         <div className="hero-headline">
           <span className="badge" style={shimmerGradient}>
-            FPL Pulse Index
+            AeroFPL Index
           </span>
           <h1>Feel the Premier League data heartbeat.</h1>
           <p>{subtitle}</p>

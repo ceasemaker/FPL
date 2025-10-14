@@ -650,22 +650,65 @@ export function WildcardSimulatorPage() {
       originalSources.set(img, originalSrc);
       
       try {
-        // Fetch the image and convert to base64
-        const response = await fetch(originalSrc);
-        const blob = await response.blob();
-        const base64 = await new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(blob);
+        // Try multiple methods to load the image
+        const base64 = await new Promise<string>((resolve, reject) => {
+          // Method 1: Create a new image element to load with crossOrigin
+          const tempImg = new Image();
+          tempImg.crossOrigin = 'anonymous';
+          
+          tempImg.onload = () => {
+            try {
+              const canvas = document.createElement('canvas');
+              canvas.width = tempImg.naturalWidth;
+              canvas.height = tempImg.naturalHeight;
+              const ctx = canvas.getContext('2d');
+              if (!ctx) {
+                reject(new Error('Failed to get canvas context'));
+                return;
+              }
+              ctx.drawImage(tempImg, 0, 0);
+              const dataUrl = canvas.toDataURL('image/png');
+              resolve(dataUrl);
+            } catch (canvasError) {
+              console.warn('Canvas conversion failed:', canvasError);
+              reject(canvasError);
+            }
+          };
+          
+          tempImg.onerror = async () => {
+            // Method 2: Try fetching through a CORS proxy
+            try {
+              const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(originalSrc)}`;
+              const response = await fetch(proxyUrl);
+              const blob = await response.blob();
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.onerror = () => reject(new Error('FileReader failed'));
+              reader.readAsDataURL(blob);
+            } catch (fetchError) {
+              console.warn('CORS proxy failed:', fetchError);
+              reject(fetchError);
+            }
+          };
+          
+          // Add timestamp to bypass cache
+          const urlWithCache = originalSrc.includes('?') 
+            ? `${originalSrc}&t=${Date.now()}` 
+            : `${originalSrc}?t=${Date.now()}`;
+          tempImg.src = urlWithCache;
         });
         
         // Replace with base64
         img.src = base64;
+        console.log('Successfully converted image:', originalSrc);
       } catch (error) {
         console.warn(`Failed to convert image: ${originalSrc}`, error);
         // Keep original if conversion fails
       }
     }
+    
+    // Wait a bit for all images to update
+    await new Promise(resolve => setTimeout(resolve, 200));
     
     return originalSources;
   };
@@ -688,24 +731,35 @@ export function WildcardSimulatorPage() {
   const shareAsImage = async () => {
     if (!teamDisplayRef.current) return;
     try {
+      console.log('Starting image generation...');
+      
       // Convert images to base64 to bypass CORS
       const originalSources = await convertImagesToBase64(teamDisplayRef.current);
       
-      // Small delay to ensure images are loaded
-      await new Promise(resolve => setTimeout(resolve, 100));
+      console.log('Images converted, generating canvas...');
       
       const canvas = await html2canvas(teamDisplayRef.current, {
         backgroundColor: "#050714",
         scale: 2,
-        logging: false,
+        logging: true, // Enable logging to see what's happening
         useCORS: true,
+        allowTaint: true,
+        imageTimeout: 0,
+        removeContainer: true,
       });
+      
+      console.log('Canvas generated, restoring images...');
       
       // Restore original image sources
       restoreImageSources(originalSources);
       
+      console.log('Creating download...');
+      
       canvas.toBlob((blob) => {
-        if (!blob) return;
+        if (!blob) {
+          console.error('Failed to create blob');
+          return;
+        }
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.download = `wildcard-team-${code || "draft"}.png`;
@@ -726,25 +780,34 @@ export function WildcardSimulatorPage() {
     // First, generate and download the image
     if (teamDisplayRef.current) {
       try {
+        console.log('Starting Twitter share image generation...');
+        
         // Convert images to base64 to bypass CORS
         const originalSources = await convertImagesToBase64(teamDisplayRef.current);
         
-        // Small delay to ensure images are loaded
-        await new Promise(resolve => setTimeout(resolve, 100));
+        console.log('Images converted, generating canvas...');
         
         const canvas = await html2canvas(teamDisplayRef.current, {
           backgroundColor: "#050714",
           scale: 2,
-          logging: false,
+          logging: true,
           useCORS: true,
+          allowTaint: true,
+          imageTimeout: 0,
+          removeContainer: true,
         });
+        
+        console.log('Canvas generated, restoring images...');
         
         // Restore original image sources
         restoreImageSources(originalSources);
         
         // Download the image
         canvas.toBlob((blob) => {
-          if (!blob) return;
+          if (!blob) {
+            console.error('Failed to create blob');
+            return;
+          }
           const url = URL.createObjectURL(blob);
           const link = document.createElement("a");
           link.download = `wildcard-team-${code}.png`;
@@ -778,18 +841,24 @@ export function WildcardSimulatorPage() {
     // First, generate and download the image
     if (teamDisplayRef.current) {
       try {
+        console.log('Starting Facebook share image generation...');
+        
         // Convert images to base64 to bypass CORS
         const originalSources = await convertImagesToBase64(teamDisplayRef.current);
         
-        // Small delay to ensure images are loaded
-        await new Promise(resolve => setTimeout(resolve, 100));
+        console.log('Images converted, generating canvas...');
         
         const canvas = await html2canvas(teamDisplayRef.current, {
           backgroundColor: "#050714",
           scale: 2,
-          logging: false,
+          logging: true,
           useCORS: true,
+          allowTaint: true,
+          imageTimeout: 0,
+          removeContainer: true,
         });
+        
+        console.log('Canvas generated, restoring images...');
         
         // Restore original image sources
         restoreImageSources(originalSources);

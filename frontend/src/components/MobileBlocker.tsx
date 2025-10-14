@@ -33,8 +33,8 @@ export function MobileBlocker({ children }: { children: React.ReactNode }) {
         <div className="mobile-blocker-content">
           <div className="mobile-blocker-icon">🖥️</div>
           <h1>Thank You for Your Interest!</h1>
-          <p className="mobile-blocker-subtitle">
-            We're excited to have you explore FPL Pulse
+          <p className="blocker-description">
+            We're excited to have you explore AeroFPL
           </p>
           <div className="mobile-blocker-message">
             <p>

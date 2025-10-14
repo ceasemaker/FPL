@@ -6,11 +6,12 @@ export function Navigation() {
   return (
     <nav className="main-nav">
       <div className="beta-badge">BETA</div>
-      <div className="nav-container">
-        <Link to="/" className="nav-logo">
-          FPL Pulse
-        </Link>
-        <div className="nav-links">
+      <nav className="nav-container">
+        <div className="nav-content">
+          <a href="/" className="nav-logo">
+            AeroFPL
+          </a>
+          <div className="nav-links">
           <Link
             to="/"
             className={location.pathname === "/" ? "nav-link active" : "nav-link"}
@@ -44,6 +45,7 @@ export function Navigation() {
           </Link>
         </div>
       </div>
+    </nav>
     </nav>
   );
 }

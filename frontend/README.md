@@ -1,6 +1,6 @@
-# FPL Pulse Landing Page
+# AeroFPL Landing Page
 
-This Vite + React front-end renders the Fantasy Premier League "Pulse" landing page with animated insights powered by [anime.js](https://animejs.com/).
+This Vite + React front-end renders the Fantasy Premier League analytics landing page with animated insights powered by [anime.js](https://animejs.com/).
 
 ## Features
 
