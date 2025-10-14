@@ -650,7 +650,7 @@ a {
 }
 
 .fixtures-data-table th {
-  padding: 1rem 1.2rem;
+  padding: 0.8rem 0.6rem;
   text-align: left;
   font-weight: 600;
   color: var(--text-primary);
@@ -659,18 +659,23 @@ a {
   font-size: 0.8rem;
 }
 
+.fixtures-data-table th.kickoff-col {
+  text-align: left;
+  width: 140px;
+}
+
 .fixtures-data-table th.team-col {
   text-align: center;
 }
 
 .fixtures-data-table th.fdr-col {
   text-align: center;
-  width: 60px;
+  width: 50px;
 }
 
 .fixtures-data-table th.score-col {
   text-align: center;
-  width: 100px;
+  width: 80px;
 }
 
 .fixtures-data-table tbody tr {
@@ -691,7 +696,7 @@ a {
 }
 
 .fixtures-data-table td {
-  padding: 1rem 1.2rem;
+  padding: 0.8rem 0.6rem;
   color: var(--text-primary);
 }
 
@@ -699,6 +704,7 @@ a {
   font-size: 0.85rem;
   color: var(--text-muted);
   white-space: nowrap;
+  text-align: left;
 }
 
 .team-name {
@@ -769,6 +775,12 @@ a {
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.1em;
+}
+
+.score-cell .score-placeholder {
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  font-weight: 400;
 }
 
 .loading-message,

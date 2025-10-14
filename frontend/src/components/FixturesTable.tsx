@@ -167,12 +167,12 @@ export function FixturesTable() {
         <table className="fixtures-data-table">
           <thead>
             <tr>
-              <th>Kickoff</th>
+              <th className="kickoff-col">Kickoff</th>
+              <th className="fdr-col">FDR</th>
               <th className="team-col">Home</th>
-              <th className="fdr-col">FDR</th>
               <th className="score-col">Score</th>
-              <th className="fdr-col">FDR</th>
               <th className="team-col">Away</th>
+              <th className="fdr-col">FDR</th>
             </tr>
           </thead>
           <tbody>
@@ -196,6 +196,14 @@ export function FixturesTable() {
                   })}
                 >
                   <td className="kickoff-time">{kickoffDate}</td>
+                  <td className="fdr-cell">
+                    <span
+                      className="difficulty-badge"
+                      style={{ backgroundColor: getDifficultyColor(fixture.team_h_difficulty) }}
+                    >
+                      {fixture.team_h_difficulty ?? "—"}
+                    </span>
+                  </td>
                   <td className="team-name home-team">
                     <div className="team-cell">
                       {fixture.team_h_code && (
@@ -208,30 +216,14 @@ export function FixturesTable() {
                       <span>{fixture.team_h_short || fixture.team_h || "TBD"}</span>
                     </div>
                   </td>
-                  <td className="fdr-cell">
-                    <span
-                      className="difficulty-badge"
-                      style={{ backgroundColor: getDifficultyColor(fixture.team_h_difficulty) }}
-                    >
-                      {fixture.team_h_difficulty ?? "—"}
-                    </span>
-                  </td>
                   <td className="score-cell">
-                    {fixture.finished ? (
+                    {fixture.finished || fixture.started ? (
                       <span className="score">
                         {fixture.team_h_score ?? 0} - {fixture.team_a_score ?? 0}
                       </span>
                     ) : (
-                      <span className="vs-text">vs</span>
+                      <span className="score-placeholder">-</span>
                     )}
-                  </td>
-                  <td className="fdr-cell">
-                    <span
-                      className="difficulty-badge"
-                      style={{ backgroundColor: getDifficultyColor(fixture.team_a_difficulty) }}
-                    >
-                      {fixture.team_a_difficulty ?? "—"}
-                    </span>
                   </td>
                   <td className="team-name away-team">
                     <div className="team-cell">
@@ -244,6 +236,14 @@ export function FixturesTable() {
                       )}
                       <span>{fixture.team_a_short || fixture.team_a || "TBD"}</span>
                     </div>
+                  </td>
+                  <td className="fdr-cell">
+                    <span
+                      className="difficulty-badge"
+                      style={{ backgroundColor: getDifficultyColor(fixture.team_a_difficulty) }}
+                    >
+                      {fixture.team_a_difficulty ?? "—"}
+                    </span>
                   </td>
                 </tr>
               );

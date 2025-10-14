@@ -5,7 +5,6 @@ import { TransfersTicker } from "../components/TransfersTicker";
 import { MomentumGrid } from "../components/MomentumGrid";
 import { FixturePressure } from "../components/FixturePressure";
 import { FixturesTable } from "../components/FixturesTable";
-import { RawSnapshotStats } from "../components/RawSnapshotStats";
 import NewsTicker from "../components/NewsTicker";
 
 export function HomePage() {
@@ -32,11 +31,6 @@ export function HomePage() {
         currentGameweek={data?.current_gameweek ?? null}
       />
       <FixturesTable />
-      <RawSnapshotStats
-        pulse={data?.pulse}
-        loading={isLoading}
-        error={error}
-      />
     </div>
   );
 }

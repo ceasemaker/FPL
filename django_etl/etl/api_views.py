@@ -351,9 +351,23 @@ def fixtures_by_gameweek(request):
         except ValueError:
             return JsonResponse({"error": "Invalid gameweek parameter"}, status=400)
     else:
-        target_gw = (
+        # Get current gameweek from max AthleteStat game_week
+        current_gw = (
             AthleteStat.objects.aggregate(max_gw=Max("game_week"))["max_gw"] or 1
         )
+        
+        # Check if all fixtures in current gameweek are finished
+        # If so, show the next gameweek
+        current_gw_fixtures = Fixture.objects.filter(event=current_gw)
+        if current_gw_fixtures.exists():
+            all_finished = all(f.finished for f in current_gw_fixtures)
+            if all_finished:
+                # Move to next gameweek
+                target_gw = current_gw + 1
+            else:
+                target_gw = current_gw
+        else:
+            target_gw = current_gw
     
     fixtures_qs = (
         Fixture.objects.filter(event=target_gw)
