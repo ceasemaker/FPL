@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
 import html2canvas from "html2canvas";
 import { PlayerModal } from "../components/PlayerModal";
 
 const TEAM_BADGE_BASE = "https://resources.premierleague.com/premierleague25/badges-alt/";
 const TOTAL_BUDGET = 100.0; // £100m
+// Use relative URLs for API calls (proxied by Vite in dev, absolute in production)
+const API_BASE_URL = import.meta.env.VITE_API_URL || window.location.origin;
 
 interface Player {
   id: number;
@@ -217,6 +220,7 @@ function PlayerSelectionModal({
 }
 
 export function WildcardSimulatorPage() {
+  const { code: urlCode } = useParams<{ code?: string }>();
   const [allPlayers, setAllPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [formation, setFormation] = useState<Formation>(FORMATIONS[3]); // 4-4-2
@@ -243,6 +247,20 @@ export function WildcardSimulatorPage() {
     draft_2: "Draft 2",
     draft_3: "Draft 3",
   });
+  
+  // Saved teams management
+  const [savedTeams, setSavedTeams] = useState<any[]>([]);
+  const [showSavedTeams, setShowSavedTeams] = useState(false);
+  
+  // Team name input modal
+  const [showTeamNameModal, setShowTeamNameModal] = useState(false);
+  const [teamNameInput, setTeamNameInput] = useState("");
+  const [pendingSaveAction, setPendingSaveAction] = useState<'local' | 'cloud' | null>(null);
+  
+  // Viewing shared team state
+  const [isViewingSharedTeam, setIsViewingSharedTeam] = useState(false);
+  const [sharedTeamName, setSharedTeamName] = useState<string>("");
+  const [sharedTeamCode, setSharedTeamCode] = useState<string>("");
 
   // Load players
   useEffect(() => {
@@ -270,18 +288,23 @@ export function WildcardSimulatorPage() {
       }
     }
     
-    // Check if we have a code in the URL (e.g., ?code=WC-ABC123)
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlCode = urlParams.get("code");
+    // Load saved teams from localStorage
+    loadSavedTeams();
     
-    if (urlCode) {
+    // Check if we have a code in the URL path (e.g., /wildcard/WC-ABC123)
+    // or in query string (e.g., ?code=WC-ABC123)
+    const queryParams = new URLSearchParams(window.location.search);
+    const queryCode = queryParams.get("code");
+    const codeToLoad = urlCode || queryCode;
+    
+    if (codeToLoad) {
       // Load shared wildcard from API
-      loadSharedWildcard(urlCode);
+      loadSharedWildcard(codeToLoad);
     } else {
       // Load current draft from localStorage
       loadDraft(currentDraftId);
     }
-  }, []);
+  }, [urlCode]);
 
   // Auto-save every 30 seconds
   useEffect(() => {
@@ -291,9 +314,9 @@ export function WildcardSimulatorPage() {
     return () => clearInterval(interval);
   }, [goalkeepers, defenders, midfielders, forwards, bench, captain, viceCaptain, formation, currentDraftId]);
 
-  const createTrackingEntry = async () => {
+  const createTrackingEntry = async (): Promise<string | null> => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/wildcard/track/`, {
+      const response = await fetch("/api/wildcard/track/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -301,15 +324,18 @@ export function WildcardSimulatorPage() {
       if (data.success && data.code) {
         setCode(data.code);
         localStorage.setItem("wildcard_code", data.code);
+        return data.code;
       }
+      return null;
     } catch (error) {
       console.error("Failed to create tracking entry:", error);
+      return null;
     }
   };
 
   const loadSharedWildcard = async (wildcardCode: string) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/wildcard/${wildcardCode}/`);
+      const response = await fetch(`/api/wildcard/${wildcardCode}/`);
       if (!response.ok) {
         throw new Error("Failed to load wildcard team");
       }
@@ -351,7 +377,7 @@ export function WildcardSimulatorPage() {
           const benchPlayers = [...benchGK, ...benchDefs, ...benchMids, ...benchFwds];
           
           // Set the state
-          setGoalkeepers([...startingGK, ...benchGK]); // Keep both GKs in GK array for easier management
+          setGoalkeepers(startingGK); // Only starting GK - bench GK is in bench array
           setDefenders(startingDefs);
           setMidfielders(startingMids);
           setForwards(startingFwds);
@@ -362,8 +388,10 @@ export function WildcardSimulatorPage() {
         if (squad.captain) setCaptain(squad.captain);
         if (squad.viceCaptain) setViceCaptain(squad.viceCaptain);
         
-        // Show a message that this is a shared team
-        alert(`📋 Viewing shared wildcard: ${data.team_name || wildcardCode}\nTotal Cost: £${data.total_cost}m | Views: ${data.view_count || 1}`);
+        // Set viewing state
+        setIsViewingSharedTeam(true);
+        setSharedTeamName(data.team_name || "Unnamed Team");
+        setSharedTeamCode(wildcardCode);
       }
     } catch (error) {
       console.error("Failed to load shared wildcard:", error);
@@ -597,36 +625,247 @@ export function WildcardSimulatorPage() {
     setFormation(newFormation);
   };
 
-  const saveToCloud = async () => {
-    if (!code) {
-      alert("No team code found. Please refresh the page.");
-      return;
+  // Load saved teams from localStorage
+  const loadSavedTeams = () => {
+    try {
+      const saved = localStorage.getItem("wildcard_saved_teams");
+      if (saved) {
+        setSavedTeams(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.error("Failed to load saved teams:", e);
     }
+  };
 
+  // Save team to localStorage
+  const saveTeamLocally = () => {
     const allSelected = getAllSelectedPlayers();
     if (allSelected.length < 15) {
       alert("Please select all 15 players before saving!");
       return;
     }
 
-    const teamName = prompt("Give your wildcard team a name (optional):");
+    // Show modal to get team name
+    setTeamNameInput("");
+    setPendingSaveAction('local');
+    setShowTeamNameModal(true);
+  };
+
+  // Actually perform the local save after getting the name
+  const performLocalSave = (teamName: string) => {
+    if (!teamName || !teamName.trim()) return;
+
+    const allSelected = getAllSelectedPlayers();
+    
+    // Save only essential player data to avoid circular references and reduce size
+    const simplifiedPlayers = allSelected.map(p => ({
+      id: p.id,
+      playerId: p.id,
+      web_name: p.web_name,
+      element_type: p.element_type,
+      team_id: p.team_id,
+      now_cost: p.now_cost,
+      image_url: p.image_url
+    }));
+
+    const savedTeam = {
+      id: Date.now().toString(),
+      name: teamName.trim(),
+      formation: formation.name,
+      players: simplifiedPlayers,
+      captain,
+      viceCaptain,
+      totalCost: getTotalCost(),
+      savedAt: new Date().toISOString(),
+    };
+
+    const existingSaved = localStorage.getItem("wildcard_saved_teams");
+    const savedList = existingSaved ? JSON.parse(existingSaved) : [];
+    savedList.unshift(savedTeam); // Add to beginning
+    
+    // Keep only last 10 saved teams
+    if (savedList.length > 10) {
+      savedList.pop();
+    }
+
+    localStorage.setItem("wildcard_saved_teams", JSON.stringify(savedList));
+    setSavedTeams(savedList);
+    
+    // Also update the current draft name to match the saved team name
+    const updatedNames = { ...draftNames, [currentDraftId]: teamName.trim() };
+    setDraftNames(updatedNames);
+    localStorage.setItem("wildcard_draft_names", JSON.stringify(updatedNames));
+    
+    alert(`✅ Team "${teamName.trim()}" saved successfully!`);
+  };
+
+  // Load a saved team
+  const loadSavedTeam = (team: any) => {
+    if (!confirm(`Load "${team.name}"? This will replace your current team.`)) {
+      return;
+    }
+
+    // Clear current team
+    setGoalkeepers([]);
+    setDefenders([]);
+    setMidfielders([]);
+    setForwards([]);
+    setBench([]);
+    setCaptain(team.captain);
+    setViceCaptain(team.viceCaptain);
+
+    // Set formation
+    const loadedFormation = FORMATIONS.find(f => f.name === team.formation) || FORMATIONS[3];
+    setFormation(loadedFormation);
+
+    // Load players - match saved player IDs to full player objects
+    const playerIds = team.players.map((p: any) => p.id || p.playerId);
+    const loadedPlayers = allPlayers.filter(p => playerIds.includes(p.id));
+
+    if (loadedPlayers.length === 0) {
+      alert("Could not find players. Please ensure player data is loaded.");
+      return;
+    }
+
+    // Distribute players
+    const gks = loadedPlayers.filter(p => p.element_type === 1);
+    const defs = loadedPlayers.filter(p => p.element_type === 2);
+    const mids = loadedPlayers.filter(p => p.element_type === 3);
+    const fwds = loadedPlayers.filter(p => p.element_type === 4);
+
+    setGoalkeepers(gks.slice(0, 1));
+    setDefenders(defs.slice(0, loadedFormation.def));
+    setMidfielders(mids.slice(0, loadedFormation.mid));
+    setForwards(fwds.slice(0, loadedFormation.fwd));
+    
+    // Remaining go to bench
+    const remaining = [
+      ...gks.slice(1),
+      ...defs.slice(loadedFormation.def),
+      ...mids.slice(loadedFormation.mid),
+      ...fwds.slice(loadedFormation.fwd)
+    ].slice(0, 4);
+    setBench(remaining);
+
+    setShowSavedTeams(false);
+    alert(`✅ Loaded "${team.name}"`);
+  };
+
+  // Delete a saved team
+  const deleteSavedTeam = (teamId: string) => {
+    if (!confirm("Delete this saved team?")) return;
+
+    const existingSaved = localStorage.getItem("wildcard_saved_teams");
+    if (!existingSaved) return;
+
+    const savedList = JSON.parse(existingSaved);
+    const filtered = savedList.filter((t: any) => t.id !== teamId);
+    
+    localStorage.setItem("wildcard_saved_teams", JSON.stringify(filtered));
+    setSavedTeams(filtered);
+  };
+
+  // Handle team name submission from modal
+  const handleTeamNameSubmit = () => {
+    if (!teamNameInput.trim()) {
+      alert("Please enter a team name!");
+      return;
+    }
+
+    setShowTeamNameModal(false);
+
+    if (pendingSaveAction === 'local') {
+      performLocalSave(teamNameInput);
+    } else if (pendingSaveAction === 'cloud') {
+      performCloudSave(teamNameInput);
+    }
+
+    setPendingSaveAction(null);
+    setTeamNameInput("");
+  };
+
+  const saveToCloud = () => {
+    const allSelected = getAllSelectedPlayers();
+    if (allSelected.length < 15) {
+      alert("Please select all 15 players before saving!");
+      return;
+    }
+
+    // Show modal to get team name
+    setTeamNameInput("");
+    setPendingSaveAction('cloud');
+    setShowTeamNameModal(true);
+  };
+
+  // Actually perform the cloud save after getting the name
+  const performCloudSave = async (teamName: string) => {
+    console.log('performCloudSave: Starting...');
+    
+    // Check if we have a code, if not try to load from localStorage or create a new one
+    let currentCode = code;
+    if (!currentCode) {
+      console.log('performCloudSave: No code found, checking localStorage...');
+      const storedCode = localStorage.getItem("wildcard_code");
+      if (storedCode) {
+        console.log('performCloudSave: Found stored code:', storedCode);
+        currentCode = storedCode;
+        setCode(storedCode);
+      } else {
+        console.log('performCloudSave: Creating new tracking entry...');
+        currentCode = await createTrackingEntry();
+        console.log('performCloudSave: Got code:', currentCode);
+        if (!currentCode) {
+          alert("Failed to generate team code. Please try again.");
+          return;
+        }
+      }
+    }
+
+    console.log('performCloudSave: Getting selected players...');
+    const allSelected = getAllSelectedPlayers();
+    console.log('performCloudSave: Got players:', allSelected.length);
+
+    console.log('performCloudSave: Simplifying player data...');
+    // Simplify player data before sending to avoid circular references
+    const simplifiedPlayers = allSelected.map(p => ({
+      id: p.id,
+      web_name: p.web_name,
+      first_name: p.first_name,
+      second_name: p.second_name,
+      element_type: p.element_type,
+      team_id: p.team_id,
+      team_code: p.team_code,
+      now_cost: p.now_cost,
+      total_points: p.total_points,
+      form: p.form,
+      image_url: p.image_url,
+    }));
+    console.log('performCloudSave: Simplified players:', simplifiedPlayers.length);
+
+    console.log('performCloudSave: Creating request body...');
+    const requestBody = {
+      squad_data: {
+        players: simplifiedPlayers,
+        formation: formation.name,
+        captain,
+        viceCaptain,
+      },
+      team_name: teamName || "",
+    };
+    console.log('performCloudSave: Request body created');
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/wildcard/${code}/save/`, {
+      console.log('performCloudSave: Sending PATCH request...');
+      const response = await fetch(`/api/wildcard/${currentCode}/save/`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          squad_data: {
-            players: allSelected,
-            formation: formation.name,
-            captain,
-            viceCaptain,
-          },
-          team_name: teamName || "",
-        }),
+        body: JSON.stringify(requestBody),
       });
+      console.log('performCloudSave: Got response:', response.status);
 
       const data = await response.json();
+      console.log('performCloudSave: Parsed response data:', data);
+      
       if (data.success) {
         setSavedData(data);
         setShowSuccessModal(true);
@@ -722,7 +961,7 @@ export function WildcardSimulatorPage() {
 
   const copyShareLink = () => {
     if (!code) return;
-    const shareUrl = `${import.meta.env.VITE_API_URL}/wildcard/${code}/`;
+    const shareUrl = `${API_BASE_URL}/wildcard/${code}/`;
     navigator.clipboard.writeText(shareUrl).then(() => {
       alert("✅ Link copied to clipboard!");
     });
@@ -777,117 +1016,229 @@ export function WildcardSimulatorPage() {
   const shareOnTwitter = async () => {
     if (!code) return;
     
-    // First, generate and download the image
-    if (teamDisplayRef.current) {
-      try {
-        console.log('Starting Twitter share image generation...');
-        
-        // Convert images to base64 to bypass CORS
-        const originalSources = await convertImagesToBase64(teamDisplayRef.current);
-        
-        console.log('Images converted, generating canvas...');
-        
-        const canvas = await html2canvas(teamDisplayRef.current, {
-          backgroundColor: "#050714",
-          scale: 2,
-          logging: true,
-          useCORS: true,
-          allowTaint: true,
-          imageTimeout: 0,
-          removeContainer: true,
-        });
-        
-        console.log('Canvas generated, restoring images...');
-        
-        // Restore original image sources
-        restoreImageSources(originalSources);
-        
-        // Download the image
-        canvas.toBlob((blob) => {
-          if (!blob) {
-            console.error('Failed to create blob');
-            return;
-          }
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.download = `wildcard-team-${code}.png`;
-          link.href = url;
-          link.click();
-          URL.revokeObjectURL(url);
-          
-          // Show instruction to user
-          alert("📸 Image downloaded! Please attach it to your tweet.\n\nClick OK to open Twitter...");
-          
-          // Then open Twitter
-          const shareUrl = `${import.meta.env.VITE_API_URL}/wildcard/${code}/`;
-          const text = "Check out my FPL Wildcard team! 🔥⚽";
-          const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
-          window.open(twitterUrl, "_blank", "width=550,height=420");
-        }, "image/png");
-      } catch (error) {
-        console.error("Failed to generate image:", error);
-        // Fallback to just text sharing
-        const shareUrl = `${import.meta.env.VITE_API_URL}/wildcard/${code}/`;
-        const text = "Check out my FPL Wildcard team! 🔥⚽";
-        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
-        window.open(twitterUrl, "_blank", "width=550,height=420");
+    try {
+      // Fetch upcoming gameweek
+      const gwResponse = await fetch('/api/fixtures/');
+      const gwData = await gwResponse.json();
+      const upcomingGW = gwData.current_gameweek || 8; // Fallback to 8
+      
+      // Get all selected players
+      const allSelected = getAllSelectedPlayers();
+      
+      // Helper to get position name
+      const getPositionName = (elementType: number) => {
+        switch(elementType) {
+          case 1: return 'GK';
+          case 2: return 'DEF';
+          case 3: return 'MID';
+          case 4: return 'FWD';
+          default: return 'UNK';
+        }
+      };
+      
+      // Group players by position
+      const playersByPosition: { [key: string]: typeof allSelected } = {
+        'GK': [],
+        'DEF': [],
+        'MID': [],
+        'FWD': []
+      };
+      
+      allSelected.forEach(p => {
+        const pos = getPositionName(p.element_type);
+        playersByPosition[pos].push(p);
+      });
+      
+      // Separate starting XI and bench
+      const startingXI = allSelected.filter(p => !bench.some(b => b.id === p.id));
+      const benchPlayers = allSelected.filter(p => bench.some(b => b.id === p.id));
+      
+      // Group starting XI by position
+      const startingByPos: { [key: string]: typeof allSelected } = {
+        'GK': [],
+        'DEF': [],
+        'MID': [],
+        'FWD': []
+      };
+      
+      startingXI.forEach(p => {
+        const pos = getPositionName(p.element_type);
+        startingByPos[pos].push(p);
+      });
+      
+      // Build condensed format
+      let textLines = ['Checkout My FPL Team Draft.\n\n'];
+      
+      // Starting XI
+      if (startingByPos['GK'].length > 0) {
+        textLines.push(`GK->${startingByPos['GK'].map(p => p.web_name).join(', ')}\n`);
       }
+      if (startingByPos['DEF'].length > 0) {
+        textLines.push(`DEF->${startingByPos['DEF'].map(p => p.web_name).join(', ')}\n`);
+      }
+      if (startingByPos['MID'].length > 0) {
+        textLines.push(`MID->${startingByPos['MID'].map(p => p.web_name).join(', ')}\n`);
+      }
+      if (startingByPos['FWD'].length > 0) {
+        textLines.push(`FWD->${startingByPos['FWD'].map(p => p.web_name).join(', ')}\n`);
+      }
+      
+      // Bench
+      if (benchPlayers.length > 0) {
+        textLines.push('\nBench->\n');
+        benchPlayers.forEach(p => {
+          textLines.push(`${p.web_name} (${getPositionName(p.element_type)})\n`);
+        });
+      }
+      
+      const shareUrl = `${API_BASE_URL}/wildcard/${code}/`;
+      const text = `${textLines.join('')}\n#GW${upcomingGW} #FPL @aero_fpl\n\n`;
+      
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
+      window.open(twitterUrl, "_blank", "width=550,height=420");
+    } catch (error) {
+      console.error("Failed to share on Twitter:", error);
+      // Fallback to simple share
+      const shareUrl = `${API_BASE_URL}/wildcard/${code}/`;
+      const text = "Check out my FPL Wildcard team! 🔥⚽ #FPL @aero_fpl";
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
+      window.open(twitterUrl, "_blank", "width=550,height=420");
     }
   };
 
   const shareOnFacebook = async () => {
     if (!code) return;
     
-    // First, generate and download the image
-    if (teamDisplayRef.current) {
-      try {
-        console.log('Starting Facebook share image generation...');
-        
-        // Convert images to base64 to bypass CORS
-        const originalSources = await convertImagesToBase64(teamDisplayRef.current);
-        
-        console.log('Images converted, generating canvas...');
-        
-        const canvas = await html2canvas(teamDisplayRef.current, {
-          backgroundColor: "#050714",
-          scale: 2,
-          logging: true,
-          useCORS: true,
-          allowTaint: true,
-          imageTimeout: 0,
-          removeContainer: true,
-        });
-        
-        console.log('Canvas generated, restoring images...');
-        
-        // Restore original image sources
-        restoreImageSources(originalSources);
-        
-        // Download the image
-        canvas.toBlob((blob) => {
-          if (!blob) return;
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.download = `wildcard-team-${code}.png`;
-          link.href = url;
-          link.click();
-          URL.revokeObjectURL(url);
-          
-          // Show instruction to user
-          alert("📸 Image downloaded! Please attach it to your Facebook post.\n\nClick OK to open Facebook...");
-          
-          // Then open Facebook
-          const shareUrl = `${import.meta.env.VITE_API_URL}/wildcard/${code}/`;
-          const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
-          window.open(facebookUrl, "_blank", "width=550,height=420");
-        }, "image/png");
-      } catch (error) {
-        console.error("Failed to generate image:", error);
-        // Fallback to just text sharing
-        const shareUrl = `${import.meta.env.VITE_API_URL}/wildcard/${code}/`;
-        const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
-        window.open(facebookUrl, "_blank", "width=550,height=420");
+    try {
+      // Fetch upcoming gameweek
+      const gwResponse = await fetch('/api/fixtures/');
+      const gwData = await gwResponse.json();
+      const upcomingGW = gwData.current_gameweek || 8; // Fallback to 8
+      
+      // Get all selected players
+      const allSelected = getAllSelectedPlayers();
+      
+      // Helper to get position name
+      const getPositionName = (elementType: number) => {
+        switch(elementType) {
+          case 1: return 'GK';
+          case 2: return 'DEF';
+          case 3: return 'MID';
+          case 4: return 'FWD';
+          default: return 'UNK';
+        }
+      };
+      
+      // Separate starting XI and bench
+      const startingXI = allSelected.filter(p => !bench.some(b => b.id === p.id));
+      const benchPlayers = allSelected.filter(p => bench.some(b => b.id === p.id));
+      
+      // Group starting XI by position
+      const startingByPos: { [key: string]: typeof allSelected } = {
+        'GK': [],
+        'DEF': [],
+        'MID': [],
+        'FWD': []
+      };
+      
+      startingXI.forEach(p => {
+        const pos = getPositionName(p.element_type);
+        startingByPos[pos].push(p);
+      });
+      
+      // Build condensed format
+      let textLines = ['Checkout My FPL Team Draft.\n'];
+      
+      // Starting XI
+      if (startingByPos['GK'].length > 0) {
+        textLines.push(`GK->${startingByPos['GK'].map(p => p.web_name).join(', ')}\n`);
       }
+      if (startingByPos['DEF'].length > 0) {
+        textLines.push(`DEF->${startingByPos['DEF'].map(p => p.web_name).join(', ')}\n`);
+      }
+      if (startingByPos['MID'].length > 0) {
+        textLines.push(`MID->${startingByPos['MID'].map(p => p.web_name).join(', ')}\n`);
+      }
+      if (startingByPos['FWD'].length > 0) {
+        textLines.push(`FWD->${startingByPos['FWD'].map(p => p.web_name).join(', ')}\n`);
+      }
+      
+      // Bench
+      if (benchPlayers.length > 0) {
+        textLines.push('\nBench->\n');
+        benchPlayers.forEach(p => {
+          textLines.push(`${p.web_name} (${getPositionName(p.element_type)})\n`);
+        });
+      }
+      
+      const shareUrl = `${API_BASE_URL}/wildcard/${code}/`;
+      const quote = `${textLines.join('')}\n#GW${upcomingGW} #FPL @aero_fpl`;
+      
+      // Use Facebook's sharer with quote parameter
+      const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(quote)}`;
+      window.open(facebookUrl, "_blank", "width=550,height=420");
+    } catch (error) {
+      console.error("Failed to share on Facebook:", error);
+      const shareUrl = `${API_BASE_URL}/wildcard/${code}/`;
+      const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+      window.open(facebookUrl, "_blank", "width=550,height=420");
+    }
+  };
+
+  const copyToDraft = () => {
+    // Save the current team to the user's draft using autoSave logic
+    const data = {
+      version: 1,
+      lastSaved: new Date().toISOString(),
+      team: {
+        goalkeepers,
+        defenders,
+        midfielders,
+        forwards,
+        bench,
+        captain,
+        viceCaptain,
+        formation: formation.name,
+      },
+      code: null, // Clear code so they get a new one when saving
+    };
+    localStorage.setItem(`wildcard_${currentDraftId}`, JSON.stringify(data));
+    
+    // Clear the viewing state
+    setIsViewingSharedTeam(false);
+    setSharedTeamName("");
+    setSharedTeamCode("");
+    setCode(null); // Clear the shared code so they get a new one when saving
+    
+    // Update the URL to remove the code parameter
+    window.history.pushState({}, '', '/wildcard');
+    
+    alert(`✅ Team copied to ${draftNames[currentDraftId] || currentDraftId}!\n\nYou can now make changes and save it as your own team.`);
+  };
+
+  const startFresh = () => {
+    if (confirm("Are you sure you want to start fresh? This will clear the viewed team.")) {
+      // Clear all selections
+      setGoalkeepers([]);
+      setDefenders([]);
+      setMidfielders([]);
+      setForwards([]);
+      setBench([]);
+      setCaptain(null);
+      setViceCaptain(null);
+      setFormation(FORMATIONS[3]);
+      
+      // Clear viewing state
+      setIsViewingSharedTeam(false);
+      setSharedTeamName("");
+      setSharedTeamCode("");
+      setCode(null);
+      
+      // Update the URL to remove the code parameter
+      window.history.pushState({}, '', '/wildcard');
+      
+      // Load the user's existing draft
+      loadDraft(currentDraftId);
     }
   };
 
@@ -925,6 +1276,79 @@ export function WildcardSimulatorPage() {
         <p className="dream-team-subtitle">
           Build your perfect wildcard team • Auto-saves every 30s
         </p>
+
+        {/* Shared Team Viewing Banner */}
+        {isViewingSharedTeam && (
+          <div style={{
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            padding: '16px 20px',
+            borderRadius: '12px',
+            marginTop: '16px',
+            marginBottom: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '12px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+          }}>
+            <div style={{ flex: '1', minWidth: '200px' }}>
+              <div style={{ fontSize: '0.85em', opacity: 0.9, marginBottom: '4px' }}>
+                👀 Viewing Shared Team
+              </div>
+              <div style={{ fontSize: '1.1em', fontWeight: 'bold' }}>
+                {sharedTeamName}
+              </div>
+              <div style={{ fontSize: '0.8em', opacity: 0.8, marginTop: '2px' }}>
+                Code: {sharedTeamCode}
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <button 
+                onClick={copyToDraft}
+                style={{
+                  background: 'rgba(255,255,255,0.95)',
+                  color: '#667eea',
+                  padding: '10px 20px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  fontSize: '0.9em',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.background = 'white'}
+                onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.95)'}
+              >
+                📋 Copy to My Draft
+              </button>
+              <button 
+                onClick={startFresh}
+                style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  color: 'white',
+                  padding: '10px 20px',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  fontSize: '0.9em',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.3)';
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
+                }}
+              >
+                🆕 Start Fresh
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Draft Management Menu */}
         <div className="draft-manager">
@@ -1007,15 +1431,28 @@ export function WildcardSimulatorPage() {
         </div>
 
         <div className="wildcard-action-btns">
+          <button 
+            className="secondary-btn" 
+            onClick={() => setShowSavedTeams(true)}
+          >
+            📂 My Saved Teams ({savedTeams.length})
+          </button>
           <button className="secondary-btn" onClick={clearCurrentDraft}>
             🗑️ Clear Draft
+          </button>
+          <button 
+            className="primary-btn" 
+            onClick={saveTeamLocally}
+            disabled={!isSquadComplete || budgetRemaining < 0}
+          >
+            💾 Save Team
           </button>
           <button 
             className="share-dream-team-btn" 
             onClick={saveToCloud}
             disabled={!isSquadComplete || budgetRemaining < 0}
           >
-            💾 Save & Share
+            � Share Online
           </button>
         </div>
       </div>
@@ -1219,7 +1656,7 @@ export function WildcardSimulatorPage() {
               margin: "15px 0",
               border: "2px solid var(--accent-cyan)"
             }}>
-              {`${import.meta.env.VITE_API_URL}/wildcard/${savedData.code}/`}
+              {`${API_BASE_URL}/wildcard/${savedData.code}/`}
             </div>
 
             <div className="team-stats" style={{
@@ -1229,7 +1666,6 @@ export function WildcardSimulatorPage() {
               borderRadius: "8px"
             }}>
               <p><strong>Total Cost:</strong> £{savedData.total_cost}m</p>
-              <p><strong>Predicted Points:</strong> {savedData.predicted_points}</p>
             </div>
 
             <h3 style={{ marginTop: "20px", marginBottom: "10px" }}>Share Your Team:</h3>
@@ -1277,18 +1713,6 @@ export function WildcardSimulatorPage() {
               }}>
                 🐦 Twitter
               </button>
-              <button className="share-btn-modal facebook" onClick={shareOnFacebook} style={{
-                padding: "10px 20px",
-                borderRadius: "5px",
-                border: "none",
-                fontWeight: "bold",
-                cursor: "pointer",
-                fontSize: "0.95em",
-                background: "#4267B2",
-                color: "white"
-              }}>
-                📘 Facebook
-              </button>
             </div>
 
             <div className="modal-actions" style={{ marginTop: "20px" }}>
@@ -1308,6 +1732,186 @@ export function WildcardSimulatorPage() {
               fontSize: "0.9em",
               color: "var(--text-muted)"
             }}>💡 Your team is saved! Anyone with this link can view it.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Team Name Input Modal */}
+      {showTeamNameModal && (
+        <div className="modal-overlay" onClick={() => {
+          setShowTeamNameModal(false);
+          setPendingSaveAction(null);
+        }}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <h2>💾 {pendingSaveAction === 'local' ? 'Save Team' : 'Share Team Online'}</h2>
+              <button 
+                className="close-modal-btn" 
+                onClick={() => {
+                  setShowTeamNameModal(false);
+                  setPendingSaveAction(null);
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ padding: '20px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '10px', 
+                color: 'var(--text-primary)',
+                fontWeight: '600'
+              }}>
+                Team Name
+              </label>
+              <input
+                type="text"
+                value={teamNameInput}
+                onChange={(e) => setTeamNameInput(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleTeamNameSubmit();
+                  }
+                }}
+                placeholder="e.g., My Triple Captain Team"
+                autoFocus
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-glow)',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  color: 'var(--text-primary)',
+                  fontSize: '1rem',
+                  marginBottom: '20px'
+                }}
+              />
+
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => {
+                    setShowTeamNameModal(false);
+                    setPendingSaveAction(null);
+                  }}
+                  style={{
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-glow)',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    color: 'var(--text-primary)',
+                    cursor: 'pointer',
+                    fontSize: '1rem'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleTeamNameSubmit}
+                  style={{
+                    padding: '10px 30px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-purple))',
+                    color: 'white',
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    fontWeight: '600'
+                  }}
+                >
+                  {pendingSaveAction === 'local' ? '💾 Save' : '🌐 Share'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Saved Teams Modal */}
+      {showSavedTeams && (
+        <div className="modal-overlay" onClick={() => setShowSavedTeams(false)}>
+          <div className="modal-content saved-teams-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>📂 My Saved Teams</h2>
+              <button 
+                className="close-modal-btn" 
+                onClick={() => setShowSavedTeams(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="saved-teams-list">
+              {savedTeams.length === 0 ? (
+                <div className="empty-state">
+                  <p style={{ fontSize: '3em', marginBottom: '20px' }}>🏆</p>
+                  <h3>No saved teams yet</h3>
+                  <p style={{ color: 'var(--text-muted)', marginTop: '10px' }}>
+                    Build a complete 15-player team and click "Save Team" to store it locally
+                  </p>
+                </div>
+              ) : (
+                <div className="teams-grid">
+                  {savedTeams.map((team) => (
+                    <div key={team.id} className="saved-team-card">
+                      <div className="team-card-header">
+                        <h3>{team.name}</h3>
+                        <span className="team-cost">£{team.totalCost.toFixed(1)}m</span>
+                      </div>
+                      
+                      <div className="team-card-info">
+                        <span className="team-formation">⚽ {team.formation}</span>
+                        <span className="team-date">
+                          📅 {new Date(team.savedAt).toLocaleDateString('en-GB', { 
+                            day: 'numeric', 
+                            month: 'short',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+
+                      <div className="team-card-captain">
+                        <span>
+                          (C) {team.players.find((p: any) => p.playerId === team.captain)?.web_name || 'None'}
+                        </span>
+                        {team.viceCaptain && (
+                          <span style={{ marginLeft: '10px' }}>
+                            (VC) {team.players.find((p: any) => p.playerId === team.viceCaptain)?.web_name || 'None'}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="team-card-actions">
+                        <button 
+                          className="load-team-btn"
+                          onClick={() => {
+                            loadSavedTeam(team);
+                            setShowSavedTeams(false);
+                          }}
+                        >
+                          📥 Load Team
+                        </button>
+                        <button 
+                          className="delete-team-btn"
+                          onClick={() => deleteSavedTeam(team.id)}
+                        >
+                          🗑️ Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {savedTeams.length > 0 && (
+              <div className="modal-footer">
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9em' }}>
+                  💾 Teams are stored locally in your browser • Max 10 teams
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}

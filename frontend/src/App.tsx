@@ -36,6 +36,7 @@ export default function App() {
         <Route path="/analyze" element={<AnalyzeManagerPage />} />
         <Route path="/dream-team" element={<DreamTeamPage />} />
         <Route path="/wildcard" element={<WildcardSimulatorPage />} />
+        <Route path="/wildcard/:code" element={<WildcardSimulatorPage />} />
       </Routes>
     </MobileBlocker>
   );
