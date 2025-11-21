@@ -1,6 +1,4 @@
-"""
-URL configuration for fpl_platform project.
-"""
+from django.contrib import admin
 from django.urls import path
 
 from etl.api_views import (

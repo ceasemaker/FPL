@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { RadarChart } from "../components/RadarChart";
-import { Heatmap } from "../components/Heatmap";
 
 // Use empty string for API base URL to use relative paths (proxied through Vite)
 const API_BASE_URL = "";
@@ -21,13 +20,13 @@ interface DetailedPlayer {
   status: string | null;
   news: string | null;
   news_added: string | null;
-
+  
   // Cost & Ownership
   now_cost: number;
   cost_change_event: number | null;
   cost_change_start: number | null;
   selected_by_percent: number | null;
-
+  
   // Points & Form
   total_points: number;
   event_points: number | null;
@@ -35,13 +34,13 @@ interface DetailedPlayer {
   form: number | null;
   value_form: number | null;
   value_season: number | null;
-
+  
   // Transfers
   transfers_in: number | null;
   transfers_in_event: number | null;
   transfers_out: number | null;
   transfers_out_event: number | null;
-
+  
   // Performance Stats
   minutes: number | null;
   goals_scored: number | null;
@@ -57,19 +56,19 @@ interface DetailedPlayer {
   bonus: number | null;
   bps: number | null;
   starts: number | null;
-
+  
   // Advanced Stats (ICT)
   influence: number | null;
   creativity: number | null;
   threat: number | null;
   ict_index: number | null;
-
+  
   // Expected Stats
   expected_goals: number | null;
   expected_assists: number | null;
   expected_goal_involvements: number | null;
   expected_goals_conceded: number | null;
-
+  
   // Per 90 Stats
   expected_goals_per_90: number | null;
   expected_assists_per_90: number | null;
@@ -79,7 +78,7 @@ interface DetailedPlayer {
   saves_per_90: number | null;
   starts_per_90: number | null;
   clean_sheets_per_90: number | null;
-
+  
   // Rankings
   influence_rank: number | null;
   creativity_rank: number | null;
@@ -89,15 +88,15 @@ interface DetailedPlayer {
   form_rank: number | null;
   points_per_game_rank: number | null;
   selected_rank: number | null;
-
+  
   // Set Pieces
   corners_and_indirect_freekicks_order: number | null;
   direct_freekicks_order: number | null;
   penalties_order: number | null;
-
+  
   // Fixtures
   avg_fdr: number | null;
-
+  
   // Chance of Playing
   chance_of_playing_this_round: number | null;
   chance_of_playing_next_round: number | null;
@@ -136,7 +135,6 @@ export function ComparePage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [players, setPlayers] = useState<DetailedPlayer[]>([]);
-  const [heatmapData, setHeatmapData] = useState<Record<number, any>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -160,29 +158,6 @@ export function ComparePage() {
       .then((playersData) => {
         setPlayers(playersData);
         setError(null);
-
-        // Fetch landing snapshot to get current gameweek
-        return fetch(`${API_BASE_URL}/api/landing/`)
-          .then(res => res.json())
-          .then(landingData => {
-            const currentGw = landingData.current_gameweek || 1;
-
-            // Fetch heatmaps for all players
-            return Promise.all(
-              playerIds.map(id =>
-                fetch(`${API_BASE_URL}/api/sofasport/player/${id}/heatmap/${currentGw}/`)
-                  .then(res => res.ok ? res.json() : null)
-              )
-            ).then(heatmaps => {
-              const heatmapMap: Record<number, any> = {};
-              heatmaps.forEach((data, index) => {
-                if (data) {
-                  heatmapMap[playerIds[index]] = data;
-                }
-              });
-              setHeatmapData(heatmapMap);
-            });
-          });
       })
       .catch((err) => {
         console.error("Failed to load players", err);
@@ -285,41 +260,13 @@ export function ComparePage() {
         <div className="comparison-radar-section">
           <h3 className="section-title">Player Attributes</h3>
           <div className="comparison-radar-wrapper">
-            <RadarChart
-              playerIds={players.map(p => p.id)}
-              height={500}
-              width={500}
+            <RadarChart 
+              playerIds={players.map(p => p.id)} 
+              height={500} 
+              width={500} 
               showBreakdown={true}
               hideOnError={false}
             />
-          </div>
-        </div>
-
-        {/* Heatmap Comparison */}
-        <div className="comparison-radar-section">
-          <h3 className="section-title">Heatmap Comparison</h3>
-          <div className="comparison-heatmap-wrapper" style={{ display: 'flex', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' }}>
-            {players.map(player => (
-              <div key={player.id} className="comparison-heatmap-item" style={{ textAlign: 'center' }}>
-                <h4 style={{ marginBottom: '0.5rem' }}>{player.web_name}</h4>
-                {heatmapData[player.id] ? (
-                  <Heatmap coordinates={heatmapData[player.id].coordinates} width={200} height={133} />
-                ) : (
-                  <div className="no-data" style={{
-                    width: 200,
-                    height: 133,
-                    background: '#1a1a1a',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '8px',
-                    color: '#666'
-                  }}>
-                    No Heatmap Data
-                  </div>
-                )}
-              </div>
-            ))}
           </div>
         </div>
 
@@ -426,9 +373,9 @@ export function ComparePage() {
           {/* Fixtures */}
           <div className="stats-section">
             <h3 className="section-title">Fixtures</h3>
-            <StatRow
-              label="FDR (Next 3)"
-              players={players}
+            <StatRow 
+              label="FDR (Next 3)" 
+              players={players} 
               accessor={(p) => p.avg_fdr !== null ? p.avg_fdr.toFixed(1) : "—"}
               renderValue={(value, player) => (
                 player.avg_fdr !== null ? (
@@ -449,15 +396,15 @@ export function ComparePage() {
 }
 
 // Helper component for stat rows
-function StatRow({
-  label,
-  players,
+function StatRow({ 
+  label, 
+  players, 
   accessor,
   highlight = false,
   renderValue
-}: {
-  label: string;
-  players: DetailedPlayer[];
+}: { 
+  label: string; 
+  players: DetailedPlayer[]; 
   accessor: (player: DetailedPlayer) => string | number;
   highlight?: boolean;
   renderValue?: (value: string | number, player: DetailedPlayer) => React.ReactNode;

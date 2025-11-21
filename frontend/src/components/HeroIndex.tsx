@@ -1,7 +1,6 @@
-import { useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import anime from "animejs";
 import { PulseResponse } from "../types";
-import { Heartbeat } from "./Heartbeat";
 
 interface HeroIndexProps {
   data: PulseResponse | undefined;
@@ -15,50 +14,117 @@ const shimmerGradient = {
 };
 
 export function HeroIndex({ data, loading, error }: HeroIndexProps) {
-  const navigate = useNavigate();
+  const valueRef = useRef<HTMLDivElement | null>(null);
+  const meterFillRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!data || !valueRef.current) return;
+
+    const counter = { value: 0 };
+    const animation = anime({
+      targets: counter,
+      value: data.value,
+      easing: "easeOutExpo",
+      duration: 1600,
+      update: () => {
+        if (valueRef.current) {
+          valueRef.current.textContent = counter.value.toFixed(2);
+        }
+      },
+    });
+
+    return () => {
+      animation.pause();
+    };
+  }, [data]);
+
+  // Animate meter fill
+  useEffect(() => {
+    if (!data || !meterFillRef.current) return;
+
+    const maxPulse = 150000; // Max expected pulse value
+    const percentage = Math.min((data.value / maxPulse) * 100, 100);
+
+    anime({
+      targets: meterFillRef.current,
+      width: `${percentage}%`,
+      easing: "easeOutExpo",
+      duration: 1600,
+    });
+  }, [data]);
+
+  const getPulseLevel = (value: number): { label: string; color: string } => {
+    if (value < 10000) return { label: "Quiet", color: "#6b7280" };
+    if (value < 50000) return { label: "Moderate", color: "#3b82f6" };
+    if (value < 100000) return { label: "Active", color: "#f59e0b" };
+    return { label: "Peak", color: "#ef4444" };
+  };
+
+  const pulseLevel = getPulseLevel(data?.value ?? 0);
 
   const subtitle = loading
     ? "Streaming match data..."
     : error
-      ? "We couldn't reach the data service."
-      : `ETL heartbeat captured ${data?.snapshot_counts?.["event-live"] ?? 0} live updates.`;
+    ? "We couldn't reach the data service."
+    : `ETL heartbeat captured ${data?.snapshot_counts?.["event-live"] ?? 0} live updates.`;
 
   return (
-    <header className="glow-card hero relative overflow-hidden">
-      <div className="glow-card-content relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-        <div className="hero-headline flex-1">
-          <span className="badge mb-4" style={shimmerGradient}>
+    <header className="glow-card hero">
+      <div className="glow-card-content">
+        <div className="hero-headline">
+          <span className="badge" style={shimmerGradient}>
             AeroFPL Index
           </span>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
-            Feel the Premier League <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
-              data heartbeat.
-            </span>
-          </h1>
-          <p className="text-lg text-gray-400 mb-8 max-w-lg">{subtitle}</p>
-
-          <button
-            onClick={() => navigate("/analyze")}
-            className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-bold text-lg hover:scale-105 transition-transform shadow-lg shadow-indigo-500/30"
-          >
-            Analyze Your Team →
-          </button>
+          <h1>Feel the Premier League data heartbeat.</h1>
+          <p>{subtitle}</p>
         </div>
-
-        <div className="hero-visual flex-1 flex justify-center items-center">
-          <div className="relative">
-            <div className="absolute inset-0 bg-cyan-500/20 blur-3xl rounded-full"></div>
-            <Heartbeat value={data?.value ?? 0} width={400} height={200} />
-            <div className="text-center mt-4">
-              <div className="text-sm text-gray-500 uppercase tracking-widest">Pulse Value</div>
+        <div className="hero-metric" style={shimmerGradient}>
+          <div className="metric-label">Pulse value</div>
+          <div className="metric-value" ref={valueRef}>
+            {loading ? "--" : data?.value.toFixed(2) ?? "0.00"}
+          </div>
+          
+          {/* Pulse Meter */}
+          <div className="pulse-meter-container">
+            <div className="pulse-meter-track">
+              <div 
+                className="pulse-meter-fill" 
+                ref={meterFillRef}
+                style={{ backgroundColor: pulseLevel.color }}
+              ></div>
+            </div>
+            <div className="pulse-meter-labels">
+              <span className="pulse-level-label" style={{ color: pulseLevel.color }}>
+                {pulseLevel.label}
+              </span>
+              <span className="pulse-meter-scale">0 — 50k — 100k — 150k+</span>
             </div>
           </div>
+          
+          <div className="metric-footnote">
+            {data?.last_updated
+              ? `Last sync ${new Date(data.last_updated).toLocaleString()}`
+              : "Powered by the Django ETL loop"}
+          </div>
+        </div>
+        <div className="hero-pills">
+          <HeroPill
+            label="This GW points"
+            value={data?.total_points_current ?? 0}
+          />
+          <HeroPill
+            label="Transfers in"
+            value={data?.total_transfers_in_event ?? 0}
+          />
+          <HeroPill
+            label="Snapshots processed"
+            value={Object.values(data?.snapshot_counts ?? {}).reduce(
+              (acc, count) => acc + count,
+              0,
+            )}
+          />
         </div>
       </div>
-
-      {/* Background Elements */}
-      <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-indigo-900/20 to-transparent pointer-events-none"></div>
     </header>
   );
 }
