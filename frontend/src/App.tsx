@@ -8,7 +8,7 @@ import { AnalyzeManagerPage } from "./pages/AnalyzeManagerPage";
 import { DreamTeamPage } from "./pages/DreamTeamPage";
 import { WildcardSimulatorPage } from "./pages/WildcardSimulatorPage";
 import { Navigation } from "./components/Navigation";
-import { MobileBlocker } from "./components/MobileBlocker";
+
 
 const bgAnimation = () => {
   anime({
@@ -27,7 +27,7 @@ export default function App() {
   }, []);
 
   return (
-    <MobileBlocker>
+    <>
       <Navigation />
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -38,6 +38,6 @@ export default function App() {
         <Route path="/wildcard" element={<WildcardSimulatorPage />} />
         <Route path="/wildcard/:code" element={<WildcardSimulatorPage />} />
       </Routes>
-    </MobileBlocker>
+    </>
   );
 }

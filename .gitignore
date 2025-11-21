@@ -36,3 +36,6 @@ django_etl/staticfiles/
 .idea/
 *.swp
 *.swo
+
+# Celery
+celerybeat-schedule

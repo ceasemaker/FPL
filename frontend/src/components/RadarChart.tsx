@@ -56,6 +56,29 @@ export function RadarChart({ playerIds, height = 400, width = 400, showBreakdown
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Responsive dimensions
+  const [dimensions, setDimensions] = useState({ width, height });
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 600) {
+        const newWidth = Math.min(window.innerWidth - 40, width); // 40px padding
+        setDimensions({
+          width: newWidth,
+          height: newWidth // Keep square aspect ratio
+        });
+      } else {
+        setDimensions({ width, height });
+      }
+    };
+
+    // Initial check
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [width, height]);
+
   // Fetch radar data for all players
   useEffect(() => {
     if (!playerIds || playerIds.length === 0) {
@@ -69,16 +92,16 @@ export function RadarChart({ playerIds, height = 400, width = 400, showBreakdown
     // If single player, fetch individually; if multiple, use compare endpoint
     const fetchPromise = playerIds.length === 1
       ? fetch(`/api/sofasport/player/${playerIds[0]}/radar/`)
-          .then(res => res.json())
-          .then(data => {
-            // Handle error response from single player endpoint
-            if (data.error) {
-              return { error: data.error };
-            }
-            return { players: [data] };
-          })
+        .then(res => res.json())
+        .then(data => {
+          // Handle error response from single player endpoint
+          if (data.error) {
+            return { error: data.error };
+          }
+          return { players: [data] };
+        })
       : fetch(`/api/sofasport/compare/radar/?player_ids=${playerIds.join(',')}`)
-          .then(res => res.json());
+        .then(res => res.json());
 
     fetchPromise
       .then(data => {
@@ -113,19 +136,19 @@ export function RadarChart({ playerIds, height = 400, width = 400, showBreakdown
 
     // High DPI support
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
+    canvas.width = dimensions.width * dpr;
+    canvas.height = dimensions.height * dpr;
+    canvas.style.width = `${dimensions.width}px`;
+    canvas.style.height = `${dimensions.height}px`;
     ctx.scale(dpr, dpr);
 
     // Clear canvas
-    ctx.clearRect(0, 0, width, height);
+    ctx.clearRect(0, 0, dimensions.width, dimensions.height);
 
     // Chart dimensions
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const radius = Math.min(width, height) / 2 - 60;
+    const centerX = dimensions.width / 2;
+    const centerY = dimensions.height / 2;
+    const radius = Math.min(dimensions.width, dimensions.height) / 2 - 60;
     const numAxes = ATTRIBUTE_LABELS.length;
     const angleStep = (Math.PI * 2) / numAxes;
 
@@ -165,7 +188,7 @@ export function RadarChart({ playerIds, height = 400, width = 400, showBreakdown
       // Draw scale values (0, 50, 100)
       ctx.font = "500 10px system-ui";
       ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
-      
+
       // Only show on first axis to avoid clutter
       if (i === 0) {
         [50, 100].forEach(value => {
@@ -228,24 +251,24 @@ export function RadarChart({ playerIds, height = 400, width = 400, showBreakdown
           ctx.lineWidth = 3;
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
-          
+
           // Position text slightly outside the data point
           const textDistance = distance + 15;
           const textX = centerX + Math.cos(angle) * textDistance;
           const textY = centerY + Math.sin(angle) * textDistance;
-          
+
           // Draw text with stroke for better visibility
           ctx.strokeText(value.toString(), textX, textY);
           ctx.fillText(value.toString(), textX, textY);
         }
       });
     });
-  }, [playersData, width, height]);
+  }, [playersData, dimensions]);
 
   if (loading) {
     if (hideOnError) return null;
     return (
-      <div className="radar-chart-container" style={{ height, width }}>
+      <div className="radar-chart-container" style={{ height: dimensions.height, width: dimensions.width }}>
         <div className="loading-spinner"></div>
       </div>
     );
@@ -254,7 +277,7 @@ export function RadarChart({ playerIds, height = 400, width = 400, showBreakdown
   if (error) {
     if (hideOnError) return null;
     return (
-      <div className="radar-chart-container" style={{ height, width }}>
+      <div className="radar-chart-container" style={{ height: dimensions.height, width: dimensions.width }}>
         <div className="radar-chart-error">
           <p>{error}</p>
         </div>
@@ -265,7 +288,7 @@ export function RadarChart({ playerIds, height = 400, width = 400, showBreakdown
   if (playersData.length === 0) {
     if (hideOnError) return null;
     return (
-      <div className="radar-chart-container" style={{ height, width }}>
+      <div className="radar-chart-container" style={{ height: dimensions.height, width: dimensions.width }}>
         <div className="radar-chart-error">
           <p>No radar chart data available</p>
         </div>
@@ -278,9 +301,9 @@ export function RadarChart({ playerIds, height = 400, width = 400, showBreakdown
       <canvas
         ref={canvasRef}
         className="radar-chart-canvas"
-        style={{ width, height }}
+        style={{ width: dimensions.width, height: dimensions.height }}
       />
-      
+
       {/* Legend */}
       <div className="radar-chart-legend">
         {playersData.map((player, index) => (
