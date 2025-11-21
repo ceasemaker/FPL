@@ -76,7 +76,7 @@ function PlayerCard({ player, onClick }: { player: Player; onClick: () => void }
       <div className="dream-player-stats">
         <span className="dream-stat-badge">£{(player.now_cost / 10).toFixed(1)}m</span>
         <span className="dream-stat-badge">{player.total_points} pts</span>
-        <span 
+        <span
           className="dream-stat-badge fdr-badge"
           style={{ backgroundColor: getDifficultyColor(player.avg_fdr) }}
         >
@@ -84,7 +84,7 @@ function PlayerCard({ player, onClick }: { player: Player; onClick: () => void }
         </span>
       </div>
       {player.team_code && (
-        <img 
+        <img
           src={getTeamBadgeUrl(player.team_code)!}
           alt={player.team || ''}
           className="dream-player-badge"
@@ -106,22 +106,23 @@ export function DreamTeamPage() {
   const convertImagesToBase64 = async (container: HTMLElement) => {
     const images = container.querySelectorAll('img');
     const originalSources: Map<HTMLImageElement, string> = new Map();
-    
+
     // Store original sources and convert to base64
     for (const img of Array.from(images)) {
       const originalSrc = img.src;
       originalSources.set(img, originalSrc);
-      
+
       try {
-        // Fetch the image and convert to base64
-        const response = await fetch(originalSrc);
+        // Fetch the image via proxy to bypass CORS
+        const proxyUrl = `/api/proxy/image/?url=${encodeURIComponent(originalSrc)}`;
+        const response = await fetch(proxyUrl);
         const blob = await response.blob();
         const base64 = await new Promise<string>((resolve) => {
           const reader = new FileReader();
           reader.onloadend = () => resolve(reader.result as string);
           reader.readAsDataURL(blob);
         });
-        
+
         // Replace with base64
         img.src = base64;
       } catch (error) {
@@ -129,7 +130,7 @@ export function DreamTeamPage() {
         // Keep original if conversion fails
       }
     }
-    
+
     return originalSources;
   };
 
@@ -142,16 +143,16 @@ export function DreamTeamPage() {
 
   const handleShare = async () => {
     if (!dreamTeamRef.current) return;
-    
+
     setIsSharing(true);
-    
+
     try {
       // Convert images to base64 to bypass CORS
       const originalSources = await convertImagesToBase64(dreamTeamRef.current);
-      
+
       // Small delay to ensure images are loaded
       await new Promise(resolve => setTimeout(resolve, 100));
-      
+
       const canvas = await html2canvas(dreamTeamRef.current, {
         backgroundColor: "#050714",
         scale: 2,
@@ -161,10 +162,10 @@ export function DreamTeamPage() {
         foreignObjectRendering: false,
         imageTimeout: 15000,
       });
-      
+
       // Restore original image sources
       restoreImageSources(originalSources);
-      
+
       canvas.toBlob((blob) => {
         if (blob) {
           const url = URL.createObjectURL(blob);
@@ -232,7 +233,7 @@ export function DreamTeamPage() {
         <p className="dream-team-subtitle">
           Auto-selected based on proprietary analysis
         </p>
-        <button 
+        <button
           className="share-dream-team-btn"
           onClick={handleShare}
           disabled={isSharing}
@@ -261,80 +262,80 @@ export function DreamTeamPage() {
 
       <div ref={dreamTeamRef} className="dream-team-capture">
         <div className="football-field">
-        {/* Goalkeeper */}
-        <div className="field-row goalkeeper-row">
-          {starting_11.goalkeeper && (
-            <PlayerCard 
-              player={starting_11.goalkeeper} 
-              onClick={() => setModalPlayerId(starting_11.goalkeeper!.id)}
-            />
-          )}
+          {/* Goalkeeper */}
+          <div className="field-row goalkeeper-row">
+            {starting_11.goalkeeper && (
+              <PlayerCard
+                player={starting_11.goalkeeper}
+                onClick={() => setModalPlayerId(starting_11.goalkeeper!.id)}
+              />
+            )}
+          </div>
+
+          {/* Defenders */}
+          <div className="field-row defenders-row">
+            {starting_11.defenders.map((player) => (
+              <PlayerCard
+                key={player.id}
+                player={player}
+                onClick={() => setModalPlayerId(player.id)}
+              />
+            ))}
+          </div>
+
+          {/* Midfielders */}
+          <div className="field-row midfielders-row">
+            {starting_11.midfielders.map((player) => (
+              <PlayerCard
+                key={player.id}
+                player={player}
+                onClick={() => setModalPlayerId(player.id)}
+              />
+            ))}
+          </div>
+
+          {/* Forwards */}
+          <div className="field-row forwards-row">
+            {starting_11.forwards.map((player) => (
+              <PlayerCard
+                key={player.id}
+                player={player}
+                onClick={() => setModalPlayerId(player.id)}
+              />
+            ))}
+          </div>
         </div>
 
-        {/* Defenders */}
-        <div className="field-row defenders-row">
-          {starting_11.defenders.map((player) => (
-            <PlayerCard 
-              key={player.id} 
-              player={player}
-              onClick={() => setModalPlayerId(player.id)}
-            />
-          ))}
+        {/* Bench */}
+        <div className="bench-section">
+          <h2>Bench</h2>
+          <div className="bench-players">
+            {bench.goalkeeper && (
+              <PlayerCard
+                player={bench.goalkeeper}
+                onClick={() => setModalPlayerId(bench.goalkeeper!.id)}
+              />
+            )}
+            {bench.defender && (
+              <PlayerCard
+                player={bench.defender}
+                onClick={() => setModalPlayerId(bench.defender!.id)}
+              />
+            )}
+            {bench.midfielder && (
+              <PlayerCard
+                player={bench.midfielder}
+                onClick={() => setModalPlayerId(bench.midfielder!.id)}
+              />
+            )}
+            {bench.forward && (
+              <PlayerCard
+                player={bench.forward}
+                onClick={() => setModalPlayerId(bench.forward!.id)}
+              />
+            )}
+          </div>
         </div>
-
-        {/* Midfielders */}
-        <div className="field-row midfielders-row">
-          {starting_11.midfielders.map((player) => (
-            <PlayerCard 
-              key={player.id} 
-              player={player}
-              onClick={() => setModalPlayerId(player.id)}
-            />
-          ))}
-        </div>
-
-        {/* Forwards */}
-        <div className="field-row forwards-row">
-          {starting_11.forwards.map((player) => (
-            <PlayerCard 
-              key={player.id} 
-              player={player}
-              onClick={() => setModalPlayerId(player.id)}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Bench */}
-      <div className="bench-section">
-        <h2>Bench</h2>
-        <div className="bench-players">
-          {bench.goalkeeper && (
-            <PlayerCard 
-              player={bench.goalkeeper}
-              onClick={() => setModalPlayerId(bench.goalkeeper!.id)}
-            />
-          )}
-          {bench.defender && (
-            <PlayerCard 
-              player={bench.defender}
-              onClick={() => setModalPlayerId(bench.defender!.id)}
-            />
-          )}
-          {bench.midfielder && (
-            <PlayerCard 
-              player={bench.midfielder}
-              onClick={() => setModalPlayerId(bench.midfielder!.id)}
-            />
-          )}
-          {bench.forward && (
-            <PlayerCard 
-              player={bench.forward}
-              onClick={() => setModalPlayerId(bench.forward!.id)}
-            />
-          )}
-        </div>
-      </div>
       </div>
 
       {/* Player Detail Modal */}

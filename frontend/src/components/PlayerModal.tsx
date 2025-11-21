@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { RadarChart } from "./RadarChart";
+import { Heatmap } from "./Heatmap";
 
 const TEAM_BADGE_BASE = "https://resources.premierleague.com/premierleague25/badges-alt/";
 
@@ -17,13 +18,13 @@ interface DetailedPlayer {
   status: string | null;
   news: string | null;
   news_added: string | null;
-  
+
   // Cost & Ownership
   now_cost: number;
   cost_change_event: number | null;
   cost_change_start: number | null;
   selected_by_percent: number | null;
-  
+
   // Points & Form
   total_points: number;
   event_points: number | null;
@@ -31,13 +32,13 @@ interface DetailedPlayer {
   form: number | null;
   value_form: number | null;
   value_season: number | null;
-  
+
   // Transfers
   transfers_in: number | null;
   transfers_in_event: number | null;
   transfers_out: number | null;
   transfers_out_event: number | null;
-  
+
   // Performance Stats
   minutes: number | null;
   goals_scored: number | null;
@@ -53,19 +54,19 @@ interface DetailedPlayer {
   bonus: number | null;
   bps: number | null;
   starts: number | null;
-  
+
   // Advanced Stats (ICT)
   influence: number | null;
   creativity: number | null;
   threat: number | null;
   ict_index: number | null;
-  
+
   // Expected Stats
   expected_goals: number | null;
   expected_assists: number | null;
   expected_goal_involvements: number | null;
   expected_goals_conceded: number | null;
-  
+
   // Per 90 Stats
   expected_goals_per_90: number | null;
   expected_assists_per_90: number | null;
@@ -75,7 +76,7 @@ interface DetailedPlayer {
   saves_per_90: number | null;
   starts_per_90: number | null;
   clean_sheets_per_90: number | null;
-  
+
   // Rankings
   influence_rank: number | null;
   creativity_rank: number | null;
@@ -85,15 +86,15 @@ interface DetailedPlayer {
   form_rank: number | null;
   points_per_game_rank: number | null;
   selected_rank: number | null;
-  
+
   // Set Pieces
   corners_and_indirect_freekicks_order: number | null;
   direct_freekicks_order: number | null;
   penalties_order: number | null;
-  
+
   // Fixtures
   avg_fdr: number | null;
-  
+
   // Chance of Playing
   chance_of_playing_this_round: number | null;
   chance_of_playing_next_round: number | null;
@@ -158,6 +159,7 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
   const [player, setPlayer] = useState<DetailedPlayer | null>(null);
   const [upcomingFixtures, setUpcomingFixtures] = useState<Fixture[]>([]);
   const [fixtureHistory, setFixtureHistory] = useState<FixtureHistory[]>([]);
+  const [heatmapData, setHeatmapData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
@@ -204,7 +206,7 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
               kickoff_time: fix.kickoff_time,
             };
           });
-        
+
         // Get fixture history (last 5)
         const history = (summaryData.history || [])
           .slice(-5)
@@ -223,11 +225,21 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
               kickoff_time: h.kickoff_time,
             };
           });
-        
+
         setPlayer(playerData);
         setUpcomingFixtures(upcoming);
         setFixtureHistory(history);
         setError(null);
+
+        // Fetch heatmap for current gameweek
+        const currentEvent = bootstrapData.events.find((e: any) => e.is_current);
+        const currentGw = currentEvent ? currentEvent.id : 1;
+
+        fetch(`/api/sofasport/player/${playerId}/heatmap/${currentGw}/`)
+          .then(res => res.ok ? res.json() : null)
+          .then(data => setHeatmapData(data))
+          .catch(() => setHeatmapData(null)); // Silently fail if no heatmap
+
       })
       .catch((err) => {
         console.error("Failed to load player", err);
@@ -320,7 +332,15 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
             </div>
           </div>
           <div className="modal-radar-header">
-            <RadarChart playerIds={[player.id]} height={360} width={360} showBreakdown={false} hideOnError={true} />
+            <div className="modal-radar-wrapper">
+              <RadarChart playerIds={[player.id]} height={300} width={300} showBreakdown={false} hideOnError={true} />
+            </div>
+            {heatmapData && (
+              <div className="modal-heatmap-wrapper">
+                <h4>Heatmap (GW{heatmapData.gameweek})</h4>
+                <Heatmap coordinates={heatmapData.coordinates} width={200} height={133} />
+              </div>
+            )}
           </div>
         </div>
 
@@ -404,7 +424,7 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
                   <span className="fixture-opponent">
                     {fixture.is_home ? 'vs' : '@'} {fixture.opponent_team_short}
                   </span>
-                  <span 
+                  <span
                     className="fixture-difficulty"
                     style={{ backgroundColor: getDifficultyColor(fixture.difficulty) }}
                   >
@@ -432,7 +452,7 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
                     {fixture.goals_scored > 0 && ` ⚽${fixture.goals_scored}`}
                     {fixture.assists > 0 && ` 🅰️${fixture.assists}`}
                   </span>
-                  <span 
+                  <span
                     className={`fixture-points ${fixture.total_points >= 6 ? 'good' : fixture.total_points >= 3 ? 'ok' : 'poor'}`}
                   >
                     {fixture.total_points} pts
