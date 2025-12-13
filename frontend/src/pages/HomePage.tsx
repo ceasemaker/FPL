@@ -1,5 +1,4 @@
 import { useLandingData } from "../hooks/useLandingData";
-import { HeroIndex } from "../components/HeroIndex";
 import { TopMoversTicker } from "../components/TopMoversTicker";
 import { TransfersTicker } from "../components/TransfersTicker";
 import { MomentumGrid } from "../components/MomentumGrid";
@@ -9,7 +8,6 @@ import NewsTicker from "../components/NewsTicker";
 import { Top100Overview } from "../components/Top100Overview";
 import { BestValuePlayers } from "../components/BestValuePlayers";
 import { Top100PointsChart } from "../components/Top100PointsChart";
-import { Top100Extras } from "../components/Top100Extras";
 
 export function HomePage() {
   const { data, isLoading, error } = useLandingData();
@@ -17,7 +15,6 @@ export function HomePage() {
   return (
     <div className="page">
       <NewsTicker news={data?.news || []} />
-      <HeroIndex data={data?.pulse} loading={isLoading} error={error} />
       <TopMoversTicker
         priceMovers={data?.movers.price}
         pointsMovers={data?.movers.points}

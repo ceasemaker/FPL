@@ -34,6 +34,7 @@ export function TopMoversTicker({ priceMovers, pointsMovers, loading }: TopMover
     <section className="glow-card ticker">
       <div className="glow-card-content">
         <div className="section-title">Top Movers</div>
+        <p className="section-subtitle">Price changes and point scorers — risers 📈, fallers 📉, and top performers ⭐</p>
         <div className="ticker-viewport">
           <div className="ticker-strip" ref={stripRef}>
             {moverCards.map((mover) => (

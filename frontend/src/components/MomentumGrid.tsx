@@ -25,7 +25,8 @@ export function MomentumGrid({ movers, loading }: MomentumGridProps) {
   return (
     <section className="glow-card momentum">
       <div className="glow-card-content">
-        <div className="section-title">Momentum leaders</div>
+        <div className="section-title">Momentum Leaders</div>
+        <p className="section-subtitle">Players scoring the most points in recent gameweeks — who's in form right now</p>
         <div className="momentum-grid">
           {(loading ? new Array(6).fill(null) : subset).map((mover, idx) => (
             <MomentumCard key={mover?.id ?? idx} mover={mover} loading={loading} />
