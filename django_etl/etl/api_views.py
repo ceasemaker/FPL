@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections import defaultdict
 from dataclasses import asdict, dataclass
 from typing import Any
@@ -11,6 +12,8 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 
 from .models import Athlete, AthleteStat, Fixture, RawEndpointSnapshot, Team
+
+logger = logging.getLogger(__name__)
 
 PLAYER_IMAGE_BASE = "https://resources.premierleague.com/premierleague25/photos/players/110x140/"
 
@@ -1663,3 +1666,187 @@ def top100_differentials(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
+
+@require_GET
+def player_recent_matches(request, player_id: int):
+    """
+    Get recent matches for a player including European competitions.
+    
+    Fetches data from SofaScore API for the player's recent fixtures
+    across all competitions (Premier League, UCL, Europa, cups, etc.)
+    
+    Query params:
+        - limit: Number of matches to return (default: 10)
+    
+    Returns:
+        {
+            "player_id": 123,
+            "player_name": "Salah",
+            "matches": [
+                {
+                    "event_id": "12345678",
+                    "date": "2025-12-10T20:00:00Z",
+                    "competition": "UEFA Champions League",
+                    "competition_short": "UCL",
+                    "home_team": "Liverpool",
+                    "away_team": "Real Madrid",
+                    "home_score": 2,
+                    "away_score": 1,
+                    "was_home": true,
+                    "minutes_played": 90,
+                    "goals": 1,
+                    "assists": 0,
+                    "yellow_cards": 0,
+                    "red_cards": 0,
+                    "rating": 7.8
+                },
+                ...
+            ]
+        }
+    """
+    import json
+    import os
+    from pathlib import Path
+    
+    cache_key = f"player_recent_matches_{player_id}"
+    cached_data = cache.get(cache_key)
+    if cached_data:
+        return JsonResponse(cached_data)
+    
+    limit = int(request.GET.get("limit", 10))
+    
+    try:
+        # Get the player's SofaScore ID from mapping
+        mapping_path = Path(__file__).parent.parent / "sofa_sport" / "mappings" / "player_mapping.json"
+        
+        if not mapping_path.exists():
+            return JsonResponse({"error": "Player mapping not found"}, status=500)
+        
+        with open(mapping_path) as f:
+            player_mapping = json.load(f)
+        
+        # Find sofasport_id for this FPL player
+        sofasport_id = None
+        player_name = None
+        for sofa_id, mapping in player_mapping.items():
+            if mapping.get("fpl_id") == player_id:
+                sofasport_id = sofa_id
+                player_name = mapping.get("fpl_web_name") or mapping.get("sofasport_name")
+                break
+        
+        if not sofasport_id:
+            return JsonResponse({
+                "player_id": player_id,
+                "player_name": None,
+                "matches": [],
+                "error": "Player not found in SofaScore mapping"
+            })
+        
+        # Initialize SofaScore client and fetch recent events
+        import sys
+        sofa_scripts_path = str(Path(__file__).parent.parent / "sofa_sport" / "scripts")
+        if sofa_scripts_path not in sys.path:
+            sys.path.insert(0, sofa_scripts_path)
+        
+        from api_client import SofaSportClient
+        client = SofaSportClient()
+        
+        # Get player's recent events
+        events_response = client.get_player_last_events(sofasport_id)
+        
+        if not events_response or "data" not in events_response:
+            return JsonResponse({
+                "player_id": player_id,
+                "player_name": player_name,
+                "matches": [],
+                "message": "No recent matches found"
+            })
+        
+        events = events_response.get("data", {}).get("events", [])[:limit]
+        
+        # Competition name mapping
+        competition_map = {
+            "Premier League": ("Premier League", "PL"),
+            "UEFA Champions League": ("UEFA Champions League", "UCL"),
+            "UEFA Europa League": ("UEFA Europa League", "UEL"),
+            "UEFA Europa Conference League": ("Conference League", "UECL"),
+            "FA Cup": ("FA Cup", "FAC"),
+            "EFL Cup": ("EFL Cup", "EFL"),
+            "Community Shield": ("Community Shield", "CS"),
+        }
+        
+        matches = []
+        for event in events:
+            try:
+                # Extract tournament/competition info
+                tournament = event.get("tournament", {})
+                tournament_name = tournament.get("name", "Unknown")
+                comp_info = competition_map.get(tournament_name, (tournament_name, tournament_name[:3].upper()))
+                
+                home_team = event.get("homeTeam", {})
+                away_team = event.get("awayTeam", {})
+                home_score_obj = event.get("homeScore", {})
+                away_score_obj = event.get("awayScore", {})
+                
+                # Determine if player's team was home or away
+                # Need to fetch player stats to get detailed info
+                event_id = str(event.get("id", ""))
+                
+                # Try to get player statistics for this event
+                player_stats = {}
+                try:
+                    stats_response = client.get_player_event_statistics(sofasport_id, event_id)
+                    if stats_response and "data" in stats_response:
+                        player_stats = stats_response.get("data", {})
+                except Exception:
+                    pass
+                
+                # Extract stats
+                minutes = player_stats.get("minutesPlayed", 0)
+                goals = player_stats.get("goals", 0)
+                assists = player_stats.get("goalAssist", 0) or player_stats.get("assists", 0)
+                yellow_cards = player_stats.get("yellowCards", 0)
+                red_cards = player_stats.get("redCards", 0)
+                rating = player_stats.get("rating")
+                
+                # Format timestamp
+                timestamp = event.get("startTimestamp", 0)
+                from datetime import datetime
+                date_str = datetime.utcfromtimestamp(timestamp).isoformat() + "Z" if timestamp else None
+                
+                matches.append({
+                    "event_id": event_id,
+                    "date": date_str,
+                    "competition": comp_info[0],
+                    "competition_short": comp_info[1],
+                    "home_team": home_team.get("name", "Unknown"),
+                    "home_team_id": home_team.get("id"),
+                    "away_team": away_team.get("name", "Unknown"),
+                    "away_team_id": away_team.get("id"),
+                    "home_score": home_score_obj.get("current") or home_score_obj.get("display"),
+                    "away_score": away_score_obj.get("current") or away_score_obj.get("display"),
+                    "minutes_played": minutes,
+                    "goals": goals,
+                    "assists": assists,
+                    "yellow_cards": yellow_cards,
+                    "red_cards": red_cards,
+                    "rating": round(rating, 1) if rating else None,
+                })
+            except Exception as e:
+                logger.warning(f"Error processing event for player {player_id}: {e}")
+                continue
+        
+        response_data = {
+            "player_id": player_id,
+            "sofasport_id": sofasport_id,
+            "player_name": player_name,
+            "matches": matches,
+        }
+        
+        # Cache for 1 hour
+        cache.set(cache_key, response_data, CACHE_TIMEOUT_1H)
+        return JsonResponse(response_data)
+        
+    except Exception as e:
+        logger.error(f"Error fetching recent matches for player {player_id}: {e}")
+        return JsonResponse({"error": str(e)}, status=500)

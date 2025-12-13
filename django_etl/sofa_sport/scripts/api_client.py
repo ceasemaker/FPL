@@ -172,6 +172,47 @@ class SofaSportClient:
         time.sleep(0.5)  # Rate limiting
         return self._make_request(endpoint, params)
 
+    def get_player_last_events(self, player_id: str, page: int = 0) -> Dict[str, Any]:
+        """
+        Get recent events/matches for a specific player.
+        
+        Returns list of recent matches the player participated in,
+        including UCL, Europa League, domestic cups, etc.
+        
+        Args:
+            player_id: SofaSport player ID
+            page: Page number for pagination
+            
+        Returns:
+            dict with events array and pagination info
+        """
+        endpoint = "players/events/last"
+        params = {
+            "player_id": player_id,
+            "page": str(page)
+        }
+        time.sleep(0.5)  # Rate limiting
+        return self._make_request(endpoint, params)
+
+    def get_player_event_statistics(self, player_id: str, event_id: str) -> Dict[str, Any]:
+        """
+        Get detailed statistics for a player in a specific event/match.
+        
+        Args:
+            player_id: SofaSport player ID
+            event_id: Event/match ID
+            
+        Returns:
+            dict with player statistics for that match
+        """
+        endpoint = "events/player-statistics"
+        params = {
+            "player_id": player_id,
+            "event_id": event_id
+        }
+        time.sleep(0.5)  # Rate limiting
+        return self._make_request(endpoint, params)
+
 
 if __name__ == "__main__":
     # Test the client

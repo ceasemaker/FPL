@@ -13,6 +13,7 @@ from etl.api_views import (
     player_heatmap,
     player_match_stats,
     compare_players_radar,
+    player_recent_matches,
     # Top 100 endpoints
     top100_template,
     best_value_players,
@@ -51,6 +52,7 @@ urlpatterns = [
     path("api/sofasport/player/<int:player_id>/season-stats/", player_season_stats, name="player-season-stats"),
     path("api/sofasport/player/<int:player_id>/heatmap/<int:gameweek>/", player_heatmap, name="player-heatmap"),
     path("api/sofasport/player/<int:player_id>/match-stats/<int:gameweek>/", player_match_stats, name="player-match-stats"),
+    path("api/sofasport/player/<int:player_id>/recent-matches/", player_recent_matches, name="player-recent-matches"),
     path("api/sofasport/compare/radar/", compare_players_radar, name="compare-players-radar"),
     
     # FPL API Proxy endpoints

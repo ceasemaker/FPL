@@ -1497,6 +1497,205 @@ a {
   }
 }
 
+/* European / Cup Matches Comparison */
+.comparison-european-matches {
+  background: rgba(9, 12, 32, 0.5);
+  border-radius: 16px;
+  border: 1px solid rgba(79, 70, 229, 0.25);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.comparison-european-matches .section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.comparison-european-matches .section-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.25rem;
+}
+
+.european-matches-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.european-matches-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.european-matches-player-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  text-align: center;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 0.25rem;
+}
+
+.european-matches-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.european-match-item {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  transition: background 0.2s;
+}
+
+.european-match-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.match-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+.competition-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.competition-badge.ucl {
+  background: linear-gradient(135deg, #1a237e, #3949ab);
+  color: #fff;
+}
+
+.competition-badge.uel {
+  background: linear-gradient(135deg, #e65100, #fb8c00);
+  color: #fff;
+}
+
+.competition-badge.uecl {
+  background: linear-gradient(135deg, #1b5e20, #43a047);
+  color: #fff;
+}
+
+.competition-badge.fac {
+  background: linear-gradient(135deg, #b71c1c, #e53935);
+  color: #fff;
+}
+
+.competition-badge.efl {
+  background: linear-gradient(135deg, #4a148c, #7b1fa2);
+  color: #fff;
+}
+
+.match-date {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.match-teams {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.75rem;
+}
+
+.match-teams .team-name {
+  flex: 1;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.match-teams .team-name:last-child {
+  text-align: right;
+}
+
+.match-score {
+  font-weight: 700;
+  color: var(--accent-cyan);
+  padding: 0.15rem 0.4rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.match-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.7rem;
+}
+
+.match-stats .stat-item {
+  color: var(--text-secondary);
+}
+
+.match-stats .stat-item.goal {
+  color: #22c55e;
+}
+
+.match-stats .stat-item.assist {
+  color: #eab308;
+}
+
+.match-stats .stat-item.yellow {
+  color: #fbbf24;
+}
+
+.match-stats .stat-item.red {
+  color: #ef4444;
+}
+
+.rating-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  margin-left: auto;
+}
+
+.rating-badge.good {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.rating-badge.ok {
+  background: rgba(234, 179, 8, 0.2);
+  color: #eab308;
+}
+
+.rating-badge.poor {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.no-european-matches {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  padding: 1rem;
+}
+
+@media (max-width: 768px) {
+  .european-matches-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 .comparison-stats-table {
   display: flex;
   flex-direction: column;

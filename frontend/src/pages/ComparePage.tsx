@@ -19,6 +19,23 @@ interface FixtureHistory {
   bonus: number;
 }
 
+interface EuropeanMatch {
+  event_id: string;
+  date: string | null;
+  competition: string;
+  competition_short: string;
+  home_team: string;
+  away_team: string;
+  home_score: number | null;
+  away_score: number | null;
+  minutes_played: number;
+  goals: number;
+  assists: number;
+  yellow_cards: number;
+  red_cards: number;
+  rating: number | null;
+}
+
 interface DetailedPlayer {
   // Basic Info
   id: number;
@@ -116,6 +133,9 @@ interface DetailedPlayer {
   
   // Recent fixture history (populated separately)
   fixtureHistory?: FixtureHistory[];
+  
+  // European/Other competition matches (populated separately)
+  europeanMatches?: EuropeanMatch[];
 }
 
 function getTeamBadgeUrl(teamCode: number | null): string | null {
@@ -176,7 +196,7 @@ export function ComparePage() {
           });
         });
 
-        // Fetch player details and summaries in parallel
+        // Fetch player details, FPL summaries, and European matches in parallel
         return Promise.all(
           playerIds.map((id) =>
             Promise.all([
@@ -186,7 +206,10 @@ export function ComparePage() {
               fetch(`${API_BASE_URL}/api/fpl/element-summary/${id}/`)
                 .then((res) => res.json())
                 .catch(() => ({ history: [] })), // Handle missing summaries gracefully
-            ]).then(([playerData, summaryData]) => {
+              fetch(`${API_BASE_URL}/api/sofasport/player/${id}/recent-matches/?limit=10`)
+                .then((res) => res.json())
+                .catch(() => ({ matches: [] })), // Handle missing European data gracefully
+            ]).then(([playerData, summaryData, europeanData]) => {
               // Get fixture history (last 5)
               const history = (summaryData.history || [])
                 .slice(-5)
@@ -207,9 +230,15 @@ export function ComparePage() {
                   };
                 });
 
+              // Filter European matches to only non-Premier League
+              const europeanMatches = (europeanData.matches || [])
+                .filter((m: any) => m.competition_short !== "PL")
+                .slice(0, 5);
+
               return {
                 ...playerData,
                 fixtureHistory: history,
+                europeanMatches: europeanMatches,
               };
             })
           )
@@ -376,6 +405,75 @@ export function ComparePage() {
             ))}
           </div>
         </div>
+
+        {/* European / Other Competitions */}
+        {players.some((p) => (p.europeanMatches || []).length > 0) && (
+          <div className="comparison-european-matches">
+            <h3 className="section-title">🏆 European & Cup Matches</h3>
+            <p className="section-subtitle">
+              UCL, Europa League, Conference League, FA Cup, EFL Cup — recent non-Premier League appearances
+            </p>
+            <div className="european-matches-grid" style={{ gridTemplateColumns: `repeat(${players.length}, 1fr)` }}>
+              {players.map((player) => (
+                <div key={player.id} className="european-matches-column">
+                  <div className="european-matches-player-name">{player.web_name}</div>
+                  <div className="european-matches-list">
+                    {(player.europeanMatches || []).length > 0 ? (
+                      player.europeanMatches!.map((match, idx) => (
+                        <div key={idx} className="european-match-item">
+                          <div className="match-header">
+                            <span className={`competition-badge ${match.competition_short.toLowerCase()}`}>
+                              {match.competition_short}
+                            </span>
+                            {match.date && (
+                              <span className="match-date">
+                                {new Date(match.date).toLocaleDateString("en-GB", {
+                                  day: "numeric",
+                                  month: "short",
+                                })}
+                              </span>
+                            )}
+                          </div>
+                          <div className="match-teams">
+                            <span className="team-name">{match.home_team}</span>
+                            <span className="match-score">
+                              {match.home_score ?? "?"} - {match.away_score ?? "?"}
+                            </span>
+                            <span className="team-name">{match.away_team}</span>
+                          </div>
+                          <div className="match-stats">
+                            <span className="stat-item">
+                              {match.minutes_played}'
+                            </span>
+                            {match.goals > 0 && (
+                              <span className="stat-item goal">⚽ {match.goals}</span>
+                            )}
+                            {match.assists > 0 && (
+                              <span className="stat-item assist">🅰️ {match.assists}</span>
+                            )}
+                            {match.yellow_cards > 0 && (
+                              <span className="stat-item yellow">🟨</span>
+                            )}
+                            {match.red_cards > 0 && (
+                              <span className="stat-item red">🟥</span>
+                            )}
+                            {match.rating && (
+                              <span className={`rating-badge ${match.rating >= 7 ? "good" : match.rating >= 6 ? "ok" : "poor"}`}>
+                                {match.rating}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="no-european-matches">No European/Cup games</div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Stats Comparison Table */}
         <div className="comparison-stats-table">
