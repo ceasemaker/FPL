@@ -1,0 +1,462 @@
+/* Top 100 Overview - Combined List + Transfers */
+.top100-overview {
+  margin-bottom: 1.5rem;
+}
+
+.overview-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.overview-stats {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.overview-stats .stat strong {
+  color: var(--text-primary);
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* List Titles */
+.list-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0 0 0.75rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.list-title .arrow-in {
+  color: var(--green);
+}
+
+.list-title .arrow-out {
+  color: var(--red);
+}
+
+/* Player List */
+.template-list-section {
+  overflow: hidden;
+}
+
+.player-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.player-row {
+  display: grid;
+  grid-template-columns: 28px 40px 1fr 120px 80px;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.player-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.player-rank {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.player-image-container {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.player-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player-img.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+.player-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.player-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-meta {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* Ownership Bar */
+.player-ownership-bar {
+  position: relative;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.ownership-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--purple), var(--accent));
+  border-radius: 4px;
+  transition: width 0.5s ease-out;
+}
+
+.ownership-high .ownership-fill {
+  background: linear-gradient(90deg, var(--green), #2ecc71);
+}
+
+.ownership-medium .ownership-fill {
+  background: linear-gradient(90deg, var(--accent), var(--purple));
+}
+
+.ownership-low .ownership-fill {
+  background: linear-gradient(90deg, var(--yellow), var(--orange));
+}
+
+.ownership-text {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Player Stats */
+.player-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 0.75rem;
+}
+
+.stat-points {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.stat-cost {
+  color: var(--text-secondary);
+}
+
+/* Transfers Section */
+.transfers-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.transfers-column {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.transfer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.transfer-row {
+  display: grid;
+  grid-template-columns: 24px 32px 1fr 40px;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.transfer-row:last-child {
+  border-bottom: none;
+}
+
+.transfer-rank {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.transfer-image-container {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.transfer-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.transfer-image-container .placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.transfer-details {
+  min-width: 0;
+}
+
+.transfer-details strong {
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.transfer-meta {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.transfer-count-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.transfer-row.in .transfer-count-badge {
+  background: rgba(0, 200, 83, 0.2);
+  color: var(--green);
+}
+
+.transfer-row.out .transfer-count-badge {
+  background: rgba(255, 82, 82, 0.2);
+  color: var(--red);
+}
+
+/* Bottom Stats Row */
+.bottom-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+@media (max-width: 600px) {
+  .bottom-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+.captain-stats h4,
+.chip-stats h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0 0 0.75rem 0;
+}
+
+/* Captain List */
+.captain-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.captain-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.4rem 0.75rem;
+  border-radius: 20px;
+}
+
+.captain-item .captain-rank {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.captain-img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.captain-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.captain-pct {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--green);
+}
+
+/* Chip List */
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(128, 0, 255, 0.15);
+  padding: 0.4rem 0.75rem;
+  border-radius: 16px;
+}
+
+.chip-label {
+  font-size: 0.75rem;
+  color: var(--text-primary);
+}
+
+.chip-count {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--purple);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.1rem 0.4rem;
+  border-radius: 8px;
+}
+
+.no-chips {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Skeleton States */
+.player-row.skeleton,
+.transfer-row.skeleton {
+  opacity: 0.5;
+}
+
+.skeleton-box {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-circle {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-text {
+  height: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-text.short {
+  width: 60%;
+}
+
+.skeleton-bar {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-stats {
+  height: 30px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .player-row {
+    grid-template-columns: 24px 32px 1fr 80px;
+  }
+  
+  .player-stats {
+    display: none;
+  }
+  
+  .overview-stats {
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .player-row {
+    grid-template-columns: 20px 28px 1fr 60px;
+    gap: 0.5rem;
+    padding: 0.4rem 0.5rem;
+  }
+  
+  .player-ownership-bar {
+    height: 16px;
+  }
+  
+  .ownership-text {
+    font-size: 0.6rem;
+  }
+}
