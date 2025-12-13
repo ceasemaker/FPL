@@ -13,6 +13,12 @@ from etl.api_views import (
     player_heatmap,
     player_match_stats,
     compare_players_radar,
+    # Top 100 endpoints
+    top100_template,
+    best_value_players,
+    top100_points_chart,
+    top100_transfers,
+    top100_differentials,
 )
 from etl.fpl_proxy_views import (
     proxy_manager_summary,
@@ -63,4 +69,11 @@ urlpatterns = [
     path("api/wildcard/<str:code>/", get_wildcard_team, name="wildcard-get"),
     path("api/wildcard/<str:code>/save/", save_wildcard_team, name="wildcard-save"),
     path("api/wildcard/stats/", wildcard_stats, name="wildcard-stats"),
+    
+    # Top 100 Manager endpoints
+    path("api/top100/template/", top100_template, name="top100-template"),
+    path("api/top100/best-value/", best_value_players, name="top100-best-value"),
+    path("api/top100/chart/", top100_points_chart, name="top100-chart"),
+    path("api/top100/transfers/", top100_transfers, name="top100-transfers"),
+    path("api/top100/differentials/", top100_differentials, name="top100-differentials"),
 ]

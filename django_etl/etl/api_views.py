@@ -1165,3 +1165,501 @@ def compare_players_radar(request):
         
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+
+# ============================================================================
+# Top 100 Manager API Views
+# ============================================================================
+
+@require_GET
+def top100_template(request):
+    """
+    Get the Top 100 template team - most common 22 players among top managers.
+    
+    Query params:
+        - gameweek: Specific gameweek (optional, defaults to latest)
+    
+    Response:
+        {
+            "game_week": 15,
+            "manager_count": 100,
+            "template_squad": [
+                {
+                    "athlete_id": 123,
+                    "web_name": "Salah",
+                    "first_name": "Mohamed",
+                    "second_name": "Salah",
+                    "team_name": "Liverpool",
+                    "team_short_name": "LIV",
+                    "position": "Midfielder",
+                    "element_type": 3,
+                    "now_cost": 130,
+                    "total_points": 120,
+                    "ownership_count": 95,
+                    "ownership_percentage": 95.0,
+                    "image_url": "https://...",
+                    "is_starting": true
+                },
+                ...
+            ],
+            "most_captained": [...],
+            "chip_usage": {"wildcard": 2, "freehit": 1, ...}
+        }
+    """
+    from .models import Top100Summary
+    
+    gameweek = request.GET.get("gameweek")
+    
+    cache_key = f"top100_template_{gameweek or 'latest'}"
+    cached = cache.get(cache_key)
+    if cached:
+        return JsonResponse(cached)
+    
+    try:
+        if gameweek:
+            summary = Top100Summary.objects.filter(game_week=int(gameweek)).first()
+        else:
+            summary = Top100Summary.objects.order_by("-game_week").first()
+        
+        if not summary:
+            return JsonResponse({"error": "No Top 100 data available"}, status=404)
+        
+        # Enrich template squad with athlete details
+        template_squad = []
+        position_names = {1: "Goalkeeper", 2: "Defender", 3: "Midfielder", 4: "Forward"}
+        
+        for idx, item in enumerate(summary.template_squad or []):
+            athlete_id = item.get("athlete_id")
+            athlete = Athlete.objects.select_related("team").filter(id=athlete_id).first()
+            
+            if athlete:
+                template_squad.append({
+                    "athlete_id": athlete.id,
+                    "web_name": athlete.web_name,
+                    "first_name": athlete.first_name,
+                    "second_name": athlete.second_name,
+                    "team_name": athlete.team.name if athlete.team else None,
+                    "team_short_name": athlete.team.short_name if athlete.team else None,
+                    "position": position_names.get(athlete.element_type, "Unknown"),
+                    "element_type": athlete.element_type,
+                    "now_cost": athlete.now_cost,
+                    "total_points": athlete.total_points,
+                    "form": float(athlete.form) if athlete.form else 0,
+                    "ownership_count": item.get("count", 0),
+                    "ownership_percentage": item.get("percentage", 0),
+                    "image_url": _player_image(athlete.photo),
+                    "is_starting": idx < 11,  # First 11 are starters
+                })
+        
+        # Enrich most captained
+        most_captained = []
+        for item in summary.most_captained or []:
+            athlete_id = item.get("athlete_id")
+            athlete = Athlete.objects.select_related("team").filter(id=athlete_id).first()
+            if athlete:
+                most_captained.append({
+                    "athlete_id": athlete.id,
+                    "web_name": athlete.web_name,
+                    "team_short_name": athlete.team.short_name if athlete.team else None,
+                    "count": item.get("count", 0),
+                    "percentage": item.get("percentage", 0),
+                    "image_url": _player_image(athlete.photo),
+                })
+        
+        response_data = {
+            "game_week": summary.game_week,
+            "manager_count": summary.manager_count,
+            "average_points": float(summary.average_points) if summary.average_points else 0,
+            "highest_points": summary.highest_points,
+            "lowest_points": summary.lowest_points,
+            "template_squad": template_squad,
+            "most_captained": most_captained,
+            "chip_usage": summary.chip_usage or {},
+        }
+        
+        cache.set(cache_key, response_data, CACHE_TIMEOUT_1H)
+        return JsonResponse(response_data)
+        
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@require_GET
+def best_value_players(request):
+    """
+    Get best value players: Points per 90 (last 3 GWs) / Cost.
+    Excludes injured players.
+    
+    Response:
+        {
+            "current_gameweek": 15,
+            "goalkeepers": [...],  # 3 players
+            "defenders": [...],    # 5 players
+            "midfielders": [...],  # 5 players
+            "forwards": [...]      # 5 players
+        }
+    
+    Each player object:
+        {
+            "athlete_id": 123,
+            "web_name": "Salah",
+            "team_short_name": "LIV",
+            "now_cost": 130,
+            "now_cost_display": "13.0",
+            "value_score": 2.5,
+            "points_last_3": 35,
+            "minutes_last_3": 270,
+            "form": 8.5,
+            "image_url": "...",
+            "status": "a"
+        }
+    """
+    from django.db.models import Sum
+    
+    cache_key = "best_value_players"
+    cached = cache.get(cache_key)
+    if cached:
+        return JsonResponse(cached)
+    
+    try:
+        # Get current gameweek
+        current_gw = (
+            AthleteStat.objects.aggregate(max_gw=Max("game_week"))["max_gw"] or 0
+        )
+        
+        # Calculate last 3 gameweeks
+        gw_range = list(range(max(1, current_gw - 2), current_gw + 1))
+        
+        # Position limits
+        position_limits = {
+            1: ("goalkeepers", 3),
+            2: ("defenders", 5),
+            3: ("midfielders", 5),
+            4: ("forwards", 5),
+        }
+        
+        result = {"current_gameweek": current_gw}
+        
+        for element_type, (key, limit) in position_limits.items():
+            # Get athletes of this position who are not injured
+            # Status: 'a' = available, 'i' = injured, 'd' = doubtful, 's' = suspended, 'u' = unavailable
+            athletes = (
+                Athlete.objects.filter(
+                    element_type=element_type,
+                    status__in=["a", "d"],  # Available or doubtful (not fully injured)
+                    now_cost__gt=0,
+                )
+                .select_related("team")
+                .annotate(
+                    points_last_3=Coalesce(
+                        Sum(
+                            "stats__total_points",
+                            filter=Q(stats__game_week__in=gw_range)
+                        ),
+                        Value(0)
+                    ),
+                    minutes_last_3=Coalesce(
+                        Sum(
+                            "stats__minutes",
+                            filter=Q(stats__game_week__in=gw_range)
+                        ),
+                        Value(0)
+                    ),
+                )
+                .filter(minutes_last_3__gte=90)  # At least 90 mins in last 3 GWs
+            )
+            
+            # Calculate value score and sort
+            player_values = []
+            for athlete in athletes:
+                minutes = athlete.minutes_last_3 or 0
+                points = athlete.points_last_3 or 0
+                cost = athlete.now_cost or 1  # Avoid division by zero
+                
+                # Points per 90 / cost (normalized to per million)
+                if minutes > 0:
+                    points_per_90 = (points / minutes) * 90
+                    value_score = points_per_90 / (cost / 10)  # cost is in tenths
+                else:
+                    value_score = 0
+                
+                player_values.append({
+                    "athlete_id": athlete.id,
+                    "web_name": athlete.web_name,
+                    "first_name": athlete.first_name,
+                    "second_name": athlete.second_name,
+                    "team_short_name": athlete.team.short_name if athlete.team else None,
+                    "now_cost": athlete.now_cost,
+                    "now_cost_display": f"{athlete.now_cost / 10:.1f}",
+                    "value_score": round(value_score, 2),
+                    "points_last_3": points,
+                    "minutes_last_3": minutes,
+                    "form": float(athlete.form) if athlete.form else 0,
+                    "total_points": athlete.total_points,
+                    "image_url": _player_image(athlete.photo),
+                    "status": athlete.status,
+                })
+            
+            # Sort by value score and take top N
+            player_values.sort(key=lambda x: x["value_score"], reverse=True)
+            result[key] = player_values[:limit]
+        
+        cache.set(cache_key, result, CACHE_TIMEOUT_1H)
+        return JsonResponse(result)
+        
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@require_GET
+def top100_points_chart(request):
+    """
+    Get points history for chart comparing:
+    - Template team (most common starting 11 among top 100)
+    - Average points of top 100 managers
+    - Optionally: User's team points
+    
+    Query params:
+        - start_gw: Starting gameweek (default: 1)
+        - end_gw: Ending gameweek (optional)
+        - entry_id: User's FPL entry ID for overlay (optional)
+    
+    Response:
+        {
+            "chart_data": [
+                {
+                    "game_week": 1,
+                    "template_points": 65,
+                    "average_points": 58.5,
+                    "highest_points": 95,
+                    "lowest_points": 32,
+                    "user_points": null  // or actual points if entry_id provided
+                },
+                ...
+            ],
+            "user_info": null  // or {entry_name, player_name, total_points} if entry_id provided
+        }
+    """
+    from .services.top100_etl import get_template_team_points_history, get_user_team_points_history
+    
+    start_gw = int(request.GET.get("start_gw", 1))
+    end_gw = request.GET.get("end_gw")
+    entry_id = request.GET.get("entry_id")
+    
+    if end_gw:
+        end_gw = int(end_gw)
+    
+    cache_key = f"top100_chart_{start_gw}_{end_gw}_{entry_id or 'none'}"
+    cached = cache.get(cache_key)
+    if cached:
+        return JsonResponse(cached)
+    
+    try:
+        # Get template team history
+        chart_data = get_template_team_points_history(start_gw, end_gw)
+        
+        user_info = None
+        
+        # Add user data if entry_id provided
+        if entry_id:
+            entry_id = int(entry_id)
+            user_history = get_user_team_points_history(entry_id, start_gw, end_gw)
+            
+            # Merge user data into chart_data
+            user_points_map = {h["game_week"]: h for h in user_history}
+            
+            for item in chart_data:
+                gw = item["game_week"]
+                user_gw = user_points_map.get(gw)
+                item["user_points"] = user_gw["points"] if user_gw else None
+            
+            # Get user info
+            from .services.fpl_client import FPLClient
+            with FPLClient() as client:
+                try:
+                    info = client.get_manager_info(entry_id)
+                    user_info = {
+                        "entry_id": entry_id,
+                        "entry_name": info.get("name"),
+                        "player_name": f"{info.get('player_first_name', '')} {info.get('player_last_name', '')}".strip(),
+                        "total_points": info.get("summary_overall_points"),
+                        "overall_rank": info.get("summary_overall_rank"),
+                    }
+                except Exception:
+                    pass
+        else:
+            # Add null user_points to all entries
+            for item in chart_data:
+                item["user_points"] = None
+        
+        response_data = {
+            "chart_data": chart_data,
+            "user_info": user_info,
+        }
+        
+        cache.set(cache_key, response_data, CACHE_TIMEOUT_1H)
+        return JsonResponse(response_data)
+        
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@require_GET
+def top100_transfers(request):
+    """
+    Get transfer trends among top 100 managers.
+    
+    Query params:
+        - gameweek: Specific gameweek (optional, defaults to latest)
+    
+    Response:
+        {
+            "game_week": 15,
+            "transfers_in": [
+                {
+                    "athlete_id": 123,
+                    "web_name": "Salah",
+                    "team_short_name": "LIV",
+                    "count": 45,
+                    "now_cost": 130,
+                    "image_url": "..."
+                },
+                ...
+            ],
+            "transfers_out": [...]
+        }
+    """
+    from .models import Top100Summary
+    
+    gameweek = request.GET.get("gameweek")
+    
+    cache_key = f"top100_transfers_{gameweek or 'latest'}"
+    cached = cache.get(cache_key)
+    if cached:
+        return JsonResponse(cached)
+    
+    try:
+        if gameweek:
+            summary = Top100Summary.objects.filter(game_week=int(gameweek)).first()
+        else:
+            summary = Top100Summary.objects.order_by("-game_week").first()
+        
+        if not summary:
+            return JsonResponse({"error": "No Top 100 data available"}, status=404)
+        
+        def enrich_transfers(items):
+            result = []
+            for item in items or []:
+                athlete_id = item.get("athlete_id")
+                athlete = Athlete.objects.select_related("team").filter(id=athlete_id).first()
+                if athlete:
+                    result.append({
+                        "athlete_id": athlete.id,
+                        "web_name": athlete.web_name,
+                        "team_short_name": athlete.team.short_name if athlete.team else None,
+                        "count": item.get("count", 0),
+                        "now_cost": athlete.now_cost,
+                        "now_cost_display": f"{athlete.now_cost / 10:.1f}",
+                        "total_points": athlete.total_points,
+                        "image_url": _player_image(athlete.photo),
+                    })
+            return result
+        
+        response_data = {
+            "game_week": summary.game_week,
+            "transfers_in": enrich_transfers(summary.most_transferred_in),
+            "transfers_out": enrich_transfers(summary.most_transferred_out),
+        }
+        
+        cache.set(cache_key, response_data, CACHE_TIMEOUT_1H)
+        return JsonResponse(response_data)
+        
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@require_GET
+def top100_differentials(request):
+    """
+    Get differential picks - players owned by <15% of top 100 but with good points.
+    These are the "hidden gems" that elite managers are using.
+    
+    Query params:
+        - gameweek: Specific gameweek (optional, defaults to latest)
+        - max_ownership: Maximum ownership percentage (default: 15)
+    
+    Response:
+        {
+            "game_week": 15,
+            "differentials": [
+                {
+                    "athlete_id": 123,
+                    "web_name": "Palmer",
+                    "team_short_name": "CHE",
+                    "ownership_percentage": 8.5,
+                    "total_points": 85,
+                    "form": 7.2,
+                    "image_url": "..."
+                },
+                ...
+            ]
+        }
+    """
+    from .models import Top100Summary
+    
+    gameweek = request.GET.get("gameweek")
+    max_ownership = float(request.GET.get("max_ownership", 15))
+    
+    cache_key = f"top100_differentials_{gameweek or 'latest'}_{max_ownership}"
+    cached = cache.get(cache_key)
+    if cached:
+        return JsonResponse(cached)
+    
+    try:
+        if gameweek:
+            summary = Top100Summary.objects.filter(game_week=int(gameweek)).first()
+        else:
+            summary = Top100Summary.objects.order_by("-game_week").first()
+        
+        if not summary:
+            return JsonResponse({"error": "No Top 100 data available"}, status=404)
+        
+        # Find players with low ownership but still selected
+        differentials = []
+        for item in summary.template_squad or []:
+            ownership = item.get("percentage", 0)
+            if ownership <= max_ownership and ownership > 0:
+                athlete_id = item.get("athlete_id")
+                athlete = Athlete.objects.select_related("team").filter(id=athlete_id).first()
+                if athlete:
+                    differentials.append({
+                        "athlete_id": athlete.id,
+                        "web_name": athlete.web_name,
+                        "first_name": athlete.first_name,
+                        "second_name": athlete.second_name,
+                        "team_short_name": athlete.team.short_name if athlete.team else None,
+                        "position": {1: "GK", 2: "DEF", 3: "MID", 4: "FWD"}.get(athlete.element_type, "?"),
+                        "ownership_percentage": ownership,
+                        "ownership_count": item.get("count", 0),
+                        "total_points": athlete.total_points,
+                        "now_cost": athlete.now_cost,
+                        "now_cost_display": f"{athlete.now_cost / 10:.1f}",
+                        "form": float(athlete.form) if athlete.form else 0,
+                        "image_url": _player_image(athlete.photo),
+                    })
+        
+        # Sort by total points descending
+        differentials.sort(key=lambda x: x["total_points"], reverse=True)
+        
+        response_data = {
+            "game_week": summary.game_week,
+            "max_ownership": max_ownership,
+            "differentials": differentials[:15],  # Top 15 differentials
+        }
+        
+        cache.set(cache_key, response_data, CACHE_TIMEOUT_1H)
+        return JsonResponse(response_data)
+        
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+

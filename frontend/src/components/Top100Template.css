@@ -1,0 +1,388 @@
+/* Top 100 Template Styles */
+
+.top100-template {
+  margin: 1.5rem 0;
+}
+
+.template-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.template-header .section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.gw-badge {
+  background: var(--accent-gradient, linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%));
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.template-stats {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary, #a1a1aa);
+}
+
+.template-stats .stat strong {
+  color: var(--text-primary, #fff);
+}
+
+/* Pitch Container */
+.pitch-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pitch {
+  background: linear-gradient(180deg, 
+    #1a472a 0%, 
+    #2d5a3f 25%, 
+    #1a472a 50%, 
+    #2d5a3f 75%, 
+    #1a472a 100%
+  );
+  border-radius: 12px;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 400px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Pitch markings */
+.pitch::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.pitch::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+}
+
+/* Position Rows */
+.position-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  z-index: 1;
+}
+
+.gk-row {
+  margin-top: auto;
+}
+
+.fwd-row {
+  margin-bottom: auto;
+}
+
+/* Player Card */
+.player-card {
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 8px;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 70px;
+  max-width: 90px;
+  border: 2px solid transparent;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.player-card:hover {
+  transform: translateY(-2px);
+}
+
+.player-card.ownership-high {
+  border-color: #22c55e;
+}
+
+.player-card.ownership-medium {
+  border-color: #eab308;
+}
+
+.player-card.ownership-low {
+  border-color: #6366f1;
+}
+
+.player-card.small {
+  min-width: 60px;
+  max-width: 70px;
+  padding: 0.4rem;
+}
+
+.player-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #1a1a2e;
+}
+
+.player-card.small .player-image {
+  width: 40px;
+  height: 40px;
+}
+
+.player-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.player-name {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: white;
+  line-height: 1.2;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-team {
+  font-size: 0.6rem;
+  color: #a1a1aa;
+}
+
+.player-ownership {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.2);
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+}
+
+.player-stats {
+  display: flex;
+  gap: 0.3rem;
+  font-size: 0.6rem;
+  color: #a1a1aa;
+}
+
+.player-points {
+  color: #6366f1;
+  font-weight: 600;
+}
+
+.player-cost {
+  color: #22c55e;
+}
+
+/* Bench */
+.bench {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.bench-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary, #a1a1aa);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bench-players {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Template Extras */
+.template-extras {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 600px) {
+  .template-extras {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Captain Section */
+.captain-section,
+.chip-section {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.captain-section h4,
+.chip-section h4 {
+  font-size: 0.875rem;
+  margin: 0 0 0.75rem 0;
+  color: var(--text-primary, #fff);
+}
+
+.captain-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.captain-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+}
+
+.captain-rank {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #1a1a2e;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 50%;
+}
+
+.captain-image {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.captain-info {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.captain-name {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.captain-percentage {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #22c55e;
+}
+
+/* Chip Section */
+.chip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.chip-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.6rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.chip-name {
+  font-size: 0.8rem;
+}
+
+.chip-count {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #6366f1;
+}
+
+.no-chips {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #a1a1aa);
+  font-style: italic;
+}
+
+/* Skeleton Loading */
+.player-card.skeleton {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.skeleton-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #2a2a40 25%, #3a3a50 50%, #2a2a40 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-text {
+  width: 60px;
+  height: 12px;
+  background: linear-gradient(90deg, #2a2a40 25%, #3a3a50 50%, #2a2a40 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #2a2a40 25%, #3a3a50 50%, #2a2a40 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Error Message */
+.error-message {
+  color: #ef4444;
+  text-align: center;
+  padding: 2rem;
+}

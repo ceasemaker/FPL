@@ -4401,6 +4401,40 @@ a {
   text-align: center;
 }
 
+/* Section Divider */
+.section-divider {
+  display: flex;
+  align-items: center;
+  margin: 2rem 0 1rem;
+  gap: 1rem;
+}
+
+.section-divider::before,
+.section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.5), transparent);
+}
+
+.section-divider span {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  padding: 0.5rem 1.5rem;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+  border-radius: 20px;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+/* Top 100 Section */
+.top100-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
 @media (max-width: 768px) {
   .wildcard-controls {
     flex-direction: column;

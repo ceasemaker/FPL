@@ -734,6 +734,219 @@ class SofasportPlayerAttributes(TimestampedModel):
         return f"{self.athlete.web_name} - YearShift {self.year_shift}{avg_str}"
 
 
+# ============================================================================
+# Top 100 Manager Tracking Models
+# ============================================================================
+
+
+class Top100Manager(TimestampedModel):
+    """
+    Track top managers from a league (default: Overall league 314).
+    Stores manager info and their performance per gameweek.
+    """
+    entry_id = models.BigIntegerField(help_text="FPL manager entry ID")
+    game_week = models.PositiveIntegerField(help_text="Gameweek when this snapshot was taken")
+    
+    # Manager info from standings API
+    player_name = models.CharField(max_length=255, help_text="Manager's display name")
+    entry_name = models.CharField(max_length=255, help_text="Team name")
+    rank = models.PositiveIntegerField(help_text="Rank in the league at this gameweek")
+    last_rank = models.PositiveIntegerField(null=True, blank=True, help_text="Previous rank")
+    
+    # Points data
+    total_points = models.IntegerField(default=0, help_text="Total points for the season")
+    event_total = models.IntegerField(default=0, help_text="Points scored this gameweek")
+    
+    # Chip usage for this gameweek
+    active_chip = models.CharField(
+        max_length=50, 
+        null=True, 
+        blank=True,
+        help_text="Chip used this GW (wildcard, freehit, bboost, 3xc)"
+    )
+    
+    # Team value
+    bank = models.IntegerField(default=0, help_text="Money in bank (in tenths, e.g., 5 = £0.5m)")
+    team_value = models.IntegerField(default=0, help_text="Team value (in tenths)")
+    
+    class Meta(TimestampedModel.Meta):
+        db_table = "top100_managers"
+        ordering = ["-game_week", "rank"]
+        indexes = [
+            models.Index(fields=["game_week"]),
+            models.Index(fields=["entry_id"]),
+            models.Index(fields=["game_week", "rank"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["entry_id", "game_week"],
+                name="unique_manager_gameweek"
+            )
+        ]
+    
+    def __str__(self) -> str:
+        return f"GW{self.game_week}: #{self.rank} {self.player_name} ({self.entry_name})"
+
+
+class Top100Pick(TimestampedModel):
+    """
+    Store individual player picks for top 100 managers.
+    This allows us to calculate most common players, captains, etc.
+    """
+    manager = models.ForeignKey(
+        Top100Manager,
+        related_name="picks",
+        on_delete=models.CASCADE,
+        help_text="Link to manager snapshot"
+    )
+    athlete = models.ForeignKey(
+        Athlete,
+        related_name="top100_picks",
+        on_delete=models.CASCADE,
+        help_text="The player selected"
+    )
+    game_week = models.PositiveIntegerField(help_text="Gameweek for this pick")
+    
+    # Position in squad (1-15, where 1-11 are starters)
+    position = models.PositiveIntegerField(help_text="Squad position (1-11 = starting, 12-15 = bench)")
+    
+    # Captain/Vice-captain flags
+    is_captain = models.BooleanField(default=False)
+    is_vice_captain = models.BooleanField(default=False)
+    
+    # Multiplier (1 = normal, 2 = captain, 3 = triple captain)
+    multiplier = models.PositiveIntegerField(default=1)
+    
+    class Meta(TimestampedModel.Meta):
+        db_table = "top100_picks"
+        ordering = ["manager", "position"]
+        indexes = [
+            models.Index(fields=["game_week"]),
+            models.Index(fields=["athlete"]),
+            models.Index(fields=["game_week", "athlete"]),
+            models.Index(fields=["is_captain"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["manager", "athlete"],
+                name="unique_manager_athlete_pick"
+            )
+        ]
+    
+    def __str__(self) -> str:
+        captain_str = " (C)" if self.is_captain else " (VC)" if self.is_vice_captain else ""
+        return f"GW{self.game_week}: {self.athlete.web_name}{captain_str}"
+
+
+class Top100Transfer(TimestampedModel):
+    """
+    Track transfers made by top 100 managers.
+    Helps identify trending transfers among elite managers.
+    """
+    manager = models.ForeignKey(
+        Top100Manager,
+        related_name="transfers",
+        on_delete=models.CASCADE,
+        help_text="Link to manager snapshot"
+    )
+    game_week = models.PositiveIntegerField(help_text="Gameweek when transfer was made")
+    
+    # Transfer details
+    element_in = models.ForeignKey(
+        Athlete,
+        related_name="top100_transfers_in",
+        on_delete=models.CASCADE,
+        help_text="Player transferred in"
+    )
+    element_out = models.ForeignKey(
+        Athlete,
+        related_name="top100_transfers_out",
+        on_delete=models.CASCADE,
+        help_text="Player transferred out"
+    )
+    
+    # Prices at time of transfer
+    element_in_cost = models.IntegerField(help_text="Purchase price (in tenths)")
+    element_out_cost = models.IntegerField(help_text="Sale price (in tenths)")
+    
+    # Timestamp from API
+    transfer_time = models.DateTimeField(null=True, blank=True, help_text="When transfer was made")
+    
+    class Meta(TimestampedModel.Meta):
+        db_table = "top100_transfers"
+        ordering = ["-game_week", "-transfer_time"]
+        indexes = [
+            models.Index(fields=["game_week"]),
+            models.Index(fields=["element_in"]),
+            models.Index(fields=["element_out"]),
+            models.Index(fields=["game_week", "element_in"]),
+        ]
+    
+    def __str__(self) -> str:
+        return f"GW{self.game_week}: {self.element_out.web_name} → {self.element_in.web_name}"
+
+
+class Top100Summary(TimestampedModel):
+    """
+    Pre-computed summary statistics for each gameweek.
+    Cached aggregations for fast API responses.
+    """
+    game_week = models.PositiveIntegerField(unique=True, help_text="Gameweek")
+    
+    # Configuration used
+    manager_count = models.PositiveIntegerField(default=100, help_text="Number of managers tracked")
+    league_id = models.CharField(max_length=50, default="314", help_text="League ID used")
+    
+    # Aggregated stats
+    average_points = models.DecimalField(
+        max_digits=7, decimal_places=2, null=True, blank=True,
+        help_text="Average points scored by top managers this GW"
+    )
+    highest_points = models.IntegerField(null=True, blank=True)
+    lowest_points = models.IntegerField(null=True, blank=True)
+    
+    # Most common starting 11 (as JSON array of athlete IDs with ownership %)
+    template_team = models.JSONField(
+        default=list,
+        help_text="Most common starting 11 with ownership percentage"
+    )
+    
+    # Most common full squad (22 players)
+    template_squad = models.JSONField(
+        default=list,
+        help_text="Most common 22 players (15 squad + bench)"
+    )
+    
+    # Captain stats
+    most_captained = models.JSONField(
+        default=list,
+        help_text="Top captaincy picks [{athlete_id, count, percentage}]"
+    )
+    
+    # Chip usage
+    chip_usage = models.JSONField(
+        default=dict,
+        help_text="Chip usage counts {wildcard: n, freehit: n, bboost: n, 3xc: n}"
+    )
+    
+    # Transfer trends
+    most_transferred_in = models.JSONField(
+        default=list,
+        help_text="Most transferred in players this GW"
+    )
+    most_transferred_out = models.JSONField(
+        default=list,
+        help_text="Most transferred out players this GW"
+    )
+    
+    class Meta(TimestampedModel.Meta):
+        db_table = "top100_summaries"
+        ordering = ["-game_week"]
+    
+    def __str__(self) -> str:
+        return f"Top {self.manager_count} Summary - GW{self.game_week}"
+
+
 class WildcardSimulation(TimestampedModel):
     """
     Wildcard team simulator - tracks user-created wildcard drafts.

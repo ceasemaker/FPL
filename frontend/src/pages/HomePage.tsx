@@ -6,6 +6,10 @@ import { MomentumGrid } from "../components/MomentumGrid";
 import { FixturePressure } from "../components/FixturePressure";
 import { FixturesTable } from "../components/FixturesTable";
 import NewsTicker from "../components/NewsTicker";
+import { Top100Template } from "../components/Top100Template";
+import { BestValuePlayers } from "../components/BestValuePlayers";
+import { Top100PointsChart } from "../components/Top100PointsChart";
+import { Top100Extras } from "../components/Top100Extras";
 
 export function HomePage() {
   const { data, isLoading, error } = useLandingData();
@@ -24,6 +28,18 @@ export function HomePage() {
         transfersOut={data?.transfers.out}
         loading={isLoading}
       />
+      
+      {/* Top 100 Section */}
+      <section className="top100-section">
+        <div className="section-divider">
+          <span>Elite Manager Insights</span>
+        </div>
+        <Top100Template />
+        <BestValuePlayers />
+        <Top100PointsChart />
+        <Top100Extras />
+      </section>
+      
       <MomentumGrid movers={data?.movers.points} loading={isLoading} />
       <FixturePressure
         data={data?.fixture_pressure}

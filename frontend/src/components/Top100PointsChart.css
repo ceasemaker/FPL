@@ -1,0 +1,278 @@
+/* Top 100 Points Chart Styles */
+
+.points-chart-section {
+  margin: 1.5rem 0;
+}
+
+.chart-header {
+  margin-bottom: 1rem;
+}
+
+.chart-header .section-title {
+  margin-bottom: 0.25rem;
+}
+
+.chart-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #a1a1aa);
+  margin: 0;
+}
+
+/* Team Input */
+.team-input-container {
+  margin-bottom: 1rem;
+}
+
+.team-input-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.team-input {
+  flex: 1;
+  min-width: 180px;
+  padding: 0.6rem 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: white;
+  font-size: 0.875rem;
+  transition: border-color 0.2s;
+}
+
+.team-input:focus {
+  outline: none;
+  border-color: #6366f1;
+}
+
+.team-input::placeholder {
+  color: var(--text-secondary, #a1a1aa);
+}
+
+.btn-add-team {
+  padding: 0.6rem 1rem;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-add-team:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.btn-clear-team {
+  padding: 0.6rem 0.8rem;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #ef4444;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-clear-team:hover {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+/* User Info Badge */
+.user-info-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 8px;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #f59e0b;
+}
+
+.user-team-name {
+  color: var(--text-secondary, #a1a1aa);
+  font-size: 0.875rem;
+}
+
+.user-rank {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #a1a1aa);
+}
+
+/* Chart Container */
+.trading-chart-container {
+  position: relative;
+  background: #0d0d1a;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+
+.trading-chart {
+  display: block;
+  width: 100%;
+}
+
+/* Chart Tooltip */
+.chart-tooltip {
+  position: absolute;
+  background: rgba(15, 15, 30, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem;
+  pointer-events: none;
+  transform: translateX(-50%);
+  z-index: 10;
+  min-width: 140px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.tooltip-header {
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  padding: 0.2rem 0;
+}
+
+.tooltip-row span {
+  color: var(--text-secondary, #a1a1aa);
+}
+
+.tooltip-row strong {
+  font-weight: 600;
+}
+
+.tooltip-row.template strong {
+  color: #22c55e;
+}
+
+.tooltip-row.average strong {
+  color: #6366f1;
+}
+
+.tooltip-row.user strong {
+  color: #f59e0b;
+}
+
+.tooltip-row.range strong {
+  color: #a1a1aa;
+}
+
+/* Chart Legend */
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #a1a1aa);
+}
+
+.legend-color {
+  width: 16px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.legend-color.template {
+  background: #22c55e;
+}
+
+.legend-color.average {
+  background: #6366f1;
+  border-style: dashed;
+}
+
+.legend-color.user {
+  background: #f59e0b;
+}
+
+.legend-color.range {
+  background: rgba(99, 102, 241, 0.3);
+  height: 12px;
+}
+
+/* Chart Skeleton */
+.chart-skeleton {
+  height: 300px;
+  background: linear-gradient(90deg, #1a1a2e 25%, #2a2a40 50%, #1a1a2e 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 12px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Error/No Data Messages */
+.error-message,
+.no-data-message {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary, #a1a1aa);
+}
+
+.error-message {
+  color: #ef4444;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .team-input-group {
+    flex-direction: column;
+  }
+
+  .team-input {
+    min-width: 100%;
+  }
+
+  .user-info-badge {
+    flex-wrap: wrap;
+  }
+
+  .user-rank {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .chart-legend {
+    gap: 0.5rem;
+  }
+
+  .legend-item {
+    font-size: 0.7rem;
+  }
+}

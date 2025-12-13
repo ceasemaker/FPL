@@ -44,6 +44,45 @@ class FPLClient:
     def get_set_piece_notes(self) -> Any:
         return self._get("team/set-piece-notes/")
 
+    # =========================================================================
+    # Top 100 Manager Endpoints
+    # =========================================================================
+    
+    def get_league_standings(self, league_id: str = "314", page: int = 1) -> Any:
+        """
+        Get classic league standings.
+        Default league 314 is the overall FPL league.
+        Each page returns 50 managers.
+        """
+        return self._get(f"leagues-classic/{league_id}/standings/", page_standings=page)
+    
+    def get_manager_picks(self, entry_id: int, event_id: int) -> Any:
+        """
+        Get a manager's team picks for a specific gameweek.
+        Returns picks (player selections), active_chip, automatic_subs, etc.
+        """
+        return self._get(f"entry/{entry_id}/event/{event_id}/picks/")
+    
+    def get_manager_transfers(self, entry_id: int) -> Any:
+        """
+        Get all transfers made by a manager.
+        Returns array of {element_in, element_out, element_in_cost, element_out_cost, entry, event, time}
+        """
+        return self._get(f"entry/{entry_id}/transfers/")
+    
+    def get_manager_history(self, entry_id: int) -> Any:
+        """
+        Get manager's history across all gameweeks.
+        Returns {current: [...], past: [...], chips: [...]}
+        """
+        return self._get(f"entry/{entry_id}/history/")
+    
+    def get_manager_info(self, entry_id: int) -> Any:
+        """
+        Get basic manager info (name, team name, overall points, etc.)
+        """
+        return self._get(f"entry/{entry_id}/")
+
     def close(self) -> None:
         self.session.close()
 

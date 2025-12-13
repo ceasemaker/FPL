@@ -72,6 +72,7 @@ services:
       cd django_etl
       python manage.py migrate
       python manage.py run_fpl_etl
+      python manage.py sync_top100
       python manage.py clear_cache
     envVars:
       - key: PYTHON_VERSION
