@@ -6,12 +6,14 @@ interface TransfersTickerProps {
   transfersIn: PlayerMover[] | undefined;
   transfersOut: PlayerMover[] | undefined;
   loading: boolean;
+  onPlayerClick?: (playerId: number) => void;
 }
 
 export function TransfersTicker({
   transfersIn,
   transfersOut,
   loading,
+  onPlayerClick,
 }: TransfersTickerProps) {
   const inStripRef = useRef<HTMLDivElement>(null);
   const outStripRef = useRef<HTMLDivElement>(null);
@@ -67,7 +69,11 @@ export function TransfersTicker({
                   ? `${player.first_name[0]}${player.second_name[0]}`
                   : "??";
               return (
-                <div key={`in-${player.id}-${idx}`} className="ticker-card in">
+                <div 
+                  key={`in-${player.id}-${idx}`} 
+                  className={`ticker-card in${onPlayerClick ? ' clickable' : ''}`}
+                  onClick={() => onPlayerClick?.(player.id)}
+                >
                   <div className="ticker-avatar">
                     {player.image_url ? (
                       <img src={player.image_url} alt={player.second_name} />
@@ -105,7 +111,11 @@ export function TransfersTicker({
                   ? `${player.first_name[0]}${player.second_name[0]}`
                   : "??";
               return (
-                <div key={`out-${player.id}-${idx}`} className="ticker-card out">
+                <div 
+                  key={`out-${player.id}-${idx}`} 
+                  className={`ticker-card out${onPlayerClick ? ' clickable' : ''}`}
+                  onClick={() => onPlayerClick?.(player.id)}
+                >
                   <div className="ticker-avatar">
                     {player.image_url ? (
                       <img src={player.image_url} alt={player.second_name} />

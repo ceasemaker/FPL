@@ -5,9 +5,10 @@ import { PlayerMover } from "../types";
 interface MomentumGridProps {
   movers: PlayerMover[] | undefined;
   loading: boolean;
+  onPlayerClick?: (playerId: number) => void;
 }
 
-export function MomentumGrid({ movers, loading }: MomentumGridProps) {
+export function MomentumGrid({ movers, loading, onPlayerClick }: MomentumGridProps) {
   useEffect(() => {
     if (!movers || loading) return;
 
@@ -29,7 +30,7 @@ export function MomentumGrid({ movers, loading }: MomentumGridProps) {
         <p className="section-subtitle">Players scoring the most points in recent gameweeks — who's in form right now</p>
         <div className="momentum-grid">
           {(loading ? new Array(6).fill(null) : subset).map((mover, idx) => (
-            <MomentumCard key={mover?.id ?? idx} mover={mover} loading={loading} />
+            <MomentumCard key={mover?.id ?? idx} mover={mover} loading={loading} onClick={onPlayerClick} />
           ))}
         </div>
       </div>
@@ -37,7 +38,7 @@ export function MomentumGrid({ movers, loading }: MomentumGridProps) {
   );
 }
 
-function MomentumCard({ mover, loading }: { mover: PlayerMover | null | undefined; loading: boolean }) {
+function MomentumCard({ mover, loading, onClick }: { mover: PlayerMover | null | undefined; loading: boolean; onClick?: (playerId: number) => void }) {
   if (!mover || loading) {
     return (
       <article className="momentum-card skeleton">
@@ -53,7 +54,10 @@ function MomentumCard({ mover, loading }: { mover: PlayerMover | null | undefine
   const targetWidth = Math.min(Math.abs(mover.value) * 8, 100);
 
   return (
-    <article className="momentum-card">
+    <article 
+      className={`momentum-card ${onClick ? 'clickable' : ''}`}
+      onClick={() => onClick?.(mover.id)}
+    >
       <header>
         <div className="momentum-name">
           <strong>

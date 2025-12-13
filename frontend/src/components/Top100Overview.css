@@ -73,11 +73,20 @@
   padding: 0.5rem 0.75rem;
   background: rgba(255, 255, 255, 0.02);
   border-radius: 8px;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .player-row:hover {
   background: rgba(255, 255, 255, 0.05);
+}
+
+.player-row.clickable {
+  cursor: pointer;
+}
+
+.player-row.clickable:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(2px);
 }
 
 .player-rank {
@@ -216,10 +225,22 @@
   gap: 0.5rem;
   padding: 0.4rem 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.2s ease;
 }
 
 .transfer-row:last-child {
   border-bottom: none;
+}
+
+.transfer-row.clickable {
+  cursor: pointer;
+  border-radius: 4px;
+  margin: 0 -0.25rem;
+  padding: 0.4rem 0.25rem;
+}
+
+.transfer-row.clickable:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .transfer-rank {
@@ -326,6 +347,16 @@
   background: rgba(255, 255, 255, 0.03);
   padding: 0.4rem 0.75rem;
   border-radius: 20px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.captain-item.clickable {
+  cursor: pointer;
+}
+
+.captain-item.clickable:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(1.02);
 }
 
 .captain-item .captain-rank {

@@ -2,7 +2,11 @@ import { useTop100Template, useTop100Transfers } from "../hooks/useTop100Data";
 import { Top100Player, TransferTrend, CaptainPick } from "../types";
 import "./Top100Overview.css";
 
-export function Top100Overview() {
+interface Top100OverviewProps {
+  onPlayerClick?: (playerId: number) => void;
+}
+
+export function Top100Overview({ onPlayerClick }: Top100OverviewProps) {
   const { data: templateData, isLoading: templateLoading } = useTop100Template();
   const { data: transferData, isLoading: transferLoading } = useTop100Transfers();
 
@@ -37,7 +41,7 @@ export function Top100Overview() {
               {templateLoading
                 ? Array(15).fill(null).map((_, i) => <SkeletonPlayerRow key={i} />)
                 : (templateData?.template_squad ?? []).slice(0, 15).map((player, idx) => (
-                    <PlayerRow key={player.athlete_id} player={player} rank={idx + 1} />
+                    <PlayerRow key={player.athlete_id} player={player} rank={idx + 1} onClick={onPlayerClick} />
                   ))}
             </div>
           </div>
@@ -52,7 +56,7 @@ export function Top100Overview() {
                 {transferLoading
                   ? Array(5).fill(null).map((_, i) => <SkeletonTransferRow key={i} />)
                   : (transferData?.transfers_in ?? []).slice(0, 5).map((t, idx) => (
-                      <TransferRow key={t.athlete_id} transfer={t} rank={idx + 1} type="in" />
+                      <TransferRow key={t.athlete_id} transfer={t} rank={idx + 1} type="in" onClick={onPlayerClick} />
                     ))}
               </div>
             </div>
@@ -65,7 +69,7 @@ export function Top100Overview() {
                 {transferLoading
                   ? Array(5).fill(null).map((_, i) => <SkeletonTransferRow key={i} />)
                   : (transferData?.transfers_out ?? []).slice(0, 5).map((t, idx) => (
-                      <TransferRow key={t.athlete_id} transfer={t} rank={idx + 1} type="out" />
+                      <TransferRow key={t.athlete_id} transfer={t} rank={idx + 1} type="out" onClick={onPlayerClick} />
                     ))}
               </div>
             </div>
@@ -74,7 +78,7 @@ export function Top100Overview() {
 
         {/* Captain & Chip Stats Row */}
         <div className="bottom-stats">
-          <CaptainSection captains={templateData?.most_captained ?? []} loading={templateLoading} />
+          <CaptainSection captains={templateData?.most_captained ?? []} loading={templateLoading} onPlayerClick={onPlayerClick} />
           <ChipUsageSection chips={templateData?.chip_usage ?? {}} loading={templateLoading} />
         </div>
       </div>
@@ -82,7 +86,7 @@ export function Top100Overview() {
   );
 }
 
-function PlayerRow({ player, rank }: { player: Top100Player; rank: number }) {
+function PlayerRow({ player, rank, onClick }: { player: Top100Player; rank: number; onClick?: (playerId: number) => void }) {
   const ownershipColor =
     player.ownership_percentage >= 80
       ? "ownership-high"
@@ -98,7 +102,10 @@ function PlayerRow({ player, rank }: { player: Top100Player; rank: number }) {
   };
 
   return (
-    <div className={`player-row ${ownershipColor}`}>
+    <div 
+      className={`player-row ${ownershipColor} ${onClick ? 'clickable' : ''}`}
+      onClick={() => onClick?.(player.athlete_id)}
+    >
       <span className="player-rank">{rank}</span>
       <div className="player-image-container">
         {player.image_url ? (
@@ -129,13 +136,18 @@ function TransferRow({
   transfer,
   rank,
   type,
+  onClick,
 }: {
   transfer: TransferTrend;
   rank: number;
   type: "in" | "out";
+  onClick?: (playerId: number) => void;
 }) {
   return (
-    <div className={`transfer-row ${type}`}>
+    <div 
+      className={`transfer-row ${type} ${onClick ? 'clickable' : ''}`}
+      onClick={() => onClick?.(transfer.athlete_id)}
+    >
       <span className="transfer-rank">{rank}</span>
       <div className="transfer-image-container">
         {transfer.image_url ? (
@@ -155,7 +167,7 @@ function TransferRow({
   );
 }
 
-function CaptainSection({ captains, loading }: { captains: CaptainPick[]; loading: boolean }) {
+function CaptainSection({ captains, loading, onPlayerClick }: { captains: CaptainPick[]; loading: boolean; onPlayerClick?: (playerId: number) => void }) {
   if (loading) {
     return (
       <div className="captain-stats">
@@ -177,7 +189,11 @@ function CaptainSection({ captains, loading }: { captains: CaptainPick[]; loadin
       <h4>👑 Most Captained</h4>
       <div className="captain-list">
         {captains.slice(0, 3).map((c, idx) => (
-          <div key={c.athlete_id} className="captain-item">
+          <div 
+            key={c.athlete_id} 
+            className={`captain-item ${onPlayerClick ? 'clickable' : ''}`}
+            onClick={() => onPlayerClick?.(c.athlete_id)}
+          >
             <span className="captain-rank">{idx + 1}</span>
             {c.image_url && <img src={c.image_url} alt={c.web_name} className="captain-img" />}
             <span className="captain-name">{c.web_name}</span>

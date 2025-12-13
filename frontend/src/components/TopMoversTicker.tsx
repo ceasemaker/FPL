@@ -7,9 +7,10 @@ interface TopMoversTickerProps {
   priceMovers: PriceMovers | undefined;
   pointsMovers: PlayerMover[] | undefined;
   loading: boolean;
+  onPlayerClick?: (playerId: number) => void;
 }
 
-export function TopMoversTicker({ priceMovers, pointsMovers, loading }: TopMoversTickerProps) {
+export function TopMoversTicker({ priceMovers, pointsMovers, loading, onPlayerClick }: TopMoversTickerProps) {
   const stripRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -38,10 +39,10 @@ export function TopMoversTicker({ priceMovers, pointsMovers, loading }: TopMover
         <div className="ticker-viewport">
           <div className="ticker-strip" ref={stripRef}>
             {moverCards.map((mover) => (
-              <TickerCard key={mover.key} mover={mover} />
+              <TickerCard key={mover.key} mover={mover} onClick={onPlayerClick} />
             ))}
             {moverCards.map((mover) => (
-              <TickerCard key={`${mover.key}-clone`} mover={mover} />
+              <TickerCard key={`${mover.key}-clone`} mover={mover} onClick={onPlayerClick} />
             ))}
           </div>
         </div>
@@ -110,12 +111,15 @@ function createTickerItems(
   return renderables.length > 0 ? renderables : [];
 }
 
-function TickerCard({ mover }: { mover: TickerRenderable }) {
-  const { first_name, second_name, team, badgeTone, badge, change_label, image_url } = mover;
+function TickerCard({ mover, onClick }: { mover: TickerRenderable; onClick?: (playerId: number) => void }) {
+  const { first_name, second_name, team, badgeTone, badge, change_label, image_url, id } = mover;
   const initials = `${first_name?.[0] ?? ""}${second_name?.[0] ?? ""}`;
 
   return (
-    <article className={cn("ticker-card", badgeTone)}>
+    <article 
+      className={cn("ticker-card", badgeTone, onClick && "clickable")}
+      onClick={() => onClick?.(id)}
+    >
       <div className="ticker-avatar">
         {image_url ? <img src={image_url} alt={`${first_name} ${second_name}`} /> : <span>{initials}</span>}
       </div>

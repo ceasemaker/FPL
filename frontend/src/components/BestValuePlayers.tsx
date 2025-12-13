@@ -2,7 +2,11 @@ import { useBestValuePlayers } from "../hooks/useTop100Data";
 import { ValuePlayer } from "../types";
 import "./BestValuePlayers.css";
 
-export function BestValuePlayers() {
+interface BestValuePlayersProps {
+  onPlayerClick?: (playerId: number) => void;
+}
+
+export function BestValuePlayers({ onPlayerClick }: BestValuePlayersProps) {
   const { data, isLoading, error } = useBestValuePlayers();
 
   if (error) {
@@ -36,6 +40,7 @@ export function BestValuePlayers() {
             players={data?.goalkeepers ?? []}
             loading={isLoading}
             count={3}
+            onPlayerClick={onPlayerClick}
           />
           <PositionSection
             title="Defenders"
@@ -43,6 +48,7 @@ export function BestValuePlayers() {
             players={data?.defenders ?? []}
             loading={isLoading}
             count={5}
+            onPlayerClick={onPlayerClick}
           />
           <PositionSection
             title="Midfielders"
@@ -50,6 +56,7 @@ export function BestValuePlayers() {
             players={data?.midfielders ?? []}
             loading={isLoading}
             count={5}
+            onPlayerClick={onPlayerClick}
           />
           <PositionSection
             title="Forwards"
@@ -57,6 +64,7 @@ export function BestValuePlayers() {
             players={data?.forwards ?? []}
             loading={isLoading}
             count={5}
+            onPlayerClick={onPlayerClick}
           />
         </div>
       </div>
@@ -70,6 +78,7 @@ interface PositionSectionProps {
   players: ValuePlayer[];
   loading: boolean;
   count: number;
+  onPlayerClick?: (playerId: number) => void;
 }
 
 function PositionSection({
@@ -78,6 +87,7 @@ function PositionSection({
   players,
   loading,
   count,
+  onPlayerClick,
 }: PositionSectionProps) {
   return (
     <div className="position-section">
@@ -90,7 +100,7 @@ function PositionSection({
               .fill(null)
               .map((_, i) => <SkeletonValueCard key={i} />)
           : players.map((player, idx) => (
-              <ValuePlayerCard key={player.athlete_id} player={player} rank={idx + 1} />
+              <ValuePlayerCard key={player.athlete_id} player={player} rank={idx + 1} onClick={onPlayerClick} />
             ))}
       </div>
     </div>
@@ -100,9 +110,10 @@ function PositionSection({
 interface ValuePlayerCardProps {
   player: ValuePlayer;
   rank: number;
+  onClick?: (playerId: number) => void;
 }
 
-function ValuePlayerCard({ player, rank }: ValuePlayerCardProps) {
+function ValuePlayerCard({ player, rank, onClick }: ValuePlayerCardProps) {
   const valueColor =
     player.value_score >= 2.0
       ? "value-excellent"
@@ -111,7 +122,10 @@ function ValuePlayerCard({ player, rank }: ValuePlayerCardProps) {
       : "value-decent";
 
   return (
-    <article className={`value-card ${valueColor}`}>
+    <article 
+      className={`value-card ${valueColor} ${onClick ? 'clickable' : ''}`}
+      onClick={() => onClick?.(player.athlete_id)}
+    >
       <div className="value-rank">{rank}</div>
       
       <div className="value-player-image">
