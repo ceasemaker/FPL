@@ -6,6 +6,19 @@ import { RadarChart } from "../components/RadarChart";
 const API_BASE_URL = "";
 const TEAM_BADGE_BASE = "https://resources.premierleague.com/premierleague25/badges-alt/";
 
+interface FixtureHistory {
+  event: number;
+  opponent_team: string;
+  opponent_team_short: string;
+  was_home: boolean;
+  total_points: number;
+  minutes: number;
+  goals_scored: number;
+  assists: number;
+  clean_sheets: number;
+  bonus: number;
+}
+
 interface DetailedPlayer {
   // Basic Info
   id: number;
@@ -100,6 +113,9 @@ interface DetailedPlayer {
   // Chance of Playing
   chance_of_playing_this_round: number | null;
   chance_of_playing_next_round: number | null;
+  
+  // Recent fixture history (populated separately)
+  fixtureHistory?: FixtureHistory[];
 }
 
 function getTeamBadgeUrl(teamCode: number | null): string | null {
@@ -147,14 +163,58 @@ export function ComparePage() {
       return;
     }
 
-    // Fetch detailed data for each player
-    Promise.all(
-      playerIds.map((id) =>
-        fetch(`${API_BASE_URL}/api/players/${id}/`, {
-          headers: { Accept: "application/json" },
-        }).then((res) => res.json())
-      )
-    )
+    // Fetch bootstrap-static for team names, then player data + summaries
+    fetch(`${API_BASE_URL}/api/fpl/bootstrap-static/`)
+      .then((res) => res.json())
+      .then((bootstrapData) => {
+        // Create team lookup map
+        const teamsMap = new Map<number, { name: string; short_name: string }>();
+        (bootstrapData.teams || []).forEach((team: any) => {
+          teamsMap.set(team.id, {
+            name: team.name,
+            short_name: team.short_name,
+          });
+        });
+
+        // Fetch player details and summaries in parallel
+        return Promise.all(
+          playerIds.map((id) =>
+            Promise.all([
+              fetch(`${API_BASE_URL}/api/players/${id}/`, {
+                headers: { Accept: "application/json" },
+              }).then((res) => res.json()),
+              fetch(`${API_BASE_URL}/api/fpl/element-summary/${id}/`)
+                .then((res) => res.json())
+                .catch(() => ({ history: [] })), // Handle missing summaries gracefully
+            ]).then(([playerData, summaryData]) => {
+              // Get fixture history (last 5)
+              const history = (summaryData.history || [])
+                .slice(-5)
+                .reverse()
+                .map((h: any) => {
+                  const opponentTeam = teamsMap.get(h.opponent_team);
+                  return {
+                    event: h.round,
+                    opponent_team: opponentTeam?.name || "Unknown",
+                    opponent_team_short: opponentTeam?.short_name || "UNK",
+                    was_home: h.was_home,
+                    total_points: h.total_points || 0,
+                    minutes: h.minutes || 0,
+                    goals_scored: h.goals_scored || 0,
+                    assists: h.assists || 0,
+                    clean_sheets: h.clean_sheets || 0,
+                    bonus: h.bonus || 0,
+                  };
+                });
+
+              return {
+                ...playerData,
+                fixtureHistory: history,
+              };
+            })
+          )
+        );
+      })
       .then((playersData) => {
         setPlayers(playersData);
         setError(null);
@@ -267,6 +327,53 @@ export function ComparePage() {
               showBreakdown={true}
               hideOnError={false}
             />
+          </div>
+        </div>
+
+        {/* Recent Form Comparison */}
+        <div className="comparison-recent-form">
+          <h3 className="section-title">📊 Recent Form</h3>
+          <p className="section-subtitle">Last 5 gameweeks performance comparison</p>
+          <div className="recent-form-grid" style={{ gridTemplateColumns: `repeat(${players.length}, 1fr)` }}>
+            {players.map((player) => (
+              <div key={player.id} className="recent-form-column">
+                <div className="recent-form-player-name">{player.web_name}</div>
+                <div className="recent-form-list">
+                  {(player.fixtureHistory || []).length > 0 ? (
+                    player.fixtureHistory!.map((fixture, idx) => (
+                      <div key={idx} className="recent-form-item">
+                        <span className="form-gw">GW{fixture.event}</span>
+                        <span className="form-opponent">
+                          {fixture.was_home ? "vs" : "@"} {fixture.opponent_team_short}
+                        </span>
+                        <span className="form-details">
+                          {fixture.minutes}'
+                          {fixture.goals_scored > 0 && ` ⚽${fixture.goals_scored}`}
+                          {fixture.assists > 0 && ` 🅰️${fixture.assists}`}
+                          {fixture.clean_sheets > 0 && ` 🛡️`}
+                          {fixture.bonus > 0 && ` +${fixture.bonus}bp`}
+                        </span>
+                        <span
+                          className={`form-points ${
+                            fixture.total_points >= 8
+                              ? "excellent"
+                              : fixture.total_points >= 5
+                              ? "good"
+                              : fixture.total_points >= 2
+                              ? "ok"
+                              : "poor"
+                          }`}
+                        >
+                          {fixture.total_points}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="no-history">No recent games</div>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 

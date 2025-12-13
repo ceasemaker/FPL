@@ -1368,6 +1368,135 @@ a {
   box-shadow: none;
 }
 
+/* Recent Form Comparison */
+.comparison-recent-form {
+  background: rgba(9, 12, 32, 0.5);
+  border-radius: 16px;
+  border: 1px solid rgba(79, 70, 229, 0.25);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.comparison-recent-form .section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.comparison-recent-form .section-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.25rem;
+}
+
+.recent-form-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.recent-form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.recent-form-player-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  text-align: center;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 0.25rem;
+}
+
+.recent-form-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.recent-form-item {
+  display: grid;
+  grid-template-columns: 45px 55px 1fr 32px;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.5rem 0.6rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  transition: background 0.2s;
+}
+
+.recent-form-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.form-gw {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.form-opponent {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.form-details {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.form-points {
+  font-weight: 700;
+  text-align: center;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  min-width: 28px;
+}
+
+.form-points.excellent {
+  background: rgba(34, 197, 94, 0.25);
+  color: #22c55e;
+}
+
+.form-points.good {
+  background: rgba(132, 204, 22, 0.2);
+  color: #84cc16;
+}
+
+.form-points.ok {
+  background: rgba(234, 179, 8, 0.2);
+  color: #eab308;
+}
+
+.form-points.poor {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.no-history {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  padding: 1rem;
+}
+
+@media (max-width: 768px) {
+  .recent-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .recent-form-item {
+    grid-template-columns: 40px 50px 1fr 28px;
+    font-size: 0.75rem;
+  }
+}
+
 .comparison-stats-table {
   display: flex;
   flex-direction: column;
