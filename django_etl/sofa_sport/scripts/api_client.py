@@ -6,11 +6,14 @@ Handles all API calls to SofaSport API with proper error handling and rate limit
 import os
 import requests
 import time
+from pathlib import Path
 from typing import Dict, List, Optional, Any
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from the sofa_sport directory
+_script_dir = Path(__file__).parent.parent  # sofa_sport directory
+_env_path = _script_dir / ".env"
+load_dotenv(_env_path)
 
 
 class SofaSportClient:
@@ -212,6 +215,95 @@ class SofaSportClient:
         }
         time.sleep(0.5)  # Rate limiting
         return self._make_request(endpoint, params)
+
+    def get_competition_fixtures(self, tournament_id: str, season_id: str, 
+                                  course: str = "last", page: int = 0) -> Dict[str, Any]:
+        """
+        Get fixtures for a specific competition/tournament.
+        
+        Args:
+            tournament_id: SofaSport unique_tournament_id (UCL=7, Europa=679, etc.)
+            season_id: SofaSport seasons_id for the competition
+            course: "last" for past games, "next" for future games
+            page: Page number for pagination
+        """
+        endpoint = "seasons/events"
+        params = {
+            "seasons_id": season_id,
+            "unique_tournament_id": tournament_id,
+            "course_events": course,
+            "page": str(page)
+        }
+        time.sleep(0.5)  # Rate limiting
+        return self._make_request(endpoint, params)
+
+    def get_all_competition_fixtures(self, tournament_id: str, season_id: str, 
+                                      course: str = "last") -> List[Dict[str, Any]]:
+        """Get all fixtures for a competition with pagination."""
+        all_events = []
+        page = 0
+        
+        while True:
+            response = self.get_competition_fixtures(tournament_id, season_id, course, page)
+            
+            if not response or 'data' not in response:
+                break
+            
+            events = response['data'].get('events', [])
+            all_events.extend(events)
+            
+            has_next = response['data'].get('hasNextPage', False)
+            if not has_next:
+                break
+            
+            page += 1
+            time.sleep(0.5)  # Rate limiting
+        
+        return all_events
+
+    def get_team_events(self, team_id: str, course: str = "last", page: int = 0) -> Dict[str, Any]:
+        """
+        Get events for a specific team across all competitions.
+        
+        Args:
+            team_id: SofaSport team ID
+            course: "last" for past games, "next" for future games
+            page: Page number for pagination
+            
+        Returns:
+            dict with events array and pagination info
+        """
+        endpoint = "teams/events"
+        params = {
+            "team_id": team_id,
+            "course_events": course,
+            "page": str(page)
+        }
+        time.sleep(0.5)  # Rate limiting
+        return self._make_request(endpoint, params)
+
+    def get_all_team_events(self, team_id: str, course: str = "last") -> List[Dict[str, Any]]:
+        """Get all events for a team with pagination."""
+        all_events = []
+        page = 0
+        
+        while True:
+            response = self.get_team_events(team_id, course, page)
+            
+            if not response or 'data' not in response:
+                break
+            
+            events = response['data'].get('events', [])
+            all_events.extend(events)
+            
+            has_next = response['data'].get('hasNextPage', False)
+            if not has_next:
+                break
+            
+            page += 1
+            time.sleep(0.5)  # Rate limiting
+        
+        return all_events
 
 
 if __name__ == "__main__":

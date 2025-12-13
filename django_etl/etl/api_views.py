@@ -1672,11 +1672,12 @@ def player_recent_matches(request, player_id: int):
     """
     Get recent matches for a player including European competitions.
     
-    Fetches data from SofaScore API for the player's recent fixtures
-    across all competitions (Premier League, UCL, Europa, cups, etc.)
+    Queries stored SofasportLineup and SofasportFixture data for the player's
+    recent fixtures across all competitions (Premier League, UCL, Europa, cups, etc.)
     
     Query params:
         - limit: Number of matches to return (default: 10)
+        - exclude_pl: If 'true', exclude Premier League matches (default: false)
     
     Returns:
         {
@@ -1704,11 +1705,13 @@ def player_recent_matches(request, player_id: int):
             ]
         }
     """
-    import json
-    import os
-    from pathlib import Path
+    from .models import Athlete, SofasportLineup, SofasportFixture
     
     cache_key = f"player_recent_matches_{player_id}"
+    exclude_pl = request.GET.get("exclude_pl", "false").lower() == "true"
+    if exclude_pl:
+        cache_key += "_no_pl"
+    
     cached_data = cache.get(cache_key)
     if cached_data:
         return JsonResponse(cached_data)
@@ -1716,131 +1719,100 @@ def player_recent_matches(request, player_id: int):
     limit = int(request.GET.get("limit", 10))
     
     try:
-        # Get the player's SofaScore ID from mapping
-        mapping_path = Path(__file__).parent.parent / "sofa_sport" / "mappings" / "player_mapping.json"
-        
-        if not mapping_path.exists():
-            return JsonResponse({"error": "Player mapping not found"}, status=500)
-        
-        with open(mapping_path) as f:
-            player_mapping = json.load(f)
-        
-        # Find sofasport_id for this FPL player
-        sofasport_id = None
-        player_name = None
-        for sofa_id, mapping in player_mapping.items():
-            if mapping.get("fpl_id") == player_id:
-                sofasport_id = sofa_id
-                player_name = mapping.get("fpl_web_name") or mapping.get("sofasport_name")
-                break
-        
-        if not sofasport_id:
+        # Get the athlete
+        try:
+            athlete = Athlete.objects.get(id=player_id)
+            player_name = athlete.web_name
+        except Athlete.DoesNotExist:
             return JsonResponse({
                 "player_id": player_id,
                 "player_name": None,
                 "matches": [],
-                "error": "Player not found in SofaScore mapping"
-            })
+                "error": "Player not found"
+            }, status=404)
         
-        # Initialize SofaScore client and fetch recent events
-        import sys
-        sofa_scripts_path = str(Path(__file__).parent.parent / "sofa_sport" / "scripts")
-        if sofa_scripts_path not in sys.path:
-            sys.path.insert(0, sofa_scripts_path)
+        # Query lineups for this player joined with fixtures
+        lineups_query = SofasportLineup.objects.filter(
+            athlete=athlete
+        ).select_related('fixture').order_by('-fixture__kickoff_time')
         
-        from api_client import SofaSportClient
-        client = SofaSportClient()
+        # Optionally exclude Premier League matches
+        if exclude_pl:
+            lineups_query = lineups_query.exclude(fixture__competition='PL')
         
-        # Get player's recent events
-        events_response = client.get_player_last_events(sofasport_id)
+        lineups = lineups_query[:limit]
         
-        if not events_response or "data" not in events_response:
-            return JsonResponse({
-                "player_id": player_id,
-                "player_name": player_name,
-                "matches": [],
-                "message": "No recent matches found"
-            })
-        
-        events = events_response.get("data", {}).get("events", [])[:limit]
-        
-        # Competition name mapping
-        competition_map = {
-            "Premier League": ("Premier League", "PL"),
-            "UEFA Champions League": ("UEFA Champions League", "UCL"),
-            "UEFA Europa League": ("UEFA Europa League", "UEL"),
-            "UEFA Europa Conference League": ("Conference League", "UECL"),
-            "FA Cup": ("FA Cup", "FAC"),
-            "EFL Cup": ("EFL Cup", "EFL"),
-            "Community Shield": ("Community Shield", "CS"),
+        # Competition display names
+        competition_names = {
+            'PL': 'Premier League',
+            'UCL': 'UEFA Champions League',
+            'UEL': 'UEFA Europa League',
+            'UECL': 'Conference League',
+            'FAC': 'FA Cup',
+            'EFL': 'EFL Cup',
+            'OTHER': 'Other',
         }
         
         matches = []
-        for event in events:
-            try:
-                # Extract tournament/competition info
-                tournament = event.get("tournament", {})
-                tournament_name = tournament.get("name", "Unknown")
-                comp_info = competition_map.get(tournament_name, (tournament_name, tournament_name[:3].upper()))
-                
-                home_team = event.get("homeTeam", {})
-                away_team = event.get("awayTeam", {})
-                home_score_obj = event.get("homeScore", {})
-                away_score_obj = event.get("awayScore", {})
-                
-                # Determine if player's team was home or away
-                # Need to fetch player stats to get detailed info
-                event_id = str(event.get("id", ""))
-                
-                # Try to get player statistics for this event
-                player_stats = {}
-                try:
-                    stats_response = client.get_player_event_statistics(sofasport_id, event_id)
-                    if stats_response and "data" in stats_response:
-                        player_stats = stats_response.get("data", {})
-                except Exception:
-                    pass
-                
-                # Extract stats
-                minutes = player_stats.get("minutesPlayed", 0)
-                goals = player_stats.get("goals", 0)
-                assists = player_stats.get("goalAssist", 0) or player_stats.get("assists", 0)
-                yellow_cards = player_stats.get("yellowCards", 0)
-                red_cards = player_stats.get("redCards", 0)
-                rating = player_stats.get("rating")
-                
-                # Format timestamp
-                timestamp = event.get("startTimestamp", 0)
-                from datetime import datetime
-                date_str = datetime.utcfromtimestamp(timestamp).isoformat() + "Z" if timestamp else None
-                
-                matches.append({
-                    "event_id": event_id,
-                    "date": date_str,
-                    "competition": comp_info[0],
-                    "competition_short": comp_info[1],
-                    "home_team": home_team.get("name", "Unknown"),
-                    "home_team_id": home_team.get("id"),
-                    "away_team": away_team.get("name", "Unknown"),
-                    "away_team_id": away_team.get("id"),
-                    "home_score": home_score_obj.get("current") or home_score_obj.get("display"),
-                    "away_score": away_score_obj.get("current") or away_score_obj.get("display"),
-                    "minutes_played": minutes,
-                    "goals": goals,
-                    "assists": assists,
-                    "yellow_cards": yellow_cards,
-                    "red_cards": red_cards,
-                    "rating": round(rating, 1) if rating else None,
-                })
-            except Exception as e:
-                logger.warning(f"Error processing event for player {player_id}: {e}")
+        for lineup in lineups:
+            fixture = lineup.fixture
+            if not fixture:
                 continue
+            
+            # Extract stats from lineup statistics JSON
+            stats = lineup.statistics or {}
+            
+            # Determine team names
+            home_team = fixture.home_team_name or (fixture.home_team.name if fixture.home_team else "Unknown")
+            away_team = fixture.away_team_name or (fixture.away_team.name if fixture.away_team else "Unknown")
+            
+            # Determine if player was on home or away team
+            was_home = False
+            if athlete.team:
+                was_home = (fixture.home_team == athlete.team)
+            
+            matches.append({
+                "event_id": str(fixture.sofasport_event_id),
+                "date": fixture.kickoff_time.isoformat() + "Z" if fixture.kickoff_time else None,
+                "competition": competition_names.get(fixture.competition, fixture.competition_name or fixture.competition),
+                "competition_short": fixture.competition,
+                "home_team": home_team,
+                "home_team_id": fixture.sofasport_home_team_id,
+                "away_team": away_team,
+                "away_team_id": fixture.sofasport_away_team_id,
+                "home_score": fixture.home_score_current,
+                "away_score": fixture.away_score_current,
+                "was_home": was_home,
+                "minutes_played": lineup.minutes_played or stats.get("minutesPlayed", 0),
+                "goals": stats.get("goals", 0),
+                "assists": stats.get("goalAssist", 0) or stats.get("assists", 0),
+                "yellow_cards": stats.get("yellowCards", 0),
+                "red_cards": stats.get("redCards", 0),
+                "rating": round(stats.get("rating", 0), 1) if stats.get("rating") else None,
+            })
+        
+        # Get sofasport_id from mapping for reference
+        sofasport_id = None
+        try:
+            import json
+            from pathlib import Path
+            mapping_path = Path(__file__).parent.parent / "sofa_sport" / "mappings" / "player_mapping.json"
+            if mapping_path.exists():
+                with open(mapping_path) as f:
+                    player_mapping = json.load(f)
+                for sofa_id, mapping in player_mapping.items():
+                    if mapping.get("fpl_id") == player_id:
+                        sofasport_id = sofa_id
+                        break
+        except Exception:
+            pass
         
         response_data = {
             "player_id": player_id,
             "sofasport_id": sofasport_id,
             "player_name": player_name,
             "matches": matches,
+            "total_count": len(matches),
         }
         
         # Cache for 1 hour

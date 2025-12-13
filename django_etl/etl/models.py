@@ -372,25 +372,65 @@ class SofasportFixture(TimestampedModel):
     """
     Store SofaSport fixture data mapped to FPL fixtures.
     Links SofaSport events to FPL fixtures for enhanced statistics.
+    Also stores non-Premier League fixtures (UCL, Europa, FA Cup, EFL Cup).
     
     API Response: event object with id (int), homeTeam/awayTeam (dict), 
     homeScore/awayScore (dict with 'current', 'display', 'period1', 'period2'),
     status (dict with 'type'), startTimestamp (Unix timestamp)
     """
+    # Competition identifiers
+    COMPETITION_CHOICES = [
+        ('PL', 'Premier League'),
+        ('UCL', 'UEFA Champions League'),
+        ('UEL', 'UEFA Europa League'),
+        ('UECL', 'UEFA Conference League'),
+        ('FAC', 'FA Cup'),
+        ('EFL', 'EFL Cup'),
+        ('OTHER', 'Other'),
+    ]
+    
     sofasport_event_id = models.BigIntegerField(unique=True, db_index=True, help_text="SofaSport event ID")
     fixture = models.ForeignKey(
         Fixture,
         related_name="sofasport_fixtures",
         on_delete=models.CASCADE,
-        help_text="Link to FPL fixture"
+        null=True,
+        blank=True,
+        help_text="Link to FPL fixture (null for non-PL matches)"
     )
+    # Competition info
+    competition = models.CharField(
+        max_length=10, 
+        choices=COMPETITION_CHOICES, 
+        default='PL',
+        db_index=True,
+        help_text="Competition code (PL, UCL, UEL, FAC, EFL, etc.)"
+    )
+    competition_name = models.CharField(
+        max_length=100, 
+        default='Premier League',
+        help_text="Full competition name"
+    )
+    sofasport_tournament_id = models.BigIntegerField(
+        null=True, 
+        blank=True,
+        help_text="SofaSport unique_tournament_id"
+    )
+    sofasport_season_id = models.BigIntegerField(
+        null=True, 
+        blank=True,
+        help_text="SofaSport seasons_id"
+    )
+    # Team names for non-PL matches (store directly since no FPL team mapping)
+    home_team_name = models.CharField(max_length=100, null=True, blank=True, help_text="Home team name from SofaSport")
+    away_team_name = models.CharField(max_length=100, null=True, blank=True, help_text="Away team name from SofaSport")
     home_team = models.ForeignKey(
         Team,
         related_name="sofasport_home_fixtures",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        help_text="FPL home team"
+        help_text="FPL home team (if mappable)"
     )
     away_team = models.ForeignKey(
         Team,
@@ -398,7 +438,7 @@ class SofasportFixture(TimestampedModel):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        help_text="FPL away team"
+        help_text="FPL away team (if mappable)"
     )
     sofasport_home_team_id = models.BigIntegerField(help_text="SofaSport home team ID")
     sofasport_away_team_id = models.BigIntegerField(help_text="SofaSport away team ID")
@@ -427,10 +467,14 @@ class SofasportFixture(TimestampedModel):
             models.Index(fields=["home_team"]),
             models.Index(fields=["away_team"]),
             models.Index(fields=["match_status"]),
+            models.Index(fields=["competition"]),
+            models.Index(fields=["kickoff_time"]),
         ]
 
     def __str__(self) -> str:
-        return f"SofaSport Event {self.sofasport_event_id}: {self.home_team} vs {self.away_team}"
+        home = self.home_team_name or (self.home_team.name if self.home_team else "Unknown")
+        away = self.away_team_name or (self.away_team.name if self.away_team else "Unknown")
+        return f"[{self.competition}] {home} vs {away} ({self.sofasport_event_id})"
 
 
 class SofasportLineup(TimestampedModel):
