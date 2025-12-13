@@ -120,6 +120,20 @@ interface FixtureHistory {
   kickoff_time: string | null;
 }
 
+interface EuropeanMatch {
+  competition: string;
+  competition_short: string;
+  opponent: string;
+  date: string;
+  is_home: boolean;
+  minutes: number;
+  goals: number;
+  assists: number;
+  yellow_cards: number;
+  red_cards: number;
+  rating: number | null;
+}
+
 interface PlayerModalProps {
   playerId: number;
   onClose: () => void;
@@ -158,6 +172,7 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
   const [player, setPlayer] = useState<DetailedPlayer | null>(null);
   const [upcomingFixtures, setUpcomingFixtures] = useState<Fixture[]>([]);
   const [fixtureHistory, setFixtureHistory] = useState<FixtureHistory[]>([]);
+  const [europeanMatches, setEuropeanMatches] = useState<EuropeanMatch[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
@@ -176,9 +191,13 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
         .then(res => res.json()),
       // Fetch player summary from FPL (includes fixtures and history)
       fetch(`/api/fpl/element-summary/${playerId}/`)
-        .then(res => res.json())
+        .then(res => res.json()),
+      // Fetch European/cup matches from SofaScore
+      fetch(`/api/sofasport/player/${playerId}/recent-matches/`)
+        .then(res => res.ok ? res.json() : { matches: [] })
+        .catch(() => ({ matches: [] }))
     ])
-      .then(([playerData, bootstrapData, summaryData]) => {
+      .then(([playerData, bootstrapData, summaryData, europeanData]) => {
         // Create team lookup map
         const teamsMap = new Map();
         (bootstrapData.teams || []).forEach((team: any) => {
@@ -224,9 +243,37 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
             };
           });
         
+        // Process European/cup matches (filter out Premier League since that's in Recent Form)
+        const euroMatches: EuropeanMatch[] = (europeanData.matches || [])
+          .filter((m: any) => m.competition !== "Premier League" && m.competition_short !== "PL")
+          .slice(0, 5)
+          .map((m: any) => {
+            // Determine opponent based on home/away (we need to know player's team)
+            // For now, use home/away team names and let user see the full match
+            const playerTeamName = playerData.team || "";
+            const isHome = m.home_team?.toLowerCase().includes(playerTeamName.toLowerCase().split(" ")[0]) ||
+                          m.home_team === playerTeamName;
+            const opponent = isHome ? m.away_team : m.home_team;
+            
+            return {
+              competition: m.competition || "Unknown",
+              competition_short: m.competition_short || "CUP",
+              opponent: opponent || "Unknown",
+              date: m.date || "",
+              is_home: isHome,
+              minutes: m.minutes_played || 0,
+              goals: m.goals || 0,
+              assists: m.assists || 0,
+              yellow_cards: m.yellow_cards || 0,
+              red_cards: m.red_cards || 0,
+              rating: m.rating || null,
+            };
+          });
+        
         setPlayer(playerData);
         setUpcomingFixtures(upcoming);
         setFixtureHistory(history);
+        setEuropeanMatches(euroMatches);
         setError(null);
       })
       .catch((err) => {
@@ -436,6 +483,41 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
                     className={`fixture-points ${fixture.total_points >= 6 ? 'good' : fixture.total_points >= 3 ? 'ok' : 'poor'}`}
                   >
                     {fixture.total_points} pts
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* European/Cup Matches */}
+        {europeanMatches.length > 0 && (
+          <div className="modal-fixtures-section european-section">
+            <h3>🏆 European & Cup Matches</h3>
+            <p className="european-subtitle">Recent non-Premier League appearances</p>
+            <div className="fixtures-history-list">
+              {europeanMatches.map((match, idx) => (
+                <div key={idx} className="fixture-history-item european-match">
+                  <span className="fixture-competition" title={match.competition}>
+                    {match.competition_short}
+                  </span>
+                  <span className="fixture-opponent">
+                    {match.is_home ? 'vs' : '@'} {match.opponent}
+                  </span>
+                  <span className="fixture-performance">
+                    {match.minutes}'
+                    {match.goals > 0 && ` ⚽${match.goals}`}
+                    {match.assists > 0 && ` 🅰️${match.assists}`}
+                    {match.yellow_cards > 0 && ` 🟨`}
+                    {match.red_cards > 0 && ` 🟥`}
+                  </span>
+                  {match.rating && (
+                    <span className={`fixture-rating ${match.rating >= 7.5 ? 'good' : match.rating >= 6.5 ? 'ok' : 'poor'}`}>
+                      {match.rating.toFixed(1)}
+                    </span>
+                  )}
+                  <span className="fixture-date">
+                    {new Date(match.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                   </span>
                 </div>
               ))}
