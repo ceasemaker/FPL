@@ -1062,3 +1062,182 @@ class WildcardSimulation(TimestampedModel):
         import uuid
         return f"WC-{uuid.uuid4().hex[:6].upper()}"
 
+
+class FixtureOdds(TimestampedModel):
+    """
+    Store betting odds for upcoming fixtures.
+    Tracks current and previous odds to show movement (arrows).
+    Updates via Celery beat task every 10 minutes.
+    
+    API: /v1/events/odds/all with provider_id=1, odds_format=decimal
+    Markets stored: 1X2 (match result), Over/Under, BTTS
+    """
+    fixture = models.OneToOneField(
+        SofasportFixture,
+        related_name="odds",
+        on_delete=models.CASCADE,
+        help_text="Link to SofaSport fixture"
+    )
+    
+    # 1X2 Market (Match Result) - Current odds
+    home_odds = models.DecimalField(
+        max_digits=6, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Decimal odds for home win"
+    )
+    draw_odds = models.DecimalField(
+        max_digits=6, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Decimal odds for draw"
+    )
+    away_odds = models.DecimalField(
+        max_digits=6, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Decimal odds for away win"
+    )
+    
+    # 1X2 Market - Previous odds (for movement detection)
+    prev_home_odds = models.DecimalField(
+        max_digits=6, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Previous home odds for arrow display"
+    )
+    prev_draw_odds = models.DecimalField(
+        max_digits=6, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Previous draw odds"
+    )
+    prev_away_odds = models.DecimalField(
+        max_digits=6, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Previous away odds"
+    )
+    
+    # Over/Under Market (stored but not displayed initially)
+    over_under_line = models.DecimalField(
+        max_digits=3, 
+        decimal_places=1, 
+        null=True, 
+        blank=True,
+        help_text="Over/Under line (e.g., 2.5 goals)"
+    )
+    over_odds = models.DecimalField(
+        max_digits=6, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Decimal odds for over"
+    )
+    under_odds = models.DecimalField(
+        max_digits=6, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Decimal odds for under"
+    )
+    prev_over_odds = models.DecimalField(
+        max_digits=6, 
+        decimal_places=2, 
+        null=True, 
+        blank=True
+    )
+    prev_under_odds = models.DecimalField(
+        max_digits=6, 
+        decimal_places=2, 
+        null=True, 
+        blank=True
+    )
+    
+    # Both Teams To Score (BTTS)
+    btts_yes_odds = models.DecimalField(
+        max_digits=6, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Decimal odds for both teams to score"
+    )
+    btts_no_odds = models.DecimalField(
+        max_digits=6, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Decimal odds for not both teams to score"
+    )
+    prev_btts_yes_odds = models.DecimalField(
+        max_digits=6, 
+        decimal_places=2, 
+        null=True, 
+        blank=True
+    )
+    prev_btts_no_odds = models.DecimalField(
+        max_digits=6, 
+        decimal_places=2, 
+        null=True, 
+        blank=True
+    )
+    
+    # Metadata
+    provider_id = models.CharField(
+        max_length=20, 
+        default='1',
+        help_text="SofaSport bookmaker provider ID"
+    )
+    last_updated = models.DateTimeField(
+        auto_now=True,
+        help_text="When odds were last fetched"
+    )
+    
+    class Meta(TimestampedModel.Meta):
+        db_table = "fixture_odds"
+        ordering = ["-last_updated"]
+        indexes = [
+            models.Index(fields=["fixture"]),
+            models.Index(fields=["last_updated"]),
+        ]
+        verbose_name_plural = "Fixture Odds"
+    
+    def __str__(self) -> str:
+        return f"Odds for {self.fixture} (updated {self.last_updated.strftime('%Y-%m-%d %H:%M')})"
+    
+    def get_home_movement(self) -> str | None:
+        """Return '↑' if odds increased, '↓' if decreased, None if no change."""
+        if self.prev_home_odds is None or self.home_odds is None:
+            return None
+        if self.home_odds > self.prev_home_odds:
+            return '↑'
+        elif self.home_odds < self.prev_home_odds:
+            return '↓'
+        return None
+    
+    def get_draw_movement(self) -> str | None:
+        """Return '↑' if odds increased, '↓' if decreased, None if no change."""
+        if self.prev_draw_odds is None or self.draw_odds is None:
+            return None
+        if self.draw_odds > self.prev_draw_odds:
+            return '↑'
+        elif self.draw_odds < self.prev_draw_odds:
+            return '↓'
+        return None
+    
+    def get_away_movement(self) -> str | None:
+        """Return '↑' if odds increased, '↓' if decreased, None if no change."""
+        if self.prev_away_odds is None or self.away_odds is None:
+            return None
+        if self.away_odds > self.prev_away_odds:
+            return '↑'
+        elif self.away_odds < self.prev_away_odds:
+            return '↓'
+        return None
+

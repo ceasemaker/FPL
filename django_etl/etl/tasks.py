@@ -202,3 +202,24 @@ def run_manual_update(script_name: str):
     except Exception as e:
         logger.error(f"❌ Manual update error: {str(e)}")
         return {"status": "error", "output": str(e)}
+
+
+@shared_task(name='etl.tasks.sync_fixture_odds')
+def sync_fixture_odds(days_ahead=7):
+    """
+    Fetch and update betting odds for upcoming fixtures.
+    Runs: Every 10 minutes during season
+    
+    Args:
+        days_ahead: Number of days ahead to fetch odds for (default: 7)
+    """
+    logger.info(f"Starting fixture odds sync for next {days_ahead} days...")
+    
+    result = run_etl_script('fetch_fixture_odds.py', timeout=600)
+    
+    if result["returncode"] == 0:
+        logger.info(f"✅ Fixture odds sync completed: {result['stdout']}")
+        return {"status": "success", "output": result['stdout']}
+    else:
+        logger.error(f"❌ Fixture odds sync failed: {result['stderr']}")
+        return {"status": "error", "output": result['stderr']}

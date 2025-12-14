@@ -1822,3 +1822,129 @@ def player_recent_matches(request, player_id: int):
     except Exception as e:
         logger.error(f"Error fetching recent matches for player {player_id}: {e}")
         return JsonResponse({"error": str(e)}, status=500)
+
+
+@require_GET
+def upcoming_fixtures_with_odds(request):
+    """
+    Get upcoming fixtures across all competitions with betting odds.
+    Returns chronological list of fixtures with odds and movement arrows.
+    
+    Query params:
+        - days: Number of days ahead (default: 7)
+        - competitions: Comma-separated list (e.g., "PL,UCL,UEL") or "all" (default: all)
+    
+    Returns:
+        {
+            "fixtures": [
+                {
+                    "event_id": "12345678",
+                    "competition": "UCL",
+                    "competition_name": "UEFA Champions League",
+                    "kickoff_time": "2025-12-18T20:00:00Z",
+                    "home_team": "Man City",
+                    "away_team": "Bayern Munich",
+                    "home_team_id": 43,
+                    "away_team_id": null,
+                    "odds": {
+                        "home": 1.45,
+                        "draw": 4.30,
+                        "away": 5.20,
+                        "home_movement": "↓",
+                        "draw_movement": null,
+                        "away_movement": "↑"
+                    }
+                },
+                ...
+            ],
+            "total_count": 42
+        }
+    """
+    from .models import SofasportFixture, FixtureOdds
+    from datetime import timedelta
+    
+    cache_key = f"upcoming_fixtures_odds_{request.GET.urlencode()}"
+    cached_data = cache.get(cache_key)
+    if cached_data:
+        return JsonResponse(cached_data)
+    
+    # Parse query params
+    days = int(request.GET.get("days", 7))
+    competitions_param = request.GET.get("competitions", "all").upper()
+    
+    # Get upcoming fixtures
+    now = timezone.now()
+    cutoff = now + timedelta(days=days)
+    
+    fixtures_query = SofasportFixture.objects.filter(
+        kickoff_time__gte=now,
+        kickoff_time__lte=cutoff
+    ).select_related('home_team', 'away_team').prefetch_related('odds')
+    
+    # Filter by competitions if specified
+    if competitions_param != "ALL":
+        comp_list = [c.strip() for c in competitions_param.split(",")]
+        fixtures_query = fixtures_query.filter(competition__in=comp_list)
+    
+    # Order chronologically
+    fixtures = fixtures_query.order_by('kickoff_time')
+    
+    # Build response
+    fixtures_data = []
+    for fixture in fixtures:
+        # Get team names
+        home_team = fixture.home_team_name or (fixture.home_team.name if fixture.home_team else "Unknown")
+        away_team = fixture.away_team_name or (fixture.away_team.name if fixture.away_team else "Unknown")
+        
+        # Get odds if available
+        odds_data = None
+        try:
+            odds = fixture.odds
+            odds_data = {
+                "home": float(odds.home_odds) if odds.home_odds else None,
+                "draw": float(odds.draw_odds) if odds.draw_odds else None,
+                "away": float(odds.away_odds) if odds.away_odds else None,
+                "home_movement": odds.get_home_movement(),
+                "draw_movement": odds.get_draw_movement(),
+                "away_movement": odds.get_away_movement(),
+                "last_updated": odds.last_updated.isoformat() if odds.last_updated else None,
+                # Extra markets (not displayed initially but available)
+                "over_under": {
+                    "line": float(odds.over_under_line) if odds.over_under_line else None,
+                    "over": float(odds.over_odds) if odds.over_odds else None,
+                    "under": float(odds.under_odds) if odds.under_odds else None,
+                } if odds.over_under_line else None,
+                "btts": {
+                    "yes": float(odds.btts_yes_odds) if odds.btts_yes_odds else None,
+                    "no": float(odds.btts_no_odds) if odds.btts_no_odds else None,
+                } if odds.btts_yes_odds else None,
+            }
+        except FixtureOdds.DoesNotExist:
+            pass
+        
+        fixtures_data.append({
+            "event_id": str(fixture.sofasport_event_id),
+            "competition": fixture.competition,
+            "competition_name": fixture.competition_name,
+            "kickoff_time": fixture.kickoff_time.isoformat() if fixture.kickoff_time else None,
+            "home_team": home_team,
+            "away_team": away_team,
+            "home_team_id": fixture.home_team_id if fixture.home_team else None,
+            "away_team_id": fixture.away_team_id if fixture.away_team else None,
+            "home_score": fixture.home_score_current,
+            "away_score": fixture.away_score_current,
+            "status": fixture.match_status,
+            "odds": odds_data,
+        })
+    
+    response_data = {
+        "fixtures": fixtures_data,
+        "total_count": len(fixtures_data),
+        "days_ahead": days,
+        "competitions": competitions_param,
+    }
+    
+    # Cache for 5 minutes (odds update every 10 minutes, so this is fresh enough)
+    cache.set(cache_key, response_data, 300)
+    
+    return JsonResponse(response_data)

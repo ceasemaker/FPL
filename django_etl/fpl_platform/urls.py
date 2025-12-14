@@ -14,6 +14,7 @@ from etl.api_views import (
     player_match_stats,
     compare_players_radar,
     player_recent_matches,
+    upcoming_fixtures_with_odds,
     # Top 100 endpoints
     top100_template,
     best_value_players,
@@ -54,6 +55,7 @@ urlpatterns = [
     path("api/sofasport/player/<int:player_id>/match-stats/<int:gameweek>/", player_match_stats, name="player-match-stats"),
     path("api/sofasport/player/<int:player_id>/recent-matches/", player_recent_matches, name="player-recent-matches"),
     path("api/sofasport/compare/radar/", compare_players_radar, name="compare-players-radar"),
+    path("api/fixtures/upcoming/", upcoming_fixtures_with_odds, name="upcoming-fixtures-odds"),
     
     # FPL API Proxy endpoints
     path("api/fpl/entry/<int:manager_id>/", proxy_manager_summary, name="fpl-manager-summary"),

@@ -49,6 +49,13 @@ app.conf.beat_schedule = {
         'task': 'etl.tasks.update_radar_attributes',
         'schedule': crontab(hour=3, minute=0, day_of_week=3),  # Wednesday 3 AM
     },
+    
+    # Every 10 minutes - Sync fixture odds for upcoming matches
+    'sync-fixture-odds': {
+        'task': 'etl.tasks.sync_fixture_odds',
+        'schedule': crontab(minute='*/10'),  # Every 10 minutes
+        'kwargs': {'days_ahead': 7}  # Next 7 days of fixtures
+    },
 }
 
 # Celery Configuration
