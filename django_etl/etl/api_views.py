@@ -1773,7 +1773,7 @@ def player_recent_matches(request, player_id: int):
             
             matches.append({
                 "event_id": str(fixture.sofasport_event_id),
-                "date": fixture.kickoff_time.isoformat() + "Z" if fixture.kickoff_time else None,
+                "date": fixture.kickoff_time.isoformat() if fixture.kickoff_time else None,
                 "competition": competition_names.get(fixture.competition, fixture.competition_name or fixture.competition),
                 "competition_short": fixture.competition,
                 "home_team": home_team,
@@ -1783,7 +1783,7 @@ def player_recent_matches(request, player_id: int):
                 "home_score": fixture.home_score_current,
                 "away_score": fixture.away_score_current,
                 "was_home": was_home,
-                "minutes_played": lineup.minutes_played or stats.get("minutesPlayed", 0),
+                "minutes_played": lineup.minutes_played if lineup.minutes_played is not None else stats.get("minutesPlayed", 0),
                 "goals": stats.get("goals", 0),
                 "assists": stats.get("goalAssist", 0) or stats.get("assists", 0),
                 "yellow_cards": stats.get("yellowCards", 0),
