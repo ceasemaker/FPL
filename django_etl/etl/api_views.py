@@ -9,6 +9,7 @@ from django.core.cache import cache
 from django.db.models import Count, F, Max, OuterRef, Prefetch, Q, Subquery, Sum, Value
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse
+from django.utils import timezone
 from django.views.decorators.http import require_GET
 
 from .models import Athlete, AthleteStat, Fixture, RawEndpointSnapshot, Team
