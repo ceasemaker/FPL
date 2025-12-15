@@ -7,6 +7,7 @@ import { ComparePage } from "./pages/ComparePage";
 import { AnalyzeManagerPage } from "./pages/AnalyzeManagerPage";
 import { DreamTeamPage } from "./pages/DreamTeamPage";
 import { WildcardSimulatorPage } from "./pages/WildcardSimulatorPage";
+import { FixturesPage } from "./pages/FixturesPage";
 import { Navigation } from "./components/Navigation";
 
 
@@ -32,6 +33,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/players" element={<PlayersPage />} />
+        <Route path="/fixtures" element={<FixturesPage />} />
         <Route path="/compare" element={<ComparePage />} />
         <Route path="/analyze" element={<AnalyzeManagerPage />} />
         <Route path="/dream-team" element={<DreamTeamPage />} />
