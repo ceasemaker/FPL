@@ -25,6 +25,12 @@ export function Navigation() {
             Players
           </Link>
           <Link
+            to="/fixtures"
+            className={location.pathname === "/fixtures" ? "nav-link active" : "nav-link"}
+          >
+            Fixtures & Odds
+          </Link>
+          <Link
             to="/dream-team"
             className={location.pathname === "/dream-team" ? "nav-link active" : "nav-link"}
           >

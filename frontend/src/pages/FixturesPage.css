@@ -1,0 +1,349 @@
+.fixtures-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.fixtures-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.fixtures-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.fixtures-subtitle {
+  color: #888;
+  font-size: 1.1rem;
+}
+
+/* Filters */
+.fixtures-filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.competition-filters {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 0.6rem 1.2rem;
+  border: 2px solid #333;
+  background: transparent;
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.filter-btn:hover {
+  background: #333;
+  transform: translateY(-2px);
+}
+
+.filter-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+}
+
+.days-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.days-filter label {
+  color: #ccc;
+  font-size: 0.95rem;
+}
+
+.days-filter select {
+  padding: 0.6rem 1rem;
+  border: 2px solid #333;
+  background: #1a1a1a;
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+/* Loading / Error */
+.fixtures-loading {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #333;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.fixtures-error {
+  text-align: center;
+  padding: 2rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid #ef4444;
+  border-radius: 12px;
+}
+
+.fixtures-error button {
+  margin-top: 1rem;
+  padding: 0.6rem 1.5rem;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.no-fixtures {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #888;
+}
+
+/* Fixtures List */
+.fixtures-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.fixtures-date-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.date-header {
+  position: sticky;
+  top: 0;
+  background: rgba(13, 13, 13, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 1rem 0;
+  border-bottom: 2px solid #333;
+  z-index: 10;
+}
+
+.date-header h2 {
+  font-size: 1.3rem;
+  color: #667eea;
+  margin: 0;
+}
+
+/* Fixture Card */
+.fixture-card {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  border: 1px solid #333;
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.fixture-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+}
+
+.fixture-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+  border-color: #667eea;
+}
+
+.fixture-header-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.competition-badge {
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.kickoff-time {
+  color: #ccc;
+  font-size: 0.95rem;
+}
+
+.countdown {
+  margin-left: auto;
+  padding: 0.4rem 0.8rem;
+  background: rgba(102, 126, 234, 0.2);
+  border: 1px solid #667eea;
+  border-radius: 8px;
+  color: #667eea;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Teams and Odds */
+.fixture-teams {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.team-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+}
+
+.team-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.odds-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.odds-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  min-width: 70px;
+  text-align: center;
+}
+
+.odds-movement {
+  font-size: 1.2rem;
+  font-weight: 700;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+}
+
+.odds-movement.up {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.odds-movement.down {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.vs-divider {
+  text-align: center;
+  padding: 0.5rem 0;
+  color: #666;
+  font-weight: 600;
+  position: relative;
+}
+
+.draw-odds {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.draw-label {
+  color: #888;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.draw-odds .odds-value {
+  font-size: 1.2rem;
+  min-width: 60px;
+}
+
+.no-odds-message {
+  text-align: center;
+  padding: 1rem;
+  color: #888;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .fixtures-header h1 {
+    font-size: 2rem;
+  }
+
+  .fixtures-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .competition-filters {
+    justify-content: center;
+  }
+
+  .filter-btn {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .days-filter {
+    justify-content: center;
+  }
+
+  .team-name {
+    font-size: 1rem;
+  }
+
+  .odds-value {
+    font-size: 1.2rem;
+    min-width: 60px;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .countdown {
+    width: 100%;
+    text-align: center;
+  }
+}
