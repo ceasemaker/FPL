@@ -14,6 +14,13 @@ export interface Player {
   avg_fdr: number | null;
   element_type: number;
   image_url: string | null;
+  status: string | null;
+  goals_scored: number;
+  assists: number;
+  expected_goals: number | null;
+  points_last_3: number;
+  minutes_last_3: number;
+  news: string | null;
 }
 
 interface PlayersResponse {
@@ -32,9 +39,12 @@ export function usePlayers(search: string = "") {
     let isMounted = true;
     setIsLoading(true);
 
-    const url = search ? `${API_URL}?search=${encodeURIComponent(search)}` : API_URL;
+    // Fetch all players (page_size=1000) to allow client-side filtering
+    const url = new URL(API_URL, window.location.origin);
+    if (search) url.searchParams.append("search", search);
+    url.searchParams.append("page_size", "1000");
 
-    fetch(url, {
+    fetch(url.toString(), {
       headers: { Accept: "application/json" },
     })
       .then(async (response) => {
