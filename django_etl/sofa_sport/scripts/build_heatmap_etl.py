@@ -204,7 +204,10 @@ def display_summary(stats: Dict):
     print("HEATMAP COLLECTION ETL - SUMMARY")
     print(f"{'='*70}")
     print(f"📊 Total Lineups:         {stats['total_lineups']}")
-    print(f"✅ Qualifying Players:    {stats['qualifying']} ({stats['qualifying']/stats['total_lineups']*100:.1f}%)")
+    if stats['total_lineups'] > 0:
+        print(f"✅ Qualifying Players:    {stats['qualifying']} ({stats['qualifying']/stats['total_lineups']*100:.1f}%)")
+    else:
+        print(f"✅ Qualifying Players:    {stats['qualifying']} (0.0%)")
     print(f"⏭️  Non-Qualifying:        {stats['skipped_not_qualifying']}")
     print(f"")
     print(f"🎯 Collection Results:")

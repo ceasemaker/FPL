@@ -425,10 +425,10 @@ def players_list(request):
     
     # Validate pagination params
     page = max(1, page)
-    page_size = min(max(10, page_size), 500)  # Between 10 and 500
+    page_size = min(max(10, page_size), 1000)  # Between 10 and 1000
     
     # Build cache key based on filters
-    cache_key = f"players_list:search={search}:team={team_filter}:page={page}:size={page_size}"
+    cache_key = f"players_list:search={search}:team={team_filter}:page={page}:size={page_size}:v2"
     
     # Try to get from cache first
     cached_response = cache.get(cache_key)
@@ -477,6 +477,22 @@ def players_list(request):
                 upcoming_fixtures[fixture.team_a_id] = []
             upcoming_fixtures[fixture.team_a_id].append(("away", fixture))
     
+    # Calculate stats for last 3 gameweeks
+    start_gw = max(1, current_gw - 2)
+    stats_last_3 = {}
+    
+    stats_qs = AthleteStat.objects.filter(
+        game_week__gte=start_gw,
+        game_week__lte=current_gw
+    ).values("athlete_id", "total_points", "minutes")
+    
+    for stat in stats_qs:
+        athlete_id = stat["athlete_id"]
+        if athlete_id not in stats_last_3:
+            stats_last_3[athlete_id] = {"points": 0, "minutes": 0}
+        stats_last_3[athlete_id]["points"] += stat["total_points"]
+        stats_last_3[athlete_id]["minutes"] += stat["minutes"]
+
     # Calculate average FDR for next 3 fixtures per player (paginated)
     players_data = []
     for player in players_qs[start_idx:end_idx]:
@@ -496,6 +512,9 @@ def players_list(request):
             if fdr_values:
                 avg_fdr = round(sum(fdr_values) / len(fdr_values), 1)
         
+        # Get last 3 GW stats
+        last_3 = stats_last_3.get(player.id, {"points": 0, "minutes": 0})
+        
         players_data.append({
             "id": player.id,
             "first_name": player.first_name,
@@ -512,6 +531,7 @@ def players_list(request):
             "image_url": _player_image(player.photo),
             "news": player.news,
             "news_added": player.news_added.isoformat() if player.news_added else None,
+            "status": player.status,
             # Performance stats
             "minutes": player.minutes,
             "goals_scored": player.goals_scored,
@@ -521,6 +541,9 @@ def players_list(request):
             "bonus": player.bonus,
             "bps": player.bps,
             "selected_by_percent": float(player.selected_by_percent) if player.selected_by_percent else None,
+            "expected_goals": float(player.expected_goals) if player.expected_goals else None,
+            "points_last_3": last_3["points"],
+            "minutes_last_3": last_3["minutes"],
         })
     
     response_data = {

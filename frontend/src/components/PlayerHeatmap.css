@@ -1,0 +1,111 @@
+.player-heatmap-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.pitch-background {
+    position: relative;
+    width: 300px;
+    height: 200px;
+    background-color: #2e7d32;
+    /* Grass green */
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* Pitch Markings */
+.pitch-line,
+.pitch-circle,
+.pitch-box {
+    position: absolute;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.center-line {
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    border-left: 1px solid rgba(255, 255, 255, 0.6);
+    transform: translateX(-50%);
+}
+
+.center-circle {
+    top: 50%;
+    left: 50%;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.penalty-box-left {
+    top: 50%;
+    left: 0;
+    width: 50px;
+    height: 100px;
+    transform: translateY(-50%);
+    border-left: none;
+}
+
+.penalty-box-right {
+    top: 50%;
+    right: 0;
+    width: 50px;
+    height: 100px;
+    transform: translateY(-50%);
+    border-right: none;
+}
+
+.goal-box-left {
+    top: 50%;
+    left: 0;
+    width: 20px;
+    height: 40px;
+    transform: translateY(-50%);
+    border-left: none;
+}
+
+.goal-box-right {
+    top: 50%;
+    right: 0;
+    width: 20px;
+    height: 40px;
+    transform: translateY(-50%);
+    border-right: none;
+}
+
+.heatmap-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+}
+
+.heatmap-caption {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.heatmap-loading,
+.heatmap-error,
+.heatmap-empty {
+    width: 300px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-hover);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.heatmap-error {
+    color: #ef4444;
+}

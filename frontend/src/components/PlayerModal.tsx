@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { RadarChart } from "./RadarChart";
+import { PlayerHeatmap } from "./PlayerHeatmap";
 
 const TEAM_BADGE_BASE = "https://resources.premierleague.com/premierleague25/badges-alt/";
 
@@ -17,13 +18,13 @@ interface DetailedPlayer {
   status: string | null;
   news: string | null;
   news_added: string | null;
-  
+
   // Cost & Ownership
   now_cost: number;
   cost_change_event: number | null;
   cost_change_start: number | null;
   selected_by_percent: number | null;
-  
+
   // Points & Form
   total_points: number;
   event_points: number | null;
@@ -31,13 +32,13 @@ interface DetailedPlayer {
   form: number | null;
   value_form: number | null;
   value_season: number | null;
-  
+
   // Transfers
   transfers_in: number | null;
   transfers_in_event: number | null;
   transfers_out: number | null;
   transfers_out_event: number | null;
-  
+
   // Performance Stats
   minutes: number | null;
   goals_scored: number | null;
@@ -53,19 +54,19 @@ interface DetailedPlayer {
   bonus: number | null;
   bps: number | null;
   starts: number | null;
-  
+
   // Advanced Stats (ICT)
   influence: number | null;
   creativity: number | null;
   threat: number | null;
   ict_index: number | null;
-  
+
   // Expected Stats
   expected_goals: number | null;
   expected_assists: number | null;
   expected_goal_involvements: number | null;
   expected_goals_conceded: number | null;
-  
+
   // Per 90 Stats
   expected_goals_per_90: number | null;
   expected_assists_per_90: number | null;
@@ -75,7 +76,7 @@ interface DetailedPlayer {
   saves_per_90: number | null;
   starts_per_90: number | null;
   clean_sheets_per_90: number | null;
-  
+
   // Rankings
   influence_rank: number | null;
   creativity_rank: number | null;
@@ -85,15 +86,15 @@ interface DetailedPlayer {
   form_rank: number | null;
   points_per_game_rank: number | null;
   selected_rank: number | null;
-  
+
   // Set Pieces
   corners_and_indirect_freekicks_order: number | null;
   direct_freekicks_order: number | null;
   penalties_order: number | null;
-  
+
   // Fixtures
   avg_fdr: number | null;
-  
+
   // Chance of Playing
   chance_of_playing_this_round: number | null;
   chance_of_playing_next_round: number | null;
@@ -176,6 +177,7 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const [selectedHeatmapGw, setSelectedHeatmapGw] = useState<number | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -223,7 +225,7 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
               kickoff_time: fix.kickoff_time,
             };
           });
-        
+
         // Get fixture history (last 5)
         const history = (summaryData.history || [])
           .slice(-5)
@@ -242,7 +244,7 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
               kickoff_time: h.kickoff_time,
             };
           });
-        
+
         // Process European/cup matches (filter out Premier League since that's in Recent Form)
         const euroMatches: EuropeanMatch[] = (europeanData.matches || [])
           .filter((m: any) => m.competition !== "Premier League" && m.competition_short !== "PL")
@@ -252,9 +254,9 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
             // For now, use home/away team names and let user see the full match
             const playerTeamName = playerData.team || "";
             const isHome = m.home_team?.toLowerCase().includes(playerTeamName.toLowerCase().split(" ")[0]) ||
-                          m.home_team === playerTeamName;
+              m.home_team === playerTeamName;
             const opponent = isHome ? m.away_team : m.home_team;
-            
+
             return {
               competition: m.competition || "Unknown",
               competition_short: m.competition_short || "CUP",
@@ -269,11 +271,20 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
               rating: m.rating || null,
             };
           });
-        
+
         setPlayer(playerData);
         setUpcomingFixtures(upcoming);
         setFixtureHistory(history);
         setEuropeanMatches(euroMatches);
+
+        // Default heatmap to latest played gameweek from history
+        if (history.length > 0) {
+          setSelectedHeatmapGw(history[0].event);
+        } else if (upcoming.length > 0) {
+          // If no history, maybe no heatmap, but set to something safe
+          setSelectedHeatmapGw(upcoming[0].event - 1);
+        }
+
         setError(null);
       })
       .catch((err) => {
@@ -368,6 +379,24 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
           </div>
           <div className="modal-radar-header">
             <RadarChart playerIds={[player.id]} height={360} width={360} showBreakdown={false} hideOnError={true} />
+
+            {selectedHeatmapGw && (
+              <div className="modal-heatmap-section">
+                <div className="heatmap-controls">
+                  <label>GW:</label>
+                  <select
+                    value={selectedHeatmapGw}
+                    onChange={(e) => setSelectedHeatmapGw(Number(e.target.value))}
+                    className="heatmap-gw-select"
+                  >
+                    {fixtureHistory.map(h => (
+                      <option key={h.event} value={h.event}>GW{h.event} vs {h.opponent_team_short}</option>
+                    ))}
+                  </select>
+                </div>
+                <PlayerHeatmap playerId={player.id} gameweek={selectedHeatmapGw} />
+              </div>
+            )}
           </div>
         </div>
 
@@ -451,7 +480,7 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
                   <span className="fixture-opponent">
                     {fixture.is_home ? 'vs' : '@'} {fixture.opponent_team_short}
                   </span>
-                  <span 
+                  <span
                     className="fixture-difficulty"
                     style={{ backgroundColor: getDifficultyColor(fixture.difficulty) }}
                   >
@@ -479,7 +508,7 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
                     {fixture.goals_scored > 0 && ` ⚽${fixture.goals_scored}`}
                     {fixture.assists > 0 && ` 🅰️${fixture.assists}`}
                   </span>
-                  <span 
+                  <span
                     className={`fixture-points ${fixture.total_points >= 6 ? 'good' : fixture.total_points >= 3 ? 'ok' : 'poor'}`}
                   >
                     {fixture.total_points} pts
