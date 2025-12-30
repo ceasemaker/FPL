@@ -4903,3 +4903,54 @@ a {
     width: 100%;
   }
 }
+
+/* Player Modal Heatmap Section */
+.modal-heatmap-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: var(--surface-hover);
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+}
+
+.heatmap-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+}
+
+.heatmap-controls label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.heatmap-gw-select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  max-width: 200px;
+}
+
+.heatmap-gw-select:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+/* Adjust modal radar header to accommodate heatmap */
+.modal-radar-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
