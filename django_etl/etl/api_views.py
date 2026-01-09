@@ -12,7 +12,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 
-from .models import Athlete, AthleteStat, Fixture, RawEndpointSnapshot, Team
+from .models import Athlete, AthleteStat, Fixture, RawEndpointSnapshot, Team, SofasportHeatmap
 
 logger = logging.getLogger(__name__)
 
@@ -703,6 +703,13 @@ def player_detail(request, player_id):
         # Chance of Playing
         "chance_of_playing_this_round": player.chance_of_playing_this_round,
         "chance_of_playing_next_round": player.chance_of_playing_next_round,
+        
+        # Available Heatmaps
+        "available_heatmaps": list(
+            SofasportHeatmap.objects.filter(athlete=player)
+            .values_list("fixture__fixture__event", flat=True)
+            .order_by("-fixture__fixture__event")
+        ),
     }
     
     return JsonResponse(player_data)

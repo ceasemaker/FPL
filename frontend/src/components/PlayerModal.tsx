@@ -98,6 +98,9 @@ interface DetailedPlayer {
   // Chance of Playing
   chance_of_playing_this_round: number | null;
   chance_of_playing_next_round: number | null;
+
+  // Available Heatmaps
+  available_heatmaps?: number[];
 }
 
 interface Fixture {
@@ -173,6 +176,7 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
   const [player, setPlayer] = useState<DetailedPlayer | null>(null);
   const [upcomingFixtures, setUpcomingFixtures] = useState<Fixture[]>([]);
   const [fixtureHistory, setFixtureHistory] = useState<FixtureHistory[]>([]);
+  const [heatmapHistory, setHeatmapHistory] = useState<FixtureHistory[]>([]);
   const [europeanMatches, setEuropeanMatches] = useState<EuropeanMatch[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -272,13 +276,40 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
             };
           });
 
+        // Create full history list for heatmap dropdown (reverse chronological)
+        const fullHistory = (summaryData.history || [])
+          .slice()
+          .reverse()
+          .map((h: any) => {
+            const opponentTeam = teamsMap.get(h.opponent_team);
+            return {
+              event: h.round,
+              opponent_team: opponentTeam?.name || 'Unknown',
+              opponent_team_short: opponentTeam?.short_name || 'UNK',
+              was_home: h.was_home,
+              total_points: h.total_points || 0,
+              minutes: h.minutes || 0,
+              goals_scored: h.goals_scored || 0,
+              assists: h.assists || 0,
+              kickoff_time: h.kickoff_time,
+            };
+          });
+
         setPlayer(playerData);
         setUpcomingFixtures(upcoming);
         setFixtureHistory(history);
+        setHeatmapHistory(fullHistory);
         setEuropeanMatches(euroMatches);
 
-        // Default heatmap to latest played gameweek from history
-        if (history.length > 0) {
+        // Smart Heatmap Selection Logic
+        // 1. Try to find the latest GW that actually has a heatmap
+        // 2. Fallback to the latest played match
+        const availableHeatmaps = playerData.available_heatmaps || [];
+
+        if (availableHeatmaps.length > 0) {
+          // available_heatmaps is ordered desc from backend, so first is latest
+          setSelectedHeatmapGw(availableHeatmaps[0]);
+        } else if (history.length > 0) {
           setSelectedHeatmapGw(history[0].event);
         } else if (upcoming.length > 0) {
           // If no history, maybe no heatmap, but set to something safe
@@ -389,9 +420,14 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
                     onChange={(e) => setSelectedHeatmapGw(Number(e.target.value))}
                     className="heatmap-gw-select"
                   >
-                    {fixtureHistory.map(h => (
-                      <option key={h.event} value={h.event}>GW{h.event} vs {h.opponent_team_short}</option>
-                    ))}
+                    {heatmapHistory.map(h => {
+                      const hasHeatmap = player.available_heatmaps?.includes(h.event);
+                      return (
+                        <option key={h.event} value={h.event}>
+                          GW{h.event} vs {h.opponent_team_short} {hasHeatmap ? '🔥' : ''}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
                 <PlayerHeatmap playerId={player.id} gameweek={selectedHeatmapGw} />
