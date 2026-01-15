@@ -21,6 +21,7 @@ interface Player {
   total_points: number;
   form: string;
   image_url: string | null;
+  ep_next: number | null; // Predicted points for next GW/round
 }
 
 interface Formation {
@@ -55,15 +56,15 @@ function getPositionName(elementType: number): string {
   }
 }
 
-function PlayerCard({ 
-  player, 
-  isCaptain, 
-  isVice, 
-  onClick, 
+function PlayerCard({
+  player,
+  isCaptain,
+  isVice,
+  onClick,
   onRemove,
-  showRemove = true 
-}: { 
-  player: Player | null; 
+  showRemove = true
+}: {
+  player: Player | null;
   isCaptain?: boolean;
   isVice?: boolean;
   onClick: () => void;
@@ -84,7 +85,7 @@ function PlayerCard({
   return (
     <div className="dream-player-card" onClick={onClick}>
       {showRemove && onRemove && (
-        <button 
+        <button
           className="remove-player-btn"
           onClick={(e) => {
             e.stopPropagation();
@@ -111,9 +112,14 @@ function PlayerCard({
       <div className="dream-player-stats">
         <span className="dream-stat-badge">£{(player.now_cost / 10).toFixed(1)}m</span>
         <span className="dream-stat-badge">{player.total_points} pts</span>
+        {player.ep_next !== null && player.ep_next !== undefined && (
+          <span className="dream-stat-badge xp-badge" title="Predicted Points Next GW">
+            {player.ep_next.toFixed(1)} xP
+          </span>
+        )}
       </div>
       {player.team_code && (
-        <img 
+        <img
           src={getTeamBadgeUrl(player.team_code)!}
           alt={player.team || ''}
           className="dream-player-badge"
@@ -140,7 +146,7 @@ function PlayerSelectionModal({
   const [sortBy, setSortBy] = useState<"cost" | "points" | "form">("points");
 
   const elementType = { GK: 1, DEF: 2, MID: 3, FWD: 4 }[position];
-  
+
   let filteredPlayers = allPlayers.filter(
     (p) => p.element_type === elementType && !selectedPlayers.find(sp => sp.id === p.id)
   );
@@ -209,7 +215,10 @@ function PlayerSelectionModal({
               <div className="player-list-stats">
                 <span>£{(player.now_cost / 10).toFixed(1)}m</span>
                 <span>{player.total_points} pts</span>
-                <span>Form: {player.form}</span>
+                {/* <span>Form: {player.form}</span> */}
+                {player.ep_next !== null && (
+                  <span className="player-list-xp">{player.ep_next.toFixed(1)} xP</span>
+                )}
               </div>
             </div>
           ))}
@@ -238,7 +247,7 @@ export function WildcardSimulatorPage() {
   const [selectionModal, setSelectionModal] = useState<{ position: "GK" | "DEF" | "MID" | "FWD"; benchSlot?: boolean } | null>(null);
   const [detailPlayerId, setDetailPlayerId] = useState<number | null>(null);
   const teamDisplayRef = useRef<HTMLDivElement>(null);
-  
+
   // Draft management
   const [currentDraftId, setCurrentDraftId] = useState<string>("draft_1");
   const [showDraftMenu, setShowDraftMenu] = useState(false);
@@ -247,16 +256,16 @@ export function WildcardSimulatorPage() {
     draft_2: "Draft 2",
     draft_3: "Draft 3",
   });
-  
+
   // Saved teams management
   const [savedTeams, setSavedTeams] = useState<any[]>([]);
   const [showSavedTeams, setShowSavedTeams] = useState(false);
-  
+
   // Team name input modal
   const [showTeamNameModal, setShowTeamNameModal] = useState(false);
   const [teamNameInput, setTeamNameInput] = useState("");
   const [pendingSaveAction, setPendingSaveAction] = useState<'local' | 'cloud' | null>(null);
-  
+
   // Viewing shared team state
   const [isViewingSharedTeam, setIsViewingSharedTeam] = useState(false);
   const [sharedTeamName, setSharedTeamName] = useState<string>("");
@@ -287,16 +296,16 @@ export function WildcardSimulatorPage() {
         console.error("Failed to load draft names:", e);
       }
     }
-    
+
     // Load saved teams from localStorage
     loadSavedTeams();
-    
+
     // Check if we have a code in the URL path (e.g., /wildcard/WC-ABC123)
     // or in query string (e.g., ?code=WC-ABC123)
     const queryParams = new URLSearchParams(window.location.search);
     const queryCode = queryParams.get("code");
     const codeToLoad = urlCode || queryCode;
-    
+
     if (codeToLoad) {
       // Load shared wildcard from API
       loadSharedWildcard(codeToLoad);
@@ -339,14 +348,14 @@ export function WildcardSimulatorPage() {
       if (!response.ok) {
         throw new Error("Failed to load wildcard team");
       }
-      
+
       const data = await response.json();
       if (data.success && data.squad_data) {
         setCode(wildcardCode);
-        
+
         // Load the squad data
         const squad = data.squad_data;
-        
+
         // Load formation first
         let targetFormation = FORMATIONS[3]; // Default 4-4-2
         if (squad.formation) {
@@ -354,28 +363,28 @@ export function WildcardSimulatorPage() {
           if (loadedFormation) targetFormation = loadedFormation;
         }
         setFormation(targetFormation);
-        
+
         if (squad.players && Array.isArray(squad.players)) {
           // Separate all players by position
           const allGKs = squad.players.filter((p: Player) => p.element_type === 1);
           const allDefs = squad.players.filter((p: Player) => p.element_type === 2);
           const allMids = squad.players.filter((p: Player) => p.element_type === 3);
           const allFwds = squad.players.filter((p: Player) => p.element_type === 4);
-          
+
           // Starting XI based on formation
           // 1 GK + formation.def + formation.mid + formation.fwd = 11 players
           const startingGK = allGKs.slice(0, 1);
           const startingDefs = allDefs.slice(0, targetFormation.def);
           const startingMids = allMids.slice(0, targetFormation.mid);
           const startingFwds = allFwds.slice(0, targetFormation.fwd);
-          
+
           // Bench: remaining players (should be 1 GK + 3 outfield = 4 total)
           const benchGK = allGKs.slice(1, 2); // 2nd goalkeeper
           const benchDefs = allDefs.slice(targetFormation.def); // Extra defenders
           const benchMids = allMids.slice(targetFormation.mid); // Extra midfielders
           const benchFwds = allFwds.slice(targetFormation.fwd); // Extra forwards
           const benchPlayers = [...benchGK, ...benchDefs, ...benchMids, ...benchFwds];
-          
+
           // Set the state
           setGoalkeepers(startingGK); // Only starting GK - bench GK is in bench array
           setDefenders(startingDefs);
@@ -383,11 +392,11 @@ export function WildcardSimulatorPage() {
           setForwards(startingFwds);
           setBench(benchPlayers);
         }
-        
+
         // Load captain/vice if available
         if (squad.captain) setCaptain(squad.captain);
         if (squad.viceCaptain) setViceCaptain(squad.viceCaptain);
-        
+
         // Set viewing state
         setIsViewingSharedTeam(true);
         setSharedTeamName(data.team_name || "Unnamed Team");
@@ -422,7 +431,7 @@ export function WildcardSimulatorPage() {
 
   const loadDraft = (draftId: string) => {
     const stored = localStorage.getItem(`wildcard_${draftId}`);
-    
+
     if (stored) {
       try {
         const draft = JSON.parse(stored);
@@ -465,7 +474,7 @@ export function WildcardSimulatorPage() {
   const switchDraft = (draftId: string) => {
     // Save current draft before switching
     autoSave();
-    
+
     // Load the new draft
     setCurrentDraftId(draftId);
     loadDraft(draftId);
@@ -486,7 +495,7 @@ export function WildcardSimulatorPage() {
       alert("Cannot delete the currently active draft. Switch to another draft first.");
       return;
     }
-    
+
     if (confirm(`Are you sure you want to delete "${draftNames[draftId]}"?`)) {
       localStorage.removeItem(`wildcard_${draftId}`);
       alert(`Deleted ${draftNames[draftId]}`);
@@ -656,7 +665,7 @@ export function WildcardSimulatorPage() {
     if (!teamName || !teamName.trim()) return;
 
     const allSelected = getAllSelectedPlayers();
-    
+
     // Save only essential player data to avoid circular references and reduce size
     const simplifiedPlayers = allSelected.map(p => ({
       id: p.id,
@@ -682,7 +691,7 @@ export function WildcardSimulatorPage() {
     const existingSaved = localStorage.getItem("wildcard_saved_teams");
     const savedList = existingSaved ? JSON.parse(existingSaved) : [];
     savedList.unshift(savedTeam); // Add to beginning
-    
+
     // Keep only last 10 saved teams
     if (savedList.length > 10) {
       savedList.pop();
@@ -690,12 +699,12 @@ export function WildcardSimulatorPage() {
 
     localStorage.setItem("wildcard_saved_teams", JSON.stringify(savedList));
     setSavedTeams(savedList);
-    
+
     // Also update the current draft name to match the saved team name
     const updatedNames = { ...draftNames, [currentDraftId]: teamName.trim() };
     setDraftNames(updatedNames);
     localStorage.setItem("wildcard_draft_names", JSON.stringify(updatedNames));
-    
+
     alert(`✅ Team "${teamName.trim()}" saved successfully!`);
   };
 
@@ -737,7 +746,7 @@ export function WildcardSimulatorPage() {
     setDefenders(defs.slice(0, loadedFormation.def));
     setMidfielders(mids.slice(0, loadedFormation.mid));
     setForwards(fwds.slice(0, loadedFormation.fwd));
-    
+
     // Remaining go to bench
     const remaining = [
       ...gks.slice(1),
@@ -760,7 +769,7 @@ export function WildcardSimulatorPage() {
 
     const savedList = JSON.parse(existingSaved);
     const filtered = savedList.filter((t: any) => t.id !== teamId);
-    
+
     localStorage.setItem("wildcard_saved_teams", JSON.stringify(filtered));
     setSavedTeams(filtered);
   };
@@ -800,7 +809,7 @@ export function WildcardSimulatorPage() {
   // Actually perform the cloud save after getting the name
   const performCloudSave = async (teamName: string) => {
     console.log('performCloudSave: Starting...');
-    
+
     // Check if we have a code, if not try to load from localStorage or create a new one
     let currentCode = code;
     if (!currentCode) {
@@ -865,7 +874,7 @@ export function WildcardSimulatorPage() {
 
       const data = await response.json();
       console.log('performCloudSave: Parsed response data:', data);
-      
+
       if (data.success) {
         setSavedData(data);
         setShowSuccessModal(true);
@@ -882,73 +891,34 @@ export function WildcardSimulatorPage() {
   const convertImagesToBase64 = async (container: HTMLElement) => {
     const images = container.querySelectorAll('img');
     const originalSources: Map<HTMLImageElement, string> = new Map();
-    
+
     // Store original sources and convert to base64
     for (const img of Array.from(images)) {
       const originalSrc = img.src;
       originalSources.set(img, originalSrc);
-      
+
       try {
-        // Try multiple methods to load the image
+        const response = await fetch(`/api/image-proxy/?url=${encodeURIComponent(originalSrc)}`);
+        if (!response.ok) {
+          throw new Error(`Proxy failed for ${originalSrc}`);
+        }
+        const blob = await response.blob();
         const base64 = await new Promise<string>((resolve, reject) => {
-          // Method 1: Create a new image element to load with crossOrigin
-          const tempImg = new Image();
-          tempImg.crossOrigin = 'anonymous';
-          
-          tempImg.onload = () => {
-            try {
-              const canvas = document.createElement('canvas');
-              canvas.width = tempImg.naturalWidth;
-              canvas.height = tempImg.naturalHeight;
-              const ctx = canvas.getContext('2d');
-              if (!ctx) {
-                reject(new Error('Failed to get canvas context'));
-                return;
-              }
-              ctx.drawImage(tempImg, 0, 0);
-              const dataUrl = canvas.toDataURL('image/png');
-              resolve(dataUrl);
-            } catch (canvasError) {
-              console.warn('Canvas conversion failed:', canvasError);
-              reject(canvasError);
-            }
-          };
-          
-          tempImg.onerror = async () => {
-            // Method 2: Try fetching through a CORS proxy
-            try {
-              const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(originalSrc)}`;
-              const response = await fetch(proxyUrl);
-              const blob = await response.blob();
-              const reader = new FileReader();
-              reader.onloadend = () => resolve(reader.result as string);
-              reader.onerror = () => reject(new Error('FileReader failed'));
-              reader.readAsDataURL(blob);
-            } catch (fetchError) {
-              console.warn('CORS proxy failed:', fetchError);
-              reject(fetchError);
-            }
-          };
-          
-          // Add timestamp to bypass cache
-          const urlWithCache = originalSrc.includes('?') 
-            ? `${originalSrc}&t=${Date.now()}` 
-            : `${originalSrc}?t=${Date.now()}`;
-          tempImg.src = urlWithCache;
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = () => reject(new Error('FileReader failed'));
+          reader.readAsDataURL(blob);
         });
-        
-        // Replace with base64
+
         img.src = base64;
-        console.log('Successfully converted image:', originalSrc);
       } catch (error) {
         console.warn(`Failed to convert image: ${originalSrc}`, error);
-        // Keep original if conversion fails
       }
     }
-    
+
     // Wait a bit for all images to update
     await new Promise(resolve => setTimeout(resolve, 200));
-    
+
     return originalSources;
   };
 
@@ -971,12 +941,12 @@ export function WildcardSimulatorPage() {
     if (!teamDisplayRef.current) return;
     try {
       console.log('Starting image generation...');
-      
+
       // Convert images to base64 to bypass CORS
       const originalSources = await convertImagesToBase64(teamDisplayRef.current);
-      
+
       console.log('Images converted, generating canvas...');
-      
+
       const canvas = await html2canvas(teamDisplayRef.current, {
         backgroundColor: "#050714",
         scale: 2,
@@ -986,14 +956,14 @@ export function WildcardSimulatorPage() {
         imageTimeout: 0,
         removeContainer: true,
       });
-      
+
       console.log('Canvas generated, restoring images...');
-      
+
       // Restore original image sources
       restoreImageSources(originalSources);
-      
+
       console.log('Creating download...');
-      
+
       canvas.toBlob((blob) => {
         if (!blob) {
           console.error('Failed to create blob');
@@ -1015,19 +985,19 @@ export function WildcardSimulatorPage() {
 
   const shareOnTwitter = async () => {
     if (!code) return;
-    
+
     try {
       // Fetch upcoming gameweek
       const gwResponse = await fetch('/api/fixtures/');
       const gwData = await gwResponse.json();
       const upcomingGW = gwData.current_gameweek || 8; // Fallback to 8
-      
+
       // Get all selected players
       const allSelected = getAllSelectedPlayers();
-      
+
       // Helper to get position name
       const getPositionName = (elementType: number) => {
-        switch(elementType) {
+        switch (elementType) {
           case 1: return 'GK';
           case 2: return 'DEF';
           case 3: return 'MID';
@@ -1035,7 +1005,7 @@ export function WildcardSimulatorPage() {
           default: return 'UNK';
         }
       };
-      
+
       // Group players by position
       const playersByPosition: { [key: string]: typeof allSelected } = {
         'GK': [],
@@ -1043,16 +1013,16 @@ export function WildcardSimulatorPage() {
         'MID': [],
         'FWD': []
       };
-      
+
       allSelected.forEach(p => {
         const pos = getPositionName(p.element_type);
         playersByPosition[pos].push(p);
       });
-      
+
       // Separate starting XI and bench
       const startingXI = allSelected.filter(p => !bench.some(b => b.id === p.id));
       const benchPlayers = allSelected.filter(p => bench.some(b => b.id === p.id));
-      
+
       // Group starting XI by position
       const startingByPos: { [key: string]: typeof allSelected } = {
         'GK': [],
@@ -1060,15 +1030,15 @@ export function WildcardSimulatorPage() {
         'MID': [],
         'FWD': []
       };
-      
+
       startingXI.forEach(p => {
         const pos = getPositionName(p.element_type);
         startingByPos[pos].push(p);
       });
-      
+
       // Build condensed format
       let textLines = ['Checkout My FPL Team Draft.\n\n'];
-      
+
       // Starting XI
       if (startingByPos['GK'].length > 0) {
         textLines.push(`GK->${startingByPos['GK'].map(p => p.web_name).join(', ')}\n`);
@@ -1082,7 +1052,7 @@ export function WildcardSimulatorPage() {
       if (startingByPos['FWD'].length > 0) {
         textLines.push(`FWD->${startingByPos['FWD'].map(p => p.web_name).join(', ')}\n`);
       }
-      
+
       // Bench
       if (benchPlayers.length > 0) {
         textLines.push('\nBench->\n');
@@ -1090,10 +1060,10 @@ export function WildcardSimulatorPage() {
           textLines.push(`${p.web_name} (${getPositionName(p.element_type)})\n`);
         });
       }
-      
+
       const shareUrl = `${API_BASE_URL}/wildcard/${code}/`;
       const text = `${textLines.join('')}\n#GW${upcomingGW} #FPL @aero_fpl\n\n`;
-      
+
       const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
       window.open(twitterUrl, "_blank", "width=550,height=420");
     } catch (error) {
@@ -1108,19 +1078,19 @@ export function WildcardSimulatorPage() {
 
   const shareOnFacebook = async () => {
     if (!code) return;
-    
+
     try {
       // Fetch upcoming gameweek
       const gwResponse = await fetch('/api/fixtures/');
       const gwData = await gwResponse.json();
       const upcomingGW = gwData.current_gameweek || 8; // Fallback to 8
-      
+
       // Get all selected players
       const allSelected = getAllSelectedPlayers();
-      
+
       // Helper to get position name
       const getPositionName = (elementType: number) => {
-        switch(elementType) {
+        switch (elementType) {
           case 1: return 'GK';
           case 2: return 'DEF';
           case 3: return 'MID';
@@ -1128,11 +1098,11 @@ export function WildcardSimulatorPage() {
           default: return 'UNK';
         }
       };
-      
+
       // Separate starting XI and bench
       const startingXI = allSelected.filter(p => !bench.some(b => b.id === p.id));
       const benchPlayers = allSelected.filter(p => bench.some(b => b.id === p.id));
-      
+
       // Group starting XI by position
       const startingByPos: { [key: string]: typeof allSelected } = {
         'GK': [],
@@ -1140,15 +1110,15 @@ export function WildcardSimulatorPage() {
         'MID': [],
         'FWD': []
       };
-      
+
       startingXI.forEach(p => {
         const pos = getPositionName(p.element_type);
         startingByPos[pos].push(p);
       });
-      
+
       // Build condensed format
       let textLines = ['Checkout My FPL Team Draft.\n'];
-      
+
       // Starting XI
       if (startingByPos['GK'].length > 0) {
         textLines.push(`GK->${startingByPos['GK'].map(p => p.web_name).join(', ')}\n`);
@@ -1162,7 +1132,7 @@ export function WildcardSimulatorPage() {
       if (startingByPos['FWD'].length > 0) {
         textLines.push(`FWD->${startingByPos['FWD'].map(p => p.web_name).join(', ')}\n`);
       }
-      
+
       // Bench
       if (benchPlayers.length > 0) {
         textLines.push('\nBench->\n');
@@ -1170,10 +1140,10 @@ export function WildcardSimulatorPage() {
           textLines.push(`${p.web_name} (${getPositionName(p.element_type)})\n`);
         });
       }
-      
+
       const shareUrl = `${API_BASE_URL}/wildcard/${code}/`;
       const quote = `${textLines.join('')}\n#GW${upcomingGW} #FPL @aero_fpl`;
-      
+
       // Use Facebook's sharer with quote parameter
       const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(quote)}`;
       window.open(facebookUrl, "_blank", "width=550,height=420");
@@ -1203,16 +1173,16 @@ export function WildcardSimulatorPage() {
       code: null, // Clear code so they get a new one when saving
     };
     localStorage.setItem(`wildcard_${currentDraftId}`, JSON.stringify(data));
-    
+
     // Clear the viewing state
     setIsViewingSharedTeam(false);
     setSharedTeamName("");
     setSharedTeamCode("");
     setCode(null); // Clear the shared code so they get a new one when saving
-    
+
     // Update the URL to remove the code parameter
     window.history.pushState({}, '', '/wildcard');
-    
+
     alert(`✅ Team copied to ${draftNames[currentDraftId] || currentDraftId}!\n\nYou can now make changes and save it as your own team.`);
   };
 
@@ -1227,16 +1197,16 @@ export function WildcardSimulatorPage() {
       setCaptain(null);
       setViceCaptain(null);
       setFormation(FORMATIONS[3]);
-      
+
       // Clear viewing state
       setIsViewingSharedTeam(false);
       setSharedTeamName("");
       setSharedTeamCode("");
       setCode(null);
-      
+
       // Update the URL to remove the code parameter
       window.history.pushState({}, '', '/wildcard');
-      
+
       // Load the user's existing draft
       loadDraft(currentDraftId);
     }
@@ -1304,7 +1274,7 @@ export function WildcardSimulatorPage() {
               </div>
             </div>
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <button 
+              <button
                 onClick={copyToDraft}
                 style={{
                   background: 'rgba(255,255,255,0.95)',
@@ -1322,7 +1292,7 @@ export function WildcardSimulatorPage() {
               >
                 📋 Copy to My Draft
               </button>
-              <button 
+              <button
                 onClick={startFresh}
                 style={{
                   background: 'rgba(255,255,255,0.2)',
@@ -1352,24 +1322,24 @@ export function WildcardSimulatorPage() {
 
         {/* Draft Management Menu */}
         <div className="draft-manager">
-          <button 
+          <button
             className="draft-selector-btn"
             onClick={() => setShowDraftMenu(!showDraftMenu)}
           >
-            📁 {draftNames[currentDraftId]} <span style={{marginLeft: '8px'}}>▼</span>
+            📁 {draftNames[currentDraftId]} <span style={{ marginLeft: '8px' }}>▼</span>
           </button>
-          
+
           {showDraftMenu && (
             <div className="draft-menu">
               {Object.entries(draftNames).map(([draftId, name]) => (
                 <div key={draftId} className="draft-menu-item">
-                  <button 
+                  <button
                     className={`draft-option ${draftId === currentDraftId ? 'active' : ''}`}
                     onClick={() => switchDraft(draftId)}
                   >
                     {name} {draftId === currentDraftId && '✓'}
                   </button>
-                  <button 
+                  <button
                     className="draft-action-btn"
                     onClick={() => renameDraft(draftId)}
                     title="Rename"
@@ -1377,7 +1347,7 @@ export function WildcardSimulatorPage() {
                     ✏️
                   </button>
                   {draftId !== currentDraftId && (
-                    <button 
+                    <button
                       className="draft-action-btn delete"
                       onClick={() => deleteDraft(draftId)}
                       title="Delete"
@@ -1394,8 +1364,8 @@ export function WildcardSimulatorPage() {
         <div className="wildcard-controls">
           <div className="formation-selector">
             <label>Formation:</label>
-            <select 
-              value={formation.name} 
+            <select
+              value={formation.name}
               onChange={(e) => {
                 const newFormation = FORMATIONS.find(f => f.name === e.target.value);
                 if (newFormation) handleFormationChange(newFormation);
@@ -1431,8 +1401,8 @@ export function WildcardSimulatorPage() {
         </div>
 
         <div className="wildcard-action-btns">
-          <button 
-            className="secondary-btn" 
+          <button
+            className="secondary-btn"
             onClick={() => setShowSavedTeams(true)}
           >
             📂 My Saved Teams ({savedTeams.length})
@@ -1440,15 +1410,15 @@ export function WildcardSimulatorPage() {
           <button className="secondary-btn" onClick={clearCurrentDraft}>
             🗑️ Clear Draft
           </button>
-          <button 
-            className="primary-btn" 
+          <button
+            className="primary-btn"
             onClick={saveTeamLocally}
             disabled={!isSquadComplete || budgetRemaining < 0}
           >
             💾 Save Team
           </button>
-          <button 
-            className="share-dream-team-btn" 
+          <button
+            className="share-dream-team-btn"
             onClick={saveToCloud}
             disabled={!isSquadComplete || budgetRemaining < 0}
           >
@@ -1473,7 +1443,7 @@ export function WildcardSimulatorPage() {
               <PlayerCard
                 player={null}
                 onClick={() => setSelectionModal({ position: "GK" })}
-                onRemove={() => {}}
+                onRemove={() => { }}
                 showRemove={false}
               />
             )}
@@ -1495,7 +1465,7 @@ export function WildcardSimulatorPage() {
                   <PlayerCard
                     player={null}
                     onClick={() => setSelectionModal({ position: "DEF" })}
-                    onRemove={() => {}}
+                    onRemove={() => { }}
                     showRemove={false}
                   />
                 )}
@@ -1519,7 +1489,7 @@ export function WildcardSimulatorPage() {
                   <PlayerCard
                     player={null}
                     onClick={() => setSelectionModal({ position: "MID" })}
-                    onRemove={() => {}}
+                    onRemove={() => { }}
                     showRemove={false}
                   />
                 )}
@@ -1543,7 +1513,7 @@ export function WildcardSimulatorPage() {
                   <PlayerCard
                     player={null}
                     onClick={() => setSelectionModal({ position: "FWD" })}
-                    onRemove={() => {}}
+                    onRemove={() => { }}
                     showRemove={false}
                   />
                 )}
@@ -1567,7 +1537,7 @@ export function WildcardSimulatorPage() {
               <PlayerCard
                 player={null}
                 onClick={() => setSelectionModal({ position: "GK", benchSlot: true })}
-                onRemove={() => {}}
+                onRemove={() => { }}
                 showRemove={false}
               />
             )}
@@ -1598,7 +1568,7 @@ export function WildcardSimulatorPage() {
                       setSelectionModal({ position: "DEF", benchSlot: true });
                     }
                   }}
-                  onRemove={() => {}}
+                  onRemove={() => { }}
                   showRemove={false}
                 />
               );
@@ -1745,8 +1715,8 @@ export function WildcardSimulatorPage() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
             <div className="modal-header">
               <h2>💾 {pendingSaveAction === 'local' ? 'Save Team' : 'Share Team Online'}</h2>
-              <button 
-                className="close-modal-btn" 
+              <button
+                className="close-modal-btn"
                 onClick={() => {
                   setShowTeamNameModal(false);
                   setPendingSaveAction(null);
@@ -1757,9 +1727,9 @@ export function WildcardSimulatorPage() {
             </div>
 
             <div style={{ padding: '20px' }}>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '10px', 
+              <label style={{
+                display: 'block',
+                marginBottom: '10px',
                 color: 'var(--text-primary)',
                 fontWeight: '600'
               }}>
@@ -1833,8 +1803,8 @@ export function WildcardSimulatorPage() {
           <div className="modal-content saved-teams-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>📂 My Saved Teams</h2>
-              <button 
-                className="close-modal-btn" 
+              <button
+                className="close-modal-btn"
                 onClick={() => setShowSavedTeams(false)}
               >
                 ✕
@@ -1858,12 +1828,12 @@ export function WildcardSimulatorPage() {
                         <h3>{team.name}</h3>
                         <span className="team-cost">£{team.totalCost.toFixed(1)}m</span>
                       </div>
-                      
+
                       <div className="team-card-info">
                         <span className="team-formation">⚽ {team.formation}</span>
                         <span className="team-date">
-                          📅 {new Date(team.savedAt).toLocaleDateString('en-GB', { 
-                            day: 'numeric', 
+                          📅 {new Date(team.savedAt).toLocaleDateString('en-GB', {
+                            day: 'numeric',
                             month: 'short',
                             hour: '2-digit',
                             minute: '2-digit'
@@ -1883,7 +1853,7 @@ export function WildcardSimulatorPage() {
                       </div>
 
                       <div className="team-card-actions">
-                        <button 
+                        <button
                           className="load-team-btn"
                           onClick={() => {
                             loadSavedTeam(team);
@@ -1892,7 +1862,7 @@ export function WildcardSimulatorPage() {
                         >
                           📥 Load Team
                         </button>
-                        <button 
+                        <button
                           className="delete-team-btn"
                           onClick={() => deleteSavedTeam(team.id)}
                         >

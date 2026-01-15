@@ -9,11 +9,11 @@ export function AnalyzeManagerPage() {
   const [view, setView] = useState<"history" | "gameweek">("gameweek");
   const [selectedGameweek, setSelectedGameweek] = useState<number | null>(null);
 
-  // Load from sessionStorage on mount
+  // Load from localStorage on mount
   useEffect(() => {
-    const savedManagerId = sessionStorage.getItem("fpl_manager_id");
-    const savedView = sessionStorage.getItem("fpl_manager_view");
-    const savedGameweek = sessionStorage.getItem("fpl_selected_gameweek");
+    const savedManagerId = localStorage.getItem("fpl_manager_id");
+    const savedView = localStorage.getItem("fpl_manager_view");
+    const savedGameweek = localStorage.getItem("fpl_selected_gameweek");
 
     if (savedManagerId) {
       setManagerId(savedManagerId);
@@ -27,20 +27,20 @@ export function AnalyzeManagerPage() {
     }
   }, []);
 
-  // Save to sessionStorage whenever state changes
+  // Save to localStorage whenever state changes
   useEffect(() => {
     if (activeManagerId) {
-      sessionStorage.setItem("fpl_manager_id", activeManagerId);
+      localStorage.setItem("fpl_manager_id", activeManagerId);
     }
   }, [activeManagerId]);
 
   useEffect(() => {
-    sessionStorage.setItem("fpl_manager_view", view);
+    localStorage.setItem("fpl_manager_view", view);
   }, [view]);
 
   useEffect(() => {
     if (selectedGameweek !== null) {
-      sessionStorage.setItem("fpl_selected_gameweek", String(selectedGameweek));
+      localStorage.setItem("fpl_selected_gameweek", String(selectedGameweek));
     }
   }, [selectedGameweek]);
 

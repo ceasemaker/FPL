@@ -1,0 +1,83 @@
+.predictor-hero {
+  padding: 2rem;
+}
+
+.predictor-error {
+  margin-top: 1rem;
+  padding: 0.7rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  background: rgba(127, 29, 29, 0.4);
+  color: #fecaca;
+}
+
+.predictor-board {
+  padding: 2rem;
+}
+
+.predictor-loading {
+  color: var(--text-secondary);
+}
+
+.predictor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.predictor-grid h3 {
+  margin-top: 0;
+}
+
+.predictor-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.predictor-card {
+  display: grid;
+  grid-template-columns: 42px 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: 14px;
+  background: rgba(8, 12, 30, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.predictor-card img {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.predictor-card.rise {
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.predictor-card.fall {
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.predictor-name {
+  font-weight: 600;
+}
+
+.predictor-meta {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.predictor-signal {
+  text-align: right;
+  font-weight: 600;
+  color: var(--accent-cyan);
+}
+
+.predictor-signal small {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}

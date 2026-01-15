@@ -37,5 +37,16 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            react: ["react", "react-dom", "react-router-dom"],
+            motion: ["animejs"],
+            capture: ["html2canvas"],
+          },
+        },
+      },
+    },
   };
 });

@@ -3,16 +3,19 @@ from __future__ import annotations
 import logging
 from collections import defaultdict
 from dataclasses import asdict, dataclass
-from typing import Any
+from typing import Any, Iterable
+from urllib.parse import urlparse
+
+import requests
 
 from django.core.cache import cache
 from django.db.models import Count, F, Max, OuterRef, Prefetch, Q, Subquery, Sum, Value
 from django.db.models.functions import Coalesce
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 
-from .models import Athlete, AthleteStat, Fixture, RawEndpointSnapshot, Team, SofasportHeatmap
+from .models import Athlete, AthletePrediction, AthleteStat, Fixture, RawEndpointSnapshot, Team, SofasportHeatmap
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +42,44 @@ class PlayerMover:
         return asdict(self)
 
 
+@dataclass(frozen=True)
+class OptimizationCandidate:
+    id: int
+    web_name: str
+    first_name: str
+    second_name: str
+    team_id: int | None
+    team_short_name: str | None
+    element_type: int
+    now_cost: int
+    predicted_points: float
+    image_url: str | None
+
+
+POSITION_LABELS = {
+    1: "GKP",
+    2: "DEF",
+    3: "MID",
+    4: "FWD",
+}
+
+POSITION_LIMITS = {
+    1: 2,
+    2: 5,
+    3: 5,
+    4: 3,
+}
+
+VALID_FORMATIONS = [
+    (3, 4, 3),
+    (3, 5, 2),
+    (4, 4, 2),
+    (4, 5, 1),
+    (5, 3, 2),
+    (5, 4, 1),
+]
+
+
 def _player_image(photo: str | None) -> str | None:
     if not photo:
         return None
@@ -62,6 +103,133 @@ def _serialize_queryset(queryset, *, label: str, value_key: str) -> list[dict[st
         )
         movers.append(mover.to_dict())
     return movers
+
+
+def _candidate_value(candidate: OptimizationCandidate) -> float:
+    if candidate.now_cost <= 0:
+        return 0.0
+    return candidate.predicted_points / candidate.now_cost
+
+
+def _limit_candidates(candidates: Iterable[OptimizationCandidate], limit: int = 80) -> list[OptimizationCandidate]:
+    candidates_list = list(candidates)
+    top_by_score = sorted(candidates_list, key=lambda c: c.predicted_points, reverse=True)[:limit]
+    top_by_value = sorted(candidates_list, key=_candidate_value, reverse=True)[:limit]
+    combined = {c.id: c for c in top_by_score + top_by_value}
+    return list(combined.values())
+
+
+def _select_cheapest_squad(
+    candidates_by_position: dict[int, list[OptimizationCandidate]],
+    max_per_team: int,
+) -> tuple[list[OptimizationCandidate], dict[int | None, int]] | None:
+    squad: list[OptimizationCandidate] = []
+    team_counts: dict[int | None, int] = defaultdict(int)
+
+    for position, count in POSITION_LIMITS.items():
+        picked = 0
+        for candidate in sorted(candidates_by_position.get(position, []), key=lambda c: c.now_cost):
+            if team_counts[candidate.team_id] >= max_per_team:
+                continue
+            squad.append(candidate)
+            team_counts[candidate.team_id] += 1
+            picked += 1
+            if picked == count:
+                break
+        if picked < count:
+            return None
+
+    return squad, team_counts
+
+
+def _improve_squad(
+    squad: list[OptimizationCandidate],
+    candidates_by_position: dict[int, list[OptimizationCandidate]],
+    team_counts: dict[int | None, int],
+    budget: int,
+    max_per_team: int,
+) -> list[OptimizationCandidate]:
+    def total_cost(players: list[OptimizationCandidate]) -> int:
+        return sum(player.now_cost for player in players)
+
+    current_cost = total_cost(squad)
+
+    while True:
+        remaining_budget = budget - current_cost
+        best_swap = None
+
+        for index, player in enumerate(squad):
+            for candidate in candidates_by_position.get(player.element_type, []):
+                if candidate.id == player.id:
+                    continue
+                if any(existing.id == candidate.id for existing in squad):
+                    continue
+                if candidate.predicted_points <= player.predicted_points:
+                    continue
+
+                cost_delta = candidate.now_cost - player.now_cost
+                if cost_delta > remaining_budget:
+                    continue
+
+                if candidate.team_id != player.team_id and team_counts[candidate.team_id] >= max_per_team:
+                    continue
+
+                score_delta = candidate.predicted_points - player.predicted_points
+                swap_score = (score_delta, -cost_delta)
+                if best_swap is None or swap_score > best_swap["score"]:
+                    best_swap = {
+                        "index": index,
+                        "out": player,
+                        "in": candidate,
+                        "score": swap_score,
+                        "cost_delta": cost_delta,
+                    }
+
+        if not best_swap:
+            break
+
+        outgoing = best_swap["out"]
+        incoming = best_swap["in"]
+
+        team_counts[outgoing.team_id] -= 1
+        team_counts[incoming.team_id] += 1
+        squad[best_swap["index"]] = incoming
+        current_cost += best_swap["cost_delta"]
+
+    return squad
+
+
+def _pick_starting_xi(squad: list[OptimizationCandidate]) -> set[int]:
+    gks = [player for player in squad if player.element_type == 1]
+    defs = sorted([p for p in squad if p.element_type == 2], key=lambda p: p.predicted_points, reverse=True)
+    mids = sorted([p for p in squad if p.element_type == 3], key=lambda p: p.predicted_points, reverse=True)
+    fwds = sorted([p for p in squad if p.element_type == 4], key=lambda p: p.predicted_points, reverse=True)
+
+    if not gks:
+        return set()
+
+    best_lineup = None
+    best_score = -1.0
+    best_ids: set[int] = set()
+
+    for def_count, mid_count, fwd_count in VALID_FORMATIONS:
+        if len(defs) < def_count or len(mids) < mid_count or len(fwds) < fwd_count:
+            continue
+        lineup = [max(gks, key=lambda p: p.predicted_points)]
+        lineup += defs[:def_count] + mids[:mid_count] + fwds[:fwd_count]
+        score = sum(p.predicted_points for p in lineup)
+        if score > best_score:
+            best_score = score
+            best_lineup = lineup
+            best_ids = {p.id for p in lineup}
+
+    if best_lineup is None:
+        best_ids = {p.id for p in gks}
+        best_ids.update(p.id for p in defs[:3])
+        best_ids.update(p.id for p in mids[:2])
+        best_ids.update(p.id for p in fwds[:1])
+
+    return best_ids
 
 
 @require_GET
@@ -416,6 +584,161 @@ def fixtures_by_gameweek(request):
 
 
 @require_GET
+def fixtures_ticker(request):
+    """Return an FDR ticker matrix for all teams across upcoming gameweeks."""
+    try:
+        horizon = max(3, min(int(request.GET.get("horizon", 5)), 10))
+    except (TypeError, ValueError):
+        horizon = 5
+
+    current_gw = (
+        AthleteStat.objects.aggregate(max_gw=Max("game_week"))["max_gw"] or 1
+    )
+    start_gw = current_gw + 1
+    end_gw = start_gw + horizon - 1
+
+    fixtures_qs = (
+        Fixture.objects.filter(event__gte=start_gw, event__lte=end_gw)
+        .select_related("team_h", "team_a")
+        .order_by("event")
+    )
+
+    team_rows: dict[int, dict[str, Any]] = {}
+    for team in Team.objects.all().order_by("short_name"):
+        team_rows[team.id] = {
+            "team_id": team.id,
+            "team_name": team.name,
+            "team_short_name": team.short_name,
+            "fixtures": [],
+        }
+
+    for fixture in fixtures_qs:
+        if fixture.team_h_id in team_rows:
+            team_rows[fixture.team_h_id]["fixtures"].append({
+                "event": fixture.event,
+                "opponent": fixture.team_a.short_name if fixture.team_a else None,
+                "location": "H",
+                "difficulty": fixture.team_h_difficulty,
+            })
+        if fixture.team_a_id in team_rows:
+            team_rows[fixture.team_a_id]["fixtures"].append({
+                "event": fixture.event,
+                "opponent": fixture.team_h.short_name if fixture.team_h else None,
+                "location": "A",
+                "difficulty": fixture.team_a_difficulty,
+            })
+
+    response_rows = []
+    for team_id, row in team_rows.items():
+        fixtures = sorted(row["fixtures"], key=lambda f: f["event"])
+        avg_difficulty = None
+        difficulties = [f["difficulty"] for f in fixtures if f["difficulty"]]
+        if difficulties:
+            avg_difficulty = round(sum(difficulties) / len(difficulties), 2)
+        response_rows.append({
+            **row,
+            "fixtures": fixtures,
+            "avg_difficulty": avg_difficulty,
+        })
+
+    return JsonResponse({
+        "current_gameweek": current_gw,
+        "start_gameweek": start_gw,
+        "end_gameweek": end_gw,
+        "horizon": horizon,
+        "teams": response_rows,
+    })
+
+
+@require_GET
+def image_proxy(request):
+    """Proxy image requests to avoid client-side CORS issues."""
+    url = request.GET.get("url")
+    if not url:
+        return JsonResponse({"error": "Missing url parameter."}, status=400)
+
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        return JsonResponse({"error": "Invalid URL scheme."}, status=400)
+
+    allowed_hosts = {
+        "resources.premierleague.com",
+        "fantasy.premierleague.com",
+    }
+    if parsed.netloc not in allowed_hosts:
+        return JsonResponse({"error": "Host not allowed."}, status=400)
+
+    try:
+        response = requests.get(url, timeout=10)
+    except requests.RequestException as exc:
+        return JsonResponse({"error": str(exc)}, status=500)
+
+    if response.status_code != 200:
+        return JsonResponse({"error": "Failed to fetch image."}, status=response.status_code)
+
+    content_type = response.headers.get("Content-Type", "image/png")
+    return HttpResponse(response.content, content_type=content_type)
+
+
+@require_GET
+def price_change_predictor(request):
+    """Return heuristic price rise/fall signals based on transfer momentum."""
+    try:
+        limit = max(10, min(int(request.GET.get("limit", 20)), 50))
+    except (TypeError, ValueError):
+        limit = 20
+
+    players = (
+        Athlete.objects.select_related("team")
+        .values(
+            "id",
+            "first_name",
+            "second_name",
+            "web_name",
+            "team__short_name",
+            "now_cost",
+            "transfers_in_event",
+            "transfers_out_event",
+            "selected_by_percent",
+            "cost_change_event",
+            "status",
+            "photo",
+        )
+    )
+
+    scored = []
+    for player in players:
+        transfers_in = player.get("transfers_in_event") or 0
+        transfers_out = player.get("transfers_out_event") or 0
+        delta = transfers_in - transfers_out
+        total = max(1, transfers_in + transfers_out)
+        signal = round((delta / total) * 100, 2)
+        scored.append({
+            "id": player["id"],
+            "first_name": player["first_name"],
+            "second_name": player["second_name"],
+            "web_name": player["web_name"],
+            "team": player["team__short_name"],
+            "now_cost": player["now_cost"],
+            "transfer_delta": delta,
+            "signal": signal,
+            "selected_by_percent": float(player["selected_by_percent"]) if player["selected_by_percent"] else None,
+            "cost_change_event": player.get("cost_change_event"),
+            "status": player.get("status"),
+            "image_url": _player_image(player.get("photo")),
+        })
+
+    risers = sorted(scored, key=lambda p: p["transfer_delta"], reverse=True)[:limit]
+    fallers = sorted(scored, key=lambda p: p["transfer_delta"])[:limit]
+
+    return JsonResponse({
+        "risers": risers,
+        "fallers": fallers,
+        "limit": limit,
+    })
+
+
+@require_GET
 def players_list(request):
     """Return all players with key stats for player grid view."""
     search = request.GET.get("search", "").strip()
@@ -544,6 +867,8 @@ def players_list(request):
             "expected_goals": float(player.expected_goals) if player.expected_goals else None,
             "points_last_3": last_3["points"],
             "minutes_last_3": last_3["minutes"],
+            # Predicted Points (Next GW)
+            "ep_next": float(player.predictions.filter(game_week=current_gw + 1).first().predicted_points) if player.predictions.filter(game_week=current_gw + 1).exists() else None,
         })
     
     response_data = {
@@ -710,6 +1035,19 @@ def player_detail(request, player_id):
             .values_list("fixture__fixture__event", flat=True)
             .order_by("-fixture__fixture__event")
         ),
+        
+        # Predicted Points (Next 5 GWs)
+        "upcoming_predictions": [
+            {
+                "game_week": p.game_week,
+                "predicted_points": float(p.predicted_points)
+            }
+            for p in AthletePrediction.objects.filter(
+                athlete=player, 
+                game_week__gte=current_gw + 1,
+                game_week__lte=current_gw + 5
+            ).order_by("game_week")
+        ],
     }
     
     return JsonResponse(player_data)
@@ -863,6 +1201,161 @@ def dream_team(request):
     cache.set(cache_key, response_data, CACHE_TIMEOUT_24H)
     
     return JsonResponse(response_data)
+
+
+@require_GET
+def optimize_team(request):
+    """
+    Build an optimized 15-player squad based on predicted points.
+
+    Uses a fast greedy + upgrade heuristic (no external solver).
+    """
+    try:
+        budget = int(request.GET.get("budget", 1000))
+    except (TypeError, ValueError):
+        budget = 1000
+    try:
+        horizon = max(1, min(int(request.GET.get("horizon", 1)), 5))
+    except (TypeError, ValueError):
+        horizon = 1
+    try:
+        max_per_team = max(1, min(int(request.GET.get("max_per_team", 3)), 3))
+    except (TypeError, ValueError):
+        max_per_team = 3
+
+    include_unavailable = request.GET.get("include_unavailable", "false").lower() in (
+        "1",
+        "true",
+        "yes",
+    )
+    manager_id = request.GET.get("manager_id")
+
+    current_gw = (
+        AthleteStat.objects.aggregate(max_gw=Max("game_week"))["max_gw"] or 1
+    )
+    manager_player_ids: set[int] | None = None
+    if manager_id:
+        try:
+            bootstrap = requests.get("https://fantasy.premierleague.com/api/bootstrap-static/", timeout=10)
+            bootstrap.raise_for_status()
+            bootstrap_data = bootstrap.json()
+            current_event = next((event for event in bootstrap_data.get("events", []) if event.get("is_current")), None)
+            event_id = current_event.get("id") if current_event else current_gw
+            picks = requests.get(
+                f"https://fantasy.premierleague.com/api/entry/{manager_id}/event/{event_id}/picks/",
+                timeout=10,
+            )
+            if picks.status_code != 200:
+                return JsonResponse({"error": "Manager not found or picks unavailable."}, status=picks.status_code)
+            picks_data = picks.json()
+            manager_player_ids = {pick.get("element") for pick in picks_data.get("picks", []) if pick.get("element")}
+            if not manager_player_ids:
+                return JsonResponse({"error": "Unable to load manager squad."}, status=400)
+        except requests.RequestException as exc:
+            return JsonResponse({"error": str(exc)}, status=500)
+    start_gw = current_gw + 1
+    end_gw = start_gw + horizon - 1
+
+    prediction_rows = AthletePrediction.objects.filter(
+        game_week__gte=start_gw,
+        game_week__lte=end_gw,
+    ).values("athlete_id", "predicted_points")
+
+    predictions_map: dict[int, list[float]] = defaultdict(list)
+    for row in prediction_rows:
+        predictions_map[row["athlete_id"]].append(float(row["predicted_points"]))
+
+    players_qs = Athlete.objects.select_related("team").filter(
+        element_type__in=POSITION_LIMITS.keys(),
+        now_cost__gt=0,
+    )
+
+    if manager_player_ids is not None:
+        players_qs = players_qs.filter(id__in=manager_player_ids)
+
+    if not include_unavailable:
+        players_qs = players_qs.filter(
+            Q(status__in=["a", "d"]) | Q(status__isnull=True)
+        )
+
+    candidates_by_position: dict[int, list[OptimizationCandidate]] = defaultdict(list)
+
+    for player in players_qs:
+        predicted_values = predictions_map.get(player.id, [])
+        if predicted_values:
+            predicted_points = float(sum(predicted_values))
+        else:
+            predicted_points = float(player.form) if player.form else float(player.points_per_game or 0)
+
+        candidate = OptimizationCandidate(
+            id=player.id,
+            web_name=player.web_name,
+            first_name=player.first_name,
+            second_name=player.second_name,
+            team_id=player.team.id if player.team else None,
+            team_short_name=player.team.short_name if player.team else None,
+            element_type=player.element_type or 0,
+            now_cost=player.now_cost or 0,
+            predicted_points=predicted_points,
+            image_url=_player_image(player.photo),
+        )
+        candidates_by_position[candidate.element_type].append(candidate)
+
+    for position, candidates in list(candidates_by_position.items()):
+        candidates_by_position[position] = _limit_candidates(candidates, limit=120)
+
+    selection = _select_cheapest_squad(candidates_by_position, max_per_team)
+    if selection is None:
+        return JsonResponse({"error": "Unable to build a valid squad with current constraints."}, status=400)
+
+    squad, team_counts = selection
+    squad_cost = sum(player.now_cost for player in squad)
+    if squad_cost > budget:
+        return JsonResponse({"error": "Budget too low for a valid squad."}, status=400)
+
+    squad = _improve_squad(squad, candidates_by_position, team_counts, budget, max_per_team)
+    squad_cost = sum(player.now_cost for player in squad)
+    starters = _pick_starting_xi(squad)
+
+    formation_counts = defaultdict(int)
+    for player in squad:
+        if player.id in starters and player.element_type in (2, 3, 4):
+            formation_counts[player.element_type] += 1
+
+    formation_label = f"{formation_counts[2]}-{formation_counts[3]}-{formation_counts[4]}"
+
+    response_players = []
+    for player in sorted(squad, key=lambda p: (p.element_type, -p.predicted_points)):
+        response_players.append({
+            "id": player.id,
+            "web_name": player.web_name,
+            "first_name": player.first_name,
+            "second_name": player.second_name,
+            "team_short_name": player.team_short_name,
+            "position": POSITION_LABELS.get(player.element_type, "UNK"),
+            "now_cost": player.now_cost,
+            "predicted_points": round(player.predicted_points, 2),
+            "starter": player.id in starters,
+            "image_url": player.image_url,
+        })
+
+    total_predicted = round(sum(player.predicted_points for player in squad), 2)
+
+    return JsonResponse({
+        "budget": budget,
+        "budget_remaining": budget - squad_cost,
+        "horizon": horizon,
+        "current_gameweek": current_gw,
+        "start_gameweek": start_gw,
+        "end_gameweek": end_gw,
+        "max_per_team": max_per_team,
+        "formation": formation_label,
+        "total_cost": squad_cost,
+        "total_predicted_points": total_predicted,
+        "players": response_players,
+        "manager_id": manager_id,
+        "mode": "manager_squad" if manager_player_ids is not None else "open_pool",
+    })
 
 
 # ============================================================================

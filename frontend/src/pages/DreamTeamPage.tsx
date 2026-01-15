@@ -59,10 +59,11 @@ function getDifficultyColor(difficulty: number | null): string {
 function PlayerCard({ player, onClick }: { player: Player; onClick: () => void }) {
   return (
     <div className="dream-player-card" onClick={onClick}>
-      <div className="dream-player-image">
+      <div className="dream-player-image-container">
         <img
           src={player.image_url || `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${player.team_code}-110.webp`}
           alt={player.web_name}
+          className="dream-player-image"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             if (target.src !== `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${player.team_code}-110.webp`) {
@@ -71,25 +72,35 @@ function PlayerCard({ player, onClick }: { player: Player; onClick: () => void }
             }
           }}
         />
+        {player.team_code && (
+          <img
+            src={getTeamBadgeUrl(player.team_code)!}
+            alt={player.team || ''}
+            className="player-team-badge"
+          />
+        )}
       </div>
-      <div className="dream-player-name">{player.web_name}</div>
-      <div className="dream-player-stats">
-        <span className="dream-stat-badge">£{(player.now_cost / 10).toFixed(1)}m</span>
-        <span className="dream-stat-badge">{player.total_points} pts</span>
-        <span 
-          className="dream-stat-badge fdr-badge"
-          style={{ backgroundColor: getDifficultyColor(player.avg_fdr) }}
-        >
-          FDR {player.avg_fdr.toFixed(1)}
-        </span>
+
+      <div className="dream-player-info">
+        <div className="dream-player-name" title={player.web_name}>{player.web_name}</div>
+        <div className="dream-player-meta">
+          <span className="dream-player-price">£{(player.now_cost / 10).toFixed(1)}</span>
+          <span className="dream-player-points">{player.total_points} pts</span>
+        </div>
       </div>
-      {player.team_code && (
-        <img 
-          src={getTeamBadgeUrl(player.team_code)!}
-          alt={player.team || ''}
-          className="dream-player-badge"
-        />
-      )}
+
+      <div
+        className="fdr-pill"
+        style={{
+          backgroundColor: getDifficultyColor(player.avg_fdr),
+          position: 'absolute',
+          top: '8px',
+          right: '8px',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+        }}
+      >
+        FDR {player.avg_fdr.toFixed(1)}
+      </div>
     </div>
   );
 }
@@ -106,22 +117,22 @@ export function DreamTeamPage() {
   const convertImagesToBase64 = async (container: HTMLElement) => {
     const images = container.querySelectorAll('img');
     const originalSources: Map<HTMLImageElement, string> = new Map();
-    
+
     // Store original sources and convert to base64
     for (const img of Array.from(images)) {
       const originalSrc = img.src;
       originalSources.set(img, originalSrc);
-      
+
       try {
         // Fetch the image and convert to base64
-        const response = await fetch(originalSrc);
+        const response = await fetch(`/api/image-proxy/?url=${encodeURIComponent(originalSrc)}`);
         const blob = await response.blob();
         const base64 = await new Promise<string>((resolve) => {
           const reader = new FileReader();
           reader.onloadend = () => resolve(reader.result as string);
           reader.readAsDataURL(blob);
         });
-        
+
         // Replace with base64
         img.src = base64;
       } catch (error) {
@@ -129,7 +140,7 @@ export function DreamTeamPage() {
         // Keep original if conversion fails
       }
     }
-    
+
     return originalSources;
   };
 
@@ -142,16 +153,16 @@ export function DreamTeamPage() {
 
   const handleShare = async () => {
     if (!dreamTeamRef.current) return;
-    
+
     setIsSharing(true);
-    
+
     try {
       // Convert images to base64 to bypass CORS
       const originalSources = await convertImagesToBase64(dreamTeamRef.current);
-      
+
       // Small delay to ensure images are loaded
       await new Promise(resolve => setTimeout(resolve, 100));
-      
+
       const canvas = await html2canvas(dreamTeamRef.current, {
         backgroundColor: "#050714",
         scale: 2,
@@ -161,10 +172,10 @@ export function DreamTeamPage() {
         foreignObjectRendering: false,
         imageTimeout: 15000,
       });
-      
+
       // Restore original image sources
       restoreImageSources(originalSources);
-      
+
       canvas.toBlob((blob) => {
         if (blob) {
           const url = URL.createObjectURL(blob);
@@ -228,113 +239,123 @@ export function DreamTeamPage() {
   return (
     <div className="page dream-team-page">
       <div className="dream-team-header">
-        <h1>🏆 Dream Team</h1>
-        <p className="dream-team-subtitle">
-          Auto-selected based on proprietary analysis
-        </p>
-        <button 
-          className="share-dream-team-btn"
-          onClick={handleShare}
-          disabled={isSharing}
-        >
-          {isSharing ? "Generating..." : "📸 Share Dream Team"}
-        </button>
+        <div className="dream-team-title-row">
+          <div>
+            <h1>🏆 Dream Team</h1>
+            <p className="dream-team-subtitle">
+              AI-selected optimal lineup based on form &amp; fixtures
+            </p>
+          </div>
+          <button
+            className="share-dream-team-btn"
+            onClick={handleShare}
+            disabled={isSharing}
+          >
+            {isSharing ? "Generating..." : "📸 Share Dream Team"}
+          </button>
+        </div>
+
         <div className="dream-team-stats">
-          <div className="dream-stat-item">
-            <span className="dream-stat-label">Formation</span>
-            <span className="dream-stat-value">{team_stats.formation}</span>
-          </div>
-          <div className="dream-stat-item">
-            <span className="dream-stat-label">Total Cost</span>
-            <span className="dream-stat-value">£{team_stats.total_cost.toFixed(1)}m</span>
-          </div>
           <div className="dream-stat-item">
             <span className="dream-stat-label">Total Points</span>
             <span className="dream-stat-value">{team_stats.total_points}</span>
           </div>
           <div className="dream-stat-item">
+            <span className="dream-stat-label">Value</span>
+            <span className="dream-stat-value">£{team_stats.total_cost.toFixed(1)}m</span>
+          </div>
+          <div className="dream-stat-item">
             <span className="dream-stat-label">Avg Form</span>
             <span className="dream-stat-value">{team_stats.avg_form}</span>
+          </div>
+          <div className="dream-stat-item">
+            <span className="dream-stat-label">Formation</span>
+            <span className="dream-stat-value">{team_stats.formation}</span>
           </div>
         </div>
       </div>
 
-      <div ref={dreamTeamRef} className="dream-team-capture">
-        <div className="football-field">
-        {/* Goalkeeper */}
-        <div className="field-row goalkeeper-row">
-          {starting_11.goalkeeper && (
-            <PlayerCard 
-              player={starting_11.goalkeeper} 
-              onClick={() => setModalPlayerId(starting_11.goalkeeper!.id)}
-            />
-          )}
+      <div ref={dreamTeamRef} className="dream-team-capture dream-team-layout">
+        {/* Main Pitch */}
+        <div className="holo-pitch">
+          {/* Goalkeeper */}
+          <div className="pitch-row goalkeeper-row">
+            {starting_11.goalkeeper && (
+              <PlayerCard
+                player={starting_11.goalkeeper}
+                onClick={() => setModalPlayerId(starting_11.goalkeeper!.id)}
+              />
+            )}
+          </div>
+
+          {/* Defenders */}
+          <div className="pitch-row defenders-row">
+            {starting_11.defenders.map((player) => (
+              <PlayerCard
+                key={player.id}
+                player={player}
+                onClick={() => setModalPlayerId(player.id)}
+              />
+            ))}
+          </div>
+
+          {/* Midfielders */}
+          <div className="pitch-row midfielders-row">
+            {starting_11.midfielders.map((player) => (
+              <PlayerCard
+                key={player.id}
+                player={player}
+                onClick={() => setModalPlayerId(player.id)}
+              />
+            ))}
+          </div>
+
+          {/* Forwards */}
+          <div className="pitch-row forwards-row">
+            {starting_11.forwards.map((player) => (
+              <PlayerCard
+                key={player.id}
+                player={player}
+                onClick={() => setModalPlayerId(player.id)}
+              />
+            ))}
+          </div>
         </div>
 
-        {/* Defenders */}
-        <div className="field-row defenders-row">
-          {starting_11.defenders.map((player) => (
-            <PlayerCard 
-              key={player.id} 
-              player={player}
-              onClick={() => setModalPlayerId(player.id)}
-            />
-          ))}
+        {/* Sidebar Bench */}
+        <div className="sidebar-bench">
+          <h2>Bench</h2>
+          <div className="bench-grid">
+            {bench.goalkeeper && (
+              <BenchRow
+                player={bench.goalkeeper}
+                position="GK"
+                onClick={() => setModalPlayerId(bench.goalkeeper!.id)}
+              />
+            )}
+            {bench.defender && (
+              <BenchRow
+                player={bench.defender}
+                position="DEF"
+                onClick={() => setModalPlayerId(bench.defender!.id)}
+              />
+            )}
+            {bench.midfielder && (
+              <BenchRow
+                player={bench.midfielder}
+                position="MID"
+                onClick={() => setModalPlayerId(bench.midfielder!.id)}
+              />
+            )}
+            {bench.forward && (
+              <BenchRow
+                player={bench.forward}
+                position="FWD"
+                onClick={() => setModalPlayerId(bench.forward!.id)}
+              />
+            )}
+          </div>
         </div>
-
-        {/* Midfielders */}
-        <div className="field-row midfielders-row">
-          {starting_11.midfielders.map((player) => (
-            <PlayerCard 
-              key={player.id} 
-              player={player}
-              onClick={() => setModalPlayerId(player.id)}
-            />
-          ))}
-        </div>
-
-        {/* Forwards */}
-        <div className="field-row forwards-row">
-          {starting_11.forwards.map((player) => (
-            <PlayerCard 
-              key={player.id} 
-              player={player}
-              onClick={() => setModalPlayerId(player.id)}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Bench */}
-      <div className="bench-section">
-        <h2>Bench</h2>
-        <div className="bench-players">
-          {bench.goalkeeper && (
-            <PlayerCard 
-              player={bench.goalkeeper}
-              onClick={() => setModalPlayerId(bench.goalkeeper!.id)}
-            />
-          )}
-          {bench.defender && (
-            <PlayerCard 
-              player={bench.defender}
-              onClick={() => setModalPlayerId(bench.defender!.id)}
-            />
-          )}
-          {bench.midfielder && (
-            <PlayerCard 
-              player={bench.midfielder}
-              onClick={() => setModalPlayerId(bench.midfielder!.id)}
-            />
-          )}
-          {bench.forward && (
-            <PlayerCard 
-              player={bench.forward}
-              onClick={() => setModalPlayerId(bench.forward!.id)}
-            />
-          )}
-        </div>
-      </div>
       </div>
 
       {/* Player Detail Modal */}
@@ -344,6 +365,25 @@ export function DreamTeamPage() {
           onClose={() => setModalPlayerId(null)}
         />
       )}
+    </div>
+  );
+}
+
+function BenchRow({ player, position, onClick }: { player: Player; position: string; onClick: () => void }) {
+  return (
+    <div className="bench-player-row" onClick={onClick}>
+      <div className="bench-avatar">
+        <img
+          src={player.image_url || `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${player.team_code}-110.webp`}
+          alt={player.web_name}
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+      </div>
+      <div className="bench-info">
+        <span className="bench-name">{player.web_name}</span>
+        <span className="bench-pos">{position} • £{(player.now_cost / 10).toFixed(1)}m</span>
+      </div>
+      <div className="bench-points">{player.total_points}</div>
     </div>
   );
 }

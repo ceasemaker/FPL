@@ -4,9 +4,13 @@ from django.urls import path
 from etl.api_views import (
     landing_snapshot,
     fixtures_by_gameweek,
+    fixtures_ticker,
+    price_change_predictor,
+    image_proxy,
     players_list,
     player_detail,
     dream_team,
+    optimize_team,
     # SofaSport endpoints
     player_radar_attributes,
     player_season_stats,
@@ -30,6 +34,8 @@ from etl.fpl_proxy_views import (
     proxy_event_live,
     proxy_fixtures,
     proxy_player_summary,
+    proxy_league_standings,
+    league_live_rank,
 )
 from etl.views_wildcard import (
     wildcard_home,
@@ -44,9 +50,13 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/landing/", landing_snapshot, name="landing-snapshot"),
     path("api/fixtures/", fixtures_by_gameweek, name="fixtures-by-gameweek"),
+    path("api/fixtures/ticker/", fixtures_ticker, name="fixtures-ticker"),
+    path("api/price-predictor/", price_change_predictor, name="price-change-predictor"),
+    path("api/image-proxy/", image_proxy, name="image-proxy"),
     path("api/players/", players_list, name="players-list"),
     path("api/players/<int:player_id>/", player_detail, name="player-detail"),
     path("api/dream-team/", dream_team, name="dream-team"),
+    path("api/optimize-team/", optimize_team, name="optimize-team"),
     
     # SofaSport API endpoints
     path("api/sofasport/player/<int:player_id>/radar/", player_radar_attributes, name="player-radar-attributes"),
@@ -65,6 +75,8 @@ urlpatterns = [
     path("api/fpl/event/<int:event_id>/live/", proxy_event_live, name="fpl-event-live"),
     path("api/fpl/fixtures/", proxy_fixtures, name="fpl-fixtures"),
     path("api/fpl/element-summary/<int:player_id>/", proxy_player_summary, name="fpl-player-summary"),
+    path("api/fpl/league/<int:league_id>/standings/", proxy_league_standings, name="fpl-league-standings"),
+    path("api/fpl/league/<int:league_id>/live/", league_live_rank, name="fpl-league-live"),
     
     # Wildcard Simulator endpoints
     path("wildcard/", wildcard_home, name="wildcard-home"),
