@@ -17,6 +17,36 @@ class TimestampedModel(models.Model):
         abstract = True
 
 
+class AthletePrediction(TimestampedModel):
+    """
+    Store predicted points for an athlete for a specific gameweek.
+    """
+    athlete = models.ForeignKey(
+        "Athlete",
+        related_name="predictions",
+        on_delete=models.CASCADE,
+        db_column="athlete_id",
+    )
+    game_week = models.PositiveIntegerField()
+    predicted_points = models.DecimalField(max_digits=5, decimal_places=2)
+
+    class Meta(TimestampedModel.Meta):
+        db_table = "athlete_predictions"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["athlete", "game_week"],
+                name="unique_athlete_gameweek_prediction",
+            )
+        ]
+        indexes = [
+            models.Index(fields=["athlete"]),
+            models.Index(fields=["game_week"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.athlete.web_name} - GW{self.game_week}: {self.predicted_points} xP"
+
+
 class Team(TimestampedModel):
     id = models.IntegerField(primary_key=True)
     code = models.IntegerField(unique=True, null=True, blank=True)
