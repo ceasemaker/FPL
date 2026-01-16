@@ -155,6 +155,10 @@
   margin-bottom: 1.5rem;
 }
 
+.pulse-search {
+  margin-top: 1rem;
+}
+
 .predictor-search-input {
   position: relative;
   flex: 1;
@@ -230,6 +234,30 @@
   border-radius: 10px;
   padding: 0.5rem 0.7rem;
   color: var(--text-primary);
+}
+
+.predictor-selected {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.predictor-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.6);
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.predictor-chip span {
+  color: var(--text-muted);
+  font-size: 0.85rem;
 }
 
 .predictor-filter {

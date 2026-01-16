@@ -255,6 +255,13 @@ export function PriceChangePredictorPage() {
   const [pulseSeries, setPulseSeries] = useState<PriceHistorySeries[]>([]);
   const [pulseLoading, setPulseLoading] = useState(false);
   const [pulseDirection, setPulseDirection] = useState<"in" | "out">("in");
+  const [pulseSearchQuery, setPulseSearchQuery] = useState("");
+  const [pulseSearchResults, setPulseSearchResults] = useState<PlayerSearchResult[]>([]);
+  const [pulseSearchLoading, setPulseSearchLoading] = useState(false);
+  const [pulseTrackedPlayers, setPulseTrackedPlayers] = useState<
+    Array<{ id: number; web_name: string; team: string | null; direction: "in" | "out" }>
+  >([]);
+  const [pulseExtraSeries, setPulseExtraSeries] = useState<PriceHistorySeries[]>([]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<PlayerSearchResult[]>([]);
@@ -320,6 +327,49 @@ export function PriceChangePredictorPage() {
   }, [pulseDirection]);
 
   useEffect(() => {
+    if (pulseSearchQuery.trim().length < 2) {
+      setPulseSearchResults([]);
+      return;
+    }
+    const handle = setTimeout(async () => {
+      setPulseSearchLoading(true);
+      try {
+        const response = await fetch(`/api/players/?search=${encodeURIComponent(pulseSearchQuery)}&page=1&page_size=8`);
+        if (!response.ok) throw new Error("Search failed.");
+        const payload = await response.json();
+        setPulseSearchResults(payload.players as PlayerSearchResult[]);
+      } catch (err) {
+        console.warn(err);
+      } finally {
+        setPulseSearchLoading(false);
+      }
+    }, 250);
+    return () => clearTimeout(handle);
+  }, [pulseSearchQuery]);
+
+  useEffect(() => {
+    if (pulseTrackedPlayers.length === 0) {
+      setPulseExtraSeries([]);
+      return;
+    }
+    const ids = pulseTrackedPlayers.map((player) => player.id).join(",");
+    const directions = pulseTrackedPlayers.map((player) => player.direction).join(",");
+    const loadPulseExtras = async () => {
+      try {
+        const response = await fetch(
+          `/api/price-predictor/history/?player_ids=${ids}&directions=${directions}&limit=30`
+        );
+        if (!response.ok) throw new Error("Failed to load transfer pulse.");
+        const payload = (await response.json()) as PriceHistoryResponse;
+        setPulseExtraSeries(payload.series || []);
+      } catch (err) {
+        console.warn(err);
+      }
+    };
+    loadPulseExtras();
+  }, [pulseTrackedPlayers]);
+
+  useEffect(() => {
     if (searchQuery.trim().length < 2) {
       setSearchResults([]);
       return;
@@ -376,6 +426,24 @@ export function PriceChangePredictorPage() {
     ]);
     setSearchQuery("");
     setSearchResults([]);
+  };
+
+  const addPulsePlayer = (player: PlayerSearchResult) => {
+    const direction = pulseDirection;
+    const alreadyAdded = pulseTrackedPlayers.some(
+      (tracked) => tracked.id === player.id && tracked.direction === direction
+    );
+    if (alreadyAdded) return;
+    setPulseTrackedPlayers((prev) => [
+      ...prev,
+      { id: player.id, web_name: player.web_name, team: player.team, direction },
+    ]);
+    setPulseSearchQuery("");
+    setPulseSearchResults([]);
+  };
+
+  const removePulsePlayer = (playerId: number, direction: "in" | "out") => {
+    setPulseTrackedPlayers((prev) => prev.filter((player) => !(player.id === playerId && player.direction === direction)));
   };
 
   const removeTrackedPlayer = (playerId: number, direction: "in" | "out") => {
@@ -438,9 +506,46 @@ export function PriceChangePredictorPage() {
             </label>
             {pulseLoading && <div className="predictor-loading">Loading pulse...</div>}
           </div>
+          <div className="predictor-search pulse-search">
+            <div className="predictor-search-input">
+              <input
+                type="text"
+                value={pulseSearchQuery}
+                onChange={(event) => setPulseSearchQuery(event.target.value)}
+                placeholder="Search a player to overlay their trend..."
+              />
+              {pulseSearchLoading && <div className="predictor-search-loading">Searching...</div>}
+              {pulseSearchResults.length > 0 && (
+                <div className="predictor-search-results">
+                  {pulseSearchResults.map((player) => (
+                    <button key={player.id} type="button" onClick={() => addPulsePlayer(player)}>
+                      <span>{player.web_name}</span>
+                      <span className="predictor-search-meta">{player.team || "—"}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {pulseTrackedPlayers.length > 0 && (
+              <div className="predictor-selected">
+                {pulseTrackedPlayers.map((player) => (
+                  <button
+                    key={`${player.id}-${player.direction}`}
+                    type="button"
+                    className="predictor-chip"
+                    onClick={() => removePulsePlayer(player.id, player.direction)}
+                  >
+                    {player.web_name} {player.team ? `(${player.team})` : ""} •{" "}
+                    {player.direction === "in" ? "IN" : "OUT"}
+                    <span aria-hidden="true">×</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           {pulseSeries.length > 0 && (
             <MultiLineChart
-              series={pulseSeries}
+              series={[...pulseSeries, ...pulseExtraSeries]}
               yLabel="Transfers"
               valueFormatter={(value) => Math.round(value).toLocaleString()}
             />
