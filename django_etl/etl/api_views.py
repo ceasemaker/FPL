@@ -739,6 +739,116 @@ def price_change_predictor(request):
 
 
 @require_GET
+def price_predictor_history(request):
+    """Return transfer momentum history for selected players."""
+    try:
+        limit = max(5, min(int(request.GET.get("limit", 30)), 90))
+    except (TypeError, ValueError):
+        limit = 30
+    try:
+        top = max(3, min(int(request.GET.get("top", 5)), 10))
+    except (TypeError, ValueError):
+        top = 5
+    metric = request.GET.get("metric", "transfers")
+    if metric not in ("transfers", "ownership"):
+        return JsonResponse({"error": "Invalid metric parameter."}, status=400)
+
+    player_ids_param = request.GET.get("player_ids", "")
+    directions_param = request.GET.get("directions", "")
+
+    snapshots = list(
+        RawEndpointSnapshot.objects.filter(endpoint="bootstrap-static")
+        .order_by("-created_at")[:limit]
+    )
+    if not snapshots:
+        return JsonResponse({"error": "No snapshots available."}, status=404)
+
+    snapshots.reverse()
+    latest_elements = {
+        element.get("id"): element
+        for element in snapshots[-1].payload.get("elements", [])
+        if element.get("id")
+    }
+
+    if player_ids_param:
+        try:
+            player_ids = [int(pid) for pid in player_ids_param.split(",") if pid.strip()]
+        except ValueError:
+            return JsonResponse({"error": "Invalid player_ids parameter."}, status=400)
+        directions = [
+            direction if direction in ("in", "out") else "in"
+            for direction in directions_param.split(",")
+            if direction.strip()
+        ]
+        if not directions:
+            directions = ["in"] * len(player_ids)
+        if len(directions) < len(player_ids):
+            directions.extend(["in"] * (len(player_ids) - len(directions)))
+    else:
+        sorted_by_in = sorted(
+            latest_elements.values(),
+            key=lambda el: el.get("transfers_in_event", 0),
+            reverse=True,
+        )
+        sorted_by_out = sorted(
+            latest_elements.values(),
+            key=lambda el: el.get("transfers_out_event", 0),
+            reverse=True,
+        )
+        player_ids = [el.get("id") for el in sorted_by_in[:top]] + [
+            el.get("id") for el in sorted_by_out[:top]
+        ]
+        directions = ["in"] * min(top, len(sorted_by_in)) + ["out"] * min(top, len(sorted_by_out))
+
+    player_ids = [pid for pid in player_ids if pid]
+    player_ids_set = set(player_ids)
+
+    players_lookup = {
+        player.id: player
+        for player in Athlete.objects.filter(id__in=player_ids_set).select_related("team")
+    }
+
+    series = []
+    for player_id, direction in zip(player_ids, directions):
+        points = []
+        for snapshot in snapshots:
+            elements = snapshot.payload.get("elements", [])
+            element = next((el for el in elements if el.get("id") == player_id), None)
+            if not element:
+                points.append({
+                    "timestamp": snapshot.created_at.isoformat(),
+                    "value": 0,
+                })
+                continue
+            if metric == "ownership":
+                raw_value = element.get("selected_by_percent")
+                value = float(raw_value) if raw_value not in (None, "") else 0
+            else:
+                value_key = "transfers_in_event" if direction == "in" else "transfers_out_event"
+                value = element.get(value_key, 0) or 0
+            points.append({
+                "timestamp": snapshot.created_at.isoformat(),
+                "value": value,
+            })
+
+        athlete = players_lookup.get(player_id)
+        series.append({
+            "player_id": player_id,
+            "web_name": athlete.web_name if athlete else str(player_id),
+            "team": athlete.team.short_name if athlete and athlete.team else None,
+            "direction": direction,
+            "metric": metric,
+            "points": points,
+        })
+
+    return JsonResponse({
+        "snapshot_count": len(snapshots),
+        "latest_snapshot": snapshots[-1].created_at.isoformat(),
+        "series": series,
+    })
+
+
+@require_GET
 def players_list(request):
     """Return all players with key stats for player grid view."""
     search = request.GET.get("search", "").strip()

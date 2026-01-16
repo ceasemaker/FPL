@@ -43,12 +43,6 @@ export function Navigation() {
             Transfer Planner
           </Link>
           <Link
-            to="/fixture-ticker"
-            className={location.pathname === "/fixture-ticker" ? "nav-link active" : "nav-link"}
-          >
-            Fixture Ticker
-          </Link>
-          <Link
             to="/price-predictor"
             className={location.pathname === "/price-predictor" ? "nav-link active" : "nav-link"}
           >

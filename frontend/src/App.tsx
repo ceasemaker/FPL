@@ -10,7 +10,6 @@ import { WildcardSimulatorPage } from "./pages/WildcardSimulatorPage";
 import { FixturesPage } from "./pages/FixturesPage";
 const OptimizeTeamPage = lazy(() => import("./pages/OptimizeTeamPage").then((m) => ({ default: m.OptimizeTeamPage })));
 const TransferPlannerPage = lazy(() => import("./pages/TransferPlannerPage").then((m) => ({ default: m.TransferPlannerPage })));
-const FixtureTickerPage = lazy(() => import("./pages/FixtureTickerPage").then((m) => ({ default: m.FixtureTickerPage })));
 const PriceChangePredictorPage = lazy(() => import("./pages/PriceChangePredictorPage").then((m) => ({ default: m.PriceChangePredictorPage })));
 const LeagueAnalyticsPage = lazy(() => import("./pages/LeagueAnalyticsPage").then((m) => ({ default: m.LeagueAnalyticsPage })));
 import { Navigation } from "./components/Navigation";
@@ -45,7 +44,6 @@ export default function App() {
           <Route path="/dream-team" element={<DreamTeamPage />} />
           <Route path="/optimize" element={<OptimizeTeamPage />} />
           <Route path="/transfer-planner" element={<TransferPlannerPage />} />
-          <Route path="/fixture-ticker" element={<FixtureTickerPage />} />
           <Route path="/price-predictor" element={<PriceChangePredictorPage />} />
           <Route path="/league-analytics" element={<LeagueAnalyticsPage />} />
           <Route path="/wildcard" element={<WildcardSimulatorPage />} />

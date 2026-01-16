@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 
 from django.test import TestCase
 
-from ..models import Athlete, AthletePrediction, AthleteStat, Fixture, Team
+from ..models import Athlete, AthletePrediction, AthleteStat, Fixture, Team, RawEndpointSnapshot
 
 
 class ApiViewTests(TestCase):
@@ -63,6 +63,35 @@ class ApiViewTests(TestCase):
                 predicted_points=Decimal("5.5"),
             )
 
+        RawEndpointSnapshot.objects.create(
+            endpoint="bootstrap-static",
+            payload={
+                "elements": [
+                    {
+                        "id": athlete.id,
+                        "transfers_in_event": athlete.id * 2,
+                        "transfers_out_event": athlete.id,
+                        "selected_by_percent": str(athlete.id / 100),
+                    }
+                    for athlete in self.athletes
+                ]
+            },
+        )
+        RawEndpointSnapshot.objects.create(
+            endpoint="bootstrap-static",
+            payload={
+                "elements": [
+                    {
+                        "id": athlete.id,
+                        "transfers_in_event": athlete.id * 3,
+                        "transfers_out_event": athlete.id * 2,
+                        "selected_by_percent": str(athlete.id / 90),
+                    }
+                    for athlete in self.athletes
+                ]
+            },
+        )
+
         Fixture.objects.create(
             id=1,
             event=2,
@@ -106,6 +135,20 @@ class ApiViewTests(TestCase):
         self.assertTrue(payload["risers"])
         self.assertTrue(payload["fallers"])
         self.assertIn("transfer_delta", payload["risers"][0])
+
+    def test_price_predictor_history(self) -> None:
+        response = self.client.get("/api/price-predictor/history/?top=3&limit=2")
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["snapshot_count"], 2)
+        self.assertTrue(payload["series"])
+
+    def test_price_predictor_history_ownership(self) -> None:
+        response = self.client.get("/api/price-predictor/history/?top=3&limit=2&metric=ownership")
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["snapshot_count"], 2)
+        self.assertTrue(payload["series"])
 
     @patch("etl.api_views.requests.get")
     def test_image_proxy_allows_whitelisted_hosts(self, mock_get: Mock) -> None:
