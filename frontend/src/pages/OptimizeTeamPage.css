@@ -1,0 +1,201 @@
+.optimizer-hero {
+  padding: 2.2rem;
+}
+
+.optimizer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.optimizer-action {
+  background: linear-gradient(135deg, rgba(22, 242, 255, 0.8), rgba(79, 70, 229, 0.9));
+  border: none;
+  color: #020617;
+  padding: 0.75rem 1.4rem;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.optimizer-action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.optimizer-action:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(22, 242, 255, 0.25);
+}
+
+.optimizer-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.8rem;
+}
+
+.optimizer-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.optimizer-field input {
+  background: rgba(8, 12, 30, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  padding: 0.7rem 0.9rem;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.optimizer-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.optimizer-toggle input {
+  accent-color: var(--accent-cyan);
+}
+
+.optimizer-error {
+  margin-top: 1.2rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  background: rgba(127, 29, 29, 0.4);
+  color: #fecaca;
+}
+
+.optimizer-results {
+  padding: 2rem;
+}
+
+.optimizer-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.summary-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.summary-metrics div {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 14px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.summary-metrics span {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.summary-metrics strong {
+  font-size: 1.4rem;
+}
+
+.optimizer-lineup {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.optimizer-lineup h3 {
+  margin: 0 0 1rem;
+  font-size: 1.2rem;
+}
+
+.optimizer-position {
+  margin-bottom: 1.4rem;
+}
+
+.optimizer-position h4 {
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.optimizer-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.optimizer-card {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(8, 12, 30, 0.85);
+}
+
+.optimizer-card img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.optimizer-card.starter {
+  border-color: rgba(34, 197, 94, 0.4);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.15);
+}
+
+.optimizer-card.bench {
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+.optimizer-name {
+  font-weight: 600;
+}
+
+.optimizer-meta {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.optimizer-points {
+  font-weight: 600;
+  color: var(--accent-cyan);
+}
+
+@media (max-width: 768px) {
+  .optimizer-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .optimizer-action {
+    width: 100%;
+  }
+}

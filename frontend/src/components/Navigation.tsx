@@ -31,6 +31,30 @@ export function Navigation() {
             Dream Team
           </Link>
           <Link
+            to="/optimize"
+            className={location.pathname === "/optimize" ? "nav-link active" : "nav-link"}
+          >
+            Optimizer
+          </Link>
+          <Link
+            to="/transfer-planner"
+            className={location.pathname === "/transfer-planner" ? "nav-link active" : "nav-link"}
+          >
+            Transfer Planner
+          </Link>
+          <Link
+            to="/price-predictor"
+            className={location.pathname === "/price-predictor" ? "nav-link active" : "nav-link"}
+          >
+            Price Predictor
+          </Link>
+          <Link
+            to="/league-analytics"
+            className={location.pathname === "/league-analytics" ? "nav-link active" : "nav-link"}
+          >
+            League Analytics
+          </Link>
+          <Link
             to="/analyze"
             className={location.pathname === "/analyze" ? "nav-link active" : "nav-link"}
           >

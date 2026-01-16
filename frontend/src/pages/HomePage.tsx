@@ -3,7 +3,7 @@ import { useLandingData } from "../hooks/useLandingData";
 import { TopMoversTicker } from "../components/TopMoversTicker";
 import { TransfersTicker } from "../components/TransfersTicker";
 import { MomentumGrid } from "../components/MomentumGrid";
-import { FixturePressure } from "../components/FixturePressure";
+import { FixturesTicker } from "../components/FixturesTicker";
 import { FixturesTable } from "../components/FixturesTable";
 import NewsTicker from "../components/NewsTicker";
 import { Top100Overview } from "../components/Top100Overview";
@@ -46,11 +46,7 @@ export function HomePage() {
       </section>
       
       <MomentumGrid movers={data?.movers.points} loading={isLoading} onPlayerClick={handlePlayerClick} />
-      <FixturePressure
-        data={data?.fixture_pressure}
-        loading={isLoading}
-        currentGameweek={data?.current_gameweek ?? null}
-      />
+      <FixturesTicker />
       <FixturesTable />
 
       {/* Player Detail Modal */}

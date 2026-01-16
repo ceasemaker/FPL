@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date
 from decimal import Decimal
 
 from django.test import SimpleTestCase
@@ -21,10 +22,10 @@ class ParserHelpersTests(SimpleTestCase):
         self.assertEqual(dt.tzinfo, timezone.utc)
 
     def test_parse_date(self) -> None:
-        dt = _parse_date("2024-08-12")
-        assert dt is not None
-        self.assertTrue(timezone.is_aware(dt))
-        self.assertEqual(dt.date().isoformat(), "2024-08-12")
+        parsed = _parse_date("2024-08-12")
+        assert parsed is not None
+        self.assertIsInstance(parsed, date)
+        self.assertEqual(parsed.isoformat(), "2024-08-12")
 
 
 class PipelineConfigTests(SimpleTestCase):
