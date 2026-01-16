@@ -150,6 +150,14 @@ class ApiViewTests(TestCase):
         self.assertEqual(payload["snapshot_count"], 2)
         self.assertTrue(payload["series"])
 
+    def test_price_predictor_history_direction_filter(self) -> None:
+        response = self.client.get("/api/price-predictor/history/?top=3&limit=2&direction=in")
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["snapshot_count"], 2)
+        self.assertTrue(payload["series"])
+        self.assertTrue(all(item["direction"] == "in" for item in payload["series"]))
+
     @patch("etl.api_views.requests.get")
     def test_image_proxy_allows_whitelisted_hosts(self, mock_get: Mock) -> None:
         mock_response = Mock()

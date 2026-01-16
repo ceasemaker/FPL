@@ -769,6 +769,7 @@ def price_predictor_history(request):
         for element in snapshots[-1].payload.get("elements", [])
         if element.get("id")
     }
+    direction_filter = request.GET.get("direction")
 
     if player_ids_param:
         try:
@@ -785,20 +786,77 @@ def price_predictor_history(request):
         if len(directions) < len(player_ids):
             directions.extend(["in"] * (len(player_ids) - len(directions)))
     else:
-        sorted_by_in = sorted(
-            latest_elements.values(),
-            key=lambda el: el.get("transfers_in_event", 0),
-            reverse=True,
-        )
-        sorted_by_out = sorted(
-            latest_elements.values(),
-            key=lambda el: el.get("transfers_out_event", 0),
-            reverse=True,
-        )
-        player_ids = [el.get("id") for el in sorted_by_in[:top]] + [
-            el.get("id") for el in sorted_by_out[:top]
-        ]
-        directions = ["in"] * min(top, len(sorted_by_in)) + ["out"] * min(top, len(sorted_by_out))
+        if metric == "ownership":
+            sorted_by_ownership = sorted(
+                latest_elements.values(),
+                key=lambda el: float(el.get("selected_by_percent") or 0),
+                reverse=True,
+            )
+            player_ids = [el.get("id") for el in sorted_by_ownership[:top]]
+            directions = ["in"] * len(player_ids)
+        else:
+            if direction_filter in ("in", "out"):
+                value_key = "transfers_in_event" if direction_filter == "in" else "transfers_out_event"
+                sorted_by_transfer = sorted(
+                    latest_elements.values(),
+                    key=lambda el: el.get(value_key, 0),
+                    reverse=True,
+                )
+                player_ids = [el.get("id") for el in sorted_by_transfer[:top]]
+                directions = [direction_filter] * len(player_ids)
+                player_ids = [pid for pid in player_ids if pid]
+                player_ids_set = set(player_ids)
+                players_lookup = {
+                    player.id: player
+                    for player in Athlete.objects.filter(id__in=player_ids_set).select_related("team")
+                }
+                series = []
+                for player_id in player_ids:
+                    points = []
+                    for snapshot in snapshots:
+                        elements = snapshot.payload.get("elements", [])
+                        element = next((el for el in elements if el.get("id") == player_id), None)
+                        if not element:
+                            points.append({
+                                "timestamp": snapshot.created_at.isoformat(),
+                                "value": 0,
+                            })
+                            continue
+                        value = element.get(value_key, 0) or 0
+                        points.append({
+                            "timestamp": snapshot.created_at.isoformat(),
+                            "value": value,
+                        })
+
+                    athlete = players_lookup.get(player_id)
+                    series.append({
+                        "player_id": player_id,
+                        "web_name": athlete.web_name if athlete else str(player_id),
+                        "team": athlete.team.short_name if athlete and athlete.team else None,
+                        "direction": direction_filter,
+                        "metric": metric,
+                        "points": points,
+                    })
+
+                return JsonResponse({
+                    "snapshot_count": len(snapshots),
+                    "latest_snapshot": snapshots[-1].created_at.isoformat(),
+                    "series": series,
+                })
+            sorted_by_in = sorted(
+                latest_elements.values(),
+                key=lambda el: el.get("transfers_in_event", 0),
+                reverse=True,
+            )
+            sorted_by_out = sorted(
+                latest_elements.values(),
+                key=lambda el: el.get("transfers_out_event", 0),
+                reverse=True,
+            )
+            player_ids = [el.get("id") for el in sorted_by_in[:top]] + [
+                el.get("id") for el in sorted_by_out[:top]
+            ]
+            directions = ["in"] * min(top, len(sorted_by_in)) + ["out"] * min(top, len(sorted_by_out))
 
     player_ids = [pid for pid in player_ids if pid]
     player_ids_set = set(player_ids)

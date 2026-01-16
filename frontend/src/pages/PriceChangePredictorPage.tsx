@@ -103,40 +103,87 @@ function Sparkline({
   );
 }
 
-function MultiLineChart({ series }: { series: PriceHistorySeries[] }) {
-  const width = 640;
-  const height = 240;
-  const padding = 28;
-  const palette = ["#22c55e", "#38bdf8", "#f97316", "#a855f7", "#ef4444"];
+function MultiLineChart({
+  series,
+  yLabel,
+  valueFormatter,
+}: {
+  series: PriceHistorySeries[];
+  yLabel: string;
+  valueFormatter?: (value: number) => string;
+}) {
+  const width = 720;
+  const height = 280;
+  const padding = 44;
+  const rightPadding = 56;
+  const palette = ["#38bdf8", "#60a5fa", "#a78bfa", "#f97316", "#22c55e"];
+  const formatValue = valueFormatter ?? ((value: number) => value.toFixed(1));
 
   const allValues = series.flatMap((item) => item.points.map((point) => point.value));
   const min = Math.min(...allValues, 0);
   const max = Math.max(...allValues, 1);
   const range = max - min || 1;
   const pointCount = Math.max(...series.map((item) => item.points.length), 2);
+  const chartWidth = width - padding - rightPadding;
+  const chartHeight = height - padding * 2;
 
-  const xFor = (index: number) => padding + (index / (pointCount - 1)) * (width - padding * 2);
-  const yFor = (value: number) => padding + ((max - value) / range) * (height - padding * 2);
+  const xFor = (index: number) => padding + (index / (pointCount - 1)) * chartWidth;
+  const yFor = (value: number) => padding + ((max - value) / range) * chartHeight;
   const xLabels = series[0]?.points.length ? [0, Math.floor((pointCount - 1) / 2), pointCount - 1] : [];
-  const yLabels = [max, max - range / 2, min].map((value) => Math.max(0, value));
+  const yTicks = 4;
+  const yLabels = Array.from({ length: yTicks + 1 }, (_, idx) => max - (range * idx) / yTicks);
 
   return (
     <div className="ownership-chart">
       <svg viewBox={`0 0 ${width} ${height}`} role="img">
-        <g opacity="0.4">
+        <defs>
+          <linearGradient id="ownership-bg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#050914" />
+            <stop offset="100%" stopColor="#0b1226" />
+          </linearGradient>
+          {palette.map((color, idx) => (
+            <linearGradient key={color} id={`line-${idx}`} x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor={color} stopOpacity="0.5" />
+              <stop offset="60%" stopColor={color} stopOpacity="1" />
+              <stop offset="100%" stopColor={color} stopOpacity="0.6" />
+            </linearGradient>
+          ))}
+        </defs>
+        <rect x="0" y="0" width={width} height={height} fill="url(#ownership-bg)" />
+        <g className="ownership-grid">
+          {Array.from({ length: yTicks + 1 }).map((_, idx) => {
+            const y = padding + (idx / yTicks) * chartHeight;
+            return (
+              <line
+                key={`y-${idx}`}
+                x1={padding}
+                x2={width - rightPadding}
+                y1={y}
+                y2={y}
+              />
+            );
+          })}
           {Array.from({ length: 5 }).map((_, idx) => {
-            const y = padding + (idx / 4) * (height - padding * 2);
-            return <line key={y} x1={padding} x2={width - padding} y1={y} y2={y} stroke="#1f2937" />;
+            const x = padding + (idx / 4) * chartWidth;
+            return (
+              <line
+                key={`x-${idx}`}
+                x1={x}
+                x2={x}
+                y1={padding}
+                y2={height - padding}
+              />
+            );
           })}
         </g>
         <g className="ownership-axis">
-          <line x1={padding} y1={padding} x2={padding} y2={height - padding} />
-          <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} />
           {yLabels.map((value, idx) => {
             const y = yFor(value);
             return (
               <g key={`y-${idx}`}>
-                <text x={4} y={y + 4}>{value.toFixed(1)}%</text>
+                <text x={padding - 8} y={y + 4} textAnchor="end">
+                  {formatValue(Math.max(0, value))}
+                </text>
               </g>
             );
           })}
@@ -147,24 +194,39 @@ function MultiLineChart({ series }: { series: PriceHistorySeries[] }) {
             const label = date.toLocaleDateString("en-GB", { month: "short", day: "numeric" });
             const x = xFor(index);
             return (
-              <text key={`x-${index}`} x={x} y={height - 6} textAnchor="middle">{label}</text>
+              <text key={`x-${index}`} x={x} y={height - 8} textAnchor="middle">{label}</text>
             );
           })}
+          <text x={padding} y={padding - 10} className="ownership-axis-label">{yLabel}</text>
+          <text x={width / 2} y={height - 2} textAnchor="middle" className="ownership-axis-label">Date</text>
         </g>
         {series.map((item, idx) => {
           const color = palette[idx % palette.length];
           const points = item.points.map((point, index) => [xFor(index), yFor(point.value)]);
           const path = points.length ? `M ${points.map((p) => p.join(",")).join(" L ")}` : "";
+          const lastPoint = points[points.length - 1];
           return (
-            <path
-              key={item.player_id}
-              d={path}
-              fill="none"
-              stroke={color}
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+            <g key={item.player_id}>
+              <path
+                d={path}
+                fill="none"
+                stroke={`url(#line-${idx % palette.length})`}
+                strokeWidth="2.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ filter: `drop-shadow(0 0 6px ${color})` }}
+              />
+              {lastPoint && (
+                <circle
+                  cx={lastPoint[0]}
+                  cy={lastPoint[1]}
+                  r="4.5"
+                  fill={color}
+                  stroke="#0f172a"
+                  strokeWidth="1.5"
+                />
+              )}
+            </g>
           );
         })}
       </svg>
@@ -190,8 +252,9 @@ export function PriceChangePredictorPage() {
 
   const [historySeries, setHistorySeries] = useState<PriceHistorySeries[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
-  const [ownershipSeries, setOwnershipSeries] = useState<PriceHistorySeries[]>([]);
-  const [ownershipLoading, setOwnershipLoading] = useState(false);
+  const [pulseSeries, setPulseSeries] = useState<PriceHistorySeries[]>([]);
+  const [pulseLoading, setPulseLoading] = useState(false);
+  const [pulseDirection, setPulseDirection] = useState<"in" | "out">("in");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<PlayerSearchResult[]>([]);
@@ -238,21 +301,23 @@ export function PriceChangePredictorPage() {
   }, []);
 
   useEffect(() => {
-    const loadOwnership = async () => {
-      setOwnershipLoading(true);
+    const loadPulse = async () => {
+      setPulseLoading(true);
       try {
-        const response = await fetch("/api/price-predictor/history/?top=5&limit=30&metric=ownership");
-        if (!response.ok) throw new Error("Failed to load ownership history.");
+        const response = await fetch(
+          `/api/price-predictor/history/?top=5&limit=30&direction=${pulseDirection}`
+        );
+        if (!response.ok) throw new Error("Failed to load transfer pulse.");
         const payload = (await response.json()) as PriceHistoryResponse;
-        setOwnershipSeries(payload.series || []);
+        setPulseSeries(payload.series || []);
       } catch (err) {
         console.warn(err);
       } finally {
-        setOwnershipLoading(false);
+        setPulseLoading(false);
       }
     };
-    loadOwnership();
-  }, []);
+    loadPulse();
+  }, [pulseDirection]);
 
   useEffect(() => {
     if (searchQuery.trim().length < 2) {
@@ -357,16 +422,29 @@ export function PriceChangePredictorPage() {
         </div>
       </section>
 
-      <section className="glow-card predictor-ownership">
+      <section className="glow-card predictor-transfer">
         <div className="glow-card-content">
           <div className="predictor-chart-header">
             <div>
-              <div className="section-title">Ownership Pulse</div>
-              <p className="section-subtitle">Top 5 ownership swings over recent snapshots.</p>
+              <div className="section-title">Transfer Pulse</div>
+              <p className="section-subtitle">Top 5 transfer momentum trends from recent snapshots.</p>
             </div>
-            {ownershipLoading && <div className="predictor-loading">Loading ownership...</div>}
+            <label className="predictor-filter">
+              <span>Show</span>
+              <select value={pulseDirection} onChange={(event) => setPulseDirection(event.target.value as "in" | "out")}>
+                <option value="in">Most transferred in</option>
+                <option value="out">Most transferred out</option>
+              </select>
+            </label>
+            {pulseLoading && <div className="predictor-loading">Loading pulse...</div>}
           </div>
-          {ownershipSeries.length > 0 && <MultiLineChart series={ownershipSeries} />}
+          {pulseSeries.length > 0 && (
+            <MultiLineChart
+              series={pulseSeries}
+              yLabel="Transfers"
+              valueFormatter={(value) => Math.round(value).toLocaleString()}
+            />
+          )}
         </div>
       </section>
 
