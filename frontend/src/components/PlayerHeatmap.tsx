@@ -80,7 +80,7 @@ export function PlayerHeatmap({ playerId, gameweek, className = "" }: PlayerHeat
             // Flip Y if needed (sometimes 0 is top, sometimes bottom). 
             // Assuming 0,0 is top-left.
             const x = (point.x / 100) * canvas.width;
-            const y = (point.y / 100) * canvas.height;
+            const y = ((100 - point.y) / 100) * canvas.height;
 
             const radius = 15; // Adjust based on canvas size
             const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);

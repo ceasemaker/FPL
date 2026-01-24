@@ -8,8 +8,18 @@ import logging
 import os
 from pathlib import Path
 from celery import shared_task
+from celery import shared_task
 from django.conf import settings
+from django.core.cache import cache
+from django.core.management import call_command
+from io import StringIO
 
+from .api_views import (
+    _build_price_change_predictor_payload,
+    _build_price_predictor_history_payload,
+    _price_change_predictor_cache_key,
+    _price_predictor_history_cache_key,
+)
 logger = logging.getLogger(__name__)
 
 # Base directory for ETL scripts
@@ -160,6 +170,57 @@ def update_radar_attributes():
 # Celery Beat Schedule Configuration
 
 
+@shared_task(name='etl.tasks.warm_price_predictor_cache')
+def warm_price_predictor_cache():
+    logger.info("Warming price predictor cache...")
+    results = {}
+
+    try:
+        limit = 10
+        payload = _build_price_change_predictor_payload(limit)
+        cache.set(_price_change_predictor_cache_key(limit), payload, 1800)
+        results["price_predictor"] = "ok"
+    except Exception as exc:
+        logger.exception("Price predictor warm failed")
+        results["price_predictor"] = f"error: {exc}"
+
+    history_specs = [
+        {"top": 5, "limit": 30, "metric": "transfers", "direction_filter": None},
+        {"top": 5, "limit": 30, "metric": "transfers", "direction_filter": "in"},
+        {"top": 5, "limit": 30, "metric": "transfers", "direction_filter": "out"},
+    ]
+
+    for spec in history_specs:
+        label = spec["direction_filter"] or "all"
+        try:
+            cache_key = _price_predictor_history_cache_key(
+                spec["limit"],
+                spec["top"],
+                spec["metric"],
+                spec["direction_filter"],
+                "",
+                "",
+            )
+            payload = _build_price_predictor_history_payload(
+                limit=spec["limit"],
+                top=spec["top"],
+                metric=spec["metric"],
+                player_ids_param="",
+                directions_param="",
+                direction_filter=spec["direction_filter"],
+            )
+            cache.set(cache_key, payload, 1800)
+            results[f"history:{label}"] = "ok"
+        except LookupError as exc:
+            logger.warning("Price predictor history warm skipped: %s", exc)
+            results[f"history:{label}"] = f"empty: {exc}"
+        except Exception as exc:
+            logger.exception("Price predictor history warm failed")
+            results[f"history:{label}"] = f"error: {exc}"
+
+    return results
+
+
 @shared_task(name='etl.tasks.run_manual_update')
 def run_manual_update(script_name: str):
     """
@@ -223,3 +284,70 @@ def sync_fixture_odds(days_ahead=7):
     else:
         logger.error(f"❌ Fixture odds sync failed: {result['stderr']}")
         return {"status": "error", "output": result['stderr']}
+
+
+@shared_task(name='etl.tasks.run_daily_pipeline')
+def run_daily_pipeline():
+    """
+    Coordinator task for the Daily FPL ETL Pipeline.
+    Replaces the Render Cron Job.
+    Sequence:
+    1. run_fpl_etl (Bootstrap basic FPL data)
+    2. run_fpl_etl commands (detailed sync) - actually run_fpl_etl does the main work
+    3. load_sofasport_data type=heatmaps (via collect_heatmaps task)
+    4. sync_top100
+    5. clear_cache
+    """
+    logger.info("🚀 Starting Daily ETL Pipeline...")
+    results = {}
+
+    # Step 1: Run FPL ETL (Core Data)
+    try:
+        logger.info("Step 1: Running FPL ETL...")
+        out = StringIO()
+        call_command('run_fpl_etl', stdout=out, stderr=out)
+        results['run_fpl_etl'] = "✅ " + out.getvalue()
+    except Exception as e:
+        logger.error(f"❌ Step 1 Failed: {str(e)}")
+        results['run_fpl_etl'] = f"Error: {str(e)}"
+        # We might want to abort or continue depending on severity. 
+        # Usually if core data fails, we shoulder stop. 
+        return results
+
+    # Step 2: Collect Heatmaps (SofaSport)
+    # This was originally: python manage.py load_sofasport_data --task=heatmaps
+    # We have an existing task for this: collect_heatmaps
+    # We call it synchronously here to ensure order
+    try:
+        logger.info("Step 2: Collecting Heatmaps...")
+        # We can call the task function directly since it's just a function decorated with @shared_task
+        # But to be safe with Celery context, we often just run the logic. 
+        # Since collect_heatmaps uses subprocess to run a script, we can just call it.
+        start_heatmaps = collect_heatmaps() # Valid in Celery 5+ if same worker
+        results['collect_heatmaps'] = start_heatmaps
+    except Exception as e:
+         logger.error(f"❌ Step 2 Failed: {str(e)}")
+         results['collect_heatmaps'] = f"Error: {str(e)}"
+
+    # Step 3: Sync Top 100
+    try:
+        logger.info("Step 3: Syncing Top 100 managers...")
+        out = StringIO()
+        call_command('sync_top100', stdout=out, stderr=out)
+        results['sync_top100'] = "✅ " + out.getvalue()
+    except Exception as e:
+        logger.error(f"❌ Step 3 Failed: {str(e)}")
+        results['sync_top100'] = f"Error: {str(e)}"
+
+    # Step 4: Clear Cache
+    try:
+        logger.info("Step 4: Clearing Cache...")
+        out = StringIO()
+        call_command('clear_cache', stdout=out, stderr=out)
+        results['clear_cache'] = "✅ " + out.getvalue()
+    except Exception as e:
+        logger.error(f"❌ Step 4 Failed: {str(e)}")
+        results['clear_cache'] = f"Error: {str(e)}"
+
+    logger.info("🏁 Daily ETL Pipeline Completed")
+    return results

@@ -101,6 +101,12 @@ interface DetailedPlayer {
 
   // Available Heatmaps
   available_heatmaps?: number[];
+
+  // Predicted Points
+  upcoming_predictions?: {
+    game_week: number;
+    predicted_points: number;
+  }[];
 }
 
 interface Fixture {
@@ -521,6 +527,25 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
                     style={{ backgroundColor: getDifficultyColor(fixture.difficulty) }}
                   >
                     {fixture.difficulty}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+
+
+        {/* Predicted Points */}
+        {player.upcoming_predictions && player.upcoming_predictions.length > 0 && (
+          <div className="modal-fixtures-section">
+            <h3>🔮 Predicted Points (xPoints)</h3>
+            <div className="fixtures-list">
+              {player.upcoming_predictions.map((pred, idx) => (
+                <div key={idx} className="fixture-item prediction-item">
+                  <span className="fixture-gw">GW{pred.game_week}</span>
+                  <span className="fixture-difficulty" style={{ backgroundColor: '#8b5cf6', width: 'auto', padding: '0 8px' }}>
+                    {pred.predicted_points.toFixed(1)} xP
                   </span>
                 </div>
               ))}

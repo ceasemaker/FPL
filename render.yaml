@@ -6,7 +6,9 @@ services:
     region: oregon
     plan: starter
     buildCommand: ./build.sh
-    startCommand: ./start-django-only.sh
+    startCommand: |
+      cd django_etl
+      supervisord -c ../supervisord.conf
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -58,41 +60,6 @@ services:
     region: oregon
     plan: free
     ipAllowList: []
-
-  # Cron Job to refresh FPL data daily - Starter Plan
-  - type: cron
-    name: fpl-pulse-etl-cron
-    env: python
-    region: oregon
-    plan: starter
-    schedule: "0 3 * * *"  # Run at 3 AM UTC daily (after gameweek updates)
-    buildCommand: |
-      pip install -r requirements.txt
-    startCommand: |
-      cd django_etl
-      python manage.py migrate
-      python manage.py run_fpl_etl
-      python manage.py load_sofasport_data --task=heatmaps
-      python manage.py sync_top100
-      python manage.py clear_cache
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0
-      - key: USE_POSTGRES
-        value: true
-      - key: DATABASE_URL
-        fromDatabase:
-          name: fpl-pulse-db
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: keyvalue
-          name: fpl-pulse-redis
-          property: connectionString
-      - key: SECRET_KEY
-        generateValue: true
-      - key: DEBUG
-        value: false
 
 # PostgreSQL Database
 databases:

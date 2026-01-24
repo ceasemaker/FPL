@@ -43,11 +43,12 @@ const ATTRIBUTE_KEYS: (keyof RadarAttributes)[] = [
 ];
 
 // Colors for up to 4 players
+// Colors for up to 4 players - Neon Noir Palette
 const PLAYER_COLORS = [
-  { fill: "rgba(79, 70, 229, 0.3)", stroke: "rgba(79, 70, 229, 0.9)", name: "#4f46e5" },     // Primary purple
-  { fill: "rgba(251, 111, 187, 0.3)", stroke: "rgba(251, 111, 187, 0.9)", name: "#fb6fbb" },  // Pink
-  { fill: "rgba(34, 211, 238, 0.3)", stroke: "rgba(34, 211, 238, 0.9)", name: "#22d3ee" },    // Cyan
-  { fill: "rgba(251, 146, 60, 0.3)", stroke: "rgba(251, 146, 60, 0.9)", name: "#fb923c" },    // Orange
+  { fill: "rgba(22, 242, 255, 0.25)", stroke: "#16f2ff", name: "#16f2ff" },    // Electric Cyan
+  { fill: "rgba(168, 85, 247, 0.25)", stroke: "#a855f7", name: "#a855f7" },    // Neon Purple
+  { fill: "rgba(251, 111, 187, 0.25)", stroke: "#fb6fbb", name: "#fb6fbb" },   // Hot Pink
+  { fill: "rgba(34, 197, 94, 0.25)", stroke: "#22c55e", name: "#22c55e" },    // Neon Green
 ];
 
 export function RadarChart({ playerIds, height = 400, width = 400, showBreakdown = true, hideOnError = false }: RadarChartProps) {
@@ -297,7 +298,7 @@ export function RadarChart({ playerIds, height = 400, width = 400, showBreakdown
   }
 
   return (
-    <div className="radar-chart-wrapper">
+    <div className="radar-chart-wrapper glass-panel">
       <canvas
         ref={canvasRef}
         className="radar-chart-canvas"
