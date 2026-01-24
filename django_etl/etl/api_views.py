@@ -24,6 +24,7 @@ PLAYER_IMAGE_BASE = "https://resources.premierleague.com/premierleague25/photos/
 # Cache timeouts (in seconds)
 CACHE_TIMEOUT_24H = 86400  # 24 hours - perfect for daily data refresh at 3 AM
 CACHE_TIMEOUT_1H = 3600  # 1 hour for more dynamic data
+CACHE_TIMEOUT_30M = 1800
 
 
 @dataclass
@@ -85,6 +86,238 @@ def _player_image(photo: str | None) -> str | None:
         return None
     clean = photo.split(".")[0]
     return f"{PLAYER_IMAGE_BASE}{clean}.png"
+
+
+def _price_change_predictor_cache_key(limit: int) -> str:
+    return f"price_predictor:limit={limit}:v1"
+
+
+def _price_predictor_history_cache_key(
+    limit: int,
+    top: int,
+    metric: str,
+    direction: str | None,
+    player_ids_param: str,
+    directions_param: str,
+) -> str:
+    player_key = player_ids_param or "auto"
+    directions_key = directions_param or "auto"
+    direction_key = direction or ""
+    return (
+        "price_predictor_history:"
+        f"limit={limit}:top={top}:metric={metric}:direction={direction_key}:"
+        f"player_ids={player_key}:directions={directions_key}:v1"
+    )
+
+
+def _build_price_change_predictor_payload(limit: int) -> dict[str, Any]:
+    players = (
+        Athlete.objects.select_related("team")
+        .values(
+            "id",
+            "first_name",
+            "second_name",
+            "web_name",
+            "team__short_name",
+            "now_cost",
+            "transfers_in_event",
+            "transfers_out_event",
+            "selected_by_percent",
+            "cost_change_event",
+            "status",
+            "photo",
+        )
+    )
+
+    scored = []
+    for player in players:
+        transfers_in = player.get("transfers_in_event") or 0
+        transfers_out = player.get("transfers_out_event") or 0
+        delta = transfers_in - transfers_out
+        total = max(1, transfers_in + transfers_out)
+        signal = round((delta / total) * 100, 2)
+        scored.append({
+            "id": player["id"],
+            "first_name": player["first_name"],
+            "second_name": player["second_name"],
+            "web_name": player["web_name"],
+            "team": player["team__short_name"],
+            "now_cost": player["now_cost"],
+            "transfer_delta": delta,
+            "signal": signal,
+            "selected_by_percent": float(player["selected_by_percent"]) if player["selected_by_percent"] else None,
+            "cost_change_event": player.get("cost_change_event"),
+            "status": player.get("status"),
+            "image_url": _player_image(player.get("photo")),
+        })
+
+    risers = sorted(scored, key=lambda p: p["transfer_delta"], reverse=True)[:limit]
+    fallers = sorted(scored, key=lambda p: p["transfer_delta"])[:limit]
+
+    return {
+        "risers": risers,
+        "fallers": fallers,
+        "limit": limit,
+    }
+
+
+def _build_price_predictor_history_payload(
+    *,
+    limit: int,
+    top: int,
+    metric: str,
+    player_ids_param: str,
+    directions_param: str,
+    direction_filter: str | None,
+) -> dict[str, Any]:
+    snapshots = list(
+        RawEndpointSnapshot.objects.filter(endpoint="bootstrap-static")
+        .order_by("-created_at")[:limit]
+    )
+    if not snapshots:
+        raise LookupError("No snapshots available.")
+
+    snapshots.reverse()
+    latest_elements = {
+        element.get("id"): element
+        for element in snapshots[-1].payload.get("elements", [])
+        if element.get("id")
+    }
+
+    if player_ids_param:
+        try:
+            player_ids = [int(pid) for pid in player_ids_param.split(",") if pid.strip()]
+        except ValueError as exc:
+            raise ValueError("Invalid player_ids parameter.") from exc
+        directions = [
+            direction if direction in ("in", "out") else "in"
+            for direction in directions_param.split(",")
+            if direction.strip()
+        ]
+        if not directions:
+            directions = ["in"] * len(player_ids)
+        if len(directions) < len(player_ids):
+            directions.extend(["in"] * (len(player_ids) - len(directions)))
+    else:
+        if metric == "ownership":
+            sorted_by_ownership = sorted(
+                latest_elements.values(),
+                key=lambda el: float(el.get("selected_by_percent") or 0),
+                reverse=True,
+            )
+            player_ids = [el.get("id") for el in sorted_by_ownership[:top]]
+            directions = ["in"] * len(player_ids)
+        else:
+            if direction_filter in ("in", "out"):
+                value_key = "transfers_in_event" if direction_filter == "in" else "transfers_out_event"
+                sorted_by_transfer = sorted(
+                    latest_elements.values(),
+                    key=lambda el: el.get(value_key, 0),
+                    reverse=True,
+                )
+                player_ids = [el.get("id") for el in sorted_by_transfer[:top]]
+                directions = [direction_filter] * len(player_ids)
+                player_ids = [pid for pid in player_ids if pid]
+                player_ids_set = set(player_ids)
+                players_lookup = {
+                    player.id: player
+                    for player in Athlete.objects.filter(id__in=player_ids_set).select_related("team")
+                }
+                series = []
+                for player_id in player_ids:
+                    points = []
+                    for snapshot in snapshots:
+                        elements = snapshot.payload.get("elements", [])
+                        element = next((el for el in elements if el.get("id") == player_id), None)
+                        if not element:
+                            points.append({
+                                "timestamp": snapshot.created_at.isoformat(),
+                                "value": 0,
+                            })
+                            continue
+                        value = element.get(value_key, 0) or 0
+                        points.append({
+                            "timestamp": snapshot.created_at.isoformat(),
+                            "value": value,
+                        })
+
+                    athlete = players_lookup.get(player_id)
+                    series.append({
+                        "player_id": player_id,
+                        "web_name": athlete.web_name if athlete else str(player_id),
+                        "team": athlete.team.short_name if athlete and athlete.team else None,
+                        "direction": direction_filter,
+                        "metric": metric,
+                        "points": points,
+                    })
+
+                return {
+                    "snapshot_count": len(snapshots),
+                    "latest_snapshot": snapshots[-1].created_at.isoformat(),
+                    "series": series,
+                }
+
+            sorted_by_in = sorted(
+                latest_elements.values(),
+                key=lambda el: el.get("transfers_in_event", 0),
+                reverse=True,
+            )
+            sorted_by_out = sorted(
+                latest_elements.values(),
+                key=lambda el: el.get("transfers_out_event", 0),
+                reverse=True,
+            )
+            player_ids = [el.get("id") for el in sorted_by_in[:top]] + [
+                el.get("id") for el in sorted_by_out[:top]
+            ]
+            directions = ["in"] * min(top, len(sorted_by_in)) + ["out"] * min(top, len(sorted_by_out))
+
+    player_ids = [pid for pid in player_ids if pid]
+    player_ids_set = set(player_ids)
+
+    players_lookup = {
+        player.id: player
+        for player in Athlete.objects.filter(id__in=player_ids_set).select_related("team")
+    }
+
+    series = []
+    for player_id, direction in zip(player_ids, directions):
+        points = []
+        for snapshot in snapshots:
+            elements = snapshot.payload.get("elements", [])
+            element = next((el for el in elements if el.get("id") == player_id), None)
+            if not element:
+                points.append({
+                    "timestamp": snapshot.created_at.isoformat(),
+                    "value": 0,
+                })
+                continue
+            if metric == "ownership":
+                raw_value = element.get("selected_by_percent")
+                value = float(raw_value) if raw_value not in (None, "") else 0
+            else:
+                value_key = "transfers_in_event" if direction == "in" else "transfers_out_event"
+                value = element.get(value_key, 0) or 0
+            points.append({
+                "timestamp": snapshot.created_at.isoformat(),
+                "value": value,
+            })
+
+        athlete = players_lookup.get(player_id)
+        series.append({
+            "player_id": player_id,
+            "web_name": athlete.web_name if athlete else str(player_id),
+            "team": athlete.team.short_name if athlete and athlete.team else None,
+            "direction": direction,
+            "metric": metric,
+            "points": points,
+        })
+
+    return {
+        "snapshot_count": len(snapshots),
+        "latest_snapshot": snapshots[-1].created_at.isoformat(),
+        "series": series,
+    }
 
 
 def _serialize_queryset(queryset, *, label: str, value_key: str) -> list[dict[str, Any]]:
@@ -687,55 +920,14 @@ def price_change_predictor(request):
         limit = max(10, min(int(request.GET.get("limit", 20)), 50))
     except (TypeError, ValueError):
         limit = 20
+    cache_key = _price_change_predictor_cache_key(limit)
+    cached_response = cache.get(cache_key)
+    if cached_response:
+        return JsonResponse(cached_response)
 
-    players = (
-        Athlete.objects.select_related("team")
-        .values(
-            "id",
-            "first_name",
-            "second_name",
-            "web_name",
-            "team__short_name",
-            "now_cost",
-            "transfers_in_event",
-            "transfers_out_event",
-            "selected_by_percent",
-            "cost_change_event",
-            "status",
-            "photo",
-        )
-    )
-
-    scored = []
-    for player in players:
-        transfers_in = player.get("transfers_in_event") or 0
-        transfers_out = player.get("transfers_out_event") or 0
-        delta = transfers_in - transfers_out
-        total = max(1, transfers_in + transfers_out)
-        signal = round((delta / total) * 100, 2)
-        scored.append({
-            "id": player["id"],
-            "first_name": player["first_name"],
-            "second_name": player["second_name"],
-            "web_name": player["web_name"],
-            "team": player["team__short_name"],
-            "now_cost": player["now_cost"],
-            "transfer_delta": delta,
-            "signal": signal,
-            "selected_by_percent": float(player["selected_by_percent"]) if player["selected_by_percent"] else None,
-            "cost_change_event": player.get("cost_change_event"),
-            "status": player.get("status"),
-            "image_url": _player_image(player.get("photo")),
-        })
-
-    risers = sorted(scored, key=lambda p: p["transfer_delta"], reverse=True)[:limit]
-    fallers = sorted(scored, key=lambda p: p["transfer_delta"])[:limit]
-
-    return JsonResponse({
-        "risers": risers,
-        "fallers": fallers,
-        "limit": limit,
-    })
+    payload = _build_price_change_predictor_payload(limit)
+    cache.set(cache_key, payload, CACHE_TIMEOUT_30M)
+    return JsonResponse(payload)
 
 
 @require_GET
@@ -755,155 +947,36 @@ def price_predictor_history(request):
 
     player_ids_param = request.GET.get("player_ids", "")
     directions_param = request.GET.get("directions", "")
-
-    snapshots = list(
-        RawEndpointSnapshot.objects.filter(endpoint="bootstrap-static")
-        .order_by("-created_at")[:limit]
-    )
-    if not snapshots:
-        return JsonResponse({"error": "No snapshots available."}, status=404)
-
-    snapshots.reverse()
-    latest_elements = {
-        element.get("id"): element
-        for element in snapshots[-1].payload.get("elements", [])
-        if element.get("id")
-    }
     direction_filter = request.GET.get("direction")
 
-    if player_ids_param:
-        try:
-            player_ids = [int(pid) for pid in player_ids_param.split(",") if pid.strip()]
-        except ValueError:
-            return JsonResponse({"error": "Invalid player_ids parameter."}, status=400)
-        directions = [
-            direction if direction in ("in", "out") else "in"
-            for direction in directions_param.split(",")
-            if direction.strip()
-        ]
-        if not directions:
-            directions = ["in"] * len(player_ids)
-        if len(directions) < len(player_ids):
-            directions.extend(["in"] * (len(player_ids) - len(directions)))
-    else:
-        if metric == "ownership":
-            sorted_by_ownership = sorted(
-                latest_elements.values(),
-                key=lambda el: float(el.get("selected_by_percent") or 0),
-                reverse=True,
-            )
-            player_ids = [el.get("id") for el in sorted_by_ownership[:top]]
-            directions = ["in"] * len(player_ids)
-        else:
-            if direction_filter in ("in", "out"):
-                value_key = "transfers_in_event" if direction_filter == "in" else "transfers_out_event"
-                sorted_by_transfer = sorted(
-                    latest_elements.values(),
-                    key=lambda el: el.get(value_key, 0),
-                    reverse=True,
-                )
-                player_ids = [el.get("id") for el in sorted_by_transfer[:top]]
-                directions = [direction_filter] * len(player_ids)
-                player_ids = [pid for pid in player_ids if pid]
-                player_ids_set = set(player_ids)
-                players_lookup = {
-                    player.id: player
-                    for player in Athlete.objects.filter(id__in=player_ids_set).select_related("team")
-                }
-                series = []
-                for player_id in player_ids:
-                    points = []
-                    for snapshot in snapshots:
-                        elements = snapshot.payload.get("elements", [])
-                        element = next((el for el in elements if el.get("id") == player_id), None)
-                        if not element:
-                            points.append({
-                                "timestamp": snapshot.created_at.isoformat(),
-                                "value": 0,
-                            })
-                            continue
-                        value = element.get(value_key, 0) or 0
-                        points.append({
-                            "timestamp": snapshot.created_at.isoformat(),
-                            "value": value,
-                        })
+    cache_key = _price_predictor_history_cache_key(
+        limit,
+        top,
+        metric,
+        direction_filter,
+        player_ids_param,
+        directions_param,
+    )
+    cached_response = cache.get(cache_key)
+    if cached_response:
+        return JsonResponse(cached_response)
 
-                    athlete = players_lookup.get(player_id)
-                    series.append({
-                        "player_id": player_id,
-                        "web_name": athlete.web_name if athlete else str(player_id),
-                        "team": athlete.team.short_name if athlete and athlete.team else None,
-                        "direction": direction_filter,
-                        "metric": metric,
-                        "points": points,
-                    })
+    try:
+        payload = _build_price_predictor_history_payload(
+            limit=limit,
+            top=top,
+            metric=metric,
+            player_ids_param=player_ids_param,
+            directions_param=directions_param,
+            direction_filter=direction_filter,
+        )
+    except ValueError as exc:
+        return JsonResponse({"error": str(exc)}, status=400)
+    except LookupError as exc:
+        return JsonResponse({"error": str(exc)}, status=404)
 
-                return JsonResponse({
-                    "snapshot_count": len(snapshots),
-                    "latest_snapshot": snapshots[-1].created_at.isoformat(),
-                    "series": series,
-                })
-            sorted_by_in = sorted(
-                latest_elements.values(),
-                key=lambda el: el.get("transfers_in_event", 0),
-                reverse=True,
-            )
-            sorted_by_out = sorted(
-                latest_elements.values(),
-                key=lambda el: el.get("transfers_out_event", 0),
-                reverse=True,
-            )
-            player_ids = [el.get("id") for el in sorted_by_in[:top]] + [
-                el.get("id") for el in sorted_by_out[:top]
-            ]
-            directions = ["in"] * min(top, len(sorted_by_in)) + ["out"] * min(top, len(sorted_by_out))
-
-    player_ids = [pid for pid in player_ids if pid]
-    player_ids_set = set(player_ids)
-
-    players_lookup = {
-        player.id: player
-        for player in Athlete.objects.filter(id__in=player_ids_set).select_related("team")
-    }
-
-    series = []
-    for player_id, direction in zip(player_ids, directions):
-        points = []
-        for snapshot in snapshots:
-            elements = snapshot.payload.get("elements", [])
-            element = next((el for el in elements if el.get("id") == player_id), None)
-            if not element:
-                points.append({
-                    "timestamp": snapshot.created_at.isoformat(),
-                    "value": 0,
-                })
-                continue
-            if metric == "ownership":
-                raw_value = element.get("selected_by_percent")
-                value = float(raw_value) if raw_value not in (None, "") else 0
-            else:
-                value_key = "transfers_in_event" if direction == "in" else "transfers_out_event"
-                value = element.get(value_key, 0) or 0
-            points.append({
-                "timestamp": snapshot.created_at.isoformat(),
-                "value": value,
-            })
-
-        athlete = players_lookup.get(player_id)
-        series.append({
-            "player_id": player_id,
-            "web_name": athlete.web_name if athlete else str(player_id),
-            "team": athlete.team.short_name if athlete and athlete.team else None,
-            "direction": direction,
-            "metric": metric,
-            "points": points,
-        })
-
-    return JsonResponse({
-        "snapshot_count": len(snapshots),
-        "latest_snapshot": snapshots[-1].created_at.isoformat(),
-        "series": series,
-    })
+    cache.set(cache_key, payload, CACHE_TIMEOUT_30M)
+    return JsonResponse(payload)
 
 
 @require_GET

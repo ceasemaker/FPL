@@ -139,8 +139,14 @@
     accent-color: var(--accent-primary);
 }
 
-.results-count {
+.results-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 16px;
+}
+
+.results-count {
     font-size: 0.9rem;
     color: var(--text-secondary);
 }

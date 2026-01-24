@@ -136,22 +136,6 @@ export function PlayersPage() {
         <div className="players-title-row">
           <h1>Players</h1>
           <div className="players-actions">
-            <div className="view-toggle">
-              <button
-                className={`view-btn ${viewMode === "grid" ? "active" : ""}`}
-                onClick={() => setViewMode("grid")}
-                title="Grid View"
-              >
-                ⊞
-              </button>
-              <button
-                className={`view-btn ${viewMode === "table" ? "active" : ""}`}
-                onClick={() => setViewMode("table")}
-                title="Table View"
-              >
-                ≡
-              </button>
-            </div>
             <button
               className={`compare-toggle ${compareMode ? "active" : ""}`}
               onClick={() => {
@@ -181,28 +165,34 @@ export function PlayersPage() {
           </div>
 
           <div className="filters-group">
-            <select
-              value={teamFilter}
-              onChange={(e) => setTeamFilter(e.target.value)}
-              className="filter-select"
-            >
-              <option value="all">All Teams</option>
-              {teams.map(team => (
-                <option key={team} value={team!}>{team}</option>
-              ))}
-            </select>
+            <div className="filter-item">
+              <label>Team</label>
+              <select
+                value={teamFilter}
+                onChange={(e) => setTeamFilter(e.target.value)}
+                className="filter-select"
+              >
+                <option value="all">All Teams</option>
+                {teams.map(team => (
+                  <option key={team} value={team!}>{team}</option>
+                ))}
+              </select>
+            </div>
 
-            <select
-              value={positionFilter}
-              onChange={(e) => setPositionFilter(e.target.value)}
-              className="filter-select"
-            >
-              <option value="all">All Positions</option>
-              <option value="1">Goalkeepers</option>
-              <option value="2">Defenders</option>
-              <option value="3">Midfielders</option>
-              <option value="4">Forwards</option>
-            </select>
+            <div className="filter-item">
+              <label>Position</label>
+              <select
+                value={positionFilter}
+                onChange={(e) => setPositionFilter(e.target.value)}
+                className="filter-select"
+              >
+                <option value="all">All Positions</option>
+                <option value="1">Goalkeepers</option>
+                <option value="2">Defenders</option>
+                <option value="3">Midfielders</option>
+                <option value="4">Forwards</option>
+              </select>
+            </div>
 
             <div className="filter-item">
               <label>Max FDR: {maxFdr}</label>
@@ -244,8 +234,26 @@ export function PlayersPage() {
         <div className="players-loading">Loading players...</div>
       ) : (
         <>
-          <div className="results-count">
-            Showing {filteredPlayers.length} players
+          <div className="results-bar">
+            <div className="results-count">
+              Showing {filteredPlayers.length} players
+            </div>
+            <div className="view-toggle">
+              <button
+                className={`view-btn ${viewMode === "grid" ? "active" : ""}`}
+                onClick={() => setViewMode("grid")}
+                title="Grid View"
+              >
+                ⊞
+              </button>
+              <button
+                className={`view-btn ${viewMode === "table" ? "active" : ""}`}
+                onClick={() => setViewMode("table")}
+                title="Table View"
+              >
+                ≡
+              </button>
+            </div>
           </div>
 
           {viewMode === "grid" ? (

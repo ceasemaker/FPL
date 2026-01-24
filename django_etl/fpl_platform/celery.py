@@ -32,10 +32,18 @@ app.conf.beat_schedule = {
         'schedule': crontab(hour=3, minute=0, day_of_week=2),  # Tuesday 3 AM
     },
     
-    # Tuesday 4:00 AM - Collect heatmaps (runs after lineups)
-    'collect-heatmaps': {
-        'task': 'etl.tasks.collect_heatmaps',
-        'schedule': crontab(hour=4, minute=0, day_of_week=2),  # Tuesday 4 AM
+    # OLD: Heatmaps collected separately on Tuesday
+    # NEW: Heatmaps are now part of the Daily Pipeline
+    # 'collect-heatmaps': {
+    #    'task': 'etl.tasks.collect_heatmaps',
+    #    'schedule': crontab(hour=4, minute=0, day_of_week=2),
+    # },
+
+    # Daily 3:30 AM - Run Daily FPL ETL Pipeline (Replaces Render Cron Job)
+    # Runs after lineups (on Tue) and other weekly tasks
+    'run-daily-pipeline': {
+        'task': 'etl.tasks.run_daily_pipeline',
+        'schedule': crontab(hour=3, minute=30),  # Daily 3:30 AM
     },
     
     # Wednesday 2:00 AM - Update season statistics
@@ -55,6 +63,12 @@ app.conf.beat_schedule = {
         'task': 'etl.tasks.sync_fixture_odds',
         'schedule': crontab(minute='*/10'),  # Every 10 minutes
         'kwargs': {'days_ahead': 7}  # Next 7 days of fixtures
+    },
+
+    # Every 30 minutes - Warm price predictor cache for frontend charts
+    'warm-price-predictor-cache': {
+        'task': 'etl.tasks.warm_price_predictor_cache',
+        'schedule': crontab(minute='*/30'),
     },
 }
 
