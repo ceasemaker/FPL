@@ -293,10 +293,11 @@ def run_daily_pipeline():
     Replaces the Render Cron Job.
     Sequence:
     1. run_fpl_etl (Bootstrap basic FPL data)
-    2. run_fpl_etl commands (detailed sync) - actually run_fpl_etl does the main work
-    3. load_sofasport_data type=heatmaps (via collect_heatmaps task)
-    4. sync_top100
-    5. clear_cache
+    2. update_fixture_mappings (SofaSport fixture mapping)
+    3. update_lineups (SofaSport lineups + stats)
+    4. collect_heatmaps (SofaSport player heatmaps)
+    5. sync_top100
+    6. clear_cache
     """
     logger.info("🚀 Starting Daily ETL Pipeline...")
     results = {}
@@ -314,39 +315,53 @@ def run_daily_pipeline():
         # Usually if core data fails, we shoulder stop. 
         return results
 
-    # Step 2: Collect Heatmaps (SofaSport)
+    # Step 2: Update SofaSport fixture mappings
+    try:
+        logger.info("Step 2: Updating fixture mappings...")
+        results['update_fixture_mappings'] = update_fixture_mappings()
+    except Exception as e:
+        logger.error(f"❌ Step 2 Failed: {str(e)}")
+        results['update_fixture_mappings'] = f"Error: {str(e)}"
+
+    # Step 3: Update lineups and player stats
+    try:
+        logger.info("Step 3: Updating lineups...")
+        results['update_lineups'] = update_lineups()
+    except Exception as e:
+        logger.error(f"❌ Step 3 Failed: {str(e)}")
+        results['update_lineups'] = f"Error: {str(e)}"
+
+    # Step 4: Collect Heatmaps (SofaSport)
     # This was originally: python manage.py load_sofasport_data --task=heatmaps
     # We have an existing task for this: collect_heatmaps
     # We call it synchronously here to ensure order
     try:
-        logger.info("Step 2: Collecting Heatmaps...")
-        # We can call the task function directly since it's just a function decorated with @shared_task
-        # But to be safe with Celery context, we often just run the logic. 
+        logger.info("Step 4: Collecting Heatmaps...")
         # Since collect_heatmaps uses subprocess to run a script, we can just call it.
         start_heatmaps = collect_heatmaps() # Valid in Celery 5+ if same worker
         results['collect_heatmaps'] = start_heatmaps
     except Exception as e:
-         logger.error(f"❌ Step 2 Failed: {str(e)}")
+         logger.error(f"❌ Step 4 Failed: {str(e)}")
          results['collect_heatmaps'] = f"Error: {str(e)}"
 
-    # Step 3: Sync Top 100
+    # Step 5: Sync Top 100
     try:
-        logger.info("Step 3: Syncing Top 100 managers...")
+        logger.info("Step 5: Syncing Top 100 managers...")
         out = StringIO()
         call_command('sync_top100', stdout=out, stderr=out)
         results['sync_top100'] = "✅ " + out.getvalue()
     except Exception as e:
-        logger.error(f"❌ Step 3 Failed: {str(e)}")
+        logger.error(f"❌ Step 5 Failed: {str(e)}")
         results['sync_top100'] = f"Error: {str(e)}"
 
-    # Step 4: Clear Cache
+    # Step 6: Clear Cache
     try:
-        logger.info("Step 4: Clearing Cache...")
+        logger.info("Step 6: Clearing Cache...")
         out = StringIO()
         call_command('clear_cache', stdout=out, stderr=out)
         results['clear_cache'] = "✅ " + out.getvalue()
     except Exception as e:
-        logger.error(f"❌ Step 4 Failed: {str(e)}")
+        logger.error(f"❌ Step 6 Failed: {str(e)}")
         results['clear_cache'] = f"Error: {str(e)}"
 
     logger.info("🏁 Daily ETL Pipeline Completed")

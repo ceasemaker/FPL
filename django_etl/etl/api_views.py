@@ -170,17 +170,18 @@ def _build_price_predictor_history_payload(
     directions_param: str,
     direction_filter: str | None,
 ) -> dict[str, Any]:
-    snapshots = list(
+    latest_snapshot = (
         RawEndpointSnapshot.objects.filter(endpoint="bootstrap-static")
-        .order_by("-created_at")[:limit]
+        .order_by("-created_at")
+        .values("created_at", "payload")
+        .first()
     )
-    if not snapshots:
+    if not latest_snapshot:
         raise LookupError("No snapshots available.")
 
-    snapshots.reverse()
     latest_elements = {
         element.get("id"): element
-        for element in snapshots[-1].payload.get("elements", [])
+        for element in latest_snapshot["payload"].get("elements", [])
         if element.get("id")
     }
 
@@ -217,46 +218,6 @@ def _build_price_predictor_history_payload(
                 )
                 player_ids = [el.get("id") for el in sorted_by_transfer[:top]]
                 directions = [direction_filter] * len(player_ids)
-                player_ids = [pid for pid in player_ids if pid]
-                player_ids_set = set(player_ids)
-                players_lookup = {
-                    player.id: player
-                    for player in Athlete.objects.filter(id__in=player_ids_set).select_related("team")
-                }
-                series = []
-                for player_id in player_ids:
-                    points = []
-                    for snapshot in snapshots:
-                        elements = snapshot.payload.get("elements", [])
-                        element = next((el for el in elements if el.get("id") == player_id), None)
-                        if not element:
-                            points.append({
-                                "timestamp": snapshot.created_at.isoformat(),
-                                "value": 0,
-                            })
-                            continue
-                        value = element.get(value_key, 0) or 0
-                        points.append({
-                            "timestamp": snapshot.created_at.isoformat(),
-                            "value": value,
-                        })
-
-                    athlete = players_lookup.get(player_id)
-                    series.append({
-                        "player_id": player_id,
-                        "web_name": athlete.web_name if athlete else str(player_id),
-                        "team": athlete.team.short_name if athlete and athlete.team else None,
-                        "direction": direction_filter,
-                        "metric": metric,
-                        "points": points,
-                    })
-
-                return {
-                    "snapshot_count": len(snapshots),
-                    "latest_snapshot": snapshots[-1].created_at.isoformat(),
-                    "series": series,
-                }
-
             sorted_by_in = sorted(
                 latest_elements.values(),
                 key=lambda el: el.get("transfers_in_event", 0),
@@ -280,29 +241,46 @@ def _build_price_predictor_history_payload(
         for player in Athlete.objects.filter(id__in=player_ids_set).select_related("team")
     }
 
-    series = []
-    for player_id, direction in zip(player_ids, directions):
-        points = []
-        for snapshot in snapshots:
-            elements = snapshot.payload.get("elements", [])
-            element = next((el for el in elements if el.get("id") == player_id), None)
+    snapshot_ids = list(
+        RawEndpointSnapshot.objects.filter(endpoint="bootstrap-static")
+        .order_by("-created_at")
+        .values_list("id", flat=True)[:limit]
+    )
+    if not snapshot_ids:
+        raise LookupError("No snapshots available.")
+
+    snapshot_rows = (
+        RawEndpointSnapshot.objects.filter(id__in=snapshot_ids)
+        .order_by("created_at")
+        .values("created_at", "payload")
+    )
+
+    series_points = [[] for _ in player_ids]
+    for snapshot in snapshot_rows.iterator(chunk_size=25):
+        created_at = snapshot["created_at"]
+        elements = snapshot["payload"].get("elements", [])
+        elements_by_id = {
+            element.get("id"): element
+            for element in elements
+            if element.get("id") in player_ids_set
+        }
+        for index, (player_id, direction) in enumerate(zip(player_ids, directions)):
+            element = elements_by_id.get(player_id)
             if not element:
-                points.append({
-                    "timestamp": snapshot.created_at.isoformat(),
-                    "value": 0,
-                })
-                continue
-            if metric == "ownership":
+                value = 0
+            elif metric == "ownership":
                 raw_value = element.get("selected_by_percent")
                 value = float(raw_value) if raw_value not in (None, "") else 0
             else:
                 value_key = "transfers_in_event" if direction == "in" else "transfers_out_event"
                 value = element.get(value_key, 0) or 0
-            points.append({
-                "timestamp": snapshot.created_at.isoformat(),
+            series_points[index].append({
+                "timestamp": created_at.isoformat(),
                 "value": value,
             })
 
+    series = []
+    for player_id, direction, points in zip(player_ids, directions, series_points):
         athlete = players_lookup.get(player_id)
         series.append({
             "player_id": player_id,
@@ -314,8 +292,8 @@ def _build_price_predictor_history_payload(
         })
 
     return {
-        "snapshot_count": len(snapshots),
-        "latest_snapshot": snapshots[-1].created_at.isoformat(),
+        "snapshot_count": len(snapshot_ids),
+        "latest_snapshot": latest_snapshot["created_at"].isoformat(),
         "series": series,
     }
 
@@ -1272,9 +1250,13 @@ def player_detail(request, player_id):
         
         # Available Heatmaps
         "available_heatmaps": list(
-            SofasportHeatmap.objects.filter(athlete=player)
+            SofasportHeatmap.objects.filter(
+                athlete=player,
+                fixture__fixture__event__isnull=False,
+            )
             .values_list("fixture__fixture__event", flat=True)
             .order_by("-fixture__fixture__event")
+            .distinct()
         ),
         
         # Predicted Points (Next 5 GWs)
