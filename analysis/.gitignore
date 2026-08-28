@@ -1,0 +1,3 @@
+__pycache__/
+fpl_decision_backtest/output/structural_player_predictions.csv
+fpl_decision_backtest/output/player_week_metrics.csv

@@ -1,0 +1,1117 @@
+{
+  "generated_at": "2026-08-28T09:46:11.300111+00:00",
+  "entry": {
+    "id": 576154,
+    "name": "Didier Drogon",
+    "overall_points": 74,
+    "overall_rank": 279827,
+    "bank": 0.0,
+    "team_value": 100.0,
+    "used_chips": [
+      {
+        "name": "bboost",
+        "time": "2026-08-21T16:39:50.641379Z",
+        "event": 1
+      }
+    ]
+  },
+  "current_gameweek": 1,
+  "start_gameweek": 2,
+  "horizon": 3,
+  "deadline": "2026-08-28T17:30:00Z",
+  "public_squad_warning": "Public picks show the last revealed squad; transfers made since the last deadline may not be visible yet.",
+  "projection_warning": "GW1 provides a very small sample. GW2 uses official FPL ep_next; later weeks use a transparent form/PPG/fixture-difficulty heuristic, not bookmaker-calibrated xP.",
+  "squad": [
+    {
+      "id": 496,
+      "name": "Kinsky",
+      "position": "GKP",
+      "current_price": 4.5,
+      "selling_price": 4.5,
+      "ownership": 0.228,
+      "predictions": {
+        "2": 1.9,
+        "3": 1.9882,
+        "4": 2.0896
+      }
+    },
+    {
+      "id": 418,
+      "name": "Maguire",
+      "position": "DEF",
+      "current_price": 5.0,
+      "selling_price": 5.0,
+      "ownership": 0.171,
+      "predictions": {
+        "2": 2.2,
+        "3": 2.1781,
+        "4": 1.9687
+      }
+    },
+    {
+      "id": 329,
+      "name": "Rodon",
+      "position": "DEF",
+      "current_price": 4.5,
+      "selling_price": 4.5,
+      "ownership": 0.036000000000000004,
+      "predictions": {
+        "2": 1.7,
+        "3": 2.1327,
+        "4": 2.5105
+      }
+    },
+    {
+      "id": 8,
+      "name": "Calafiori",
+      "position": "DEF",
+      "current_price": 5.6,
+      "selling_price": 5.5,
+      "ownership": 0.41600000000000004,
+      "predictions": {
+        "2": 2.6,
+        "3": 2.5354,
+        "4": 2.805
+      }
+    },
+    {
+      "id": 426,
+      "name": "B.Fernandes",
+      "position": "MID",
+      "current_price": 12.0,
+      "selling_price": 12.0,
+      "ownership": 0.485,
+      "predictions": {
+        "2": 4.0,
+        "3": 4.5631,
+        "4": 4.1245
+      }
+    },
+    {
+      "id": 557,
+      "name": "Tzolis",
+      "position": "MID",
+      "current_price": 6.5,
+      "selling_price": 6.5,
+      "ownership": 0.26,
+      "predictions": {
+        "2": 2.3,
+        "3": 2.4706,
+        "4": 2.7334
+      }
+    },
+    {
+      "id": 427,
+      "name": "Mbeumo",
+      "position": "MID",
+      "current_price": 8.0,
+      "selling_price": 8.0,
+      "ownership": 0.36,
+      "predictions": {
+        "2": 2.8,
+        "3": 3.1225,
+        "4": 2.8224
+      }
+    },
+    {
+      "id": 368,
+      "name": "Szoboszlai",
+      "position": "MID",
+      "current_price": 7.0,
+      "selling_price": 7.0,
+      "ownership": 0.43200000000000005,
+      "predictions": {
+        "2": 2.5,
+        "3": 3.4231,
+        "4": 3.5978
+      }
+    },
+    {
+      "id": 411,
+      "name": "Haaland",
+      "position": "FWD",
+      "current_price": 15.5,
+      "selling_price": 15.5,
+      "ownership": 0.679,
+      "predictions": {
+        "2": 4.0,
+        "3": 6.339,
+        "4": 4.6312
+      }
+    },
+    {
+      "id": 346,
+      "name": "Calvert-Lewin",
+      "position": "FWD",
+      "current_price": 6.0,
+      "selling_price": 6.0,
+      "ownership": 0.28800000000000003,
+      "predictions": {
+        "2": 2.0,
+        "3": 2.5039,
+        "4": 2.9474
+      }
+    },
+    {
+      "id": 165,
+      "name": "Jo\u00e3o Pedro",
+      "position": "FWD",
+      "current_price": 7.6,
+      "selling_price": 7.5,
+      "ownership": 0.6779999999999999,
+      "predictions": {
+        "2": 2.4,
+        "3": 2.5169,
+        "4": 4.1149
+      }
+    },
+    {
+      "id": 109,
+      "name": "Verbruggen",
+      "position": "GKP",
+      "current_price": 4.5,
+      "selling_price": 4.5,
+      "ownership": 0.215,
+      "predictions": {
+        "2": 1.9,
+        "3": 2.5711,
+        "4": 2.4463
+      }
+    },
+    {
+      "id": 127,
+      "name": "Gomez",
+      "position": "MID",
+      "current_price": 5.0,
+      "selling_price": 5.0,
+      "ownership": 0.038,
+      "predictions": {
+        "2": 1.5,
+        "3": 2.4379,
+        "4": 2.3195
+      }
+    },
+    {
+      "id": 87,
+      "name": "Ajer",
+      "position": "DEF",
+      "current_price": 4.5,
+      "selling_price": 4.5,
+      "ownership": 0.04,
+      "predictions": {
+        "2": 1.7,
+        "3": 2.6259,
+        "4": 2.2307
+      }
+    },
+    {
+      "id": 259,
+      "name": "Diop",
+      "position": "DEF",
+      "current_price": 4.0,
+      "selling_price": 4.0,
+      "ownership": 0.171,
+      "predictions": {
+        "2": 1.0,
+        "3": 1.4173,
+        "4": 1.568
+      }
+    }
+  ],
+  "profiles": {
+    "protect": {
+      "hold_objective": 97.313573376,
+      "hold_expected_points": 101.541933,
+      "lineups": [
+        {
+          "starters": [
+            496,
+            8,
+            418,
+            87,
+            426,
+            427,
+            368,
+            557,
+            411,
+            165,
+            346
+          ],
+          "bench": [
+            329,
+            109,
+            127,
+            259
+          ],
+          "captain": 411,
+          "objective": 30.8151792,
+          "expected_points": 32.4,
+          "gameweek": 2,
+          "weight": 1.0
+        },
+        {
+          "starters": [
+            109,
+            8,
+            87,
+            418,
+            426,
+            368,
+            427,
+            557,
+            411,
+            165,
+            346
+          ],
+          "bench": [
+            496,
+            329,
+            127,
+            259
+          ],
+          "captain": 411,
+          "objective": 39.6894306,
+          "expected_points": 41.1886,
+          "gameweek": 3,
+          "weight": 0.9
+        },
+        {
+          "starters": [
+            109,
+            8,
+            329,
+            87,
+            426,
+            368,
+            427,
+            557,
+            411,
+            165,
+            346
+          ],
+          "bench": [
+            496,
+            418,
+            127,
+            259
+          ],
+          "captain": 411,
+          "objective": 37.9974156,
+          "expected_points": 39.5953,
+          "gameweek": 4,
+          "weight": 0.81
+        }
+      ],
+      "recommended_action": "roll_transfer",
+      "minimum_gain_to_spend_transfer": 1.5,
+      "top_one_transfer_moves": [
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 115,
+          "in": "De Cuyper",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 4.6,
+          "bank_after": 0.4,
+          "objective_gain": 1.076150400000003,
+          "expected_points_gain": 1.1725529999999935,
+          "incoming_ownership": 0.077,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 327,
+          "in": "Bijol",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 0.8581788000000046,
+          "expected_points_gain": 1.087262999999993,
+          "incoming_ownership": 0.009000000000000001,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 504,
+          "in": "Vuskovic",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 0.8002260000000092,
+          "expected_points_gain": 0.9980910000000023,
+          "incoming_ownership": 0.025,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 130,
+          "in": "Wieffer",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 0.7908408000000122,
+          "expected_points_gain": 1.0296809999999965,
+          "incoming_ownership": 0.004,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 334,
+          "in": "Muharemovi\u0107",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 0.5436018000000047,
+          "expected_points_gain": 0.7239059999999995,
+          "incoming_ownership": 0.034,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 88,
+          "in": "Kayode",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 4.6,
+          "bank_after": 0.4,
+          "objective_gain": 0.47390459999999734,
+          "expected_points_gain": 0.5781120000000044,
+          "incoming_ownership": 0.073,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 328,
+          "in": "Struijk",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 0.4035654000000193,
+          "expected_points_gain": 0.6463079999999906,
+          "incoming_ownership": 0.002,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 120,
+          "in": "Svoboda",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 0.40161419999999737,
+          "expected_points_gain": 0.6463079999999906,
+          "incoming_ownership": 0.001,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 364,
+          "in": "Tsimikas",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 0.39007620000001,
+          "expected_points_gain": 0.6347700000000032,
+          "incoming_ownership": 0.001,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 362,
+          "in": "Jacquet",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 0.33547680000000923,
+          "expected_points_gain": 0.5352929999999958,
+          "incoming_ownership": 0.024,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 557,
+          "out": "Tzolis",
+          "in_id": 335,
+          "in": "Stach",
+          "position": "MID",
+          "sell_price": 6.5,
+          "buy_price": 6.0,
+          "bank_after": 0.5,
+          "objective_gain": 0.3198967040000156,
+          "expected_points_gain": 0.9138680000000079,
+          "incoming_ownership": 0.023,
+          "outgoing_ownership": 0.26
+        },
+        {
+          "out_id": 427,
+          "out": "Mbeumo",
+          "in_id": 367,
+          "in": "Gakpo",
+          "position": "MID",
+          "sell_price": 8.0,
+          "buy_price": 7.0,
+          "bank_after": 1.0,
+          "objective_gain": 0.23376480800000365,
+          "expected_points_gain": 0.9831210000000112,
+          "incoming_ownership": 0.061,
+          "outgoing_ownership": 0.36
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 202,
+          "in": "Richards",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 0.21849840000001564,
+          "expected_points_gain": 0.45148500000000524,
+          "incoming_ownership": 0.006999999999999999,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 329,
+          "out": "Rodon",
+          "in_id": 332,
+          "in": "Justin",
+          "position": "DEF",
+          "sell_price": 4.5,
+          "buy_price": 4.5,
+          "bank_after": 0.0,
+          "objective_gain": 0.20619000000000653,
+          "expected_points_gain": 0.32240699999999833,
+          "incoming_ownership": 0.011000000000000001,
+          "outgoing_ownership": 0.036000000000000004
+        },
+        {
+          "out_id": 87,
+          "out": "Ajer",
+          "in_id": 332,
+          "in": "Justin",
+          "position": "DEF",
+          "sell_price": 4.5,
+          "buy_price": 4.5,
+          "bank_after": 0.0,
+          "objective_gain": 0.10744020000001342,
+          "expected_points_gain": 0.14602500000000873,
+          "incoming_ownership": 0.011000000000000001,
+          "outgoing_ownership": 0.04
+        }
+      ]
+    },
+    "balanced": {
+      "hold_objective": 102.52766240000001,
+      "hold_expected_points": 101.541933,
+      "lineups": [
+        {
+          "starters": [
+            496,
+            8,
+            418,
+            329,
+            426,
+            427,
+            368,
+            557,
+            411,
+            165,
+            346
+          ],
+          "bench": [
+            109,
+            127,
+            87,
+            259
+          ],
+          "captain": 426,
+          "objective": 32.705,
+          "expected_points": 32.4,
+          "gameweek": 2,
+          "weight": 1.0
+        },
+        {
+          "starters": [
+            109,
+            87,
+            8,
+            418,
+            426,
+            368,
+            427,
+            557,
+            411,
+            165,
+            346
+          ],
+          "bench": [
+            496,
+            329,
+            127,
+            259
+          ],
+          "captain": 411,
+          "objective": 41.587405000000004,
+          "expected_points": 41.1886,
+          "gameweek": 3,
+          "weight": 0.9
+        },
+        {
+          "starters": [
+            109,
+            8,
+            329,
+            87,
+            426,
+            368,
+            427,
+            557,
+            411,
+            165,
+            346
+          ],
+          "bench": [
+            496,
+            418,
+            127,
+            259
+          ],
+          "captain": 411,
+          "objective": 39.99259,
+          "expected_points": 39.5953,
+          "gameweek": 4,
+          "weight": 0.81
+        }
+      ],
+      "recommended_action": "roll_transfer",
+      "minimum_gain_to_spend_transfer": 1.5,
+      "top_one_transfer_moves": [
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 115,
+          "in": "De Cuyper",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 4.6,
+          "bank_after": 0.4,
+          "objective_gain": 1.1831639999999908,
+          "expected_points_gain": 1.1725529999999935,
+          "incoming_ownership": 0.077,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 327,
+          "in": "Bijol",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 1.0978739999999902,
+          "expected_points_gain": 1.087262999999993,
+          "incoming_ownership": 0.009000000000000001,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 130,
+          "in": "Wieffer",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 1.0402919999999796,
+          "expected_points_gain": 1.0296809999999965,
+          "incoming_ownership": 0.004,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 504,
+          "in": "Vuskovic",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 1.0087019999999853,
+          "expected_points_gain": 0.9980910000000023,
+          "incoming_ownership": 0.025,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 427,
+          "out": "Mbeumo",
+          "in_id": 367,
+          "in": "Gakpo",
+          "position": "MID",
+          "sell_price": 8.0,
+          "buy_price": 7.0,
+          "bank_after": 1.0,
+          "objective_gain": 0.983120999999997,
+          "expected_points_gain": 0.9831210000000112,
+          "incoming_ownership": 0.061,
+          "outgoing_ownership": 0.36
+        },
+        {
+          "out_id": 557,
+          "out": "Tzolis",
+          "in_id": 335,
+          "in": "Stach",
+          "position": "MID",
+          "sell_price": 6.5,
+          "buy_price": 6.0,
+          "bank_after": 0.5,
+          "objective_gain": 0.9138679999999795,
+          "expected_points_gain": 0.9138680000000079,
+          "incoming_ownership": 0.023,
+          "outgoing_ownership": 0.26
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 334,
+          "in": "Muharemovi\u0107",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 0.7345169999999968,
+          "expected_points_gain": 0.7239059999999995,
+          "incoming_ownership": 0.034,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 557,
+          "out": "Tzolis",
+          "in_id": 377,
+          "in": "Munoz",
+          "position": "MID",
+          "sell_price": 6.5,
+          "buy_price": 6.5,
+          "bank_after": 0.0,
+          "objective_gain": 0.7072919999999954,
+          "expected_points_gain": 0.7072919999999954,
+          "incoming_ownership": 0.006,
+          "outgoing_ownership": 0.26
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 120,
+          "in": "Svoboda",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 0.6569189999999878,
+          "expected_points_gain": 0.6463079999999906,
+          "incoming_ownership": 0.001,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 328,
+          "in": "Struijk",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 0.6569189999999878,
+          "expected_points_gain": 0.6463079999999906,
+          "incoming_ownership": 0.002,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 364,
+          "in": "Tsimikas",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 0.6453810000000004,
+          "expected_points_gain": 0.6347700000000032,
+          "incoming_ownership": 0.001,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 88,
+          "in": "Kayode",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 4.6,
+          "bank_after": 0.4,
+          "objective_gain": 0.5887230000000017,
+          "expected_points_gain": 0.5781120000000044,
+          "incoming_ownership": 0.073,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 362,
+          "in": "Jacquet",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 0.5459039999999931,
+          "expected_points_gain": 0.5352929999999958,
+          "incoming_ownership": 0.024,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 346,
+          "out": "Calvert-Lewin",
+          "in_id": 594,
+          "in": "David",
+          "position": "FWD",
+          "sell_price": 6.0,
+          "buy_price": 6.0,
+          "bank_after": 0.0,
+          "objective_gain": 0.48571199999999237,
+          "expected_points_gain": 0.4857120000000066,
+          "incoming_ownership": 0.003,
+          "outgoing_ownership": 0.28800000000000003
+        },
+        {
+          "out_id": 427,
+          "out": "Mbeumo",
+          "in_id": 366,
+          "in": "Wirtz",
+          "position": "MID",
+          "sell_price": 8.0,
+          "buy_price": 7.5,
+          "bank_after": 0.5,
+          "objective_gain": 0.4770339999999891,
+          "expected_points_gain": 0.4770340000000033,
+          "incoming_ownership": 0.115,
+          "outgoing_ownership": 0.36
+        }
+      ]
+    },
+    "chase": {
+      "hold_objective": 106.16393944000001,
+      "hold_expected_points": 101.42997299999999,
+      "lineups": [
+        {
+          "starters": [
+            109,
+            8,
+            418,
+            329,
+            426,
+            427,
+            368,
+            557,
+            411,
+            165,
+            346
+          ],
+          "bench": [
+            496,
+            127,
+            87,
+            259
+          ],
+          "captain": 426,
+          "objective": 33.9768415,
+          "expected_points": 32.4,
+          "gameweek": 2,
+          "weight": 1.0
+        },
+        {
+          "starters": [
+            109,
+            87,
+            8,
+            329,
+            426,
+            368,
+            427,
+            127,
+            557,
+            411,
+            346
+          ],
+          "bench": [
+            496,
+            418,
+            165,
+            259
+          ],
+          "captain": 411,
+          "objective": 43.09227,
+          "expected_points": 41.0642,
+          "gameweek": 3,
+          "weight": 0.9
+        },
+        {
+          "starters": [
+            109,
+            8,
+            329,
+            87,
+            426,
+            368,
+            427,
+            557,
+            411,
+            165,
+            346
+          ],
+          "bench": [
+            496,
+            418,
+            127,
+            259
+          ],
+          "captain": 411,
+          "objective": 41.239574,
+          "expected_points": 39.5953,
+          "gameweek": 4,
+          "weight": 0.81
+        }
+      ],
+      "recommended_action": "roll_transfer",
+      "minimum_gain_to_spend_transfer": 1.5,
+      "top_one_transfer_moves": [
+        {
+          "out_id": 427,
+          "out": "Mbeumo",
+          "in_id": 367,
+          "in": "Gakpo",
+          "position": "MID",
+          "sell_price": 8.0,
+          "buy_price": 7.0,
+          "bank_after": 1.0,
+          "objective_gain": 1.4514686199999858,
+          "expected_points_gain": 0.9831210000000112,
+          "incoming_ownership": 0.061,
+          "outgoing_ownership": 0.36
+        },
+        {
+          "out_id": 557,
+          "out": "Tzolis",
+          "in_id": 335,
+          "in": "Stach",
+          "position": "MID",
+          "sell_price": 6.5,
+          "buy_price": 6.0,
+          "bank_after": 0.5,
+          "objective_gain": 1.2851000599999907,
+          "expected_points_gain": 0.9138680000000079,
+          "incoming_ownership": 0.023,
+          "outgoing_ownership": 0.26
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 115,
+          "in": "De Cuyper",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 4.6,
+          "bank_after": 0.4,
+          "objective_gain": 1.2341894999999852,
+          "expected_points_gain": 1.2134130000000027,
+          "incoming_ownership": 0.077,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 327,
+          "in": "Bijol",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 1.2318254999999994,
+          "expected_points_gain": 1.1281230000000164,
+          "incoming_ownership": 0.009000000000000001,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 130,
+          "in": "Wieffer",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 1.1803409999999985,
+          "expected_points_gain": 1.0705410000000057,
+          "incoming_ownership": 0.004,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 504,
+          "in": "Vuskovic",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 1.1231415000000027,
+          "expected_points_gain": 1.0389510000000115,
+          "incoming_ownership": 0.025,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 557,
+          "out": "Tzolis",
+          "in_id": 377,
+          "in": "Munoz",
+          "position": "MID",
+          "sell_price": 6.5,
+          "buy_price": 6.5,
+          "bank_after": 0.0,
+          "objective_gain": 1.10515251999999,
+          "expected_points_gain": 0.7072920000000238,
+          "incoming_ownership": 0.006,
+          "outgoing_ownership": 0.26
+        },
+        {
+          "out_id": 368,
+          "out": "Szoboszlai",
+          "in_id": 367,
+          "in": "Gakpo",
+          "position": "MID",
+          "sell_price": 7.0,
+          "buy_price": 7.0,
+          "bank_after": 0.0,
+          "objective_gain": 0.9656339799999785,
+          "expected_points_gain": 0.3845070000000135,
+          "incoming_ownership": 0.061,
+          "outgoing_ownership": 0.43200000000000005
+        },
+        {
+          "out_id": 346,
+          "out": "Calvert-Lewin",
+          "in_id": 594,
+          "in": "David",
+          "position": "FWD",
+          "sell_price": 6.0,
+          "buy_price": 6.0,
+          "bank_after": 0.0,
+          "objective_gain": 0.9587763749999851,
+          "expected_points_gain": 0.4857120000000208,
+          "incoming_ownership": 0.003,
+          "outgoing_ownership": 0.28800000000000003
+        },
+        {
+          "out_id": 427,
+          "out": "Mbeumo",
+          "in_id": 366,
+          "in": "Wirtz",
+          "position": "MID",
+          "sell_price": 8.0,
+          "buy_price": 7.5,
+          "bank_after": 0.5,
+          "objective_gain": 0.8607970999999992,
+          "expected_points_gain": 0.4770340000000033,
+          "incoming_ownership": 0.115,
+          "outgoing_ownership": 0.36
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 334,
+          "in": "Muharemovi\u0107",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 0.837980999999985,
+          "expected_points_gain": 0.7647660000000087,
+          "incoming_ownership": 0.034,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 557,
+          "out": "Tzolis",
+          "in_id": 95,
+          "in": "O.Dango",
+          "position": "MID",
+          "sell_price": 6.5,
+          "buy_price": 6.5,
+          "bank_after": 0.0,
+          "objective_gain": 0.8323786199999859,
+          "expected_points_gain": 0.4423500000000047,
+          "incoming_ownership": 0.011000000000000001,
+          "outgoing_ownership": 0.26
+        },
+        {
+          "out_id": 557,
+          "out": "Tzolis",
+          "in_id": 371,
+          "in": "Gravenberch",
+          "position": "MID",
+          "sell_price": 6.5,
+          "buy_price": 6.0,
+          "bank_after": 0.5,
+          "objective_gain": 0.8063011999999787,
+          "expected_points_gain": 0.4303700000000106,
+          "incoming_ownership": 0.02,
+          "outgoing_ownership": 0.26
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 120,
+          "in": "Svoboda",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 0.8006264999999928,
+          "expected_points_gain": 0.6871679999999998,
+          "incoming_ownership": 0.001,
+          "outgoing_ownership": 0.171
+        },
+        {
+          "out_id": 418,
+          "out": "Maguire",
+          "in_id": 328,
+          "in": "Struijk",
+          "position": "DEF",
+          "sell_price": 5.0,
+          "buy_price": 5.0,
+          "bank_after": 0.0,
+          "objective_gain": 0.7994070000000022,
+          "expected_points_gain": 0.6871679999999998,
+          "incoming_ownership": 0.002,
+          "outgoing_ownership": 0.171
+        }
+      ]
+    }
+  }
+}

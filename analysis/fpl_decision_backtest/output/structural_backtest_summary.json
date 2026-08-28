@@ -1,0 +1,119 @@
+{
+  "method": {
+    "goal_model": "independent Poisson calibrated to no-vig opening 1X2 and over/under 2.5 odds",
+    "player_model": "six-match lagged xG/xA with earlier-season positional priors",
+    "minutes_model": "three-state (start/substitute/none) from lagged starts with positional priors; player-specific minutes per start and per substitute appearance",
+    "scoring": "ordinary FPL scoring; chips excluded; 2025/26 defensive contributions included",
+    "bonus_model": "50/50 blend of rolling empirical bonus and per-position event-driven least-squares bonus fit on earlier seasons",
+    "risk": "deterministic-seeded Monte Carlo (300 draws/player-week); blank/haul Platt-calibrated per position on 2024/25 only",
+    "lookahead_control": "all player inputs end at GW-1; priors use earlier seasons only"
+  },
+  "coverage": [
+    {
+      "season": 2022,
+      "matches": 380,
+      "team_gameweeks": 718,
+      "double_gameweek_team_rows": 42,
+      "mean_1x2_fit_absolute_error": 0.009208
+    },
+    {
+      "season": 2023,
+      "matches": 380,
+      "team_gameweeks": 737,
+      "double_gameweek_team_rows": 23,
+      "mean_1x2_fit_absolute_error": 0.008429
+    },
+    {
+      "season": 2024,
+      "matches": 380,
+      "team_gameweeks": 750,
+      "double_gameweek_team_rows": 10,
+      "mean_1x2_fit_absolute_error": 0.010129
+    },
+    {
+      "season": 2025,
+      "matches": 380,
+      "team_gameweeks": 750,
+      "double_gameweek_team_rows": 10,
+      "mean_1x2_fit_absolute_error": 0.010032
+    }
+  ],
+  "validation_selected_structural_weight": 0.35000000000000003,
+  "validation_selection_criterion": "three-gameweek weighted top-five realized utility (weights 1.0/0.9/0.81) on 2024/25",
+  "probability_calibration": {
+    "blank_2024/25": {
+      "actual_rate": 0.87826,
+      "raw_mean": 0.80505,
+      "calibrated_mean": 0.87826,
+      "raw_brier": 0.10082,
+      "calibrated_brier": 0.0909
+    },
+    "blank_2025/26": {
+      "actual_rate": 0.85783,
+      "raw_mean": 0.80985,
+      "calibrated_mean": 0.88133,
+      "raw_brier": 0.10785,
+      "calibrated_brier": 0.10274
+    },
+    "haul_2024/25": {
+      "actual_rate": 0.0162,
+      "raw_mean": 0.00796,
+      "calibrated_mean": 0.0162,
+      "raw_brier": 0.01533,
+      "calibrated_brier": 0.01512
+    },
+    "haul_2025/26": {
+      "actual_rate": 0.01785,
+      "raw_mean": 0.00636,
+      "calibrated_mean": 0.0136,
+      "raw_brier": 0.01719,
+      "calibrated_brier": 0.01698
+    }
+  },
+  "season_results": [
+    {
+      "season": "2024/25",
+      "player_gameweeks": 6613,
+      "structural_weight": 0.35,
+      "ridge_xp_mae": 2.26848,
+      "ridge_xp_rmse": 3.07301,
+      "ridge_xp_correlation": 0.29888,
+      "structural_xp_mae": 2.06693,
+      "structural_xp_rmse": 3.116,
+      "structural_xp_correlation": 0.31337,
+      "hybrid_xp_mae": 2.17576,
+      "hybrid_xp_rmse": 3.06088,
+      "hybrid_xp_correlation": 0.31812
+    },
+    {
+      "season": "2025/26",
+      "player_gameweeks": 6673,
+      "structural_weight": 0.35,
+      "ridge_xp_mae": 2.34231,
+      "ridge_xp_rmse": 3.15416,
+      "ridge_xp_correlation": 0.22267,
+      "structural_xp_mae": 2.21555,
+      "structural_xp_rmse": 3.27363,
+      "structural_xp_correlation": 0.22828,
+      "hybrid_xp_mae": 2.27281,
+      "hybrid_xp_rmse": 3.16595,
+      "hybrid_xp_correlation": 0.23798
+    }
+  ],
+  "authority_gate": {
+    "accepted_for_optimizer": false,
+    "rule": "on untouched 2025/26, hybrid must beat ridge MAE and not reduce correlation, top-five realized points, or three-gameweek top-five utility",
+    "test_ridge_mae": 2.34231,
+    "test_hybrid_mae": 2.27281,
+    "test_ridge_correlation": 0.22267,
+    "test_hybrid_correlation": 0.23798,
+    "test_ridge_top5_points": 5.17838,
+    "test_hybrid_top5_points": 5.04865,
+    "test_ridge_top5_3gw": 12.21054,
+    "test_hybrid_top5_3gw": 11.65027,
+    "test_ridge_ndcg10": 0.39518,
+    "test_hybrid_ndcg10": 0.3964,
+    "test_ridge_captain_regret": 10.13514,
+    "test_hybrid_captain_regret": 10.13514
+  }
+}

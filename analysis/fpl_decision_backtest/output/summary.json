@@ -1,0 +1,241 @@
+{
+  "training_season": "2022/23",
+  "evaluation_seasons": [
+    "2023/24",
+    "2024/25",
+    "2025/26"
+  ],
+  "model_summary": [
+    {
+      "season": 2023,
+      "season_label": "2023/24",
+      "train_rows": 25559,
+      "test_rows": 29679,
+      "mae": 1.0066,
+      "rmse": 2.0047,
+      "correlation": 0.5159,
+      "p10_p90_coverage": 0.9403,
+      "decision_rows": 6729,
+      "decision_mae": 2.3343,
+      "decision_rmse": 3.217,
+      "decision_correlation": 0.2466,
+      "naive_last3_mae": 2.6591,
+      "decision_p10_p90_coverage": 0.8275
+    },
+    {
+      "season": 2024,
+      "season_label": "2024/25",
+      "train_rows": 54373,
+      "test_rows": 27599,
+      "mae": 1.0936,
+      "rmse": 2.1376,
+      "correlation": 0.4918,
+      "p10_p90_coverage": 0.9295,
+      "decision_rows": 6707,
+      "decision_mae": 2.2743,
+      "decision_rmse": 3.1074,
+      "decision_correlation": 0.258,
+      "naive_last3_mae": 2.6025,
+      "decision_p10_p90_coverage": 0.8223
+    },
+    {
+      "season": 2025,
+      "season_label": "2025/26",
+      "train_rows": 81168,
+      "test_rows": 29747,
+      "mae": 1.0126,
+      "rmse": 1.9798,
+      "correlation": 0.5515,
+      "p10_p90_coverage": 0.9327,
+      "decision_rows": 6776,
+      "decision_mae": 2.358,
+      "decision_rmse": 3.1907,
+      "decision_correlation": 0.1676,
+      "naive_last3_mae": 2.7752,
+      "decision_p10_p90_coverage": 0.7966
+    }
+  ],
+  "strategy_summary": [
+    {
+      "season_label": "All evaluation seasons",
+      "strategy": "differential_top_5",
+      "selections": 555,
+      "mean_actual_points": 4.0072,
+      "median_actual_points": 2.0,
+      "mean_predicted_points": 4.2406,
+      "haul_rate": 0.1748,
+      "blank_rate": 0.5459,
+      "mean_realized_value_edge": 0.3101,
+      "beat_price_peer_rate": 0.3622
+    },
+    {
+      "season_label": "All evaluation seasons",
+      "strategy": "model_top_5",
+      "selections": 555,
+      "mean_actual_points": 5.3622,
+      "median_actual_points": 3.0,
+      "mean_predicted_points": 5.1312,
+      "haul_rate": 0.2775,
+      "blank_rate": 0.445,
+      "mean_realized_value_edge": 0.7646,
+      "beat_price_peer_rate": 0.4162
+    },
+    {
+      "season_label": "All evaluation seasons",
+      "strategy": "overvalued_bottom_5",
+      "selections": 555,
+      "mean_actual_points": 1.6396,
+      "median_actual_points": 1.0,
+      "mean_predicted_points": 1.6087,
+      "haul_rate": 0.0505,
+      "blank_rate": 0.7982,
+      "mean_realized_value_edge": -1.0858,
+      "beat_price_peer_rate": 0.1928
+    },
+    {
+      "season_label": "All evaluation seasons",
+      "strategy": "template_70_plus",
+      "selections": 504,
+      "mean_actual_points": 5.5476,
+      "median_actual_points": 3.0,
+      "mean_predicted_points": 4.6534,
+      "haul_rate": 0.2996,
+      "blank_rate": 0.4405,
+      "mean_realized_value_edge": 1.4403,
+      "beat_price_peer_rate": 0.4762
+    },
+    {
+      "season_label": "All evaluation seasons",
+      "strategy": "undervalued_top_5",
+      "selections": 555,
+      "mean_actual_points": 3.5928,
+      "median_actual_points": 2.0,
+      "mean_predicted_points": 4.0456,
+      "haul_rate": 0.1405,
+      "blank_rate": 0.6,
+      "mean_realized_value_edge": 0.718,
+      "beat_price_peer_rate": 0.3658
+    },
+    {
+      "season_label": "All evaluation seasons",
+      "strategy": "value_top_5",
+      "selections": 555,
+      "mean_actual_points": 3.0252,
+      "median_actual_points": 2.0,
+      "mean_predicted_points": 3.4234,
+      "haul_rate": 0.0901,
+      "blank_rate": 0.6144,
+      "mean_realized_value_edge": 0.5566,
+      "beat_price_peer_rate": 0.3838
+    }
+  ],
+  "eo_summary": [
+    {
+      "eo_bucket": "0-10%",
+      "player_weeks": 5355,
+      "mean_eo": 0.0311,
+      "mean_points": 3.7359,
+      "points_sd": 3.3504,
+      "haul_rate": 0.1367,
+      "blank_rate": 0.5479,
+      "mean_nonowner_rank_points": -0.1211
+    },
+    {
+      "eo_bucket": "10-30%",
+      "player_weeks": 1389,
+      "mean_eo": 0.1814,
+      "mean_points": 4.5904,
+      "points_sd": 3.9767,
+      "haul_rate": 0.2181,
+      "blank_rate": 0.4701,
+      "mean_nonowner_rank_points": -0.8444
+    },
+    {
+      "eo_bucket": "30-50%",
+      "player_weeks": 476,
+      "mean_eo": 0.3913,
+      "mean_points": 4.7332,
+      "points_sd": 4.0171,
+      "haul_rate": 0.1975,
+      "blank_rate": 0.437,
+      "mean_nonowner_rank_points": -1.8423
+    },
+    {
+      "eo_bucket": "50-70%",
+      "player_weeks": 335,
+      "mean_eo": 0.5992,
+      "mean_points": 5.0388,
+      "points_sd": 3.8763,
+      "haul_rate": 0.2418,
+      "blank_rate": 0.4119,
+      "mean_nonowner_rank_points": -3.019
+    },
+    {
+      "eo_bucket": "70-100%",
+      "player_weeks": 370,
+      "mean_eo": 0.8534,
+      "mean_points": 6.3568,
+      "points_sd": 4.9772,
+      "haul_rate": 0.3541,
+      "blank_rate": 0.3405,
+      "mean_nonowner_rank_points": -5.4394
+    },
+    {
+      "eo_bucket": ">100%",
+      "player_weeks": 168,
+      "mean_eo": 1.5446,
+      "mean_points": 8.2024,
+      "points_sd": 5.4778,
+      "haul_rate": 0.4881,
+      "blank_rate": 0.2024,
+      "mean_nonowner_rank_points": -12.9162
+    }
+  ],
+  "volatility_summary": [
+    {
+      "volatility_quartile": "Q1 lowest",
+      "player_weeks": 4883,
+      "historical_points_sd": 0.9703,
+      "predicted_points": 2.4588,
+      "actual_points": 2.5216,
+      "mean_forecast_residual": 0.0628,
+      "actual_points_sd": 2.8407,
+      "haul_rate": 0.0764,
+      "blank_rate": 0.7082
+    },
+    {
+      "volatility_quartile": "Q2",
+      "player_weeks": 4894,
+      "historical_points_sd": 2.1295,
+      "predicted_points": 2.7406,
+      "actual_points": 2.8053,
+      "mean_forecast_residual": 0.0646,
+      "actual_points_sd": 3.1236,
+      "haul_rate": 0.0948,
+      "blank_rate": 0.6735
+    },
+    {
+      "volatility_quartile": "Q3",
+      "player_weeks": 4876,
+      "historical_points_sd": 3.0889,
+      "predicted_points": 3.0153,
+      "actual_points": 3.1409,
+      "mean_forecast_residual": 0.1256,
+      "actual_points_sd": 3.3792,
+      "haul_rate": 0.1112,
+      "blank_rate": 0.6343
+    },
+    {
+      "volatility_quartile": "Q4 highest",
+      "player_weeks": 4891,
+      "historical_points_sd": 4.7443,
+      "predicted_points": 3.3798,
+      "actual_points": 3.3727,
+      "mean_forecast_residual": -0.0071,
+      "actual_points_sd": 3.5796,
+      "haul_rate": 0.1249,
+      "blank_rate": 0.595
+    }
+  ],
+  "rows_exported": 87025
+}

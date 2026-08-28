@@ -1,0 +1,664 @@
+{
+  "method": {
+    "evaluation_seasons": [
+      "2024/25",
+      "2025/26"
+    ],
+    "odds_source": "Football-Data.co.uk E0.csv",
+    "fixture_source": "vaastav/Fantasy-Premier-League",
+    "price_snapshot": "opening average odds only",
+    "lookahead_control": "season model trains only on earlier seasons; player form stops at GW-1"
+  },
+  "coverage": [
+    {
+      "season": 2022,
+      "matches": 380,
+      "team_gameweeks": 718,
+      "double_gameweek_team_rows": 42
+    },
+    {
+      "season": 2023,
+      "matches": 380,
+      "team_gameweeks": 737,
+      "double_gameweek_team_rows": 23
+    },
+    {
+      "season": 2024,
+      "matches": 380,
+      "team_gameweeks": 750,
+      "double_gameweek_team_rows": 10
+    },
+    {
+      "season": 2025,
+      "matches": 380,
+      "team_gameweeks": 750,
+      "double_gameweek_team_rows": 10
+    }
+  ],
+  "season_results": [
+    {
+      "season": "2024/25",
+      "player_gameweeks": 6613,
+      "base_mae": 2.3007,
+      "odds_mae": 2.2685,
+      "mae_improvement_pct": 1.4004,
+      "base_correlation": 0.2852,
+      "odds_correlation": 0.2989,
+      "base_top5_points": 5.8108,
+      "odds_top5_points": 6.5297
+    },
+    {
+      "season": "2025/26",
+      "player_gameweeks": 6673,
+      "base_mae": 2.3608,
+      "odds_mae": 2.3423,
+      "mae_improvement_pct": 0.7852,
+      "base_correlation": 0.1797,
+      "odds_correlation": 0.2227,
+      "base_top5_points": 4.9405,
+      "odds_top5_points": 5.1784
+    }
+  ],
+  "overall": {
+    "player_gameweeks": 13286,
+    "base_mae": 2.3309,
+    "odds_mae": 2.3056,
+    "mae_improvement_pct": 1.0875,
+    "base_top5_points": 5.3757,
+    "odds_top5_points": 5.8541
+  },
+  "weekly": [
+    {
+      "season": "2024/25",
+      "gameweek": 2,
+      "base_mae": 2.2071,
+      "odds_mae": 2.1175,
+      "base_top5_points": 8.2,
+      "odds_top5_points": 8.2
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 3,
+      "base_mae": 1.9472,
+      "odds_mae": 1.9256,
+      "base_top5_points": 9.8,
+      "odds_top5_points": 9.4
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 4,
+      "base_mae": 2.3012,
+      "odds_mae": 2.3593,
+      "base_top5_points": 5.4,
+      "odds_top5_points": 5.4
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 5,
+      "base_mae": 2.112,
+      "odds_mae": 2.0593,
+      "base_top5_points": 5.4,
+      "odds_top5_points": 8.2
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 6,
+      "base_mae": 2.38,
+      "odds_mae": 2.3137,
+      "base_top5_points": 8.0,
+      "odds_top5_points": 8.4
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 7,
+      "base_mae": 2.3765,
+      "odds_mae": 2.2978,
+      "base_top5_points": 5.6,
+      "odds_top5_points": 7.0
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 8,
+      "base_mae": 2.1917,
+      "odds_mae": 2.203,
+      "base_top5_points": 4.8,
+      "odds_top5_points": 4.0
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 9,
+      "base_mae": 1.9813,
+      "odds_mae": 1.9767,
+      "base_top5_points": 7.4,
+      "odds_top5_points": 10.0
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 10,
+      "base_mae": 2.2584,
+      "odds_mae": 2.1952,
+      "base_top5_points": 3.6,
+      "odds_top5_points": 4.4
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 11,
+      "base_mae": 2.2722,
+      "odds_mae": 2.1657,
+      "base_top5_points": 5.2,
+      "odds_top5_points": 8.0
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 12,
+      "base_mae": 2.4086,
+      "odds_mae": 2.4886,
+      "base_top5_points": 6.4,
+      "odds_top5_points": 6.4
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 13,
+      "base_mae": 2.3375,
+      "odds_mae": 2.2441,
+      "base_top5_points": 11.2,
+      "odds_top5_points": 11.2
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 14,
+      "base_mae": 2.3857,
+      "odds_mae": 2.3053,
+      "base_top5_points": 7.0,
+      "odds_top5_points": 7.2
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 15,
+      "base_mae": 2.1113,
+      "odds_mae": 2.136,
+      "base_top5_points": 7.6,
+      "odds_top5_points": 7.4
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 16,
+      "base_mae": 2.2946,
+      "odds_mae": 2.2803,
+      "base_top5_points": 4.0,
+      "odds_top5_points": 4.4
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 17,
+      "base_mae": 2.6726,
+      "odds_mae": 2.7141,
+      "base_top5_points": 8.8,
+      "odds_top5_points": 8.8
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 18,
+      "base_mae": 2.1006,
+      "odds_mae": 2.0909,
+      "base_top5_points": 3.2,
+      "odds_top5_points": 4.2
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 19,
+      "base_mae": 2.2688,
+      "odds_mae": 2.2812,
+      "base_top5_points": 6.6,
+      "odds_top5_points": 6.6
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 20,
+      "base_mae": 2.2066,
+      "odds_mae": 2.2297,
+      "base_top5_points": 8.8,
+      "odds_top5_points": 9.0
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 21,
+      "base_mae": 2.253,
+      "odds_mae": 2.2291,
+      "base_top5_points": 9.0,
+      "odds_top5_points": 7.8
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 22,
+      "base_mae": 2.4179,
+      "odds_mae": 2.4022,
+      "base_top5_points": 6.4,
+      "odds_top5_points": 6.4
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 23,
+      "base_mae": 2.2084,
+      "odds_mae": 2.2508,
+      "base_top5_points": 8.4,
+      "odds_top5_points": 9.0
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 24,
+      "base_mae": 2.7362,
+      "odds_mae": 2.7147,
+      "base_top5_points": 9.0,
+      "odds_top5_points": 9.0
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 25,
+      "base_mae": 2.3302,
+      "odds_mae": 2.2582,
+      "base_top5_points": 6.4,
+      "odds_top5_points": 7.0
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 26,
+      "base_mae": 2.5455,
+      "odds_mae": 2.6633,
+      "base_top5_points": 6.2,
+      "odds_top5_points": 8.6
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 27,
+      "base_mae": 2.2934,
+      "odds_mae": 2.1282,
+      "base_top5_points": 3.8,
+      "odds_top5_points": 7.0
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 28,
+      "base_mae": 2.1158,
+      "odds_mae": 2.1075,
+      "base_top5_points": 5.2,
+      "odds_top5_points": 4.0
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 29,
+      "base_mae": 2.2788,
+      "odds_mae": 2.2485,
+      "base_top5_points": 7.0,
+      "odds_top5_points": 6.8
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 30,
+      "base_mae": 2.1675,
+      "odds_mae": 2.0409,
+      "base_top5_points": 3.0,
+      "odds_top5_points": 3.4
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 31,
+      "base_mae": 2.0849,
+      "odds_mae": 2.0478,
+      "base_top5_points": 1.4,
+      "odds_top5_points": 1.4
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 32,
+      "base_mae": 2.6345,
+      "odds_mae": 2.5888,
+      "base_top5_points": 2.4,
+      "odds_top5_points": 7.8
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 33,
+      "base_mae": 2.6377,
+      "odds_mae": 2.6233,
+      "base_top5_points": 2.8,
+      "odds_top5_points": 2.8
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 34,
+      "base_mae": 2.3128,
+      "odds_mae": 2.1607,
+      "base_top5_points": 5.0,
+      "odds_top5_points": 5.4
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 35,
+      "base_mae": 2.1798,
+      "odds_mae": 2.14,
+      "base_top5_points": 2.8,
+      "odds_top5_points": 6.0
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 36,
+      "base_mae": 2.5565,
+      "odds_mae": 2.6004,
+      "base_top5_points": 3.6,
+      "odds_top5_points": 3.2
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 37,
+      "base_mae": 2.3341,
+      "odds_mae": 2.142,
+      "base_top5_points": 2.2,
+      "odds_top5_points": 3.6
+    },
+    {
+      "season": "2024/25",
+      "gameweek": 38,
+      "base_mae": 2.2021,
+      "odds_mae": 2.1516,
+      "base_top5_points": 3.4,
+      "odds_top5_points": 4.2
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 2,
+      "base_mae": 2.4442,
+      "odds_mae": 2.349,
+      "base_top5_points": 4.4,
+      "odds_top5_points": 4.8
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 3,
+      "base_mae": 2.399,
+      "odds_mae": 2.4601,
+      "base_top5_points": 3.4,
+      "odds_top5_points": 6.6
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 4,
+      "base_mae": 2.3571,
+      "odds_mae": 2.2865,
+      "base_top5_points": 6.6,
+      "odds_top5_points": 7.4
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 5,
+      "base_mae": 2.1641,
+      "odds_mae": 2.1553,
+      "base_top5_points": 6.2,
+      "odds_top5_points": 5.6
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 6,
+      "base_mae": 2.2362,
+      "odds_mae": 2.2968,
+      "base_top5_points": 5.2,
+      "odds_top5_points": 5.2
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 7,
+      "base_mae": 2.1339,
+      "odds_mae": 2.091,
+      "base_top5_points": 6.6,
+      "odds_top5_points": 4.2
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 8,
+      "base_mae": 2.3054,
+      "odds_mae": 2.2749,
+      "base_top5_points": 6.4,
+      "odds_top5_points": 5.6
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 9,
+      "base_mae": 2.2922,
+      "odds_mae": 2.2837,
+      "base_top5_points": 3.4,
+      "odds_top5_points": 3.4
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 10,
+      "base_mae": 2.2534,
+      "odds_mae": 2.1474,
+      "base_top5_points": 8.0,
+      "odds_top5_points": 8.4
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 11,
+      "base_mae": 2.364,
+      "odds_mae": 2.3073,
+      "base_top5_points": 5.0,
+      "odds_top5_points": 4.4
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 12,
+      "base_mae": 2.5135,
+      "odds_mae": 2.5787,
+      "base_top5_points": 2.0,
+      "odds_top5_points": 2.0
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 13,
+      "base_mae": 2.3335,
+      "odds_mae": 2.3126,
+      "base_top5_points": 3.8,
+      "odds_top5_points": 7.0
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 14,
+      "base_mae": 2.2987,
+      "odds_mae": 2.3014,
+      "base_top5_points": 5.2,
+      "odds_top5_points": 5.4
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 15,
+      "base_mae": 2.3045,
+      "odds_mae": 2.2743,
+      "base_top5_points": 7.4,
+      "odds_top5_points": 7.8
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 16,
+      "base_mae": 2.5229,
+      "odds_mae": 2.4606,
+      "base_top5_points": 10.0,
+      "odds_top5_points": 10.0
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 17,
+      "base_mae": 2.4667,
+      "odds_mae": 2.4203,
+      "base_top5_points": 4.6,
+      "odds_top5_points": 6.6
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 18,
+      "base_mae": 2.2544,
+      "odds_mae": 2.2504,
+      "base_top5_points": 3.2,
+      "odds_top5_points": 3.2
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 19,
+      "base_mae": 2.4051,
+      "odds_mae": 2.4668,
+      "base_top5_points": 3.2,
+      "odds_top5_points": 3.0
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 20,
+      "base_mae": 2.3943,
+      "odds_mae": 2.334,
+      "base_top5_points": 3.0,
+      "odds_top5_points": 3.0
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 21,
+      "base_mae": 2.2014,
+      "odds_mae": 2.1837,
+      "base_top5_points": 3.2,
+      "odds_top5_points": 2.8
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 22,
+      "base_mae": 2.3327,
+      "odds_mae": 2.4377,
+      "base_top5_points": 3.2,
+      "odds_top5_points": 3.4
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 23,
+      "base_mae": 2.4028,
+      "odds_mae": 2.4166,
+      "base_top5_points": 2.2,
+      "odds_top5_points": 1.4
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 24,
+      "base_mae": 2.2914,
+      "odds_mae": 2.2289,
+      "base_top5_points": 5.4,
+      "odds_top5_points": 5.4
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 25,
+      "base_mae": 2.269,
+      "odds_mae": 2.1997,
+      "base_top5_points": 9.0,
+      "odds_top5_points": 6.0
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 26,
+      "base_mae": 2.2995,
+      "odds_mae": 2.2749,
+      "base_top5_points": 3.6,
+      "odds_top5_points": 3.6
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 27,
+      "base_mae": 2.2704,
+      "odds_mae": 2.2704,
+      "base_top5_points": 3.6,
+      "odds_top5_points": 3.6
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 28,
+      "base_mae": 2.3159,
+      "odds_mae": 2.3248,
+      "base_top5_points": 3.6,
+      "odds_top5_points": 3.8
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 29,
+      "base_mae": 2.478,
+      "odds_mae": 2.5016,
+      "base_top5_points": 7.2,
+      "odds_top5_points": 7.2
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 30,
+      "base_mae": 2.4146,
+      "odds_mae": 2.3691,
+      "base_top5_points": 3.6,
+      "odds_top5_points": 3.6
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 31,
+      "base_mae": 2.3809,
+      "odds_mae": 2.3681,
+      "base_top5_points": 3.8,
+      "odds_top5_points": 5.4
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 32,
+      "base_mae": 2.3439,
+      "odds_mae": 2.3464,
+      "base_top5_points": 2.4,
+      "odds_top5_points": 4.8
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 33,
+      "base_mae": 2.9696,
+      "odds_mae": 2.986,
+      "base_top5_points": 4.6,
+      "odds_top5_points": 11.4
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 34,
+      "base_mae": 2.4415,
+      "odds_mae": 2.394,
+      "base_top5_points": 7.6,
+      "odds_top5_points": 6.0
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 35,
+      "base_mae": 2.3369,
+      "odds_mae": 2.2,
+      "base_top5_points": 3.4,
+      "odds_top5_points": 3.6
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 36,
+      "base_mae": 2.3921,
+      "odds_mae": 2.3295,
+      "base_top5_points": 6.0,
+      "odds_top5_points": 8.0
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 37,
+      "base_mae": 2.3706,
+      "odds_mae": 2.4046,
+      "base_top5_points": 7.2,
+      "odds_top5_points": 4.8
+    },
+    {
+      "season": "2025/26",
+      "gameweek": 38,
+      "base_mae": 2.4268,
+      "odds_mae": 2.407,
+      "base_top5_points": 5.6,
+      "odds_top5_points": 3.2
+    }
+  ]
+}
