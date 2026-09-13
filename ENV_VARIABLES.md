@@ -93,6 +93,78 @@ CORS_ALLOWED_ORIGINS=http://localhost:5173,https://yourfrontend.com
 
 Multiple origins separated by commas.
 
+### Fixture Odds (key-free by default)
+
+The fixture-odds job uses Sofascore's public website API by default, so no API
+key is required:
+
+```bash
+SOFASCORE_ODDS_SOURCE=public
+SOFASCORE_PUBLIC_BASE_URL=https://api.sofascore.com/api/v1
+SOFASCORE_TOURNAMENT_ID=17
+SOFASCORE_SEASON_ID=96668
+SOFASCORE_RATE_LIMIT_DELAY=12.5
+SOFASCORE_MAX_CALLS_PER_DAY=40
+SOFASCORE_ODDS_MAX_AGE_HOURS=36
+```
+
+The Sofa identifiers are shared with the previous RapidAPI wrapper. Premier
+League's `unique_tournament_id` remains `17`; its season ID is `96668` for
+2026/27 (`76986` was 2025/26). The public API can block some IP addresses, so
+the machine or container running the worker should be smoke-tested directly.
+
+Odds collection is once daily. Every attempted public request is recorded in
+`raw_endpoint_snapshots` before transmission, requests start at least 12
+seconds apart (no more than five per minute), and a completed/blocked/capped
+run will not make more calls until the next local calendar day. These rules are
+inside the collection script, so they also apply to manual runs and Docker—not
+only to the Celery schedule. `SOFASCORE_MAX_CALLS_PER_DAY` is an emergency cap,
+not a target.
+
+The current tally can be read without contacting Sofascore:
+
+```bash
+cd django_etl
+python sofa_sport/scripts/fetch_fixture_odds.py --status
+```
+
+The prediction job removes the bookmaker margin from 1X2, totals, and BTTS
+prices. It infers the match scoring environment from the over-2.5 probability,
+then applies a bounded, position-specific correction against the FPL fixture
+rating already present in the model. Missing odds leave the original model
+prediction unchanged.
+Stored prices older than `SOFASCORE_ODDS_MAX_AGE_HOURS` are ignored so a
+blocked feed cannot silently influence recommendations for days afterward.
+
+The old paid route remains available as an explicit fallback:
+
+```bash
+SOFASCORE_ODDS_SOURCE=rapidapi
+SOFASPORT_API_HOST=sofasport.p.rapidapi.com
+SOFASPORT_API_KEY=your-key
+```
+
+### Football-Data Historical Odds
+
+At 06:15 daily, Celery downloads the current Premier League CSV from
+`football-data.co.uk` in one request. The season folder is derived locally
+(`2627` for 2026/27), so no index-page request is needed. The compact parsed
+snapshot is stored in `raw_endpoint_snapshots`, replacing the prior snapshot
+instead of appending the whole growing season every day.
+
+This source currently contains completed matches only. It is used for
+historical calibration and backtesting; it is never substituted into live
+pre-deadline fixture recommendations. The daily attempt is claimed before the
+request, so a failed request or container restart will not cause repeated
+downloads that day.
+
+Manual command:
+
+```bash
+cd django_etl
+python manage.py sync_football_data_odds
+```
+
 ## Render Deployment
 
 When deploying to Render, all environment variables are configured in `render.yaml`:

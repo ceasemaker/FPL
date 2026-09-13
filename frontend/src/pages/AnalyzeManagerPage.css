@@ -1,0 +1,625 @@
+/* Analyze Manager — lookup, squad view and history on the dark/lime system.
+ * Also styles the ManagerSummary / ManagerHistory / ManagerGameweek
+ * components, which ship no stylesheet of their own. */
+
+.analyze-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* --------------------------------------------------------------- lookup */
+
+.analyze-lookup {
+  display: grid;
+  grid-template-columns: minmax(200px, 320px) auto 1fr;
+  align-items: end;
+  gap: 14px;
+}
+
+.analyze-hint {
+  align-self: center;
+  margin: 0;
+  font-size: 0.74rem;
+  color: var(--aero-text-muted);
+}
+
+.analyze-hint strong {
+  color: var(--aero-lime);
+}
+
+.analyze-empty {
+  text-align: center;
+  padding: 48px 20px;
+}
+
+.analyze-empty h2 {
+  font-size: 1.1rem;
+  margin: 0 0 8px;
+}
+
+.analyze-empty p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--aero-text-muted);
+}
+
+/* ---------------------------------------------------------- view switch */
+
+.analyze-views {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--aero-line-strong);
+  border-radius: 999px;
+  background: var(--aero-surface);
+  width: fit-content;
+}
+
+.analyze-views button {
+  padding: 9px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--aero-text-dim);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.analyze-views button.active {
+  background: linear-gradient(100deg, #b8ff37, #8fe800);
+  color: #101011;
+}
+
+/* --------------------------------------------------------------- layout */
+
+.analyze-content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+  gap: 16px;
+  align-items: start;
+}
+
+/* ------------------------------------------------------- manager summary */
+
+.manager-summary-card {
+  border: 1px solid var(--aero-line-strong);
+  border-radius: var(--aero-radius);
+  background: linear-gradient(160deg, #1f2220, #151616 62%);
+  padding: 18px;
+}
+
+.manager-summary-card.error {
+  border-color: rgba(255, 76, 94, 0.4);
+  background: rgba(255, 76, 94, 0.08);
+  color: #ffb4bc;
+}
+
+.manager-summary-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--aero-text-muted);
+  margin: 0 0 12px;
+}
+
+.manager-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.team-name {
+  font-size: 0.82rem;
+  color: var(--aero-lime);
+  margin: 3px 0 0;
+}
+
+.manager-favorite-badge {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+
+.manager-summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.manager-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--aero-line);
+}
+
+.meta-item {
+  font-size: 0.72rem;
+  color: var(--aero-text-dim);
+}
+
+.meta-label {
+  display: block;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--aero-text-muted);
+}
+
+.manager-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.stat-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 11px;
+  border: 1px solid var(--aero-line);
+  border-radius: var(--aero-radius-sm);
+  background: var(--aero-surface);
+}
+
+.stat-box.highlight {
+  border-color: transparent;
+  background: var(--aero-lime-wash);
+}
+
+.stat-box.highlight .stat-value {
+  color: var(--aero-lime);
+}
+
+.stat-box .stat-label {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--aero-text-muted);
+}
+
+.stat-box .stat-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.stat-value.team-value { color: var(--aero-text); }
+.stat-value.bank { color: var(--aero-lime); }
+
+.manager-summary-loading,
+.loading-state,
+.analyze-page .error-state {
+  padding: 26px;
+  border: 1px solid var(--aero-line-strong);
+  border-radius: var(--aero-radius);
+  background: var(--aero-surface);
+  color: var(--aero-text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.analyze-page .error-state {
+  border-color: rgba(255, 76, 94, 0.4);
+  background: rgba(255, 76, 94, 0.08);
+  color: #ffb4bc;
+}
+
+.loading-spinner {
+  width: 26px;
+  height: 26px;
+  margin: 0 auto 10px;
+  border: 2px solid var(--aero-line-strong);
+  border-top-color: var(--aero-lime);
+  border-radius: 50%;
+  animation: analyze-spin 0.9s linear infinite;
+}
+
+@keyframes analyze-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner { animation: none; }
+}
+
+/* -------------------------------------------------------------- history */
+
+.manager-history-container,
+.manager-gameweek-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border: 1px solid var(--aero-line-strong);
+  border-radius: var(--aero-radius);
+  background: linear-gradient(145deg, #1b1c1c, #151616);
+  padding: 18px;
+}
+
+.history-title,
+.gameweek-title,
+.past-seasons-title,
+.bench-title {
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.history-summary-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.summary-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--aero-line);
+  border-radius: var(--aero-radius-sm);
+  background: var(--aero-surface);
+}
+
+.summary-label {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--aero-text-muted);
+}
+
+.summary-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.history-table-wrapper {
+  overflow-x: auto;
+}
+
+.history-table,
+.past-seasons-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.history-table th,
+.past-seasons-table th {
+  position: sticky;
+  top: 0;
+  padding: 9px 10px;
+  text-align: left;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--aero-text-muted);
+  background: var(--aero-surface);
+  border-bottom: 1px solid var(--aero-line-strong);
+}
+
+.history-table td,
+.past-seasons-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--aero-line);
+}
+
+.history-table tbody tr:hover {
+  background: var(--aero-surface-hover);
+}
+
+.gw-number,
+.season-name-cell {
+  font-weight: 600;
+}
+
+.points-cell {
+  font-weight: 700;
+  color: var(--aero-lime);
+}
+
+.rank-change.positive { color: var(--aero-lime); }
+.rank-change.negative { color: var(--aero-negative); }
+.rank-change.neutral { color: var(--aero-text-muted); }
+
+.chip-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--aero-lime-wash);
+  color: var(--aero-lime);
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.past-seasons {
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--aero-line);
+  overflow-x: auto;
+}
+
+/* ------------------------------------------------------ gameweek squad */
+
+.gameweek-selector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.gameweek-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gw-nav-button {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--aero-radius-sm);
+  border: 1px solid var(--aero-line-strong);
+  background: var(--aero-surface);
+  color: var(--aero-text);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.gw-nav-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.gw-select {
+  height: 36px;
+  padding: 0 12px;
+  border-radius: var(--aero-radius-sm);
+  border: 1px solid var(--aero-line-strong);
+  background: var(--aero-surface);
+  color: var(--aero-text);
+  font-family: inherit;
+  font-size: 0.85rem;
+}
+
+.gameweek-stats-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 8px;
+}
+
+.gw-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 11px;
+  border: 1px solid var(--aero-line);
+  border-radius: var(--aero-radius-sm);
+  background: var(--aero-surface);
+}
+
+.gw-stat.chip {
+  border-color: transparent;
+  background: var(--aero-lime-wash);
+}
+
+.gw-stat-label {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--aero-text-muted);
+}
+
+.gw-stat-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.gw-stat-value.chip-active {
+  color: var(--aero-lime);
+  font-size: 0.9rem;
+}
+
+/* Pitch */
+.formation-pitch {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 12px;
+  border-radius: var(--aero-radius);
+  border: 1px solid var(--aero-line);
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(165, 255, 1, 0.035) 0,
+      rgba(165, 255, 1, 0.035) 58px,
+      transparent 58px,
+      transparent 116px
+    ),
+    #131414;
+}
+
+.formation-row,
+.bench-players {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.gameweek-player-card {
+  position: relative;
+  width: 92px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 6px;
+  border: 1px solid var(--aero-line-strong);
+  border-radius: var(--aero-radius-sm);
+  background: linear-gradient(165deg, #202220, #171818);
+  transition: border-color 0.18s ease, transform 0.18s ease;
+}
+
+.gameweek-player-card:hover {
+  border-color: var(--aero-lime);
+  transform: translateY(-2px);
+}
+
+.gameweek-player-card.benched {
+  opacity: 0.62;
+}
+
+.player-card-image img {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+}
+
+.player-card-info {
+  width: 100%;
+  text-align: center;
+}
+
+.player-card-name {
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 3px;
+  font-size: 0.58rem;
+  color: var(--aero-text-muted);
+}
+
+.team-badge-mini {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
+}
+
+.position-mini {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--aero-surface-hover);
+  font-weight: 700;
+}
+
+.player-card-points {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 0.72rem;
+}
+
+.total-points {
+  font-weight: 800;
+  color: var(--aero-lime);
+}
+
+.base-points,
+.multiplier-text {
+  font-size: 0.6rem;
+  color: var(--aero-text-muted);
+}
+
+.captain-badge,
+.vice-captain-badge,
+.triple-captain-badge {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 50%;
+  font-size: 0.58rem;
+  font-weight: 800;
+}
+
+.captain-badge,
+.triple-captain-badge {
+  background: var(--aero-lime);
+  color: #101011;
+}
+
+.triple-captain-badge {
+  border-radius: 6px;
+}
+
+.vice-captain-badge {
+  background: var(--aero-surface-hover);
+  color: var(--aero-text-dim);
+}
+
+.bench-section {
+  padding-top: 14px;
+  border-top: 1px solid var(--aero-line);
+}
+
+.bench-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--aero-text-muted);
+  margin-bottom: 10px;
+}
+
+/* ---------------------------------------------------------- responsive */
+
+@media (max-width: 1050px) {
+  .analyze-content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analyze-lookup {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .analyze-hint {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 720px) {
+  .analyze-lookup {
+    grid-template-columns: 1fr;
+  }
+
+  .analyze-views {
+    width: 100%;
+  }
+
+  .analyze-views button {
+    flex: 1;
+  }
+
+  .gameweek-player-card {
+    width: 78px;
+  }
+
+  .manager-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.analyze-data-note { margin: 0 0 18px; }
+.analyze-data-note strong { color: var(--aero-text); }
+.manager-freshness { display: flex; flex-wrap: wrap; gap: 7px 16px; margin: 0 0 14px; padding: 10px 12px; border: 1px solid var(--aero-line); border-radius: 10px; background: rgba(255,255,255,.025); color: var(--aero-text-dim); font-size: .68rem; }
+.manager-freshness strong { color: var(--aero-lime); text-transform: uppercase; letter-spacing: .07em; }

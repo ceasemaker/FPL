@@ -18,7 +18,7 @@ Process:
 1. Query all SofasportLineup records
 2. Apply filtering criteria to identify qualifying players
 3. For each qualifying player:
-   - Check if heatmap already exists (skip if so)
+   - Check if heatmap already exists (skip if so, unless --force is used)
    - Call get_player_heatmap(player_id, event_id)
    - Store coordinates in SofasportHeatmap table
 4. Track statistics and display summary
@@ -38,6 +38,9 @@ Coordinates are on 0-100 grid representing the pitch.
 import os
 import sys
 import django
+import argparse
+import time
+import logging
 from typing import Dict, List
 
 # Setup Django
@@ -47,6 +50,10 @@ django.setup()
 
 from api_client import SofaSportClient
 from etl.models import SofasportLineup, SofasportHeatmap
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def should_collect_heatmap(lineup: SofasportLineup) -> tuple[bool, List[str]]:
@@ -86,10 +93,16 @@ def should_collect_heatmap(lineup: SofasportLineup) -> tuple[bool, List[str]]:
     return len(reasons) > 0, reasons
 
 
-def process_heatmaps(client: SofaSportClient) -> Dict:
+def process_heatmaps(client: SofaSportClient, force: bool = False, min_gw: int = 1, max_gw: int = None) -> Dict:
     """
     Process lineups to collect heatmaps for qualifying players.
-    
+
+    Args:
+        client: SofaSportClient instance
+        force: If True, re-collect heatmaps even if they already exist
+        min_gw: Minimum gameweek to process (default: 1)
+        max_gw: Maximum gameweek to process (default: None = all)
+
     Returns:
         dict with statistics: total, qualifying, collected, skipped, errors
     """
@@ -102,11 +115,22 @@ def process_heatmaps(client: SofaSportClient) -> Dict:
         'skipped_not_qualifying': 0,
         'errors': 0
     }
-    
-    # Get all lineups
-    lineups = SofasportLineup.objects.select_related(
+
+    # Build query
+    lineups_qs = SofasportLineup.objects.select_related(
         'athlete', 'fixture', 'team'
-    ).order_by('fixture__fixture__event', 'team__name')
+    )
+
+    # Filter by gameweek range
+    if min_gw:
+        lineups_qs = lineups_qs.filter(fixture__fixture__event__gte=min_gw)
+        logger.info(f"Processing GW {min_gw}+")
+
+    if max_gw:
+        lineups_qs = lineups_qs.filter(fixture__fixture__event__lte=max_gw)
+        logger.info(f"Max gameweek: {max_gw}")
+
+    lineups = lineups_qs.order_by('fixture__fixture__event', 'team__name')
     
     total_lineups = lineups.count()
     stats['total_lineups'] = total_lineups
@@ -136,43 +160,75 @@ def process_heatmaps(client: SofaSportClient) -> Dict:
     for i, (lineup, reasons) in enumerate(qualifying_lineups, 1):
         player_name = lineup.player_name or 'Unknown'
         gw = lineup.fixture.fixture.event if lineup.fixture.fixture else '?'
-        
+
         print(f"[{i}/{stats['qualifying']}] {player_name} - GW{gw}")
         print(f"  Criteria met: {', '.join(reasons)}")
-        
+
         # Check if already exists
         existing = SofasportHeatmap.objects.filter(
             athlete=lineup.athlete,
             fixture=lineup.fixture
         ).exists()
-        
-        if existing:
-            print(f"  ⏭️  Already exists - skipping")
+
+        if existing and not force:
+            print(f"  ⏭️  Already exists - skipping (use --force to recollect)")
             stats['skipped_exists'] += 1
             continue
-        
-        # Fetch from API
+
+        if existing and force:
+            print(f"  🔄 Re-collecting (--force flag enabled)")
+            SofasportHeatmap.objects.filter(
+                athlete=lineup.athlete,
+                fixture=lineup.fixture
+            ).delete()
+
+        # Fetch from API with retry logic
+        max_retries = 3
+        retry_delay = 0.5  # seconds
+        response = None
+
+        for attempt in range(1, max_retries + 1):
+            try:
+                response = client.get_player_heatmap(
+                    str(lineup.sofasport_player_id),
+                    str(lineup.fixture.sofasport_event_id)
+                )
+
+                if response and 'data' in response:
+                    break  # Success
+                elif attempt < max_retries:
+                    print(f"  ⚠️  No data returned (attempt {attempt}/{max_retries}), retrying...")
+                    time.sleep(retry_delay)
+
+            except Exception as e:
+                error_msg = str(e)
+                if '404' in error_msg:
+                    logger.debug(f"404 for {player_name} GW{gw}")
+                    break  # Don't retry 404s
+                elif attempt < max_retries:
+                    logger.warning(f"Retry {attempt}/{max_retries} for {player_name} GW{gw}: {error_msg}")
+                    time.sleep(retry_delay)
+                else:
+                    print(f"  ❌ Error after {max_retries} attempts: {error_msg}")
+                    stats['errors'] += 1
+                    continue
+
+        if not response or 'data' not in response:
+            print(f"  ⚠️  No heatmap data available")
+            stats['skipped_no_data'] += 1
+            continue
+
+        coordinates = response['data']
+
+        if not isinstance(coordinates, list):
+            print(f"  ⚠️  Invalid coordinate format")
+            stats['skipped_no_data'] += 1
+            continue
+
+        point_count = len(coordinates)
+
+        # Create heatmap record
         try:
-            response = client.get_player_heatmap(
-                str(lineup.sofasport_player_id),
-                str(lineup.fixture.sofasport_event_id)
-            )
-            
-            if not response or 'data' not in response:
-                print(f"  ⚠️  No data returned from API")
-                stats['skipped_no_data'] += 1
-                continue
-            
-            coordinates = response['data']
-            
-            if not isinstance(coordinates, list):
-                print(f"  ⚠️  Invalid coordinate format")
-                stats['skipped_no_data'] += 1
-                continue
-            
-            point_count = len(coordinates)
-            
-            # Create heatmap record
             SofasportHeatmap.objects.create(
                 sofasport_player_id=lineup.sofasport_player_id,
                 athlete=lineup.athlete,
@@ -181,19 +237,12 @@ def process_heatmaps(client: SofaSportClient) -> Dict:
                 coordinates=coordinates,
                 point_count=point_count
             )
-            
+
             print(f"  ✅ Collected {point_count} coordinate points")
             stats['collected'] += 1
-        
         except Exception as e:
-            error_msg = str(e)
-            if '404' in error_msg:
-                print(f"  ⚠️  404 - No heatmap data available")
-                stats['skipped_no_data'] += 1
-            else:
-                print(f"  ❌ Error: {error_msg}")
-                stats['errors'] += 1
-            continue
+            print(f"  ❌ Failed to save: {str(e)}")
+            stats['errors'] += 1
     
     return stats
 
@@ -295,18 +344,48 @@ def display_criteria_breakdown():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Collect player heatmaps from SofaSport API")
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Re-collect heatmaps even if they already exist"
+    )
+    parser.add_argument(
+        "--min-gw",
+        type=int,
+        default=1,
+        help="Minimum gameweek to process (default: 1)"
+    )
+    parser.add_argument(
+        "--max-gw",
+        type=int,
+        default=None,
+        help="Maximum gameweek to process (default: None = all)"
+    )
+
+    args = parser.parse_args()
+
     print("🗺️  Starting Player Heatmap Collection ETL...")
-    
+    if args.force:
+        print("⚠️  FORCE MODE ENABLED - Will re-collect existing heatmaps")
+    if args.min_gw or args.max_gw:
+        print(f"📅 Gameweek range: GW{args.min_gw} to GW{args.max_gw or '∞'}")
+
     # Show criteria breakdown first
     display_criteria_breakdown()
-    
+
     # Initialize client
     client = SofaSportClient()
-    
+
     # Process heatmaps
-    stats = process_heatmaps(client)
-    
+    stats = process_heatmaps(
+        client,
+        force=args.force,
+        min_gw=args.min_gw,
+        max_gw=args.max_gw
+    )
+
     # Display summary
     display_summary(stats)
-    
+
     print("\n✅ Heatmap Collection ETL completed!")

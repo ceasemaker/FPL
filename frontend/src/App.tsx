@@ -1,17 +1,16 @@
 import { Suspense, lazy, useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import anime from "animejs";
 import { HomePage } from "./pages/HomePage";
 import { PlayersPage } from "./pages/PlayersPage";
 import { ComparePage } from "./pages/ComparePage";
 import { AnalyzeManagerPage } from "./pages/AnalyzeManagerPage";
-import { DreamTeamPage } from "./pages/DreamTeamPage";
-import { WildcardSimulatorPage } from "./pages/WildcardSimulatorPage";
+
 import { FixturesPage } from "./pages/FixturesPage";
-const OptimizeTeamPage = lazy(() => import("./pages/OptimizeTeamPage").then((m) => ({ default: m.OptimizeTeamPage })));
-const TransferPlannerPage = lazy(() => import("./pages/TransferPlannerPage").then((m) => ({ default: m.TransferPlannerPage })));
-const PriceChangePredictorPage = lazy(() => import("./pages/PriceChangePredictorPage").then((m) => ({ default: m.PriceChangePredictorPage })));
-const LeagueAnalyticsPage = lazy(() => import("./pages/LeagueAnalyticsPage").then((m) => ({ default: m.LeagueAnalyticsPage })));
+
+const PriceMonitorPage = lazy(() => import("./pages/PriceChangePredictorPage").then((m) => ({ default: m.PriceChangePredictorPage })));
+const DecisionDashboardPage = lazy(() => import("./pages/DecisionDashboardPage").then((m) => ({ default: m.DecisionDashboardPage })));
+
 import { Navigation } from "./components/Navigation";
 
 
@@ -41,13 +40,13 @@ export default function App() {
           <Route path="/fixtures" element={<FixturesPage />} />
           <Route path="/compare" element={<ComparePage />} />
           <Route path="/analyze" element={<AnalyzeManagerPage />} />
-          <Route path="/dream-team" element={<DreamTeamPage />} />
-          <Route path="/optimize" element={<OptimizeTeamPage />} />
-          <Route path="/transfer-planner" element={<TransferPlannerPage />} />
-          <Route path="/price-predictor" element={<PriceChangePredictorPage />} />
-          <Route path="/league-analytics" element={<LeagueAnalyticsPage />} />
-          <Route path="/wildcard" element={<WildcardSimulatorPage />} />
-          <Route path="/wildcard/:code" element={<WildcardSimulatorPage />} />
+          <Route path="/decision-lab" element={<DecisionDashboardPage />} />
+          <Route path="/price-monitor" element={<PriceMonitorPage />} />
+
+          {/* Retired routes kept as redirects so existing links keep working. */}
+          <Route path="/optimize" element={<Navigate to="/decision-lab?mode=optimizer" replace />} />
+          <Route path="/price-predictor" element={<Navigate to="/price-monitor" replace />} />
+
         </Routes>
       </Suspense>
     </>

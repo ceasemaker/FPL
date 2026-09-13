@@ -1,0 +1,37 @@
+.modal-overlay { padding: 24px; background: rgba(0,0,0,.76); backdrop-filter: blur(12px); }
+.modal-overlay > .modal-content { position: relative; width: min(920px, 100%); max-height: calc(100vh - 48px); overflow-y: auto; padding: 0; border: 1px solid var(--aero-line-strong); border-radius: 22px; background: #121313; box-shadow: 0 30px 90px rgba(0,0,0,.58); color: var(--aero-text); }
+.modal-close-x { position: sticky; float: right; top: 14px; right: 14px; z-index: 5; display: grid; place-items: center; width: 36px; height: 36px; margin: 14px 14px -50px 0; border: 1px solid var(--aero-line-strong); border-radius: 50%; background: rgba(19,20,20,.88); color: var(--aero-text); font-size: 1.25rem; cursor: pointer; }
+.modal-player-header { display: grid; grid-template-columns: 160px 1fr; min-height: 210px; padding: 26px 64px 22px 26px; border-bottom: 1px solid var(--aero-line); background: radial-gradient(circle at 15% 100%, rgba(157,255,38,.16), transparent 38%), #161717; }
+.modal-player-image { align-self: end; height: 175px; overflow: hidden; }
+.modal-player-image img { width: 100%; height: 100%; object-fit: contain; object-position: center bottom; }
+.modal-player-info { align-self: center; padding-left: 22px; }
+.modal-player-info h2 { margin: 0; color: var(--aero-text); font-size: clamp(2rem, 5vw, 3.5rem); line-height: .95; letter-spacing: -.045em; }
+.modal-player-full-name { margin: 9px 0 15px; color: var(--aero-text-dim); }
+.modal-player-meta, .team-info { display: flex; align-items: center; gap: 9px; }
+.position-badge { padding: 6px 9px; border-radius: 7px; background: var(--aero-lime); color: #111; font-size: .68rem; font-weight: 900; text-transform: uppercase; }
+.team-badge-medium { width: 28px; height: 28px; object-fit: contain; }
+.modal-radar-header { display: none; }
+.modal-news-section { display: flex; gap: 12px; margin: 18px 22px 0; padding: 13px 15px; border: 1px solid rgba(248,113,113,.25); border-radius: 12px; background: rgba(248,113,113,.07); }
+.modal-news-icon { display: none; }
+.modal-news-text { margin: 0; color: var(--aero-text); font-size: .86rem; }
+.modal-news-time { display: block; margin-top: 4px; color: var(--aero-text-dim); font-size: .68rem; }
+.modal-basic-stats { display: grid; grid-template-columns: repeat(6, 1fr); margin: 20px 22px; border: 1px solid var(--aero-line); border-radius: 14px; overflow: hidden; }
+.modal-stat-card { display: grid; gap: 6px; padding: 14px 12px; border-right: 1px solid var(--aero-line); background: var(--aero-panel); }
+.modal-stat-card:last-child { border-right: 0; }
+.modal-stat-label { color: var(--aero-text-dim); font-size: .65rem; font-weight: 700; text-transform: uppercase; }
+.modal-stat-value { color: var(--aero-text); font-size: 1.12rem; font-weight: 750; }
+.price-highlight { color: var(--aero-lime); }
+.fdr-badge-inline { width: fit-content; padding: 2px 7px; border-radius: 6px; color: #111; }
+.modal-fixtures-section, .modal-stats-section { margin: 0 22px 16px; padding: 16px; border: 1px solid var(--aero-line); border-radius: 14px; background: var(--aero-panel); }
+.modal-fixtures-section h3, .modal-stats-section h3 { margin: 0 0 12px; color: var(--aero-text); font-size: .88rem; }
+.modal-fixtures-section .fixtures-list, .fixtures-history-list { display: grid; gap: 7px; }
+.modal-fixtures-section .fixture-item, .fixture-history-item { display: grid; grid-template-columns: 60px 1fr auto auto; align-items: center; gap: 10px; padding: 10px 11px; border: 0; border-radius: 9px; background: rgba(255,255,255,.035); font-size: .78rem; }
+.fixture-difficulty { display: grid; place-items: center; min-width: 28px; height: 24px; padding-inline: 7px; border-radius: 6px; color: #111; font-weight: 900; }
+.modal-see-more-btn, .modal-collapse-btn { display: block; width: calc(100% - 44px); margin: 4px 22px 22px; padding: 11px; border: 1px solid var(--aero-line-strong); border-radius: 10px; background: transparent; color: var(--aero-text); font: inherit; font-weight: 700; cursor: pointer; }
+.modal-expanded-stats { padding-top: 2px; }
+.modal-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; overflow: hidden; border: 1px solid var(--aero-line); border-radius: 10px; background: var(--aero-line); }
+.modal-stats-grid .stat-item { display: grid; gap: 4px; padding: 11px; background: #171818; }
+.modal-stats-grid .stat-label { color: var(--aero-text-dim); font-size: .66rem; }
+.modal-stats-grid .stat-value { color: var(--aero-text); font-weight: 750; }
+.modal-loading, .modal-error { padding: 70px 30px; text-align: center; }
+@media (max-width: 700px) { .modal-overlay { align-items: end; padding: 0; } .modal-overlay > .modal-content { max-height: 92vh; border-radius: 20px 20px 0 0; } .modal-player-header { grid-template-columns: 110px 1fr; min-height: 160px; padding: 20px 48px 16px 14px; } .modal-player-image { height: 135px; } .modal-player-info { padding-left: 10px; } .modal-basic-stats { grid-template-columns: repeat(3, 1fr); } .modal-stat-card:nth-child(3) { border-right: 0; } .modal-stat-card:nth-child(-n+3) { border-bottom: 1px solid var(--aero-line); } .modal-stats-grid { grid-template-columns: repeat(2, 1fr); } }

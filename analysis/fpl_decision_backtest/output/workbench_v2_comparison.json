@@ -1,0 +1,29 @@
+{
+  "snapshot": "player_workbench_inputs_2026-09-04.json",
+  "rows": 1956,
+  "runtime_seconds": 0.258,
+  "mean_xp_change_by_position": {
+    "GKP": -0.4332,
+    "DEF": -0.6687,
+    "MID": -0.3767,
+    "FWD": -0.2136
+  },
+  "examples": [
+    {
+      "player": "Haaland",
+      "gameweek": 3,
+      "before_xp": 5.9179,
+      "after_xp": 5.3525,
+      "before_return_probability": 0.5621,
+      "after_return_probability": 0.5472
+    },
+    {
+      "player": "B.Fernandes",
+      "gameweek": 3,
+      "before_xp": 5.1616,
+      "after_xp": 4.2598,
+      "before_return_probability": 0.3241,
+      "after_return_probability": 0.3186
+    }
+  ]
+}

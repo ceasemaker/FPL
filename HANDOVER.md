@@ -209,7 +209,8 @@ Results:
 | 2025/26 | Structural | **2.217** | 3.270 | **0.226** | 4.941 |
 
 The blend was selected on 2024/25 only. Validation selected a 100% structural
-weight. The untouched 2025/26 season therefore remained a clean test.
+weight. Later iterations have now inspected 2025/26 repeatedly, so it is an
+evaluation season rather than a pristine authority holdout.
 
 The structural model reduced 2025/26 MAE by about 5.3% and slightly improved
 correlation, but its weekly top-five selections scored worse. The final
@@ -290,7 +291,7 @@ before touching the optimizer authority:
      shrunk to positional priors; player-specific minutes per start and per
      substitute; `p_60 = p_start * P(60 | start)`; simulation updated to draw
      the states directly.
-   - Result on untouched 2025/26: weekly top-five 4.941 → 5.011, MAE held at
+   - Result on 2025/26 evaluation data: weekly top-five 4.941 → 5.011, MAE held at
      2.218. Gate still fails (ridge top-five 5.178), so
      `accepted_for_optimizer` remains false. See STRUCTURAL_REPORT.md update.
 2. Model penalty, direct-set-piece and corner/free-kick shares explicitly.
@@ -308,18 +309,19 @@ before touching the optimizer authority:
    empirical bonus; validated on 2024/25 (top-five 6.73 → 6.78).
 5. Calibrate blank and haul probabilities — **DONE 2026-08-28**: per-position
    Platt scaling fit on 2024/25 only; hauls were understated ~2x; Brier
-   improved on unseen 2025/26; calibrated columns exported.
+   improved on 2025/26 evaluation data; calibrated columns exported.
 6. Ranking metrics — **DONE 2026-08-28**: NDCG@10, captain regret and realized
    three-gameweek top-five utility added to the weekly summary and manifest.
 7. Three-gameweek selection — **DONE 2026-08-28**: blend weight now selected
    on 2024/25 by realized 3-GW top-five utility (weights 1.0/0.9/0.81);
-   validation chose a 35% structural / 65% ridge hybrid.
+   validation chose a 35% structural / 65% ridge hybrid. Incomplete GW37/38
+   horizons are now censored rather than filled with zero.
 8. Only after passing those checks, rerun both GW2 and GW10 team-path replays and
    expose the accepted forecast in the dashboard. **Not triggered 2026-08-28**:
-   the extended gate still fails. On unseen 2025/26 the 35% hybrid beats ridge
+   the extended gate still fails. On 2025/26 evaluation data the 35% hybrid beats ridge
    on MAE (2.273 vs 2.342), correlation (0.238 vs 0.223) and NDCG@10, but
-   loses one-week top-five (5.049 vs 5.178) and 3-GW top-five utility (11.650
-   vs 12.211). `accepted_for_optimizer = false`; replays not rerun; nothing
+   loses one-week top-five (5.049 vs 5.178) and complete-horizon 3-GW top-five
+   utility (12.068 vs 12.603). `accepted_for_optimizer = false`; replays not rerun; nothing
    promoted. The remaining gap is upper-tail selection — see the 2026-08-28
    second-pass section of STRUCTURAL_REPORT.md for the recommended haul-
    oriented next steps.
@@ -327,6 +329,30 @@ before touching the optimizer authority:
 A reasonable architecture may ultimately use structural xP for calibrated mean
 and risk, plus a residual learner for player-specific effects. That hybrid must
 still pass the unseen decision gate; it should not be assumed superior.
+
+**UPDATE 2026-08-28 (mathematical audit of later stacked work).** See
+`analysis/fpl_decision_backtest/STACKED_REPORT.md`.
+
+- The stacked form + market + structural model significantly improves mean
+  MAE and correlation over odds ridge under a corrected week-cluster
+  bootstrap. It is retained as a mean-forecast research candidate.
+- The original week bootstrap discarded repeated sampled weeks by using
+  `isin()`. This was corrected by concatenating clusters with multiplicity.
+- Failing to detect top-five harm was incorrectly treated as proof of
+  non-inferiority. The corrected authority gate does not promote on that basis.
+  `accepted_for_optimizer = false`.
+- GW37/38 were incorrectly assigned truncated three-week targets with missing
+  weeks scored as zero. They are now censored. The corrected dual-horizon
+  correlation interval crosses zero, so
+  `accepted_for_transfer_horizon = false`.
+- 2025/26 has now informed several model iterations and must be described as an
+  evaluation season, not a pristine untouched holdout.
+- The paired same-squad hold replay remains useful: median transfer value was
+  +206 from GW2 and +27.5 from GW10. It reduces the direct eventual-top-100
+  comparison bias, but is not fully survivorship-free because the starting
+  squads still come from an ex-post-selected cohort.
+- The dashboard now labels this as a forecast audit and explicitly says the
+  optimizer remains unchanged.
 
 ## 10. Commands
 

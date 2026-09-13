@@ -29,6 +29,10 @@ class AthletePrediction(TimestampedModel):
     )
     game_week = models.PositiveIntegerField()
     predicted_points = models.DecimalField(max_digits=5, decimal_places=2)
+    clean_sheet_prob = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
+    goal_prob = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
+    assist_prob = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
+    bonus_prob = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
 
     class Meta(TimestampedModel.Meta):
         db_table = "athlete_predictions"
@@ -45,6 +49,39 @@ class AthletePrediction(TimestampedModel):
 
     def __str__(self) -> str:
         return f"{self.athlete.web_name} - GW{self.game_week}: {self.predicted_points} xP"
+
+
+class PriceSnapshot(models.Model):
+    """
+    Store lightweight price and transfer data snapshots for each player.
+    Replaces loading full RawEndpointSnapshot JSON blobs.
+    """
+    athlete = models.ForeignKey(
+        "Athlete",
+        on_delete=models.CASCADE,
+        related_name="price_snapshots",
+        db_column="athlete_id",
+    )
+    snapshot_time = models.DateTimeField(db_index=True)
+    cost = models.IntegerField()
+    transfers_in_total = models.IntegerField()
+    transfers_out_total = models.IntegerField()
+    transfers_in_event = models.IntegerField(default=0)
+    transfers_out_event = models.IntegerField(default=0)
+    total_points = models.IntegerField(default=0)
+    form = models.CharField(max_length=10, default="0.0")
+    selected_by_percent = models.CharField(max_length=10, default="0.0")
+
+    class Meta:
+        db_table = "price_snapshots"
+        unique_together = ("athlete", "snapshot_time")
+        indexes = [
+            models.Index(fields=["snapshot_time"]),
+            models.Index(fields=["athlete", "snapshot_time"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.athlete.web_name} - {self.snapshot_time}: £{self.cost/10}m"
 
 
 class Team(TimestampedModel):
@@ -263,6 +300,12 @@ class AthleteStat(TimestampedModel):
     mng_goals_scored = models.IntegerField(default=0)
     total_points = models.IntegerField(default=0)
     in_dreamteam = models.BooleanField(default=False)
+    # As-of-deadline context from element-summary `history`. Nullable so a
+    # missing value is distinguishable from a genuine zero (see etl.ml.features).
+    selected = models.IntegerField(null=True, blank=True)
+    transfers_in = models.IntegerField(null=True, blank=True)
+    transfers_out = models.IntegerField(null=True, blank=True)
+    value = models.IntegerField(null=True, blank=True)
 
     class Meta(TimestampedModel.Meta):
         db_table = "athlete_stats"
@@ -1097,9 +1140,9 @@ class FixtureOdds(TimestampedModel):
     """
     Store betting odds for upcoming fixtures.
     Tracks current and previous odds to show movement (arrows).
-    Updates via Celery beat task every 10 minutes.
+    Updates via a once-daily, persistently rate-limited Celery task.
     
-    API: /v1/events/odds/all with provider_id=1, odds_format=decimal
+    API: free /api/v1/event/{event_id}/1/odds by default; paid fallback optional
     Markets stored: 1X2 (match result), Over/Under, BTTS
     """
     fixture = models.OneToOneField(
@@ -1270,4 +1313,3 @@ class FixtureOdds(TimestampedModel):
         elif self.away_odds < self.prev_away_odds:
             return '↓'
         return None
-

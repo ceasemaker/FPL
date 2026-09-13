@@ -39,3 +39,10 @@ django_etl/staticfiles/
 
 # Celery
 celerybeat-schedule
+# Trained ML artifacts (regenerate with train_prediction_model)
+django_etl/etl/ml_models/
+
+# Local scratch / generated reports
+/output/
+/outputs/
+/tmp/

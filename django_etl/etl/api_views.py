@@ -1,21 +1,35 @@
 from __future__ import annotations
 
 import logging
+import math
+import os
 from collections import defaultdict
 from dataclasses import asdict, dataclass
+from pathlib import Path
 from typing import Any, Iterable
 from urllib.parse import urlparse
 
+import pandas as pd
 import requests
 
+from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Count, F, Max, OuterRef, Prefetch, Q, Subquery, Sum, Value
 from django.db.models.functions import Coalesce
-from django.http import JsonResponse, HttpResponse
+from django.http import FileResponse, JsonResponse, HttpResponse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 
-from .models import Athlete, AthletePrediction, AthleteStat, Fixture, RawEndpointSnapshot, Team, SofasportHeatmap
+from .models import Athlete, AthletePrediction, AthleteStat, Fixture, PriceSnapshot, RawEndpointSnapshot, Team, SofasportHeatmap
+from .services.decision_dashboard import build_decision_dashboard
+from .services.player_gameweeks import build_player_gameweeks
+from .services.player_analysis import (
+    build_player_analysis,
+    load_latest_snapshot,
+    player_catalogue,
+    render_player_report_html,
+    render_player_report_tex,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +103,7 @@ def _player_image(photo: str | None) -> str | None:
 
 
 def _price_change_predictor_cache_key(limit: int) -> str:
-    return f"price_predictor:limit={limit}:v1"
+    return f"price_predictor:limit={limit}:v2"
 
 
 def _price_predictor_history_cache_key(
@@ -113,6 +127,7 @@ def _price_predictor_history_cache_key(
 def _build_price_change_predictor_payload(limit: int) -> dict[str, Any]:
     players = (
         Athlete.objects.select_related("team")
+        .filter(removed=False)
         .values(
             "id",
             "first_name",
@@ -154,9 +169,27 @@ def _build_price_change_predictor_payload(limit: int) -> dict[str, Any]:
     risers = sorted(scored, key=lambda p: p["transfer_delta"], reverse=True)[:limit]
     fallers = sorted(scored, key=lambda p: p["transfer_delta"])[:limit]
 
+    # Price changes the FPL API has already applied. These are facts, unlike
+    # the transfer-momentum signal above, and the UI labels them as such.
+    official_risers = sorted(
+        (p for p in scored if (p["cost_change_event"] or 0) > 0),
+        key=lambda p: p["cost_change_event"],
+        reverse=True,
+    )
+    official_fallers = sorted(
+        (p for p in scored if (p["cost_change_event"] or 0) < 0),
+        key=lambda p: p["cost_change_event"],
+    )
+
     return {
         "risers": risers,
         "fallers": fallers,
+        "official": {
+            "risers": official_risers[:limit],
+            "fallers": official_fallers[:limit],
+            "riser_count": len(official_risers),
+            "faller_count": len(official_fallers),
+        },
         "limit": limit,
     }
 
@@ -170,21 +203,16 @@ def _build_price_predictor_history_payload(
     directions_param: str,
     direction_filter: str | None,
 ) -> dict[str, Any]:
+    # Get latest snapshot time from PriceSnapshot
     latest_snapshot = (
-        RawEndpointSnapshot.objects.filter(endpoint="bootstrap-static")
-        .order_by("-created_at")
-        .values("created_at", "payload")
+        PriceSnapshot.objects.order_by("-snapshot_time")
+        .values("snapshot_time")
         .first()
     )
     if not latest_snapshot:
         raise LookupError("No snapshots available.")
 
-    latest_elements = {
-        element.get("id"): element
-        for element in latest_snapshot["payload"].get("elements", [])
-        if element.get("id")
-    }
-
+    # Determine player IDs to track based on metric and parameters
     if player_ids_param:
         try:
             player_ids = [int(pid) for pid in player_ids_param.split(",") if pid.strip()]
@@ -200,85 +228,104 @@ def _build_price_predictor_history_payload(
         if len(directions) < len(player_ids):
             directions.extend(["in"] * (len(player_ids) - len(directions)))
     else:
+        # Get latest snapshot data for sorting
+        latest_snapshots = PriceSnapshot.objects.filter(
+            snapshot_time=latest_snapshot["snapshot_time"]
+        ).values("athlete_id", "transfers_in_event", "transfers_out_event", "selected_by_percent")
+
+        latest_data = {
+            snap["athlete_id"]: snap
+            for snap in latest_snapshots
+        }
+
         if metric == "ownership":
             sorted_by_ownership = sorted(
-                latest_elements.values(),
-                key=lambda el: float(el.get("selected_by_percent") or 0),
+                latest_data.items(),
+                key=lambda item: float(item[1].get("selected_by_percent") or 0),
                 reverse=True,
             )
-            player_ids = [el.get("id") for el in sorted_by_ownership[:top]]
+            player_ids = [item[0] for item in sorted_by_ownership[:top]]
             directions = ["in"] * len(player_ids)
         else:
             if direction_filter in ("in", "out"):
                 value_key = "transfers_in_event" if direction_filter == "in" else "transfers_out_event"
                 sorted_by_transfer = sorted(
-                    latest_elements.values(),
-                    key=lambda el: el.get(value_key, 0),
+                    latest_data.items(),
+                    key=lambda item: item[1].get(value_key, 0),
                     reverse=True,
                 )
-                player_ids = [el.get("id") for el in sorted_by_transfer[:top]]
+                player_ids = [item[0] for item in sorted_by_transfer[:top]]
                 directions = [direction_filter] * len(player_ids)
-            sorted_by_in = sorted(
-                latest_elements.values(),
-                key=lambda el: el.get("transfers_in_event", 0),
-                reverse=True,
-            )
-            sorted_by_out = sorted(
-                latest_elements.values(),
-                key=lambda el: el.get("transfers_out_event", 0),
-                reverse=True,
-            )
-            player_ids = [el.get("id") for el in sorted_by_in[:top]] + [
-                el.get("id") for el in sorted_by_out[:top]
-            ]
-            directions = ["in"] * min(top, len(sorted_by_in)) + ["out"] * min(top, len(sorted_by_out))
+            else:
+                sorted_by_in = sorted(
+                    latest_data.items(),
+                    key=lambda item: item[1].get("transfers_in_event", 0),
+                    reverse=True,
+                )
+                sorted_by_out = sorted(
+                    latest_data.items(),
+                    key=lambda item: item[1].get("transfers_out_event", 0),
+                    reverse=True,
+                )
+                player_ids = [item[0] for item in sorted_by_in[:top]] + [
+                    item[0] for item in sorted_by_out[:top]
+                ]
+                directions = ["in"] * min(top, len(sorted_by_in)) + ["out"] * min(top, len(sorted_by_out))
 
     player_ids = [pid for pid in player_ids if pid]
     player_ids_set = set(player_ids)
 
+    # Fetch athletes info
     players_lookup = {
         player.id: player
         for player in Athlete.objects.filter(id__in=player_ids_set).select_related("team")
     }
 
-    snapshot_ids = list(
-        RawEndpointSnapshot.objects.filter(endpoint="bootstrap-static")
-        .order_by("-created_at")
-        .values_list("id", flat=True)[:limit]
+    # Get unique snapshot times (latest `limit` snapshots)
+    snapshot_times = list(
+        PriceSnapshot.objects.filter(athlete_id__in=player_ids_set)
+        .order_by("-snapshot_time")
+        .values_list("snapshot_time", flat=True)
+        .distinct()[:limit]
     )
-    if not snapshot_ids:
+    snapshot_times.reverse()  # Order from oldest to newest
+
+    if not snapshot_times:
         raise LookupError("No snapshots available.")
 
-    snapshot_rows = (
-        RawEndpointSnapshot.objects.filter(id__in=snapshot_ids)
-        .order_by("created_at")
-        .values("created_at", "payload")
-    )
+    # Fetch price snapshot data for all players and times at once
+    price_snapshots = PriceSnapshot.objects.filter(
+        athlete_id__in=player_ids_set,
+        snapshot_time__in=snapshot_times
+    ).values("athlete_id", "snapshot_time", "transfers_in_event", "transfers_out_event", "selected_by_percent")
 
+    # Group by athlete and timestamp for fast lookup
+    snapshot_data = {}
+    for snap in price_snapshots:
+        athlete_id = snap["athlete_id"]
+        timestamp = snap["snapshot_time"]
+        if athlete_id not in snapshot_data:
+            snapshot_data[athlete_id] = {}
+        snapshot_data[athlete_id][timestamp] = snap
+
+    # Build series data
     series_points = [[] for _ in player_ids]
-    for snapshot in snapshot_rows.iterator(chunk_size=25):
-        created_at = snapshot["created_at"]
-        elements = snapshot["payload"].get("elements", [])
-        elements_by_id = {
-            element.get("id"): element
-            for element in elements
-            if element.get("id") in player_ids_set
-        }
+    for timestamp in snapshot_times:
         for index, (player_id, direction) in enumerate(zip(player_ids, directions)):
-            element = elements_by_id.get(player_id)
-            if not element:
+            snap = snapshot_data.get(player_id, {}).get(timestamp)
+            if not snap:
                 value = 0
             elif metric == "ownership":
-                raw_value = element.get("selected_by_percent")
-                value = float(raw_value) if raw_value not in (None, "") else 0
+                value = float(snap.get("selected_by_percent") or 0)
             else:
                 value_key = "transfers_in_event" if direction == "in" else "transfers_out_event"
-                value = element.get(value_key, 0) or 0
+                value = snap.get(value_key, 0) or 0
             series_points[index].append({
-                "timestamp": created_at.isoformat(),
+                "timestamp": timestamp.isoformat(),
                 "value": value,
             })
 
+    # Build response series
     series = []
     for player_id, direction, points in zip(player_ids, directions, series_points):
         athlete = players_lookup.get(player_id)
@@ -292,8 +339,8 @@ def _build_price_predictor_history_payload(
         })
 
     return {
-        "snapshot_count": len(snapshot_ids),
-        "latest_snapshot": latest_snapshot["created_at"].isoformat(),
+        "snapshot_count": len(snapshot_times),
+        "latest_snapshot": latest_snapshot["snapshot_time"].isoformat(),
         "series": series,
     }
 
@@ -796,7 +843,7 @@ def fixtures_by_gameweek(request):
 
 @require_GET
 def fixtures_ticker(request):
-    """Return an FDR ticker matrix for all teams across upcoming gameweeks."""
+    """Return official FDR and available market-implied fixture difficulty."""
     try:
         horizon = max(3, min(int(request.GET.get("horizon", 5)), 10))
     except (TypeError, ValueError):
@@ -823,20 +870,55 @@ def fixtures_ticker(request):
             "fixtures": [],
         }
 
+    market_lookup: dict[tuple[str, int], dict[str, float]] = {}
+    market_snapshot_date = None
+    try:
+        market_snapshot = load_latest_snapshot()
+        market_snapshot_date = market_snapshot.get("snapshot_date")
+        for row in market_snapshot.get("rows", []):
+            if row.get("market_basis") != "1X2 Poisson fit":
+                continue
+            key = (str(row.get("team") or ""), int(row.get("gameweek") or 0))
+            if key in market_lookup:
+                continue
+            team_lambda = float(row.get("team_lambda_market") or 0)
+            opponent_lambda = float(row.get("opponent_lambda_market") or 0)
+            if team_lambda <= 0 or opponent_lambda <= 0:
+                continue
+            # Independent Poisson result probability, truncated safely at ten goals.
+            win_probability = 0.0
+            for team_goals in range(11):
+                team_mass = math.exp(-team_lambda) * (team_lambda ** team_goals) / math.factorial(team_goals)
+                opponent_below = sum(
+                    math.exp(-opponent_lambda) * (opponent_lambda ** goals) / math.factorial(goals)
+                    for goals in range(team_goals)
+                )
+                win_probability += team_mass * opponent_below
+            market_lookup[key] = {
+                "win_probability": round(win_probability, 4),
+                "odds_difficulty": 1 if win_probability >= .65 else 2 if win_probability >= .50 else 3 if win_probability >= .35 else 4 if win_probability >= .22 else 5,
+            }
+    except (FileNotFoundError, TypeError, ValueError):
+        pass
+
     for fixture in fixtures_qs:
         if fixture.team_h_id in team_rows:
+            market = market_lookup.get((fixture.team_h.short_name, fixture.event)) if fixture.team_h else None
             team_rows[fixture.team_h_id]["fixtures"].append({
                 "event": fixture.event,
                 "opponent": fixture.team_a.short_name if fixture.team_a else None,
                 "location": "H",
                 "difficulty": fixture.team_h_difficulty,
+                **(market or {"win_probability": None, "odds_difficulty": None}),
             })
         if fixture.team_a_id in team_rows:
+            market = market_lookup.get((fixture.team_a.short_name, fixture.event)) if fixture.team_a else None
             team_rows[fixture.team_a_id]["fixtures"].append({
                 "event": fixture.event,
                 "opponent": fixture.team_h.short_name if fixture.team_h else None,
                 "location": "A",
                 "difficulty": fixture.team_a_difficulty,
+                **(market or {"win_probability": None, "odds_difficulty": None}),
             })
 
     response_rows = []
@@ -846,10 +928,20 @@ def fixtures_ticker(request):
         difficulties = [f["difficulty"] for f in fixtures if f["difficulty"]]
         if difficulties:
             avg_difficulty = round(sum(difficulties) / len(difficulties), 2)
+        market_probabilities = [f["win_probability"] for f in fixtures if f.get("win_probability") is not None]
+        probability_win_all = None
+        probability_at_least_one = None
+        if market_probabilities:
+            probability_win_all = math.prod(market_probabilities)
+            probability_at_least_one = 1 - math.prod(1 - probability for probability in market_probabilities)
         response_rows.append({
             **row,
             "fixtures": fixtures,
             "avg_difficulty": avg_difficulty,
+            "expected_market_wins": round(sum(market_probabilities), 4) if market_probabilities else None,
+            "probability_win_all": round(probability_win_all, 4) if probability_win_all is not None else None,
+            "probability_at_least_one": round(probability_at_least_one, 4) if probability_at_least_one is not None else None,
+            "market_fixture_count": len(market_probabilities),
         })
 
     return JsonResponse({
@@ -857,6 +949,13 @@ def fixtures_ticker(request):
         "start_gameweek": start_gw,
         "end_gameweek": end_gw,
         "horizon": horizon,
+        "market": {
+            "available": bool(market_lookup),
+            "snapshot_date": market_snapshot_date,
+            "type": "1X2 match-result odds",
+            "includes_clean_sheet_odds": False,
+            "note": "Win probabilities are derived from margin-normalized home/draw/away prices. They are not clean-sheet probabilities.",
+        },
         "teams": response_rows,
     })
 
@@ -970,15 +1069,21 @@ def players_list(request):
     page_size = min(max(10, page_size), 1000)  # Between 10 and 1000
     
     # Build cache key based on filters
-    cache_key = f"players_list:search={search}:team={team_filter}:page={page}:size={page_size}:v2"
+    cache_key = f"players_list:search={search}:team={team_filter}:page={page}:size={page_size}:v3"
     
     # Try to get from cache first
     cached_response = cache.get(cache_key)
     if cached_response:
         return JsonResponse(cached_response)
     
-    # Default sorting by total_points descending
-    players_qs = Athlete.objects.select_related("team").all().order_by("-total_points")
+    # Default sorting by total_points descending. Players the ETL marked as
+    # removed have left the league (or lost their ID to a new signing), so
+    # they must not appear in the browsable list.
+    players_qs = (
+        Athlete.objects.select_related("team")
+        .filter(removed=False)
+        .order_by("-total_points")
+    )
     
     if search:
         players_qs = players_qs.filter(
@@ -1000,14 +1105,14 @@ def players_list(request):
     current_gw = (
         AthleteStat.objects.aggregate(max_gw=Max("game_week"))["max_gw"] or 1
     )
-    
+
     # Pre-fetch all upcoming fixtures for all teams in ONE query
     upcoming_fixtures = {}
     fixtures_qs = Fixture.objects.filter(
         event__gte=current_gw + 1,
         event__lte=current_gw + 3,
     ).select_related("team_h", "team_a").order_by("event")
-    
+
     # Group fixtures by team_id for fast lookup
     for fixture in fixtures_qs:
         if fixture.team_h_id:
@@ -1018,16 +1123,16 @@ def players_list(request):
             if fixture.team_a_id not in upcoming_fixtures:
                 upcoming_fixtures[fixture.team_a_id] = []
             upcoming_fixtures[fixture.team_a_id].append(("away", fixture))
-    
+
     # Calculate stats for last 3 gameweeks
     start_gw = max(1, current_gw - 2)
     stats_last_3 = {}
-    
+
     stats_qs = AthleteStat.objects.filter(
         game_week__gte=start_gw,
         game_week__lte=current_gw
     ).values("athlete_id", "total_points", "minutes")
-    
+
     for stat in stats_qs:
         athlete_id = stat["athlete_id"]
         if athlete_id not in stats_last_3:
@@ -1035,9 +1140,19 @@ def players_list(request):
         stats_last_3[athlete_id]["points"] += stat["total_points"]
         stats_last_3[athlete_id]["minutes"] += stat["minutes"]
 
+    # Prefetch predictions for next GW to avoid N+1
+    predictions_qs = AthletePrediction.objects.filter(game_week=current_gw + 1)
+    players_qs_paginated = players_qs[start_idx:end_idx].prefetch_related(
+        Prefetch(
+            "predictions",
+            queryset=predictions_qs,
+            to_attr="next_gw_predictions"
+        )
+    )
+
     # Calculate average FDR for next 3 fixtures per player (paginated)
     players_data = []
-    for player in players_qs[start_idx:end_idx]:
+    for player in players_qs_paginated:
         team = player.team
         team_id = team.id if team else None
         avg_fdr = None
@@ -1086,8 +1201,8 @@ def players_list(request):
             "expected_goals": float(player.expected_goals) if player.expected_goals else None,
             "points_last_3": last_3["points"],
             "minutes_last_3": last_3["minutes"],
-            # Predicted Points (Next GW)
-            "ep_next": float(player.predictions.filter(game_week=current_gw + 1).first().predicted_points) if player.predictions.filter(game_week=current_gw + 1).exists() else None,
+            # Predicted Points (Next GW) - use prefetched data
+            "ep_next": float(player.next_gw_predictions[0].predicted_points) if player.next_gw_predictions else None,
         })
     
     response_data = {
@@ -1108,6 +1223,15 @@ def players_list(request):
 
 
 @require_GET
+@require_GET
+def player_gameweeks(request, player_id):
+    """Per-gameweek FPL stat log plus same-position percentiles."""
+    athlete = Athlete.objects.filter(id=player_id).first()
+    if not athlete:
+        return JsonResponse({"error": "Player not found"}, status=404)
+    return JsonResponse(build_player_gameweeks(athlete))
+
+
 def player_detail(request, player_id):
     """Return detailed stats for a specific player."""
     try:
@@ -1140,6 +1264,32 @@ def player_detail(request, player_id):
         
         if fdr_values:
             avg_fdr = round(sum(fdr_values) / len(fdr_values), 1)
+
+    # Named upcoming fixtures so the compare view can show who a player
+    # actually faces rather than a single averaged difficulty number.
+    upcoming_fixtures = []
+    if team:
+        for fixture in (
+            Fixture.objects.filter(
+                Q(team_h_id=team.id) | Q(team_a_id=team.id),
+                event__gte=current_gw + 1,
+            )
+            .select_related("team_h", "team_a")
+            .order_by("event", "kickoff_time")[:5]
+        ):
+            is_home = fixture.team_h_id == team.id
+            opponent = fixture.team_a if is_home else fixture.team_h
+            difficulty = (
+                fixture.team_h_difficulty if is_home else fixture.team_a_difficulty
+            )
+            upcoming_fixtures.append(
+                {
+                    "event": fixture.event,
+                    "opponent": opponent.short_name or opponent.name if opponent else None,
+                    "is_home": is_home,
+                    "difficulty": difficulty,
+                }
+            )
     
     # Build comprehensive player data
     player_data = {
@@ -1168,6 +1318,10 @@ def player_detail(request, player_id):
         "event_points": player.event_points,
         "points_per_game": float(player.points_per_game) if player.points_per_game else None,
         "form": float(player.form) if player.form else None,
+        # Official FPL expected points. Unlike our stored model predictions
+        # these come straight from the bootstrap, so the UI can label them.
+        "ep_this": float(player.ep_this) if player.ep_this is not None else None,
+        "ep_next": float(player.ep_next) if player.ep_next is not None else None,
         "value_form": float(player.value_form) if player.value_form else None,
         "value_season": float(player.value_season) if player.value_season else None,
         
@@ -1243,6 +1397,8 @@ def player_detail(request, player_id):
         
         # Fixtures
         "avg_fdr": avg_fdr,
+        "upcoming_fixtures": upcoming_fixtures,
+        "next_gameweek": current_gw + 1,
         
         # Chance of Playing
         "chance_of_playing_this_round": player.chance_of_playing_this_round,
@@ -1263,10 +1419,14 @@ def player_detail(request, player_id):
         "upcoming_predictions": [
             {
                 "game_week": p.game_week,
-                "predicted_points": float(p.predicted_points)
+                "predicted_points": float(p.predicted_points),
+                "clean_sheet_prob": float(p.clean_sheet_prob) if p.clean_sheet_prob else None,
+                "goal_prob": float(p.goal_prob) if p.goal_prob else None,
+                "assist_prob": float(p.assist_prob) if p.assist_prob else None,
+                "bonus_prob": float(p.bonus_prob) if p.bonus_prob else None,
             }
             for p in AthletePrediction.objects.filter(
-                athlete=player, 
+                athlete=player,
                 game_week__gte=current_gw + 1,
                 game_week__lte=current_gw + 5
             ).order_by("game_week")
@@ -1427,12 +1587,118 @@ def dream_team(request):
 
 
 @require_GET
+def decision_dashboard(request):
+    """Return saved backtest evidence and personalized team decisions."""
+    manager_id = request.GET.get("manager_id", "576154")
+    if not manager_id.isdigit():
+        return JsonResponse({"error": "manager_id must be numeric."}, status=400)
+    risk_profile = request.GET.get("risk_profile", "balanced").lower()
+    try:
+        payload = build_decision_dashboard(int(manager_id), risk_profile)
+    except ValueError as exc:
+        return JsonResponse({"error": str(exc)}, status=400)
+    except FileNotFoundError as exc:
+        return JsonResponse({"error": str(exc)}, status=404)
+    return JsonResponse(payload)
+
+
+@require_GET
+def decision_research_report(request):
+    """Serve the locally generated, read-only quantitative research report."""
+    report_dir = Path(os.environ.get("FPL_REPORT_DIR", Path(settings.BASE_DIR).parent / "output" / "pdf"))
+    report_path = report_dir / "PLAYER_WORKBENCH_REPORT.pdf"
+    if not report_path.exists():
+        report_path = report_dir / "FPL_RESEARCH_REPORT.pdf"
+    if not report_path.exists():
+        return JsonResponse({"error": "The research report has not been generated."}, status=404)
+    return FileResponse(
+        report_path.open("rb"),
+        content_type="application/pdf",
+        as_attachment=False,
+        filename="FPL_RESEARCH_REPORT.pdf",
+    )
+
+
+def _player_analysis_parameters(request) -> tuple[list[int], int | None, int]:
+    raw_ids = request.GET.get("player_ids") or request.GET.get("player_id") or ""
+    try:
+        player_ids = [int(value.strip()) for value in raw_ids.split(",") if value.strip()]
+    except ValueError as exc:
+        raise ValueError("player_ids must be a comma-separated list of numeric FPL IDs.") from exc
+    if not 1 <= len(player_ids) <= 2:
+        raise ValueError("Select one or two player_ids.")
+    raw_gameweek = request.GET.get("gameweek")
+    try:
+        gameweek = int(raw_gameweek) if raw_gameweek else None
+        horizon = int(request.GET.get("horizon", "3"))
+    except ValueError as exc:
+        raise ValueError("gameweek and horizon must be numeric.") from exc
+    return player_ids, gameweek, horizon
+
+
+@require_GET
+def player_analysis_catalogue(request):
+    """Return the searchable player list available in the latest saved snapshot."""
+    try:
+        return JsonResponse(player_catalogue(load_latest_snapshot()))
+    except FileNotFoundError as exc:
+        return JsonResponse({"error": str(exc)}, status=404)
+
+
+@require_GET
+def player_analysis(request):
+    """Calculate transparent player value and risk from the saved snapshot."""
+    try:
+        player_ids, gameweek, horizon = _player_analysis_parameters(request)
+        payload = build_player_analysis(player_ids, gameweek=gameweek, horizon=horizon)
+    except ValueError as exc:
+        return JsonResponse({"error": str(exc)}, status=400)
+    except FileNotFoundError as exc:
+        return JsonResponse({"error": str(exc)}, status=404)
+    return JsonResponse(payload)
+
+
+@require_GET
+def player_analysis_report(request):
+    """Generate an HTML report or downloadable LaTeX source for selected players."""
+    try:
+        player_ids, gameweek, horizon = _player_analysis_parameters(request)
+        payload = build_player_analysis(player_ids, gameweek=gameweek, horizon=horizon)
+    except ValueError as exc:
+        return JsonResponse({"error": str(exc)}, status=400)
+    except FileNotFoundError as exc:
+        return JsonResponse({"error": str(exc)}, status=404)
+
+    output_format = request.GET.get("format", "html").lower()
+    if output_format == "tex":
+        response = HttpResponse(render_player_report_tex(payload), content_type="application/x-tex; charset=utf-8")
+        response["Content-Disposition"] = 'attachment; filename="FPL_PLAYER_ANALYSIS.tex"'
+        return response
+    if output_format != "html":
+        return JsonResponse({"error": "format must be html or tex."}, status=400)
+    return HttpResponse(render_player_report_html(payload), content_type="text/html; charset=utf-8")
+
+
+@require_GET
 def optimize_team(request):
     """
-    Build an optimized 15-player squad based on predicted points.
+    Multi-GW squad optimization using MILP solver (FPLSolver).
 
-    Uses a fast greedy + upgrade heuristic (no external solver).
+    Accepts: budget (tenths of £m), horizon, availability, manager_id,
+    free_transfers, and risk_profile (protect/balanced/chase).
+    Returns: JSON with gameweeks array detailing transfers, captain, chips, squad per GW.
     """
+    # Keep the optional MILP dependency isolated so non-optimizer endpoints can
+    # still run in lightweight local environments.
+    try:
+        from .fpl_solver import FPLSolver
+    except ImportError:
+        return JsonResponse(
+            {"error": "The optimizer dependency is not installed. Install requirements and retry."},
+            status=503,
+        )
+
+    # Parse parameters
     try:
         budget = int(request.GET.get("budget", 1000))
     except (TypeError, ValueError):
@@ -1442,142 +1708,363 @@ def optimize_team(request):
     except (TypeError, ValueError):
         horizon = 1
     try:
-        max_per_team = max(1, min(int(request.GET.get("max_per_team", 3)), 3))
+        free_transfers = max(0, min(int(request.GET.get("free_transfers", 1)), 5))
     except (TypeError, ValueError):
-        max_per_team = 3
+        free_transfers = 1
 
-    include_unavailable = request.GET.get("include_unavailable", "false").lower() in (
-        "1",
-        "true",
-        "yes",
-    )
+    include_unavailable = request.GET.get("include_unavailable", "false").lower() in ("1", "true", "yes")
     manager_id = request.GET.get("manager_id")
+    if manager_id and not manager_id.isdigit():
+        return JsonResponse({"error": "manager_id must be numeric."}, status=400)
+    risk_profile = request.GET.get("risk_profile", "balanced").lower()
+    if risk_profile not in {"protect", "balanced", "chase"}:
+        return JsonResponse({"error": "risk_profile must be protect, balanced, or chase."}, status=400)
+    allow_wildcard = request.GET.get("allow_wildcard", "false").lower() in ("1", "true", "yes")
 
-    current_gw = (
-        AthleteStat.objects.aggregate(max_gw=Max("game_week"))["max_gw"] or 1
-    )
-    manager_player_ids: set[int] | None = None
+    # Get current gameweek
+    current_gw = AthleteStat.objects.aggregate(max_gw=Max("game_week"))["max_gw"] or 1
+    start_gw = current_gw + 1
+    end_gw = start_gw + horizon - 1
+
+    # Fetch manager squad if manager_id provided
+    manager_player_ids: list[int] | None = None
+    manager_bank = 0
+    manager_purchase_prices: dict[int, int] = {}
     if manager_id:
         try:
             bootstrap = requests.get("https://fantasy.premierleague.com/api/bootstrap-static/", timeout=10)
             bootstrap.raise_for_status()
             bootstrap_data = bootstrap.json()
-            current_event = next((event for event in bootstrap_data.get("events", []) if event.get("is_current")), None)
+            current_event = next((e for e in bootstrap_data.get("events", []) if e.get("is_current")), None)
             event_id = current_event.get("id") if current_event else current_gw
             picks = requests.get(
                 f"https://fantasy.premierleague.com/api/entry/{manager_id}/event/{event_id}/picks/",
                 timeout=10,
             )
             if picks.status_code != 200:
-                return JsonResponse({"error": "Manager not found or picks unavailable."}, status=picks.status_code)
+                return JsonResponse({"error": "Manager not found."}, status=picks.status_code)
             picks_data = picks.json()
-            manager_player_ids = {pick.get("element") for pick in picks_data.get("picks", []) if pick.get("element")}
+            manager_player_ids = [p.get("element") for p in picks_data.get("picks", []) if p.get("element")]
             if not manager_player_ids:
                 return JsonResponse({"error": "Unable to load manager squad."}, status=400)
+            manager_bank = int(picks_data.get("entry_history", {}).get("bank", 0) or 0)
+
+            transfers_response = requests.get(
+                f"https://fantasy.premierleague.com/api/entry/{manager_id}/transfers/",
+                timeout=10,
+            )
+            if transfers_response.ok:
+                for transfer in transfers_response.json():
+                    player_id = transfer.get("element_in")
+                    if player_id in manager_player_ids:
+                        manager_purchase_prices[player_id] = int(transfer.get("element_in_cost", 0) or 0)
         except requests.RequestException as exc:
             return JsonResponse({"error": str(exc)}, status=500)
-    start_gw = current_gw + 1
-    end_gw = start_gw + horizon - 1
 
+    # Build predictions_df: element, event, predicted_points, name, position
     prediction_rows = AthletePrediction.objects.filter(
         game_week__gte=start_gw,
         game_week__lte=end_gw,
-    ).values("athlete_id", "predicted_points")
+    ).select_related("athlete").values("athlete_id", "game_week", "predicted_points", "athlete__web_name", "athlete__element_type")
 
-    predictions_map: dict[int, list[float]] = defaultdict(list)
+    recent_points: dict[int, list[float]] = defaultdict(list)
+    for stat in AthleteStat.objects.filter(
+        game_week__gte=max(1, current_gw - 5),
+        game_week__lte=current_gw,
+    ).values("athlete_id", "total_points"):
+        recent_points[stat["athlete_id"]].append(float(stat["total_points"]))
+
+    athlete_risk_lookup = {
+        athlete.id: {
+            "predicted_variance": max(
+                4.0,
+                float(pd.Series(recent_points.get(athlete.id, [])).var(ddof=1) or 0.0),
+            ),
+            # Until deadline-tier projected EO is ingested, current overall
+            # ownership is an explicitly-labelled exposure proxy.
+            "effective_ownership": float(athlete.selected_by_percent or 0) / 100.0,
+        }
+        for athlete in Athlete.objects.filter(id__in={row["athlete_id"] for row in prediction_rows})
+    }
+
+    predictions_data = []
     for row in prediction_rows:
-        predictions_map[row["athlete_id"]].append(float(row["predicted_points"]))
+        risk = athlete_risk_lookup.get(row["athlete_id"], {})
+        predictions_data.append({
+            "element": row["athlete_id"],
+            "event": row["game_week"],
+            "predicted_points": float(row["predicted_points"]),
+            "name": row["athlete__web_name"],
+            "position": POSITION_LABELS.get(row["athlete__element_type"], "UNK"),
+            "predicted_variance": risk.get("predicted_variance", 4.0),
+            "effective_ownership": risk.get("effective_ownership", 0.0),
+        })
 
+    projection_source = "stored_model"
+    projection_note = "Stored model projections for each gameweek in the horizon."
+
+    if not predictions_data:
+        # No trained-model output for this horizon. Rather than refusing to run
+        # or inventing numbers, fall back to the official FPL expected-points
+        # figure held flat across the horizon, and say so in the response so
+        # the UI can label the result honestly.
+        projection_source = "official_ep_next"
+        projection_note = (
+            "No stored model projections for this horizon, so the solver used the "
+            "official FPL expected points for the next gameweek, held flat across "
+            "every gameweek in the horizon."
+        )
+        official_players = Athlete.objects.filter(
+            removed=False,
+            element_type__in=POSITION_LIMITS.keys(),
+        ).exclude(ep_next=None)
+        for athlete in official_players:
+            variance = max(
+                4.0,
+                float(pd.Series(recent_points.get(athlete.id, [])).var(ddof=1) or 0.0),
+            )
+            ownership = float(athlete.selected_by_percent or 0) / 100.0
+            for game_week in range(start_gw, end_gw + 1):
+                predictions_data.append({
+                    "element": athlete.id,
+                    "event": game_week,
+                    "predicted_points": float(athlete.ep_next),
+                    "name": athlete.web_name,
+                    "position": POSITION_LABELS.get(athlete.element_type, "UNK"),
+                    "predicted_variance": variance,
+                    "effective_ownership": ownership,
+                })
+
+    predictions_df = pd.DataFrame(predictions_data)
+    if len(predictions_df) == 0:
+        return JsonResponse(
+            {
+                "error": (
+                    "No projections available for this horizon — neither stored model "
+                    "output nor official expected points. Run the ETL, then train the model."
+                )
+            },
+            status=400,
+        )
+
+    # Build gw_data: element, event (=current_gw), position, value, name.
+    # Departed players keep stale prices and positions, so exclude them.
     players_qs = Athlete.objects.select_related("team").filter(
         element_type__in=POSITION_LIMITS.keys(),
         now_cost__gt=0,
+        removed=False,
     )
 
-    if manager_player_ids is not None:
-        players_qs = players_qs.filter(id__in=manager_player_ids)
-
     if not include_unavailable:
-        players_qs = players_qs.filter(
-            Q(status__in=["a", "d"]) | Q(status__isnull=True)
-        )
+        availability = Q(status__in=["a", "d"]) | Q(status__isnull=True)
+        if manager_player_ids:
+            availability |= Q(id__in=manager_player_ids)
+        players_qs = players_qs.filter(availability)
 
-    candidates_by_position: dict[int, list[OptimizationCandidate]] = defaultdict(list)
-
+    gw_data_list = []
+    athlete_lookup = {}
     for player in players_qs:
-        predicted_values = predictions_map.get(player.id, [])
-        if predicted_values:
-            predicted_points = float(sum(predicted_values))
-        else:
-            predicted_points = float(player.form) if player.form else float(player.points_per_game or 0)
-
-        candidate = OptimizationCandidate(
-            id=player.id,
-            web_name=player.web_name,
-            first_name=player.first_name,
-            second_name=player.second_name,
-            team_id=player.team.id if player.team else None,
-            team_short_name=player.team.short_name if player.team else None,
-            element_type=player.element_type or 0,
-            now_cost=player.now_cost or 0,
-            predicted_points=predicted_points,
-            image_url=_player_image(player.photo),
-        )
-        candidates_by_position[candidate.element_type].append(candidate)
-
-    for position, candidates in list(candidates_by_position.items()):
-        candidates_by_position[position] = _limit_candidates(candidates, limit=120)
-
-    selection = _select_cheapest_squad(candidates_by_position, max_per_team)
-    if selection is None:
-        return JsonResponse({"error": "Unable to build a valid squad with current constraints."}, status=400)
-
-    squad, team_counts = selection
-    squad_cost = sum(player.now_cost for player in squad)
-    if squad_cost > budget:
-        return JsonResponse({"error": "Budget too low for a valid squad."}, status=400)
-
-    squad = _improve_squad(squad, candidates_by_position, team_counts, budget, max_per_team)
-    squad_cost = sum(player.now_cost for player in squad)
-    starters = _pick_starting_xi(squad)
-
-    formation_counts = defaultdict(int)
-    for player in squad:
-        if player.id in starters and player.element_type in (2, 3, 4):
-            formation_counts[player.element_type] += 1
-
-    formation_label = f"{formation_counts[2]}-{formation_counts[3]}-{formation_counts[4]}"
-
-    response_players = []
-    for player in sorted(squad, key=lambda p: (p.element_type, -p.predicted_points)):
-        response_players.append({
-            "id": player.id,
-            "web_name": player.web_name,
-            "first_name": player.first_name,
-            "second_name": player.second_name,
-            "team_short_name": player.team_short_name,
+        gw_data_list.append({
+            "element": player.id,
+            "event": current_gw,
             "position": POSITION_LABELS.get(player.element_type, "UNK"),
+            "value": player.now_cost,
+            "name": player.web_name,
+        })
+        athlete_lookup[player.id] = {
+            "web_name": player.web_name,
+            "element_type": player.element_type,
             "now_cost": player.now_cost,
-            "predicted_points": round(player.predicted_points, 2),
-            "starter": player.id in starters,
-            "image_url": player.image_url,
+            "team_short_name": player.team.short_name if player.team else None,
+            "photo": player.photo,
+        }
+
+    gw_data = pd.DataFrame(gw_data_list)
+    if len(gw_data) == 0:
+        return JsonResponse({"error": "No available players."}, status=400)
+
+    # normalized_data for solver (team data)
+    normalized_data_list = []
+    for player in players_qs:
+        normalized_data_list.append({
+            "element": player.id,
+            "event": current_gw,
+            "player_team_id": player.team.id if player.team else 0,
+        })
+    normalized_data = pd.DataFrame(normalized_data_list)
+
+    # Instantiate and solve
+    try:
+        solver = FPLSolver(
+            planning_horizon=horizon,
+            budget=budget,
+            start_gw=start_gw,
+            solver_name="CBC",
+            risk_profile=risk_profile,
+            first_gw_transfer_penalty=0,
+        )
+
+        solver.load_predictions(predictions_df)
+        solver.load_player_data(gw_data, normalized_data, player_subset=None)
+
+        # Set initial squad if manager_id provided
+        if manager_player_ids is not None:
+            player_market_prices = dict(players_qs.values_list("id", "now_cost"))
+            player_start_changes = dict(players_qs.values_list("id", "cost_change_start"))
+            selling_prices = {}
+            for player_id in manager_player_ids:
+                current_price = int(player_market_prices.get(player_id, 0) or 0)
+                purchase_price = manager_purchase_prices.get(player_id)
+                if not purchase_price:
+                    purchase_price = current_price - int(player_start_changes.get(player_id, 0) or 0)
+                if current_price >= purchase_price:
+                    selling_prices[player_id] = purchase_price + (current_price - purchase_price) // 2
+                else:
+                    selling_prices[player_id] = current_price
+            solver.set_initial_squad(
+                manager_player_ids,
+                available_transfers=free_transfers,
+                bank=manager_bank,
+                selling_prices=selling_prices,
+            )
+            if not allow_wildcard:
+                solver.set_chip_state(wildcard_first_half=1, wildcard_second_half=1)
+
+        # Build MILP model
+        solver.build_model()
+
+        # Solve with 30s time limit
+        solved = solver.solve(time_limit=30)
+        if not solved:
+            return JsonResponse({"error": "Solver could not find a feasible solution."}, status=400)
+
+        # Extract solution
+        solution = solver.extract_solution()
+        objective_value = solution["objective_value"]
+        squads = solution["squads"]  # {gw: [player_ids]}
+        lineups = solution["lineups"]  # {gw: {"starters": [...], "bench": [...]}}
+        captains = solution["captains"]  # {gw: player_id}
+        transfers = solution["transfers"]  # {gw: {...}}
+        chips = solution["chips"]
+        bank_by_gw = solution["bank"]
+
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.exception("Solver error")
+        return JsonResponse({"error": f"Solver error: {str(e)}"}, status=500)
+
+    # Build response: gameweeks array
+    gameweeks_response = []
+    for gw in range(1, horizon + 1):
+        actual_gw = start_gw + gw - 1
+        squad_ids = squads.get(gw, [])
+        lineup = lineups.get(gw, {"starters": [], "bench": []})
+        captain_id = captains.get(gw)
+        transfer_info = transfers.get(gw, {})
+
+        # Build player responses for transfers and squad
+        def player_response(player_id):
+            meta = athlete_lookup.get(player_id, {})
+            pred_points = 0.0
+            if not predictions_df.empty:
+                player_pred = predictions_df[
+                    (predictions_df['element'] == player_id) &
+                    (predictions_df['event'] == actual_gw)
+                ]['predicted_points'].values
+                if len(player_pred) > 0:
+                    pred_points = float(player_pred[0])
+            return {
+                "id": player_id,
+                "web_name": meta.get("web_name", "Unknown"),
+                "position": POSITION_LABELS.get(meta.get("element_type"), "UNK"),
+                "now_cost": meta.get("now_cost", 0),
+                "predicted_points": round(pred_points, 2),
+                "predicted_sd": round(math.sqrt(float(
+                    predictions_df.loc[
+                        (predictions_df["element"] == player_id)
+                        & (predictions_df["event"] == actual_gw),
+                        "predicted_variance",
+                    ].iloc[0]
+                )), 2) if not predictions_df.loc[
+                    (predictions_df["element"] == player_id)
+                    & (predictions_df["event"] == actual_gw)
+                ].empty else 0.0,
+                "ownership_proxy": round(float(
+                    predictions_df.loc[
+                        (predictions_df["element"] == player_id)
+                        & (predictions_df["event"] == actual_gw),
+                        "effective_ownership",
+                    ].iloc[0]
+                ), 3) if not predictions_df.loc[
+                    (predictions_df["element"] == player_id)
+                    & (predictions_df["event"] == actual_gw)
+                ].empty else 0.0,
+                "image_url": _player_image(meta.get("photo")),
+            }
+
+        # Extract transfers
+        transfers_in_ids = transfer_info.get("in", [])
+        transfers_out_ids = transfer_info.get("out", [])
+        transfers_in = [player_response(pid) for pid in transfers_in_ids]
+        transfers_out = [player_response(pid) for pid in transfers_out_ids]
+        free_transfers_used = transfer_info.get("free_transfers", 0)
+        paid_transfers = transfer_info.get("paid_transfers", 0)
+
+        # Build squad grid
+        starters = [player_response(pid) for pid in lineup.get("starters", [])]
+        bench = [player_response(pid) for pid in lineup.get("bench", [])]
+
+        # Captain
+        captain_resp = None
+        if captain_id:
+            captain_resp = {
+                "id": captain_id,
+                "web_name": athlete_lookup.get(captain_id, {}).get("web_name", "Unknown"),
+            }
+
+        # Compute GW stats - sum predicted points from starters
+        captain_extra = next(
+            (p["predicted_points"] for p in starters if p["id"] == captain_id),
+            0.0,
+        )
+        gw_total_xpts = sum(p["predicted_points"] for p in starters) + captain_extra - 4 * paid_transfers
+
+        gameweeks_response.append({
+            "gameweek": actual_gw,
+            "chips": chips.get(gw, []),
+            "transfers": {
+                "in": transfers_in,
+                "out": transfers_out,
+                "count": len(transfers_in),
+                "free_transfers": free_transfers_used,
+                "paid_transfers": paid_transfers,
+            },
+            "squad": {
+                "starters": starters,
+                "bench": bench,
+            },
+            "captain": captain_resp,
+            "total_predicted_points": gw_total_xpts,
+            "bank": bank_by_gw.get(gw, 0.0),
         })
 
-    total_predicted = round(sum(player.predicted_points for player in squad), 2)
-
     return JsonResponse({
-        "budget": budget,
-        "budget_remaining": budget - squad_cost,
-        "horizon": horizon,
-        "current_gameweek": current_gw,
-        "start_gameweek": start_gw,
-        "end_gameweek": end_gw,
-        "max_per_team": max_per_team,
-        "formation": formation_label,
-        "total_cost": squad_cost,
-        "total_predicted_points": total_predicted,
-        "players": response_players,
-        "manager_id": manager_id,
-        "mode": "manager_squad" if manager_player_ids is not None else "open_pool",
+        "meta": {
+            "budget": budget,
+            "start_gameweek": start_gw,
+            "end_gameweek": end_gw,
+            "horizon": horizon,
+            "objective_value": round(objective_value, 2),
+            "solver": "MILP/CBC",
+            "risk_profile": risk_profile,
+            "personalized": manager_player_ids is not None,
+            "manager_id": int(manager_id) if manager_id else None,
+            "ownership_basis": "current overall ownership proxy",
+            "projection_source": projection_source,
+            "projection_note": projection_note,
+        },
+        "gameweeks": gameweeks_response,
     })
 
 
@@ -2691,7 +3178,7 @@ def upcoming_fixtures_with_odds(request):
         "competitions": competitions_param,
     }
     
-    # Cache for 5 minutes (odds update every 10 minutes, so this is fresh enough)
+    # Short cache keeps API reads fast; the underlying odds snapshot updates daily.
     cache.set(cache_key, response_data, 300)
     
     return JsonResponse(response_data)

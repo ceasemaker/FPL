@@ -58,6 +58,8 @@ const ManagerGameweek: React.FC<ManagerGameweekProps> = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [currentGameweek, setCurrentGameweek] = useState<number>(1);
+  const [loadedAt, setLoadedAt] = useState<Date | null>(null);
+  const [finishedGameweeks, setFinishedGameweeks] = useState<Set<number>>(new Set());
   const [selectedPlayer, setSelectedPlayer] = useState<{ id: number; name: string; team: number; position: number } | null>(null);
 
   // Fetch bootstrap-static data for player info
@@ -71,6 +73,7 @@ const ManagerGameweek: React.FC<ManagerGameweekProps> = ({
         });
         setAllPlayers(playerMap);
         setCurrentGameweek(data.events.find((e: any) => e.is_current)?.id || 1);
+        setFinishedGameweeks(new Set(data.events.filter((event: any) => event.finished).map((event: any) => event.id)));
         if (!selectedGameweek) {
           onGameweekChange(data.events.find((e: any) => e.is_current)?.id || 1);
         }
@@ -94,6 +97,7 @@ const ManagerGameweek: React.FC<ManagerGameweekProps> = ({
       })
       .then((data: Pick) => {
         setPicks(data);
+        setLoadedAt(new Date());
         setLoading(false);
       })
       .catch((err) => {
@@ -155,7 +159,7 @@ const ManagerGameweek: React.FC<ManagerGameweekProps> = ({
         onClick={() => setSelectedPlayer({ 
           id: pick.element, 
           name: playerData.web_name,
-          team: playerData.team,
+          team: playerData.team_code,
           position: playerData.element_type
         })}
         style={{ cursor: 'pointer' }}
@@ -180,7 +184,7 @@ const ManagerGameweek: React.FC<ManagerGameweekProps> = ({
           <div className="player-card-meta">
             <span className="position-mini">{getPositionLabel(playerData.element_type)}</span>
             <img
-              src={`${TEAM_BADGE_BASE}t${playerData.team}.svg`}
+              src={`${TEAM_BADGE_BASE}${playerData.team_code}.svg`}
               alt=""
               className="team-badge-mini"
             />
@@ -234,6 +238,7 @@ const ManagerGameweek: React.FC<ManagerGameweekProps> = ({
   const def = starting11.filter((p) => allPlayers.get(p.element)?.element_type === 2);
   const mid = starting11.filter((p) => allPlayers.get(p.element)?.element_type === 3);
   const fwd = starting11.filter((p) => allPlayers.get(p.element)?.element_type === 4);
+  const selectedIsFinished = selectedGameweek !== null && finishedGameweeks.has(selectedGameweek);
 
   return (
     <div className="manager-gameweek-container">
@@ -267,6 +272,13 @@ const ManagerGameweek: React.FC<ManagerGameweekProps> = ({
             ›
           </button>
         </div>
+      </div>
+
+      <div className="manager-freshness" role="status">
+        <strong>{selectedIsFinished ? "Completed gameweek" : selectedGameweek === currentGameweek ? "Current gameweek" : "Scheduled gameweek"}</strong>
+        <span>Official FPL picks for GW{selectedGameweek}</span>
+        <span>{selectedIsFinished ? "Final recorded squad and points" : "Live points may change until matches finish"}</span>
+        <span>Loaded {loadedAt?.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" }) ?? "—"}</span>
       </div>
 
       {/* Gameweek Stats */}

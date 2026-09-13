@@ -25,23 +25,35 @@ export function PlayerHeatmap({ playerId, gameweek, className = "" }: PlayerHeat
     const [data, setData] = useState<HeatmapData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [notCollected, setNotCollected] = useState(false);
 
     useEffect(() => {
         let isMounted = true;
         setIsLoading(true);
         setError(null);
+        setNotCollected(false);
 
         fetch(`/api/sofasport/player/${playerId}/heatmap/${gameweek}/`)
             .then(async (res) => {
                 if (!res.ok) {
-                    if (res.status === 404) return null; // No data is fine
+                    if (res.status === 404) {
+                        // Check if it's an early gameweek (GW1-6 likely never collected)
+                        if (gameweek <= 6) {
+                            return { isNotCollected: true };
+                        }
+                        return null; // Player didn't play or no heatmap data
+                    }
                     throw new Error(`Failed to load heatmap (Status: ${res.status})`);
                 }
                 return res.json();
             })
             .then((data) => {
                 if (isMounted) {
-                    setData(data);
+                    if (data && data.isNotCollected) {
+                        setNotCollected(true);
+                    } else {
+                        setData(data);
+                    }
                 }
             })
             .catch((err) => {
@@ -100,7 +112,8 @@ export function PlayerHeatmap({ playerId, gameweek, className = "" }: PlayerHeat
 
     if (isLoading) return <div className="heatmap-loading">Loading heatmap...</div>;
     if (error) return <div className="heatmap-error">Error: {error}</div>;
-    if (!data || !data.coordinates.length) return <div className="heatmap-empty">No heatmap data for GW{gameweek}</div>;
+    if (notCollected) return <div className="heatmap-empty">⚠️ Heatmap data not collected for GW{gameweek} (early season data being backfilled)</div>;
+    if (!data || !data.coordinates.length) return <div className="heatmap-empty">📊 No heatmap data - player may not have played</div>;
 
     return (
         <div className={`player-heatmap-container ${className}`}>

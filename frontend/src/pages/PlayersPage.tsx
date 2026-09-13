@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePlayers, type Player } from "../hooks/usePlayers";
 import { PlayerModal } from "../components/PlayerModal";
 import { PlayersTable } from "../components/PlayersTable";
@@ -10,15 +10,6 @@ const TEAM_BADGE_BASE = "https://resources.premierleague.com/premierleague25/bad
 function getTeamBadgeUrl(teamCode: number | null): string | null {
   if (!teamCode) return null;
   return `${TEAM_BADGE_BASE}${teamCode}.svg`;
-}
-
-function getDifficultyColor(difficulty: number | null): string {
-  if (difficulty === null) return "#666";
-  if (difficulty <= 1.5) return "#22c55e";
-  if (difficulty <= 2.5) return "#84cc16";
-  if (difficulty <= 3.5) return "#eab308";
-  if (difficulty <= 4.5) return "#f97316";
-  return "#ef4444";
 }
 
 function getPositionLabel(elementType: number): string {
@@ -40,7 +31,8 @@ function calculateBestValue(player: Player): number {
 
 export function PlayersPage() {
   const navigate = useNavigate();
-  const [search, setSearch] = useState("");
+  const [searchParams] = useSearchParams();
+  const [search, setSearch] = useState(() => searchParams.get("search") || "");
   const [compareMode, setCompareMode] = useState(false);
   const [selectedPlayers, setSelectedPlayers] = useState<Set<number>>(new Set());
   const [modalPlayerId, setModalPlayerId] = useState<number | null>(null);
@@ -54,6 +46,7 @@ export function PlayersPage() {
   const [maxFdr, setMaxFdr] = useState<number>(5);
   const [minBestValue, setMinBestValue] = useState<number>(0);
   const [excludeInjured, setExcludeInjured] = useState<boolean>(false);
+  const flaggedOnly = searchParams.get("status") === "flagged";
 
   const { data, isLoading, error } = usePlayers(search);
 
@@ -78,10 +71,7 @@ export function PlayersPage() {
   };
 
   const handleCompare = () => {
-    if (selectedPlayers.size < 2) {
-      alert("Please select at least 2 players to compare");
-      return;
-    }
+    if (selectedPlayers.size < 2) return;
     const playerIds = Array.from(selectedPlayers).join(",");
     navigate(`/compare?ids=${playerIds}`);
   };
@@ -108,6 +98,7 @@ export function PlayersPage() {
 
       // Exclude Injured
       if (excludeInjured && (player.status === "i" || player.status === "u")) return false;
+      if (flaggedOnly && (!player.status || player.status === "a")) return false;
 
       // Best Value Filter
       if (minBestValue > 0) {
@@ -117,139 +108,142 @@ export function PlayersPage() {
 
       return true;
     });
-  }, [data?.players, teamFilter, positionFilter, maxFdr, excludeInjured, minBestValue]);
+  }, [data?.players, teamFilter, positionFilter, maxFdr, excludeInjured, minBestValue, flaggedOnly]);
 
   if (error) {
     return (
-      <div className="page">
-        <div className="players-error">
-          <h2>Error loading players</h2>
-          <p>{error}</p>
+      <main className="aero-page players-page">
+        <div className="aero-header">
+          <div><h1>Players</h1></div>
         </div>
-      </div>
+        <p className="aero-error">{error}</p>
+      </main>
     );
   }
 
   return (
-    <div className="page players-page">
-      <div className="players-header-section">
-        <div className="players-title-row">
+    <main className="aero-page players-page">
+      <div className="aero-header">
+        <div>
           <h1>Players</h1>
-          <div className="players-actions">
-            <button
-              className={`compare-toggle ${compareMode ? "active" : ""}`}
-              onClick={() => {
-                setCompareMode(!compareMode);
-                setSelectedPlayers(new Set());
-              }}
-            >
-              {compareMode ? "Cancel Compare" : "Compare"}
-            </button>
-            {compareMode && selectedPlayers.size > 0 && (
-              <button className="compare-btn" onClick={handleCompare}>
-                Compare ({selectedPlayers.size})
-              </button>
-            )}
-          </div>
+          <p>
+            Browse the squad pool, then pick two or more players to compare them
+            side by side.
+          </p>
         </div>
-
-        <div className="filters-bar">
-          <div className="search-container">
-            <input
-              type="text"
-              className="players-search"
-              placeholder="Search players..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-
-          <div className="filters-group">
-            <div className="filter-item">
-              <label>Team</label>
-              <select
-                value={teamFilter}
-                onChange={(e) => setTeamFilter(e.target.value)}
-                className="filter-select"
-              >
-                <option value="all">All Teams</option>
-                {teams.map(team => (
-                  <option key={team} value={team!}>{team}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="filter-item">
-              <label>Position</label>
-              <select
-                value={positionFilter}
-                onChange={(e) => setPositionFilter(e.target.value)}
-                className="filter-select"
-              >
-                <option value="all">All Positions</option>
-                <option value="1">Goalkeepers</option>
-                <option value="2">Defenders</option>
-                <option value="3">Midfielders</option>
-                <option value="4">Forwards</option>
-              </select>
-            </div>
-
-            <div className="filter-item">
-              <label>Max FDR: {maxFdr}</label>
-              <input
-                type="range"
-                min="1"
-                max="5"
-                step="0.1"
-                value={maxFdr}
-                onChange={(e) => setMaxFdr(Number(e.target.value))}
-              />
-            </div>
-
-            <div className="filter-item">
-              <label>Min Value: {minBestValue}</label>
-              <input
-                type="range"
-                min="0"
-                max="2"
-                step="0.1"
-                value={minBestValue}
-                onChange={(e) => setMinBestValue(Number(e.target.value))}
-              />
-            </div>
-
-            <label className="checkbox-filter">
-              <input
-                type="checkbox"
-                checked={excludeInjured}
-                onChange={(e) => setExcludeInjured(e.target.checked)}
-              />
-              Exclude Injured
-            </label>
-          </div>
-        </div>
+        <button
+          className={`aero-button ${compareMode ? "" : "primary"}`}
+          onClick={() => {
+            setCompareMode(!compareMode);
+            setSelectedPlayers(new Set());
+          }}
+        >
+          {compareMode ? "Cancel selection" : "Select to compare"}
+        </button>
       </div>
 
+      <section className="players-filters aero-card">
+        {flaggedOnly && <div className="aero-note" role="status">Showing players with an injury, suspension or availability flag. <button className="players-clear-filter" onClick={() => navigate("/players")}>Show everyone</button></div>}
+        <label className="aero-field players-search-field">
+          <span>Search</span>
+          <input
+            type="text"
+            className="aero-input"
+            placeholder="Search players…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </label>
+
+        <label className="aero-field">
+          <span>Team</span>
+          <select
+            className="aero-select"
+            value={teamFilter}
+            onChange={(e) => setTeamFilter(e.target.value)}
+          >
+            <option value="all">All teams</option>
+            {teams.map(team => (
+              <option key={team} value={team!}>{team}</option>
+            ))}
+          </select>
+        </label>
+
+        <label className="aero-field">
+          <span>Position</span>
+          <select
+            className="aero-select"
+            value={positionFilter}
+            onChange={(e) => setPositionFilter(e.target.value)}
+          >
+            <option value="all">All positions</option>
+            <option value="1">Goalkeepers</option>
+            <option value="2">Defenders</option>
+            <option value="3">Midfielders</option>
+            <option value="4">Forwards</option>
+          </select>
+        </label>
+
+        <label className="aero-field players-range">
+          <span>Max FDR · {maxFdr}</span>
+          <input
+            type="range"
+            min="1"
+            max="5"
+            step="0.1"
+            value={maxFdr}
+            onChange={(e) => setMaxFdr(Number(e.target.value))}
+          />
+        </label>
+
+        <label className="aero-field players-range">
+          <span>Min value · {minBestValue}</span>
+          <input
+            type="range"
+            min="0"
+            max="2"
+            step="0.1"
+            value={minBestValue}
+            onChange={(e) => setMinBestValue(Number(e.target.value))}
+          />
+        </label>
+
+        <label className="aero-field players-check">
+          <span>Availability</span>
+          <span className="players-check-row">
+            <input
+              type="checkbox"
+              checked={excludeInjured}
+              onChange={(e) => setExcludeInjured(e.target.checked)}
+            />
+            Exclude injured
+          </span>
+        </label>
+      </section>
+
       {isLoading ? (
-        <div className="players-loading">Loading players...</div>
+        <p className="aero-loading">Loading players…</p>
       ) : (
         <>
           <div className="results-bar">
             <div className="results-count">
-              Showing {filteredPlayers.length} players
+              {filteredPlayers.length} player{filteredPlayers.length === 1 ? "" : "s"}
+              {compareMode && " · tap a card to add it to the comparison"}
             </div>
             <div className="view-toggle">
               <button
                 className={`view-btn ${viewMode === "grid" ? "active" : ""}`}
                 onClick={() => setViewMode("grid")}
-                title="Grid View"
+                aria-pressed={viewMode === "grid"}
+                title="Grid view"
               >
                 ⊞
               </button>
               <button
                 className={`view-btn ${viewMode === "table" ? "active" : ""}`}
                 onClick={() => setViewMode("table")}
-                title="Table View"
+                aria-pressed={viewMode === "table"}
+                title="Table view"
               >
                 ≡
               </button>
@@ -333,10 +327,8 @@ export function PlayersPage() {
                         <div className="stat-item">
                           <span className="stat-label">FDR</span>
                           <span
-                            className="stat-value fdr-badge"
-                            style={{
-                              backgroundColor: getDifficultyColor(player.avg_fdr),
-                            }}
+                            className="stat-value aero-fdr"
+                            data-fdr={Math.round(player.avg_fdr)}
                           >
                             {player.avg_fdr.toFixed(1)}
                           </span>
@@ -359,6 +351,39 @@ export function PlayersPage() {
         </>
       )}
 
+      {/* Selection tray — keeps the compare action in reach while scrolling. */}
+      {compareMode && (
+        <div className="compare-tray" role="region" aria-label="Comparison selection">
+          <div className="compare-tray-players">
+            {selectedPlayers.size === 0 ? (
+              <span className="compare-tray-hint">Select at least two players.</span>
+            ) : (
+              Array.from(selectedPlayers).map((id) => {
+                const player = data?.players.find((p) => p.id === id);
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    className="compare-tray-chip"
+                    onClick={() => togglePlayerSelection(id)}
+                    aria-label={`Remove ${player?.web_name ?? "player"} from comparison`}
+                  >
+                    {player?.web_name ?? `#${id}`} <b>×</b>
+                  </button>
+                );
+              })
+            )}
+          </div>
+          <button
+            className="aero-button primary"
+            onClick={handleCompare}
+            disabled={selectedPlayers.size < 2}
+          >
+            Compare {selectedPlayers.size > 0 ? `(${selectedPlayers.size})` : ""}
+          </button>
+        </div>
+      )}
+
       {/* Player Detail Modal */}
       {modalPlayerId !== null && (
         <PlayerModal
@@ -366,6 +391,6 @@ export function PlayersPage() {
           onClose={() => setModalPlayerId(null)}
         />
       )}
-    </div>
+    </main>
   );
 }

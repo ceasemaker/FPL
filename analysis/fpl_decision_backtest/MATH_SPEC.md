@@ -313,7 +313,7 @@ goals-conceded deductions, saves, cards, own goals, penalties, bonus and the
 values. Chips are not part of the forecast.
 
 This model passes the general-error test but not yet the selection test. On the
-untouched 2025/26 season its MAE is `2.217` versus `2.342` for ridge and its
+2025/26 evaluation season its MAE is `2.217` versus `2.342` for ridge and its
 correlation is `0.226` versus `0.223`. However, its weekly top-five selections
 average `4.941` realized points versus `5.178` for ridge. It therefore remains
 a structural/risk layer and is not yet the optimizer's sole ranking authority.

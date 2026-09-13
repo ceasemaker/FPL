@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import anime from 'animejs';
 
 interface NewsItem {
   id: number;
@@ -18,30 +19,47 @@ interface NewsTickerProps {
 
 const NewsTicker: React.FC<NewsTickerProps> = ({ news }) => {
   const tickerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const animationRef = useRef<ReturnType<typeof anime> | null>(null);
 
   useEffect(() => {
-    if (!tickerRef.current) return;
-
     const ticker = tickerRef.current;
-    const tickerContent = ticker.querySelector('.news-ticker-content') as HTMLDivElement;
-    
-    if (!tickerContent) return;
+    const content = contentRef.current;
+    if (!ticker || !content) return;
 
-    // Clone the content for seamless loop
-    const clone = tickerContent.cloneNode(true) as HTMLDivElement;
-    ticker.appendChild(clone);
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    // Calculate animation duration based on content width
-    const contentWidth = tickerContent.scrollWidth;
-    const duration = contentWidth / 50; // 50px per second
+    const startAnimation = () => {
+      animationRef.current?.pause();
+      anime.remove(content);
+      content.style.transform = 'translateX(0)';
 
-    tickerContent.style.animationDuration = `${duration}s`;
-    clone.style.animationDuration = `${duration}s`;
+      if (reducedMotion.matches) return;
+
+      const start = ticker.clientWidth;
+      const distance = start + content.scrollWidth;
+      const pixelsPerSecond = 24;
+      animationRef.current = anime({
+        targets: content,
+        translateX: [start, -content.scrollWidth],
+        duration: (distance / pixelsPerSecond) * 1000,
+        easing: 'linear',
+        loop: true,
+      });
+    };
+
+    const frame = window.requestAnimationFrame(startAnimation);
+    const resizeObserver = new ResizeObserver(startAnimation);
+    resizeObserver.observe(ticker);
+    resizeObserver.observe(content);
+    reducedMotion.addEventListener('change', startAnimation);
 
     return () => {
-      if (ticker.contains(clone)) {
-        ticker.removeChild(clone);
-      }
+      window.cancelAnimationFrame(frame);
+      resizeObserver.disconnect();
+      reducedMotion.removeEventListener('change', startAnimation);
+      animationRef.current?.pause();
+      anime.remove(content);
     };
   }, [news]);
 
@@ -76,8 +94,13 @@ const NewsTicker: React.FC<NewsTickerProps> = ({ news }) => {
         <span className="news-icon">📰</span>
         <span>LATEST NEWS</span>
       </div>
-      <div className="news-ticker" ref={tickerRef}>
-        <div className="news-ticker-content">
+      <div
+        className="news-ticker"
+        ref={tickerRef}
+        onMouseEnter={() => animationRef.current?.pause()}
+        onMouseLeave={() => animationRef.current?.play()}
+      >
+        <div className="news-ticker-content" ref={contentRef}>
           {news.map((item, index) => (
             <div key={`${item.id}-${index}`} className="news-item">
               <div className="news-player-info">

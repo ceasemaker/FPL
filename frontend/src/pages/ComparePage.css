@@ -1,0 +1,416 @@
+/* Compare Players — decision-first layout on the shared dark/lime system. */
+
+.compare-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.compare-block {
+  padding: 18px;
+}
+
+/* ------------------------------------------------------- identity header */
+
+/* The label column and the player columns share one template so every stat
+ * row lines up under the player it belongs to. `--compare-players` is set on
+ * each grid by the component. */
+.compare-identity,
+.compare-row {
+  grid-template-columns:
+    minmax(140px, 180px)
+    repeat(var(--compare-players, 2), minmax(0, 1fr));
+}
+
+.compare-columns {
+  grid-template-columns: repeat(var(--compare-players, 2), minmax(0, 1fr));
+}
+
+.compare-identity {
+  display: grid;
+  gap: 14px;
+  align-items: stretch;
+}
+
+.compare-player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px;
+  text-align: center;
+  border: 1px solid var(--aero-line-strong);
+  border-radius: var(--aero-radius);
+  background: linear-gradient(160deg, #1f2220, #151616 62%);
+}
+
+.compare-player-face {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--aero-surface-hover);
+  border: 1px solid var(--aero-line-strong);
+}
+
+.compare-player-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.compare-player h2 {
+  font-size: 1.12rem;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+.compare-player-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--aero-text-dim);
+}
+
+.compare-badge {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.compare-player-price {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 0;
+}
+
+.compare-player-price strong {
+  font-size: 1.25rem;
+  color: var(--aero-lime);
+}
+
+.compare-player-price span {
+  font-size: 0.7rem;
+  color: var(--aero-text-muted);
+}
+
+.compare-availability {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.compare-availability.ok {
+  background: var(--aero-lime-wash);
+  color: var(--aero-lime);
+}
+
+.compare-availability.warn {
+  background: rgba(226, 183, 91, 0.16);
+  color: var(--aero-warn);
+}
+
+.compare-availability.risk {
+  background: rgba(255, 76, 94, 0.16);
+  color: var(--aero-negative);
+}
+
+/* ------------------------------------------------------------ stat rows */
+
+.compare-grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.compare-row {
+  display: grid;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid var(--aero-line);
+}
+
+.compare-row:first-child {
+  border-top: 0;
+}
+
+.compare-row-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.76rem;
+  color: var(--aero-text-muted);
+}
+
+.compare-row-label small {
+  font-size: 0.64rem;
+  color: #6f7071;
+}
+
+.compare-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-self: center;
+  gap: 4px;
+  width: fit-content;
+  min-width: 108px;
+  max-width: 100%;
+  padding: 6px 14px;
+  border-radius: var(--aero-radius-sm);
+  text-align: center;
+}
+
+.compare-cell strong {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* Winner of a decision row. */
+.compare-cell.best {
+  background: var(--aero-lime-wash);
+}
+
+.compare-cell.best strong {
+  color: var(--aero-lime);
+  font-weight: 700;
+}
+
+.compare-news {
+  font-size: 0.64rem;
+  line-height: 1.35;
+  color: var(--aero-text-muted);
+}
+
+.compare-note {
+  margin-top: 14px;
+}
+
+/* ------------------------------------------------------------- fixtures */
+
+.compare-fixtures {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.compare-fixture {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 56px;
+  padding: 7px 6px;
+  border-radius: var(--aero-radius-sm);
+  border: 1px solid var(--aero-line);
+  background: var(--aero-surface-raised);
+}
+
+.compare-fixture b {
+  font-size: 0.7rem;
+}
+
+.compare-fixture small {
+  font-size: 0.6rem;
+  color: var(--aero-text-muted);
+}
+
+/* --------------------------------------------------------------- splits */
+
+.compare-split {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 16px;
+}
+
+.compare-columns {
+  display: grid;
+  gap: 14px;
+}
+
+.compare-form-column h4 {
+  font-size: 0.82rem;
+  margin: 0 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--aero-line);
+}
+
+.compare-form-row {
+  display: grid;
+  grid-template-columns: 44px 58px 1fr 30px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 0.7rem;
+  border-bottom: 1px solid rgba(46, 47, 48, 0.6);
+}
+
+.compare-form-gw {
+  color: var(--aero-text-muted);
+}
+
+.compare-form-opponent {
+  font-weight: 600;
+}
+
+.compare-form-detail {
+  color: var(--aero-text-muted);
+  font-size: 0.65rem;
+}
+
+.compare-form-points {
+  display: grid;
+  place-items: center;
+  height: 24px;
+  border-radius: 7px;
+  font-weight: 800;
+  font-size: 0.72rem;
+  color: #101011;
+  background: var(--aero-line-strong);
+}
+
+.compare-form-points.great { background: var(--aero-lime); }
+.compare-form-points.good { background: #b8e986; }
+.compare-form-points.ok { background: #95ae67; }
+.compare-form-points.poor { background: #4a4b4c; color: var(--aero-text-dim); }
+
+.compare-radar {
+  display: flex;
+  justify-content: center;
+}
+
+/* ---------------------------------------------------- collapsed details */
+
+.compare-details summary {
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  list-style: none;
+}
+
+.compare-details summary::before {
+  content: "▸ ";
+  color: var(--aero-lime);
+}
+
+.compare-details[open] summary::before {
+  content: "▾ ";
+}
+
+.compare-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.compare-stat-group {
+  margin-top: 20px;
+}
+
+.compare-stat-group h4,
+.compare-euro h4 {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--aero-text-muted);
+  margin: 0 0 6px;
+}
+
+.compare-euro {
+  margin-top: 24px;
+}
+
+.compare-euro-match {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(46, 47, 48, 0.6);
+}
+
+.compare-euro-match b {
+  font-size: 0.72rem;
+}
+
+.compare-euro-match small {
+  font-size: 0.64rem;
+  color: var(--aero-text-muted);
+}
+
+/* ---------------------------------------------------------- responsive */
+
+@media (max-width: 900px) {
+  .compare-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  /* Keep the side-by-side reading order — stacking loses which value belongs
+     to which player — but shrink the columns so a two-player comparison fits
+     a phone without sideways scrolling. */
+  .compare-identity,
+  .compare-row {
+    grid-template-columns:
+      minmax(76px, 96px)
+      repeat(var(--compare-players, 2), minmax(88px, 1fr));
+    gap: 6px;
+  }
+
+  .compare-page {
+    overflow-x: hidden;
+  }
+
+  .compare-identity,
+  .compare-grid,
+  .compare-columns {
+    overflow-x: auto;
+  }
+
+  .compare-row-label {
+    font-size: 0.68rem;
+  }
+
+  .compare-cell {
+    min-width: 0;
+    padding: 6px 4px;
+  }
+
+  .compare-cell strong {
+    font-size: 0.84rem;
+  }
+
+  .compare-player {
+    padding: 12px 8px;
+  }
+
+  .compare-player-face {
+    width: 54px;
+    height: 54px;
+  }
+
+  .compare-player h2 {
+    font-size: 0.86rem;
+  }
+
+  .compare-player-price strong {
+    font-size: 1rem;
+  }
+
+  .compare-block {
+    padding: 14px;
+  }
+
+  .compare-form-row {
+    grid-template-columns: 38px 50px 1fr 26px;
+    gap: 5px;
+    font-size: 0.64rem;
+  }
+}

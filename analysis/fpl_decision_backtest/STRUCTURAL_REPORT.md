@@ -17,8 +17,9 @@ forecast in the transfer optimizer.
 | 2025/26 | Structural Poisson | **2.217** | 3.270 | **0.226** | 4.941 |
 
 The blend weight was selected on 2024/25 only. Validation chose a 100%
-structural forecast, so the 2025/26 result is a clean out-of-sample test rather
-than a blend tuned on the answer.
+structural forecast. The 2025/26 result was initially out-of-sample, but later
+iterations have now inspected it; treat it as evaluation evidence rather than
+a pristine future authority holdout.
 
 The structural model beat ridge MAE in all 37 evaluated weeks of each season.
 That is a strong calibration result. The 2025/26 top-five shortfall is still a
@@ -41,7 +42,7 @@ overrides the MAE win at the authority gate.
 ## Current weaknesses
 
 The model underpredicts the upper tail: its simulated haul probability is too
-low, and top-five ranking deteriorated in the untouched season. Likely causes
+low, and top-five ranking deteriorated in the evaluation season. Likely causes
 are the simple assisted-goal constant, a crude minutes-state distribution,
 independent player goal/assist events, and empirical rather than match-state
 bonus modelling. These affect stars and captain candidates more than ordinary
@@ -70,7 +71,7 @@ Carlo simulation now draws the three states directly and gates clean-sheet and
 second appearance points on a Bernoulli 60-minute draw rather than a fixed
 75-minute assumption.
 
-Effect on the untouched 2025/26 test season:
+Effect on the 2025/26 evaluation season:
 
 | Metric | Before | After |
 |---|---:|---:|
@@ -91,8 +92,8 @@ and blank/haul calibration.
 Replacing the 0.75 assisted-goal constant with the leakage-safe earlier-season
 empirical FPL-assist rate (about 0.90 assists per goal) was tested and
 rejected. It slightly raised correlation but worsened top-five realized points
-on both the 2024/25 validation season (6.73 to 6.66) and the untouched 2025/26
-test season (5.01 to 4.90). The lower constant evidently acts as beneficial
+on both the 2024/25 validation season (6.73 to 6.66) and the 2025/26
+evaluation season (5.01 to 4.90). The lower constant evidently acts as beneficial
 shrinkage on assist ceilings. The constant stays at 0.75; a future assist model
 should separate FPL assists from xA structurally (set pieces, secondary
 assists) rather than only rescaling the aggregate rate.
@@ -113,7 +114,7 @@ GK to FWD is not fit for GK; clean sheets worth about 0.6-0.9 for GK/DEF).
 **Blank/haul probability calibration.** Simulated blank and haul probabilities
 are now Platt-scaled per position, with parameters fit on 2024/25 only. The
 raw simulation understated hauls by roughly half (mean 0.008 vs actual 0.016).
-Calibration improved the Brier score on the untouched 2025/26 season for both
+Calibration improved the Brier score on the 2025/26 evaluation season for both
 outcomes (blank 0.1079 to 0.1027; haul 0.0172 to 0.0170), so the calibrated
 columns `blank_probability_calibrated` / `haul_probability_calibrated` are now
 exported alongside the raw ones.
@@ -128,15 +129,15 @@ on 2024/25 by maximizing realized three-gameweek top-five utility rather than
 one-week MAE. Validation selected a 35% structural / 65% ridge hybrid.
 
 **Authority gate (extended and still failing).** The gate now also requires
-the hybrid to match ridge on three-gameweek top-five utility. On the untouched
-2025/26 test season:
+the hybrid to match ridge on complete-horizon three-gameweek top-five utility.
+On the 2025/26 evaluation season:
 
 | Metric | Odds ridge | Hybrid (35% structural) |
 |---|---:|---:|
 | MAE | 2.342 | **2.273** |
 | Correlation | 0.223 | **0.238** |
 | Weekly top-five points | **5.178** | 5.049 |
-| Three-GW top-five utility | **12.211** | 11.650 |
+| Three-GW top-five utility | **12.603** | 12.068 |
 | NDCG@10 | 0.395 | **0.396** |
 | Captain regret | 10.135 | 10.135 (same picks) |
 

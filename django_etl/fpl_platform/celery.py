@@ -31,9 +31,21 @@ app.conf.beat_schedule = {
         'task': 'etl.tasks.update_lineups',
         'schedule': crontab(hour=3, minute=0, day_of_week=2),  # Tuesday 3 AM
     },
-    
+
+    # Tuesday 4:00 AM - Retrain ML prediction models (after lineups)
+    'retrain-prediction-model': {
+        'task': 'etl.tasks.retrain_prediction_model',
+        'schedule': crontab(hour=4, minute=0, day_of_week=2),  # Tuesday 4 AM
+    },
+
+    # Wednesday 5:00 AM - Standalone heatmap collection (safety net)
+    'collect-heatmaps-standalone': {
+        'task': 'etl.tasks.collect_heatmaps',
+        'schedule': crontab(hour=5, minute=0, day_of_week=3),  # Wednesday 5 AM
+    },
+
     # OLD: Heatmaps collected separately on Tuesday
-    # NEW: Heatmaps are now part of the Daily Pipeline
+    # NEW: Heatmaps are also part of the Daily Pipeline
     # 'collect-heatmaps': {
     #    'task': 'etl.tasks.collect_heatmaps',
     #    'schedule': crontab(hour=4, minute=0, day_of_week=2),
@@ -58,11 +70,19 @@ app.conf.beat_schedule = {
         'schedule': crontab(hour=3, minute=0, day_of_week=3),  # Wednesday 3 AM
     },
     
-    # Every 10 minutes - Sync fixture odds for upcoming matches
+    # Daily safety-net run. The daily pipeline normally collects first; the
+    # database-backed guard makes this a zero-call no-op when already complete.
     'sync-fixture-odds': {
         'task': 'etl.tasks.sync_fixture_odds',
-        'schedule': crontab(minute='*/10'),  # Every 10 minutes
-        'kwargs': {'days_ahead': 7}  # Next 7 days of fixtures
+        'schedule': crontab(hour=5, minute=30),
+        'kwargs': {'days_ahead': 8}
+    },
+
+    # One lightweight CSV request. This is historical completed-match data,
+    # used for calibration/backtests rather than live fixture pricing.
+    'sync-football-data-odds': {
+        'task': 'etl.tasks.sync_football_data_odds',
+        'schedule': crontab(hour=6, minute=15),
     },
 
     # Every 30 minutes - Warm price predictor cache for frontend charts

@@ -1,0 +1,50 @@
+.command-page{width:calc(100% - 196px);margin-left:196px;padding:18px 24px 34px;min-height:100vh;background:radial-gradient(circle at 68% 12%,rgba(165,255,1,.045),transparent 24%),#101011;color:#fff}.command-toolbar{display:grid;grid-template-columns:minmax(280px,540px) 240px 46px;gap:16px;align-items:center;margin-bottom:28px}.command-search{height:44px;border:1px solid #55575a;border-radius:10px;background:#191919;display:flex;align-items:center;padding:0 14px;gap:12px;color:#d8d8d8}.command-search input{width:100%;border:0!important;background:transparent!important;box-shadow:none!important;padding:0;color:#fff;font-size:.9rem}.gameweek-select,.toolbar-icon{height:44px;border:1px solid #3c3d3f;background:#191919;color:#fff;border-radius:10px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:.88rem}.toolbar-icon{width:46px;padding:0;justify-content:center;border-radius:50%;font-size:1.1rem}.command-heading{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px;max-width:875px}.command-heading h1{font-size:clamp(2rem,3vw,2.75rem);line-height:1;letter-spacing:-.045em}.command-heading p{color:#b7b7b7;font-size:1.1rem;margin-top:7px}.command-kicker{font-size:.65rem;line-height:1.7;letter-spacing:.27em;color:#aaa;border-left:22px solid #a5ff01;padding-left:12px}.command-layout{display:grid;grid-template-columns:minmax(0,2.1fr) minmax(310px,1fr);gap:20px;max-width:1340px}.command-main,.command-rail{display:flex;flex-direction:column;gap:14px}.command-card,.captain-hero{border:1px solid #37383a;background:linear-gradient(145deg,#1b1c1c,#151616);border-radius:17px;box-shadow:0 14px 38px rgba(0,0,0,.22);overflow:hidden}.captain-hero{height:224px;position:relative;background:radial-gradient(circle at 70% 55%,rgba(165,255,1,.3),transparent 33%),linear-gradient(120deg,#151616 0%,#171917 58%,#21300e 100%)}.captain-copy{position:relative;z-index:3;padding:25px 24px}.eyebrow{color:#a5ff01;font-size:.67rem;font-weight:800;letter-spacing:.16em}.captain-copy h2{font-size:clamp(2.25rem,4vw,3.5rem);line-height:1;margin:17px 0 26px;letter-spacing:-.055em}.captain-copy h2 em{font-style:normal}.captain-metrics{display:flex;gap:20px;align-items:center}.captain-metrics>div{display:flex;flex-direction:column;border-right:1px solid #454545;padding-right:20px}.captain-metrics strong{font-size:1.8rem;line-height:1}.captain-metrics span{font-size:.75rem;color:#b9b9b9;margin-top:5px}.captain-metrics .best-fixture{border:0;flex-direction:row;gap:10px;align-items:center}.best-fixture b{font-size:1.7rem;color:#a5ff01}.best-fixture span{display:flex;flex-direction:column}.best-fixture strong{font-size:.9rem;color:#fff}.captain-image{position:absolute;z-index:2;right:4%;bottom:-15%;height:125%;max-width:48%;object-fit:contain;filter:drop-shadow(0 12px 18px rgba(0,0,0,.4))}.hero-slash{position:absolute;inset:-50px 12% -50px auto;width:180px;background:rgba(165,255,1,.11);transform:skew(-28deg)}.command-middle{display:grid;grid-template-columns:1.55fr 1fr;gap:14px}.command-card{padding:18px}.command-card-title{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:16px}.command-card-title h3{font-size:1.16rem;letter-spacing:-.02em}.command-card-title p{font-size:.76rem;color:#a0a0a0;margin-top:3px}.command-card-title a{font-size:.72rem;color:#aaa;text-decoration:none;white-space:nowrap}.command-card-title a:hover{color:#a5ff01}.outlook-chart{height:164px;display:flex;align-items:flex-end;gap:10px;padding:15px 10px 0;border-bottom:1px solid #545454;background:repeating-linear-gradient(to top,transparent 0,transparent 39px,rgba(255,255,255,.06) 40px)}.outlook-column{height:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}.outlook-bar{width:min(48px,68%);min-height:24px;background:linear-gradient(#baff3c,#8fe800);box-shadow:0 0 18px rgba(165,255,1,.13)}.outlook-score{font-size:.76rem;font-weight:700;margin-bottom:5px}.outlook-column strong{font-size:.67rem;margin-top:7px}.outlook-column small{font-size:.6rem;color:#a5ff01;white-space:nowrap}.fixture-list{display:flex;flex-direction:column;gap:8px}.fixture-row{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:9px;padding:9px;border-radius:11px;background:#202121;border:1px solid #2e2f30}.club-chip{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#2b2c2d;color:#a5ff01;font-size:.62rem;font-weight:800}.fixture-row strong,.fixture-row small{display:block}.fixture-row strong{font-size:.8rem}.fixture-row small{font-size:.66rem;color:#9c9c9c;margin-top:2px}.fdr-label{font-size:.66rem;font-weight:800;color:#101011;border-radius:7px;padding:8px;background:#a5ff01}.fdr-3{background:#95ae67}.fdr-4,.fdr-5{background:#e2b75b}.watch-card{padding-bottom:10px}.watch-table{display:flex;flex-direction:column}.watch-head,.watch-row{display:grid;grid-template-columns:1.8fr .8fr .8fr .7fr 1.1fr .55fr;align-items:center;gap:10px}.watch-head{padding:0 10px 8px;color:#8f8f8f;font-size:.67rem}.watch-row{border:0;border-top:1px solid #303132;border-radius:0;background:transparent;color:#ddd;padding:8px 10px;text-align:left;text-transform:none;letter-spacing:0;font-size:.75rem}.watch-row:hover{background:#202121}.watch-player{display:flex;align-items:center;gap:9px;color:#fff}.watch-player img,.watch-player i{width:32px;height:32px;border-radius:50%;object-fit:cover;background:#2d2e2f;display:grid;place-items:center}.form-blocks{display:flex;gap:3px}.form-blocks i{width:14px;height:8px;background:#a5ff01;border-radius:2px}.form-blocks i.off{background:#57595a}.command-rail .command-card{padding:17px}.snapshot-grid{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #303132;border-radius:12px;overflow:hidden}.snapshot-grid div{padding:15px 10px;border-right:1px solid #303132}.snapshot-grid div:last-child{border:0}.snapshot-grid strong,.snapshot-grid span{display:block}.snapshot-grid strong{font-size:1.35rem}.snapshot-grid span{font-size:.62rem;color:#999;margin-top:4px}.signal-row{display:grid;grid-template-columns:96px 1fr 40px;align-items:center;gap:8px;padding:9px 0}.signal-row strong,.signal-row span{display:block}.signal-row strong{font-size:.76rem}.signal-row span{color:#999;font-size:.64rem}.signal-row b{text-align:right;font-size:.72rem}.signal-track{height:9px;background:#303132;border-radius:9px;overflow:hidden}.signal-track i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#a5ff01,#78c800)}.mover-row,.latest-row{width:100%;display:grid;grid-template-columns:34px 1fr auto;gap:9px;align-items:center;border:0;border-top:1px solid #303132;border-radius:0;background:transparent;color:#fff;padding:10px 4px;text-align:left;text-transform:none;letter-spacing:0}.mover-row:hover,.latest-row:hover{background:#202121}.mover-row img,.player-fallback{width:32px;height:32px;border-radius:50%;object-fit:cover;background:#292a2b}.player-fallback{display:grid;place-items:center}.mover-row strong,.mover-row small{display:block}.mover-row strong{font-size:.75rem}.mover-row small{font-size:.64rem;color:#999;margin-top:3px}.mover-row>b{font-size:.7rem}.positive{color:#a5ff01}.negative{color:#ff4c5e}.latest-row{grid-template-columns:32px 1fr}.news-status{display:grid;place-items:center;width:28px;height:28px;background:rgba(165,255,1,.15);color:#a5ff01;border-radius:8px}.latest-row strong{font-size:.73rem}.latest-row p{font-size:.65rem;line-height:1.35;color:#aaa;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.command-loading,.command-error{padding:2rem;color:#aaa}@media(max-width:1050px){.command-page{width:calc(100% - 86px);margin-left:86px}.command-layout{grid-template-columns:1fr}.command-rail{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.captain-image{right:0}}@media(max-width:720px){.command-page{width:100%;margin:0;padding:82px 14px 24px}.command-toolbar{grid-template-columns:1fr auto}.toolbar-icon{display:none}.gameweek-select{width:150px}.command-kicker{display:none}.command-middle,.command-rail{grid-template-columns:1fr}.captain-hero{height:270px}.captain-image{height:72%;max-width:55%;right:-6%}.captain-copy h2{font-size:2.2rem;max-width:65%}.captain-metrics{gap:10px}.captain-metrics>div{padding-right:10px}.captain-metrics strong{font-size:1.35rem}.watch-table{overflow-x:auto}.watch-head,.watch-row{min-width:620px}}@media(max-width:480px){.command-toolbar{grid-template-columns:1fr}.gameweek-select{display:none}.command-heading h1{font-size:1.8rem}.captain-metrics .best-fixture{display:none}.captain-image{opacity:.58}.captain-copy{padding:22px 18px}}
+
+/* Freshness messaging: shown when a snapshot's gameweek does not match the
+ * latest completed gameweek, so the page never presents mixed seasons. */
+.freshness-note {
+  max-width: 1340px;
+  margin: 0 0 16px;
+  padding: 11px 14px;
+  border: 1px solid #3a3b3c;
+  border-left: 3px solid #e2b75b;
+  border-radius: 10px;
+  background: #191919;
+  color: #b7b7b7;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.card-empty {
+  color: #8f8f8f;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Flex and grid items default to `min-width: auto`, so a wide child (the
+ * watch table's 620px minimum, the outlook chart's nowrap labels) stretches
+ * its column instead of scrolling inside it. That pushed the whole dashboard
+ * — including the hero portrait — off-screen on phones. */
+.command-layout > *,
+.command-main > *,
+.command-rail > *,
+.command-middle > * {
+  min-width: 0;
+}
+
+.outlook-chart {
+  overflow-x: auto;
+}
+
+.outlook-column {
+  min-width: 46px;
+}
+
+@media (max-width: 720px) {
+  .outlook-column small {
+    font-size: 0.55rem;
+  }
+}
+.freshness-strip { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0 0 18px; padding: 10px 13px; border: 1px solid var(--aero-line); border-radius: 11px; background: rgba(255,255,255,.025); color: var(--aero-text-dim); font-size: .7rem; }
+.freshness-strip strong { color: var(--aero-lime); text-transform: uppercase; letter-spacing: .08em; }

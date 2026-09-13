@@ -28,7 +28,7 @@ ETL_DIR = Path(__file__).parent.parent / 'sofa_sport' / 'scripts'
 DJANGO_DIR = Path(__file__).parent.parent
 
 
-def run_etl_script(script_name, timeout):
+def run_etl_script(script_name, timeout, *script_args):
     """
     Helper function to run ETL scripts with Django context.
     
@@ -48,7 +48,7 @@ def run_etl_script(script_name, timeout):
         env['PYTHONPATH'] = str(DJANGO_DIR)
         
         result = subprocess.run(
-            ['python', str(script_path)],
+            ['python', str(script_path), *map(str, script_args)],
             capture_output=True,
             text=True,
             timeout=timeout,
@@ -266,17 +266,23 @@ def run_manual_update(script_name: str):
 
 
 @shared_task(name='etl.tasks.sync_fixture_odds')
-def sync_fixture_odds(days_ahead=7):
+def sync_fixture_odds(days_ahead=8):
     """
     Fetch and update betting odds for upcoming fixtures.
-    Runs: Every 10 minutes during season
+    Runs: Once daily. The script also enforces a persistent daily guard and
+    no more than five public API calls per minute, including in Docker.
     
     Args:
-        days_ahead: Number of days ahead to fetch odds for (default: 7)
+        days_ahead: Number of days ahead to fetch odds for (default: 8)
     """
     logger.info(f"Starting fixture odds sync for next {days_ahead} days...")
     
-    result = run_etl_script('fetch_fixture_odds.py', timeout=600)
+    result = run_etl_script(
+        'fetch_fixture_odds.py',
+        900,
+        '--days',
+        days_ahead,
+    )
     
     if result["returncode"] == 0:
         logger.info(f"✅ Fixture odds sync completed: {result['stdout']}")
@@ -284,6 +290,21 @@ def sync_fixture_odds(days_ahead=7):
     else:
         logger.error(f"❌ Fixture odds sync failed: {result['stderr']}")
         return {"status": "error", "output": result['stderr']}
+
+
+@shared_task(name='etl.tasks.sync_football_data_odds')
+def sync_football_data_odds():
+    """One daily CSV request for historical odds calibration/backtesting."""
+    logger.info("Starting daily Football-Data historical odds sync...")
+    try:
+        out = StringIO()
+        call_command('sync_football_data_odds', stdout=out, stderr=out)
+        output = out.getvalue()
+        logger.info("Football-Data odds sync completed: %s", output)
+        return {"status": "success", "output": output}
+    except Exception as exc:
+        logger.error("Football-Data odds sync failed: %s", exc)
+        return {"status": "error", "output": str(exc)}
 
 
 @shared_task(name='etl.tasks.run_daily_pipeline')
@@ -298,6 +319,8 @@ def run_daily_pipeline():
     4. collect_heatmaps (SofaSport player heatmaps)
     5. sync_top100
     6. clear_cache
+    7. sync_fixture_odds (daily, rate-limited)
+    8. populate_predictions (market-calibrated when odds exist)
     """
     logger.info("🚀 Starting Daily ETL Pipeline...")
     results = {}
@@ -364,5 +387,57 @@ def run_daily_pipeline():
         logger.error(f"❌ Step 6 Failed: {str(e)}")
         results['clear_cache'] = f"Error: {str(e)}"
 
+    # Step 7: Collect the daily odds snapshot before building projections.
+    try:
+        logger.info("Step 7: Collecting daily fixture odds...")
+        results['sync_fixture_odds'] = sync_fixture_odds(days_ahead=8)
+    except Exception as e:
+        logger.error(f"❌ Step 8 Failed: {str(e)}")
+        results['sync_fixture_odds'] = f"Error: {str(e)}"
+
+    # Step 8: Populate predictions for next gameweek
+    try:
+        logger.info("Step 8: Populating next gameweek predictions...")
+        results['populate_predictions'] = populate_predictions()
+    except Exception as e:
+        logger.error(f"❌ Step 7 Failed: {str(e)}")
+        results['populate_predictions'] = f"Error: {str(e)}"
+
     logger.info("🏁 Daily ETL Pipeline Completed")
     return results
+
+
+@shared_task(name='etl.tasks.retrain_prediction_model')
+def retrain_prediction_model():
+    """
+    Retrain ML prediction models.
+    Runs: Every Tuesday at 4:00 AM (after lineups update)
+    """
+    logger.info("Starting ML model retraining...")
+    try:
+        out = StringIO()
+        call_command('train_prediction_model', stdout=out, stderr=out)
+        output = out.getvalue()
+        logger.info(f"✅ Model retraining completed: {output}")
+        return {"status": "success", "output": output}
+    except Exception as e:
+        logger.error(f"❌ Model retraining failed: {str(e)}")
+        return {"status": "error", "output": str(e)}
+
+
+@shared_task(name='etl.tasks.populate_predictions')
+def populate_predictions():
+    """
+    Populate predictions for next gameweek (skip training).
+    Called after daily ETL pipeline.
+    """
+    logger.info("Populating predictions for next gameweek...")
+    try:
+        out = StringIO()
+        call_command('train_prediction_model', '--skip-training', stdout=out, stderr=out)
+        output = out.getvalue()
+        logger.info(f"✅ Predictions populated: {output}")
+        return {"status": "success", "output": output}
+    except Exception as e:
+        logger.error(f"❌ Prediction population failed: {str(e)}")
+        return {"status": "error", "output": str(e)}

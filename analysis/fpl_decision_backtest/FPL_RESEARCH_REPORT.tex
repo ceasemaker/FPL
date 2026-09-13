@@ -1,0 +1,735 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=23mm,headheight=15pt]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs,longtable,tabularx,array}
+\usepackage[dvipsnames,table]{xcolor}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{caption}
+
+\definecolor{Navy}{HTML}{16213E}
+\definecolor{Blue}{HTML}{2563EB}
+\definecolor{Green}{HTML}{15803D}
+\definecolor{Amber}{HTML}{B45309}
+\definecolor{Red}{HTML}{B91C1C}
+\definecolor{LightBlue}{HTML}{EFF6FF}
+\definecolor{LightGray}{HTML}{F3F4F6}
+\definecolor{MidGray}{HTML}{6B7280}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=Navy,
+  urlcolor=Blue,
+  citecolor=Navy,
+  pdftitle={FPL Quantitative Decision System: Research Report},
+  pdfauthor={FPL Decision System Research Project}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{FPL Quantitative Decision System}
+\rhead{Research Report}
+\cfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\titleformat{\section}{\Large\bfseries\color{Navy}}{\thesection}{0.7em}{}
+\titleformat{\subsection}{\large\bfseries\color{Navy}}{\thesubsection}{0.7em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{Navy}}{\thesubsubsection}{0.7em}{}
+\setlist{nosep,leftmargin=1.5em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.65em}
+\renewcommand{\arraystretch}{1.18}
+
+\newcommand{\xp}{\widehat{\mathrm{xP}}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\good}{\textcolor{Green}{\textbf{Working}}}
+\newcommand{\partialstat}{\textcolor{Amber}{\textbf{Promising, not proven}}}
+\newcommand{\bad}{\textcolor{Red}{\textbf{Not decision-ready}}}
+
+\begin{document}
+
+\begin{titlepage}
+\pagecolor{Navy}
+\color{white}
+\vspace*{22mm}
+{\Huge\bfseries FPL Quantitative\\Decision System\par}
+\vspace{8mm}
+{\LARGE Research Report: Mathematics, Data, Evidence, and Improvement Agenda\par}
+\vspace{18mm}
+{\large A transparent audit of player value, uncertainty, rank exposure, and three-gameweek transfer decisions\par}
+\vfill
+\begin{tabular}{@{}ll@{}}
+Prepared for: & Personal FPL research project\\
+Primary decision horizon: & Three gameweeks\\
+Manager entry: & 576154\\
+Report date: & 28 August 2026\\
+Status: & Research system; optimizer not approved\\
+\end{tabular}
+\vspace{18mm}
+\end{titlepage}
+\nopagecolor
+\color{black}
+
+\pagenumbering{roman}
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+
+\section{Executive Summary}
+
+This project is trying to answer a harder question than ``who has the highest predicted points next week?'' The desired system must estimate a player's underlying value, represent uncertainty, measure the rank consequences of ownership, identify price inefficiencies, and decide whether a transfer is worth using over a three-gameweek horizon.
+
+The research has produced a credible forecasting laboratory. The data ingestion, historical walk-forward tests, market odds transformation, structural Poisson model, uncertainty simulation, and dashboard all operate. The best combined forecast improves average player-week accuracy over the earlier odds ridge. That improvement survives a corrected week-cluster bootstrap.
+
+However, the evidence does \emph{not} yet justify handing decisions to the optimizer. The combined model is better at predicting the middle of the player distribution, but it has not demonstrated superiority when ranking the few players most likely to deliver large scores. The dedicated three-gameweek model has a promising utility estimate, but its corrected correlation interval includes zero. The current transfer engine is also intentionally simple and uses reconstructed prices, a restricted search, approximate future fixture adjustments, and incomplete information about availability and roles.
+
+\begin{center}
+\rowcolors{2}{LightGray}{white}
+\begin{tabularx}{0.94\textwidth}{>{\bfseries}l X l}
+\toprule
+Layer & Current interpretation & Status\\
+\midrule
+Historical data pipeline & Four seasons, cached odds, repeatable outputs & \good\\
+Market and Poisson layer & Coherent team-goal and clean-sheet foundation & \good\\
+Average player xP & Statistically improved, still imperfectly calibrated at the tail & \good\\
+Blank and haul risk & Useful diagnostic probabilities; calibration still developing & \partialstat\\
+Top-player and captain ranking & No proven improvement over the odds ridge & \partialstat\\
+Three-gameweek forecast & Positive utility estimate, uncertain correlation advantage & \partialstat\\
+Transfer optimizer & Prototype search, not a trusted decision authority & \bad\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+The correct present use is therefore \textbf{decision support}. The system should explain the base numbers and trade-offs, while the manager remains the authority.
+
+\section{Research Questions and Scope}
+
+The project separates five related questions:
+
+\begin{enumerate}
+  \item \textbf{True player value:} What is the player's expected ordinary FPL score, based on minutes, attacking events, defensive events, fixtures, and market expectations?
+  \item \textbf{Outcome risk:} What is the probability of a blank, a useful return, or a haul? How wide is the outcome distribution?
+  \item \textbf{Rank risk:} How does effective ownership change the consequence of owning, captaining, or fading the player?
+  \item \textbf{Economic value:} Is the player attractive relative to price, position, replacement level, and alternative uses of budget?
+  \item \textbf{Decision value:} Does buying, selling, or holding improve the expected three-gameweek squad outcome after transfer costs and lost flexibility?
+\end{enumerate}
+
+The primary horizon is three gameweeks with weights
+\begin{equation}
+  \mathbf{w}=(1.00,0.90,0.81).
+\end{equation}
+The weights express a mild preference for nearer information without pretending that weeks two and three are irrelevant.
+
+Chips are excluded from the primary research comparison. Scores use an ordinary legal XI, autosubs, and one ordinary captain. This keeps the object being studied stable: base squad and transfer quality.
+
+\section{Data Used}
+
+\subsection{Historical player and FPL event data}
+
+The archive covers 2022/23 through 2025/26 at player-gameweek level. Available fields include:
+
+\begin{itemize}
+  \item minutes, starts, goals, assists, clean sheets, goals conceded, saves;
+  \item yellow and red cards, own goals, penalties missed and saved;
+  \item bonus, BPS, ICT, influence, creativity, and threat;
+  \item expected goals (xG), expected assists (xA), expected goal involvements, and expected goals conceded;
+  \item 2025/26 defensive-contribution events.
+\end{itemize}
+
+The 2024/25 archive also contains the discontinued FPL Challenge ``Manager'' position. It is excluded from the ordinary player model.
+
+\subsection{Market odds and fixtures}
+
+Historical English Premier League opening-average prices come from Football-Data.co.uk. The model uses 1X2 and over/under 2.5 odds. Files are cached locally and are not repeatedly downloaded.
+
+Opening rather than closing odds are used because closing prices may contain information arriving after the relevant FPL deadline. This is a conservative leakage control, although historical records cannot prove the exact timestamp at which every multi-week market first became available.
+
+\subsection{Squad and ownership information}
+
+Current personalization uses entry ID 576154. A suspected older ID, 2074090, did not yield a complete verified historical personal path.
+
+Historical replay squads are anonymous stable slots from managers who eventually finished in the top 100. This cohort is selected ex post and is therefore survivorship-biased. It is useful for stress testing, but it is not the contemporaneous top 100 and it is not representative of all managers.
+
+\subsection{Important missing data}
+
+The archive does not reliably contain:
+
+\begin{itemize}
+  \item historical weekly purchase and selling prices;
+  \item deadline-specific injury and availability probabilities;
+  \item penalty and set-piece order snapshots;
+  \item predicted lineups or manager press-conference information;
+  \item representative manager squads sampled before final rank is known;
+  \item exact deadline-tier effective ownership for the user's rank band.
+\end{itemize}
+
+These gaps matter more to optimization than another small refinement of the regression equation.
+
+\section{Leakage and Evaluation Design}
+
+For a decision made before gameweek $g$, player form features stop at $g-1$. Rolling values are shifted by one week. Positional priors for an evaluation season use only earlier seasons. A season-level model is trained only on seasons before the one being evaluated.
+
+This is the basic walk-forward rule:
+\begin{equation}
+  \mathcal{D}_{\text{train}}(s)=\{(i,g):\operatorname{season}(i,g)<s\}.
+\end{equation}
+
+The 2025/26 season was initially out-of-sample, but it has now been inspected during several rounds of model development. It is therefore an \textbf{evaluation season}, not a pristine untouched authority holdout. A future promotion decision should use either a newly accumulated season or a protocol frozen before results are revealed.
+
+Three-gameweek targets are defined only when all three gameweeks exist. GW37 and GW38 are censored rather than treating the missing future as zero:
+\begin{equation}
+  Y^{(3)}_{i,g}=P_{i,g}+0.9P_{i,g+1}+0.81P_{i,g+2},\qquad g\leq 36.
+\end{equation}
+
+\section{Market-Implied Match Model}
+
+\subsection{Removing the bookmaker margin}
+
+For decimal odds $o_1,\ldots,o_k$, the inverse prices sum to more than one because of the bookmaker margin. The simple proportional no-vig probability is
+\begin{equation}
+  q_j=\frac{o_j^{-1}}{\sum_{r=1}^{k}o_r^{-1}}.
+\end{equation}
+This transformation is applied separately to the 1X2 market and the over/under market.
+
+\subsection{Total goal intensity}
+
+Assume total goals $T$ follow a Poisson distribution with intensity $\lambda_T$. The over-2.5 probability is
+\begin{equation}
+  \Prob(T\geq 3)=1-e^{-\lambda_T}\left(1+\lambda_T+\frac{\lambda_T^2}{2}\right).
+\end{equation}
+The equation is numerically inverted to recover $\lambda_T$ from the no-vig market probability.
+
+\subsection{Home and away intensities}
+
+Let
+\begin{equation}
+  H\sim\operatorname{Poisson}(\lambda_H),\qquad
+  A\sim\operatorname{Poisson}(\lambda_A),\qquad
+  \lambda_H+\lambda_A=\lambda_T,
+\end{equation}
+with conditional independence. A bounded numerical fit chooses the home share that minimizes squared error between the model's home/draw/away probabilities and the no-vig 1X2 probabilities.
+
+This produces market-anchored team attacking rates and, for the opponent, a clean-sheet probability
+\begin{equation}
+  p_{CS}=\Prob(A=0)=e^{-\lambda_A}
+\end{equation}
+for a home player, with the symmetric expression for an away player.
+
+The independent Poisson assumption is a useful baseline, not a complete football model. It ignores score dependence, red-card states, tactical reactions, and player correlations.
+
+\section{Player Minutes Model}
+
+Minutes are the gate through which almost every FPL event passes. The upgraded model has three states per fixture:
+\begin{equation}
+  S_i\in\{\text{start},\text{substitute appearance},\text{no appearance}\}.
+\end{equation}
+
+Six lagged matches estimate the player's start and substitute frequencies. These estimates are shrunk toward earlier-season positional priors. Schematically,
+\begin{equation}
+  \widehat p_{\text{start},i}=
+  \frac{n_{\text{start},i}+\kappa p_{\text{start,pos}}}{n_i+\kappa},
+\end{equation}
+with equivalent expressions for substitute and 60-minute probabilities.
+
+Expected minutes are
+\begin{equation}
+  \E[M_i]=p_{\text{start},i}\,\E[M_i\mid\text{start}]
+  +p_{\text{sub},i}\,\E[M_i\mid\text{sub}].
+\end{equation}
+The probability of reaching 60 minutes is modelled as
+\begin{equation}
+  p_{60,i}=p_{\text{start},i}\Prob(M_i\geq 60\mid\text{start}).
+\end{equation}
+
+This is materially better than assigning every likely player a fixed 75 or 90 minutes. It remains blind to fresh injuries, rotation news, suspensions not encoded in the data, and predicted lineups.
+
+\section{Player Event Intensities}
+
+\subsection{Empirical-Bayes xG and xA rates}
+
+Player xG per 90 is calculated from six lagged matches and shrunk toward an earlier-season position rate:
+\begin{equation}
+  \widehat{xG90}_i=
+  90\frac{xG_{i,6}+m_0(xG90_{\text{pos}}/90)}{M_{i,6}+m_0},
+  \qquad m_0=450\text{ minutes}.
+\end{equation}
+The same form is used for xA, saves, and defensive contributions.
+
+The raw player goal intensity is
+\begin{equation}
+  \widetilde\lambda_{G,i}=\widehat{xG90}_i\frac{\E[M_i]}{90}.
+\end{equation}
+
+\subsection{Reconciling players with the team market}
+
+Raw player rates are scaled so that their sum equals the market-implied team goal intensity:
+\begin{equation}
+  \lambda_{G,i}=\lambda_{\text{team}}
+  \frac{\widetilde\lambda_{G,i}}{\sum_{j\in\text{team}}\widetilde\lambda_{G,j}}.
+\end{equation}
+This is an important coherence condition: player expectations cannot imply a team total inconsistent with the match market.
+
+Assist intensity uses the equivalent xA share and assumes that 75\% of team goals receive an FPL assist:
+\begin{equation}
+  \lambda_{A,i}=0.75\lambda_{\text{team}}
+  \frac{\widetilde\lambda_{A,i}}{\sum_{j\in\text{team}}\widetilde\lambda_{A,j}}.
+\end{equation}
+A leakage-safe empirical rate near 0.90 was tested as a simple replacement and worsened top-five selection in both evaluation seasons. The 0.75 constant is retained as useful shrinkage, not claimed as a football law.
+
+\section{Translation into Expected FPL Points}
+
+The structural expectation is a sum of scoring components:
+\begin{align}
+  \xp_i={}&\xp_{\text{app},i}+\xp_{G,i}+\xp_{A,i}+\xp_{CS,i}
+  +\xp_{GC,i}+\xp_{S,i}+\xp_{B,i}\\
+  &+\xp_{YC,i}+\xp_{RC,i}+\xp_{OG,i}+\xp_{PM,i}
+  +\xp_{PS,i}+\xp_{DC,i}.
+\end{align}
+
+\subsection{Appearance, goals, assists, and clean sheets}
+
+For a single fixture,
+\begin{equation}
+  \xp_{\text{app},i}=p_{\text{play},i}+p_{60,i}.
+\end{equation}
+If $v_G(r)$ is the goal value for position $r$,
+\begin{equation}
+  \xp_{G,i}=v_G(r_i)\lambda_{G,i},\qquad
+  \xp_{A,i}=3\lambda_{A,i}.
+\end{equation}
+Goal values are 10 for goalkeepers, 6 for defenders, 5 for midfielders, and 4 for forwards.
+
+Clean-sheet points are approximated by
+\begin{equation}
+  \xp_{CS,i}=v_{CS}(r_i)p_{60,i}e^{-\lambda_{\text{opp}}},
+\end{equation}
+where $v_{CS}$ is 4 for goalkeepers/defenders, 1 for midfielders, and 0 for forwards.
+
+\subsection{Conceded goals and saves}
+
+For goalkeepers and defenders, the expected deduction uses the Poisson expectation of one point lost per two goals conceded:
+\begin{equation}
+  \xp_{GC,i}=-\E\!\left[\left\lfloor\frac{C_i}{2}\right\rfloor\right],
+  \qquad C_i\sim\operatorname{Poisson}\!\left(\lambda_{\text{opp}}\frac{\E[M_i]}{90}\right).
+\end{equation}
+For goalkeepers with save count $V_i$,
+\begin{equation}
+  \xp_{S,i}=\E\!\left[\left\lfloor\frac{V_i}{3}\right\rfloor\right].
+\end{equation}
+
+\subsection{Bonus, discipline, penalties, and defensive contributions}
+
+Bonus is a 50/50 blend of a lagged empirical expectation and a per-position event-driven least-squares model using appearance, 60-minute status, goals, assists, clean sheets, and saves. This is better than a pure rolling mean but does not simulate full BPS competition among all 22 players.
+
+Cards, own goals, penalties missed, and penalties saved are estimated from shrunk lagged event rates and multiplied by their FPL values. For 2025/26 defensive contributions, the model estimates the Poisson probability of reaching the position threshold and awards two expected points, capped at two per fixture.
+
+\section{Uncertainty, Blank Risk, and Haul Risk}
+
+The deterministic expectation is not enough for rank decisions. A seeded Monte Carlo simulation draws a minutes state and conditional event counts. Goals, assists, opponent goals, saves, and eligible defensive contributions are simulated to form a player score distribution.
+
+The output includes
+\begin{equation}
+  p_{\text{blank}}=\Prob(P_i\leq 2),\qquad
+  p_{\text{haul}}=\Prob(P_i\geq 10),
+\end{equation}
+plus the 10th and 90th percentiles.
+
+Raw simulated probabilities showed upper-tail compression. Per-position Platt scaling was fitted on 2024/25:
+\begin{equation}
+  \operatorname{logit}(p_i^{\text{cal}})=a_r+b_r\operatorname{logit}(p_i^{\text{raw}}).
+\end{equation}
+Calibration improved Brier scores on the 2025/26 evaluation data, but this evidence is exploratory because that season has since informed further development.
+
+The simulation still treats several player events as conditionally independent. In reality, a goal affects bonus probability, an assist and a goal arise from the same team attack, and match state changes future event rates. These missing dependencies are likely important in the haul tail.
+
+\section{Ownership and Rank Exposure}
+
+Ownership does not change a player's football expectation. It changes the manager's relative-rank exposure.
+
+Let $X$ be player points, $e$ effective ownership in the comparison group, and $m$ the manager's multiplier: 0 if unowned, 1 if owned, and 2 if captained. Relative points are
+\begin{equation}
+  R=(m-e)X.
+\end{equation}
+Therefore,
+\begin{equation}
+  \E[R]=(m-e)\E[X],\qquad
+  \Var(R)=(m-e)^2\Var(X).
+\end{equation}
+
+This gives three distinct interpretations:
+\begin{itemize}
+  \item a highly owned strong player may be dangerous to fade;
+  \item owning the same player reduces rank variance even though raw xP is unchanged;
+  \item a differential creates rank upside only if its football expectation and alternatives justify the exposure.
+\end{itemize}
+
+The balanced strategy should maximize expected squad points. Protect and chase strategies may add an explicit mean-variance preference, but ownership should never be smuggled into ``true player value.''
+
+\section{Price and Undervaluation}
+
+Two screening measures are used.
+
+First, within position and gameweek a simple price curve is fitted:
+\begin{equation}
+  \widehat{xP}=a+b\,\text{price},\qquad b\in[0,2].
+\end{equation}
+The valuation edge is
+\begin{equation}
+  \text{edge}_i=\xp_i-(a+b\,\text{price}_i).
+\end{equation}
+
+Second, value above replacement per additional million is
+\begin{equation}
+  \operatorname{VORP/\pounds m}_i=
+  \frac{\xp_i-\xp_{\text{replacement},r_i}}
+  {\max(0.5,\text{price}_i-\text{minimum price}_{r_i}+0.5)}.
+\end{equation}
+
+These are comparative squad-building measures. They are not literal fair market prices. A cheap player's points per million can be excellent while the player still occupies a scarce starting slot with a low absolute ceiling.
+
+\section{Forecast Families Tested}
+
+\subsection{Odds ridge}
+
+The baseline ridge regression uses lagged form, minutes, xGI, ICT, BPS, position, opening price, and no-vig market context. Ridge solves
+\begin{equation}
+  \widehat\beta=(X^\top X+\alpha I)^{-1}X^\top y,
+\end{equation}
+with the intercept unpenalized and standardized inputs.
+
+\subsection{Structural Poisson}
+
+The structural model builds xP from minutes and football events rather than fitting points directly. It has stronger causal interpretation and the lowest average MAE, but it compresses stars and the upper tail.
+
+\subsection{Structural/ridge hybrid}
+
+A convex mixture
+\begin{equation}
+  \xp_{\text{hybrid}}=w\xp_{\text{structural}}+(1-w)\xp_{\text{ridge}}
+\end{equation}
+selected $w=0.35$ on 2024/25 three-gameweek top-five utility. It improves average accuracy but did not improve top-five selection on 2025/26.
+
+\subsection{Stacked ridge}
+
+The stacked model fits one ridge over form, market, and structural components. It is not merely an average of two forecasts; it allows each component to receive a fitted coefficient.
+
+The stacked model has a statistically supported mean-forecast gain over the odds ridge. It has not established decision-ranking superiority.
+
+\subsection{Haul classification head}
+
+A logistic head estimates $\Prob(P_i\geq 9)$ and tests a ranking score
+\begin{equation}
+  \text{rank score}_i=\xp_{\text{stacked},i}+k\widehat p_{\text{haul},i}.
+\end{equation}
+The validation-selected mix did not show dependable evaluation-season improvement and remains diagnostic.
+
+\subsection{Dedicated three-gameweek model}
+
+A separate ridge predicts $Y^{(3)}$ directly rather than multiplying a one-week estimate by fixture ratios. This is conceptually closer to the transfer decision. After correcting the week bootstrap and censoring incomplete horizons, the correlation advantage is not statistically established.
+
+\section{Empirical Results}
+
+\subsection{Structural and hybrid comparison}
+
+\begin{center}
+\small
+\begin{tabular}{llrrr@{\hspace{1.4em}}r}
+\toprule
+Season & Model & MAE & RMSE & Correlation & Top-five\\
+\midrule
+2024/25 & Odds ridge & 2.268 & 3.073 & 0.299 & 6.530\\
+2024/25 & Structural & \textbf{2.067} & 3.116 & 0.313 & 6.78$^*$\\
+2024/25 & Hybrid (35\%) & 2.176 & \textbf{3.061} & \textbf{0.318} & --\\
+\addlinespace
+2025/26 & Odds ridge & 2.342 & \textbf{3.154} & 0.223 & \textbf{5.178}\\
+2025/26 & Structural & \textbf{2.216} & 3.274 & 0.228 & 5.011$^*$\\
+2025/26 & Hybrid (35\%) & 2.273 & 3.166 & \textbf{0.238} & 5.049\\
+\bottomrule
+\end{tabular}
+\captionof{table}{Player-gameweek results. Starred structural top-five values refer to the upgraded three-state/bonus research report; exact populations can differ slightly across generated summaries.}
+\end{center}
+
+The core pattern is stable: structural information improves average error, while the extreme top of the weekly ranking remains difficult.
+
+For the 2025/26 hybrid authority check:
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+Decision metric & Odds ridge & Hybrid\\
+\midrule
+MAE & 2.342 & \textbf{2.273}\\
+Correlation & 0.223 & \textbf{0.238}\\
+Weekly top-five points & \textbf{5.178} & 5.049\\
+Complete-horizon 3-GW top-five & \textbf{12.603} & 12.068\\
+NDCG@10 & 0.395 & \textbf{0.396}\\
+Captain regret & 10.135 & 10.135\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Stacked model uncertainty}
+
+The corrected paired week-cluster bootstrap gives:
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+Quantity & Estimate & 95\% interval\\
+\midrule
+MAE gain over odds ridge & +0.0357 & [+0.0211, +0.0528]\\
+Correlation gain & approximately +0.0326 & [+0.0075, +0.0633]\\
+Weekly top-five difference & -0.2216 & [-0.6324, +0.1676]\\
+3-GW top-five difference & -0.3458 & [-1.2997, +0.5997]\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Thus:
+\begin{equation}
+  \texttt{accepted\_for\_mean\_forecast}=\texttt{true},
+\end{equation}
+but
+\begin{equation}
+  \texttt{accepted\_for\_optimizer}=\texttt{false}.
+\end{equation}
+
+\subsection{Dedicated horizon model}
+
+For ranking complete three-gameweek value, the horizon model versus the one-week stacked model produced:
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+Quantity & Estimate & 95\% interval\\
+\midrule
+Horizon correlation gain & approximately +0.014 & [-0.0058, +0.0333]\\
+3-GW top-five utility difference & +0.5578 & [+0.0829, +1.0302]\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The top-five utility result is encouraging. The required correlation gain is unresolved, so
+\begin{equation}
+  \texttt{accepted\_for\_transfer\_horizon}=\texttt{false}.
+\end{equation}
+
+\section{Statistical Authority Gate}
+
+The authority gate exists to prevent an attractive research result from silently becoming a live decision rule.
+
+Weeks are clusters because all players in a gameweek share fixture, weather, tactical, and scoring shocks. A paired week bootstrap samples weeks with replacement and preserves multiplicity by concatenating every sampled cluster. The earlier implementation used set membership and accidentally discarded repeated weeks; that has been corrected.
+
+The mean forecast is accepted as improved only if the lower 95\% confidence bounds for MAE gain and correlation gain exceed zero.
+
+Optimizer promotion is stricter. A confidence interval overlapping zero does not prove parity. ``No statistically significant harm'' is not the same as non-inferiority. At present the conservative gate requires positive lower bounds on decision utilities. A less conservative non-inferiority margin could be used in future, but it must be chosen \emph{before} observing a new holdout.
+
+\section{Current Transfer Optimizer}
+
+\subsection{What it does}
+
+The replay maintains a legal 15-player squad and bank. At each week it evaluates holding, one transfer, or two transfers. It applies a four-point hit when transfers exceed available free transfers and can bank up to five transfers under the current rule set.
+
+For squad $S$ and projected week $h$, it selects the legal XI and captain maximizing
+\begin{equation}
+  L_h(S)=\sum_{i\in XI_h(S)}\xp_{i,h}+\xp_{c_h,h}.
+\end{equation}
+The current three-week objective is
+\begin{equation}
+  J(S)=L_g(S)+0.9L_{g+1}(S)+0.81L_{g+2}(S)-C_{\text{hits}}-C_{\text{buffer}}.
+\end{equation}
+
+The search uses a restricted candidate pool and a beam for second transfers. The original one-week forecast is frozen and adjusted across known future fixtures.
+
+\subsection{Why it is too simple}
+
+The user's dissatisfaction with the optimizer is supported by the implementation. It does not fully model:
+
+\begin{itemize}
+  \item exact historical weekly buying and selling prices;
+  \item the option value of carrying extra free transfers;
+  \item future forced transfers caused by injury, suspension, rotation, or player departure;
+  \item uncertainty and correlation across a whole squad;
+  \item price-change risk and budget pathways;
+  \item penalty and set-piece roles;
+  \item alternative multi-transfer sequences beyond the beam;
+  \item the value of squad flexibility and bench cover;
+  \item future information arrival and the advantage of waiting;
+  \item a manager-specific utility linked to current rank and season stage.
+\end{itemize}
+
+It is therefore a research prototype, not an optimal control solution.
+
+\section{Replay Evidence}
+
+Direct comparison with the eventual top-100 cohort is not a fair authority test because that cohort is selected by the final outcome. The paired internal hold comparison is more useful: begin with the same squad and compare the model transfer path with making no transfers, while both paths use the same predictions for lineup and captain.
+
+\begin{center}
+\begin{tabular}{lrrrrr}
+\toprule
+Start & Median value & Mean value & Positive paths & Worst & Best\\
+\midrule
+GW2 & +206.0 & +195.2 & 93/100 & -133 & +611\\
+GW10 & +27.5 & +39.5 & 60/100 & -145 & +255\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+This says the simple transfer engine often improves on doing nothing, especially from an early start. It does \emph{not} prove optimality. The starting squads still come from an ex-post-selected cohort, prices are reconstructed, and the current replay uses the one-week stacked candidate frozen over future fixtures rather than an accepted dedicated horizon model.
+
+The collapse from a median +206 at GW2 to +27.5 at GW10 is a useful warning: later in the season, settled squads and fewer remaining weeks make marginal transfer value thinner. A mid-season transfer should clear a stronger confidence and flexibility threshold.
+
+\section{Rejected or Unproven Ideas}
+
+\subsection{Adapted Black-Scholes player value}
+
+The original blueprint's Black-Scholes adaptation was rejected. FPL expected points are not a tradable underlying asset; no replicating portfolio or no-arbitrage result exists; price, xP, hit cost, and appearance points do not play compatible roles in that equation. Volatility can enter a stated risk utility, but it does not mechanically create player value.
+
+\subsection{Ownership-adjusted ``true value''}
+
+Multiplying xP by $m-e$ correctly describes expected relative-rank return. It does not revise the player's football expectation. The two concepts remain separate.
+
+\subsection{Simple empirical assist rescaling}
+
+Replacing the 0.75 assisted-goal factor with an empirical aggregate near 0.90 worsened top-five selection. A future improvement must model FPL assists structurally rather than merely raising the aggregate.
+
+\subsection{Linear haul head}
+
+A logistic haul head over the same mostly linear features did not provide dependable ranking lift. A nonlinear model is only justified if it adds genuinely new information or interactions and survives a future frozen evaluation.
+
+\subsection{Claiming non-inferiority from a wide interval}
+
+An interval crossing zero means the experiment cannot distinguish improvement from harm of the indicated size. It is not evidence that the models are equivalent.
+
+\section{Recommended Next Research Program}
+
+\subsection{Priority 1: freeze the decision target}
+
+Before adding another model, define what success means. A recommended hierarchy is:
+
+\begin{enumerate}
+  \item legal squad three-gameweek expected utility after hits;
+  \item top-player and captain ranking quality;
+  \item calibration of mean xP and blank/haul probabilities;
+  \item robustness across season stage and squad strength.
+\end{enumerate}
+
+Predeclare any non-inferiority margins before the next unseen season. For example, decide how much top-five utility loss, if any, can be tolerated in return for better calibration. Do not select that number after viewing the result.
+
+\subsection{Priority 2: availability and roles}
+
+The highest-value new information is likely:
+
+\begin{itemize}
+  \item predicted start and appearance probabilities from lineup/news data;
+  \item penalties, corners, free kicks, and role changes;
+  \item injury severity and return uncertainty;
+  \item manager rotation patterns and European scheduling;
+  \item transfers between clubs and immediate role priors.
+\end{itemize}
+
+These signals directly affect the upper tail and are more likely to improve decisions than adding another generic rolling-points feature.
+
+\subsection{Priority 3: correlated match simulation}
+
+Replace independent player events with a shared match simulation:
+
+\begin{enumerate}
+  \item draw team goals from a market-calibrated score model;
+  \item allocate each goal to a scorer and possible assister using role shares;
+  \item simulate minutes and substitutions consistently;
+  \item calculate clean sheets and conceded deductions from the same scoreline;
+  \item generate approximate BPS jointly across players and award bonus by rank.
+\end{enumerate}
+
+This guarantees internally consistent outcomes and should represent haul covariance more honestly.
+
+\subsection{Priority 4: replace the optimizer}
+
+A better optimizer should be a stochastic multi-period decision model. State should include squad, bank, purchase prices, free transfers, rank objective, and availability distributions. Actions should include holding and legal transfer combinations. Future utility should include both expected points and the value of preserving options.
+
+One practical formulation is scenario-based stochastic programming:
+\begin{equation}
+  \max_{a\in\mathcal{A}(s)}
+  \left\{\frac{1}{K}\sum_{k=1}^{K}U\bigl(P^{(k)}(s,a)\bigr)
+  -4\,\E[\text{hits}(a)]+\gamma V_{\text{flex}}(s')\right\}.
+\end{equation}
+Here $K$ match scenarios preserve correlations, $U$ states the manager's rank preference, and $V_{\text{flex}}$ values bank, free transfers, bench cover, and future legal pathways.
+
+A dynamic-programming or Monte Carlo tree-search approximation can then compare ``buy now'' against ``wait one week and learn.'' This is much closer to the user's actual reasoning than the present beam search over point estimates.
+
+\subsection{Priority 5: improve the benchmark}
+
+Archive the user's squad, bank, purchase prices, free transfers, and decision set at every deadline going forward. Also archive a random or rank-stratified sample of manager IDs before outcomes are known. This produces an honest future replay without reconstructing identities or prices.
+
+\section{Questions for the Manager}
+
+The mathematical system ultimately needs preferences that data cannot choose automatically:
+
+\begin{enumerate}
+  \item When protecting rank, how much expected point loss is acceptable to reduce downside exposure?
+  \item When chasing, how much variance is acceptable for one additional expected point?
+  \item Should a transfer be judged over exactly three weeks, or should the third-week weight change by season stage?
+  \item How much should preserving a free transfer be worth when two future moves are foreseeable?
+  \item Is the bench mainly insurance, or should all 15 slots carry meaningful expected points?
+  \item Should the system recommend a move only when it is robust across injury and minutes scenarios?
+  \item What practical top-five non-inferiority margin would be acceptable for a better calibrated xP model?
+\end{enumerate}
+
+These answers should become visible settings, not hidden constants.
+
+\section{Current Research Verdict}
+
+The system is working as a research platform. It has already prevented several mathematically attractive but unsupported ideas from being promoted. It provides a coherent market-to-team-to-player xP chain, explicit uncertainty, rank exposure mathematics, walk-forward evaluation, and repeatable replay outputs.
+
+It is not yet a complete FPL decision authority. The strongest evidence supports the mean forecast, not top-player ranking or multi-week optimization. The present optimizer is too simple for the user's decision style and should be replaced rather than cosmetically refined.
+
+The immediate recommendation is:
+
+\begin{quote}
+Use the model to expose base rates, risk, and alternatives. Keep the manager in control. Freeze a better evaluation protocol, add availability and role information, build a shared match simulation, and then replace the transfer search with a scenario-based multi-period optimizer.
+\end{quote}
+
+\appendix
+\section{Reproduction and Artifacts}
+
+Primary research scripts:
+\begin{itemize}
+  \item \texttt{run\_backtest.py}: lagged form ridge and player metrics;
+  \item \texttt{run\_odds\_backtest.py}: no-vig market features;
+  \item \texttt{run\_structural\_backtest.py}: Poisson/event xP and simulation;
+  \item \texttt{run\_stacked\_backtest.py}: stacked and horizon candidates;
+  \item \texttt{run\_team\_replay.py}: squad-path replay and hold comparison.
+\end{itemize}
+
+Core commands from the repository root:
+\begin{verbatim}
+cd analysis/fpl_decision_backtest
+python run_backtest.py
+python run_odds_backtest.py
+python run_structural_backtest.py --simulation-draws 300
+python run_stacked_backtest.py
+python -m unittest discover -s . -p 'test_*.py'
+\end{verbatim}
+
+The generated research outputs are under
+\texttt{analysis/fpl\_decision\_backtest/output/}. The current handover is
+\texttt{HANDOVER.md} at the repository root.
+
+\section{References and Source Notes}
+
+\begin{enumerate}
+  \item Football-Data.co.uk, historical Premier League results and bookmaker odds: \url{https://www.football-data.co.uk/englandm.php}.
+  \item Official Fantasy Premier League scoring guidance: \url{https://www.premierleague.com/en/news/2174909}.
+  \item Official 2025/26 FPL rule changes and defensive contributions: \url{https://www.premierleague.com/en/news/4373187/whats-new-for-202526-changes-in-fantasy-premier-league}.
+  \item \href{https://arxiv.org/html/2505.02170v3}{User-supplied technical manuscript, arXiv:2505.02170v3}.
+  \item \href{https://github.com/vaastav/Fantasy-Premier-League}{Historical public FPL archive used by the project}.
+\end{enumerate}
+
+\end{document}

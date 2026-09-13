@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { RadarChart } from "./RadarChart";
 import { PlayerHeatmap } from "./PlayerHeatmap";
+import { PlayerGameLog } from "./PlayerGameLog";
+import "./PlayerModal.css";
 
 const TEAM_BADGE_BASE = "https://resources.premierleague.com/premierleague25/badges-alt/";
 
@@ -510,6 +512,9 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
             </span>
           </div>
         </div>
+
+        {/* Per-gameweek log + same-position percentiles (official FPL data) */}
+        <PlayerGameLog playerId={player.id} />
 
         {/* Upcoming Fixtures */}
         {upcomingFixtures.length > 0 && (

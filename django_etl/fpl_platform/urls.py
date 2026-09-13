@@ -10,7 +10,12 @@ from etl.api_views import (
     image_proxy,
     players_list,
     player_detail,
-    dream_team,
+    player_gameweeks,
+    decision_dashboard,
+    decision_research_report,
+    player_analysis,
+    player_analysis_catalogue,
+    player_analysis_report,
     optimize_team,
     # SofaSport endpoints
     player_radar_attributes,
@@ -35,17 +40,8 @@ from etl.fpl_proxy_views import (
     proxy_event_live,
     proxy_fixtures,
     proxy_player_summary,
-    proxy_league_standings,
-    league_live_rank,
 )
-from etl.views_wildcard import (
-    wildcard_home,
-    wildcard_view,
-    track_wildcard_start,
-    get_wildcard_team,
-    save_wildcard_team,
-    wildcard_stats,
-)
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -57,7 +53,12 @@ urlpatterns = [
     path("api/image-proxy/", image_proxy, name="image-proxy"),
     path("api/players/", players_list, name="players-list"),
     path("api/players/<int:player_id>/", player_detail, name="player-detail"),
-    path("api/dream-team/", dream_team, name="dream-team"),
+    path("api/players/<int:player_id>/gameweeks/", player_gameweeks, name="player-gameweeks"),
+    path("api/decision-dashboard/", decision_dashboard, name="decision-dashboard"),
+    path("api/decision-dashboard/research-report/", decision_research_report, name="decision-research-report"),
+    path("api/decision-dashboard/players/", player_analysis_catalogue, name="player-analysis-catalogue"),
+    path("api/decision-dashboard/player-analysis/", player_analysis, name="player-analysis"),
+    path("api/decision-dashboard/player-report/", player_analysis_report, name="player-analysis-report"),
     path("api/optimize-team/", optimize_team, name="optimize-team"),
     
     # SofaSport API endpoints
@@ -77,17 +78,8 @@ urlpatterns = [
     path("api/fpl/event/<int:event_id>/live/", proxy_event_live, name="fpl-event-live"),
     path("api/fpl/fixtures/", proxy_fixtures, name="fpl-fixtures"),
     path("api/fpl/element-summary/<int:player_id>/", proxy_player_summary, name="fpl-player-summary"),
-    path("api/fpl/league/<int:league_id>/standings/", proxy_league_standings, name="fpl-league-standings"),
-    path("api/fpl/league/<int:league_id>/live/", league_live_rank, name="fpl-league-live"),
     
-    # Wildcard Simulator endpoints
-    path("wildcard/", wildcard_home, name="wildcard-home"),
-    path("wildcard/<str:code>/", wildcard_view, name="wildcard-view"),
-    path("api/wildcard/track/", track_wildcard_start, name="wildcard-track-start"),
-    path("api/wildcard/<str:code>/", get_wildcard_team, name="wildcard-get"),
-    path("api/wildcard/<str:code>/save/", save_wildcard_team, name="wildcard-save"),
-    path("api/wildcard/stats/", wildcard_stats, name="wildcard-stats"),
-    
+
     # Top 100 Manager endpoints
     path("api/top100/template/", top100_template, name="top100-template"),
     path("api/top100/best-value/", best_value_players, name="top100-best-value"),

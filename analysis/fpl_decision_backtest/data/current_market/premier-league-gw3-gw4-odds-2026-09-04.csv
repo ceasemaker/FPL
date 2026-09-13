@@ -1,0 +1,21 @@
+gameweek,name,start_utc,home_odds,draw_odds,away_odds,overround,home_prob_no_vig,draw_prob_no_vig,away_prob_no_vig,home_goal_lambda_1x2_fit,away_goal_lambda_1x2_fit,event_url
+3,Ipswich - Liverpool,2026-09-04T19:00:00.000Z,5.69,4.72,1.52,0.045506,0.168097,0.202643,0.62926,0.9813,2.0923,https://www.oddsportal.com/football/h2h/ipswich-thqhB2MB/liverpool-lId4TMwf/#CIuslOyP/
+3,Newcastle - Bournemouth,2026-09-05T11:30:00.000Z,2.14,3.66,3.26,0.047262,0.446201,0.260894,0.292905,1.4536,1.126,https://www.oddsportal.com/football/h2h/bournemouth-OtpNdwrc/newcastle-utd-p6ahwuwJ/#A7Ob65ig/
+3,Brentford - Sunderland,2026-09-05T14:00:00.000Z,1.66,3.91,5.28,0.047558,0.575061,0.244143,0.180796,1.6471,0.8012,https://www.oddsportal.com/football/h2h/brentford-xYe7DwID/sunderland-WSzc94ws/#25c1yohJ/
+3,Brighton - Leeds,2026-09-05T14:00:00.000Z,1.98,3.54,3.8,0.050694,0.480683,0.268856,0.250461,1.4228,0.9461,https://www.oddsportal.com/football/h2h/brighton-2XrRecc3/leeds-tUxUbLR2/#UBkmalpQ/
+3,Manchester City - Coventry,2026-09-05T14:00:00.000Z,1.17,8.11,14.15,0.048677,0.815028,0.117581,0.067391,2.9958,0.7853,https://www.oddsportal.com/football/h2h/coventry-GOvB22xg/manchester-city-Wtn9Stg0/#2sLj8RMt/
+3,Fulham - Crystal Palace,2026-09-05T14:00:00.000Z,2.3,3.38,3.14,0.049112,0.414429,0.282008,0.303563,1.2581,1.0334,https://www.oddsportal.com/football/h2h/crystal-palace-AovF1Mia/fulham-69ZiU2Om/#Y7vRi6x0/
+3,Nottingham - Tottenham,2026-09-05T14:00:00.000Z,2.41,3.43,2.91,0.050126,0.395132,0.277629,0.32724,1.2561,1.1168,https://www.oddsportal.com/football/h2h/nottingham-UsushcZr/tottenham-UDg08Ohm/#rLM64qM5/
+3,Hull - Aston Villa,2026-09-05T16:30:00.000Z,4.07,3.64,1.89,0.049526,0.234106,0.261761,0.504133,0.9262,1.4927,https://www.oddsportal.com/football/h2h/aston-villa-W00wmLO0/hull-city-S66R0t75/#v5sZkp7C/
+3,Everton - Manchester Utd,2026-09-06T13:00:00.000Z,3.3,3.57,2.14,0.050432,0.288482,0.266664,0.444855,1.0771,1.4058,https://www.oddsportal.com/football/h2h/everton-KluSTr9s/manchester-united-ppjDR086/#QsyJgS7m/
+3,Arsenal - Chelsea,2026-09-06T15:30:00.000Z,1.73,3.78,4.82,0.050054,0.550481,0.25194,0.197579,1.5835,0.8353,https://www.oddsportal.com/football/h2h/arsenal-hA1Zm19f/chelsea-4fGZN2oK/#Glagw7N6/
+4,Aston Villa - Nottingham,2026-09-12T14:00:00.000Z,1.96,3.57,3.68,0.062055,0.480393,0.263745,0.255862,1.4627,0.9908,https://www.oddsportal.com/football/h2h/aston-villa-W00wmLO0/nottingham-UsushcZr/#Mo2opFzi/
+4,Bournemouth - Brentford,2026-09-12T14:00:00.000Z,2.56,3.53,2.56,0.064536,0.366944,0.266112,0.366944,1.2817,1.2817,https://www.oddsportal.com/football/h2h/bournemouth-OtpNdwrc/brentford-xYe7DwID/#GnzE2NjI/
+4,Chelsea - Hull,2026-09-12T14:00:00.000Z,1.24,5.97,11.79,0.058773,0.761685,0.158206,0.080109,2.3472,0.6175,https://www.oddsportal.com/football/h2h/chelsea-4fGZN2oK/hull-city-S66R0t75/#G8yViRgc/
+4,Crystal Palace - Ipswich,2026-09-12T14:00:00.000Z,1.89,3.63,3.85,0.064323,0.497124,0.258833,0.244043,1.514,0.9771,https://www.oddsportal.com/football/h2h/crystal-palace-AovF1Mia/ipswich-thqhB2MB/#UVsolqgM/
+4,Liverpool - Fulham,2026-09-12T14:00:00.000Z,1.46,4.77,5.98,0.061799,0.645067,0.197442,0.157491,2.1375,0.9527,https://www.oddsportal.com/football/h2h/fulham-69ZiU2Om/liverpool-lId4TMwf/#YRWOt1od/
+4,Tottenham - Everton,2026-09-12T16:30:00.000Z,1.98,3.52,3.68,0.060881,0.476067,0.267788,0.256145,1.4275,0.9701,https://www.oddsportal.com/football/h2h/everton-KluSTr9s/tottenham-UDg08Ohm/#K2LQ0MxS/
+4,Sunderland - Arsenal,2026-09-12T19:00:00.000Z,6.53,4.11,1.5,0.063115,0.144048,0.228864,0.627088,0.6969,1.7513,https://www.oddsportal.com/football/h2h/arsenal-hA1Zm19f/sunderland-WSzc94ws/#YoNI2r8F/
+4,Coventry - Brighton,2026-09-13T13:00:00.000Z,4.27,3.74,1.78,0.063369,0.220236,0.251446,0.528318,0.9285,1.5892,https://www.oddsportal.com/football/h2h/brighton-2XrRecc3/coventry-GOvB22xg/#OYvwj5O9/
+4,Manchester Utd - Manchester City,2026-09-13T15:30:00.000Z,3.02,3.82,2.14,0.060196,0.312325,0.246917,0.440758,1.2862,1.573,https://www.oddsportal.com/football/h2h/manchester-city-Wtn9Stg0/manchester-united-ppjDR086/#0YOA44w3/
+4,Leeds - Newcastle,2026-09-14T19:00:00.000Z,2.47,3.49,2.7,0.061762,0.381308,0.269866,0.348826,1.284,1.2159,https://www.oddsportal.com/football/h2h/leeds-tUxUbLR2/newcastle-utd-p6ahwuwJ/#Q1TGrNGq/

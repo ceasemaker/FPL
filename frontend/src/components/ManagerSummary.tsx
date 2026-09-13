@@ -80,9 +80,14 @@ const ManagerSummary: React.FC<ManagerSummaryProps> = ({ managerId }) => {
         <h3 className="manager-summary-title">🏆 Manager Info</h3>
         {manager.favourite_team && (
           <img
-            src={`${TEAM_BADGE_BASE}t${manager.favourite_team}.svg`}
-            alt="Favorite team"
+            src={`${TEAM_BADGE_BASE}${manager.favourite_team}.svg`}
+            alt="Favourite team"
             className="manager-favorite-badge"
+            onError={(e) => {
+              // `favourite_team` is a team id and the badge set is keyed on
+              // team code, so this can legitimately miss.
+              (e.target as HTMLImageElement).style.display = "none";
+            }}
           />
         )}
       </div>

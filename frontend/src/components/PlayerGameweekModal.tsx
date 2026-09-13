@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 interface PlayerGameweekModalProps {
   playerId: number;
   playerName: string;
+  /** Team CODE (badge asset key), not the 1-20 team id. */
   playerTeam: number;
   playerPosition: number;
   gameweek: number;
@@ -146,7 +147,7 @@ const PlayerGameweekModal: React.FC<PlayerGameweekModalProps> = ({
           <p className="gw-modal-subtitle">
             <span className="gw-position-badge">{getPositionLabel(playerPosition)}</span>
             <img
-              src={`${TEAM_BADGE_BASE}t${playerTeam}.svg`}
+              src={`${TEAM_BADGE_BASE}${playerTeam}.svg`}
               alt="Team"
               className="gw-team-badge"
             />

@@ -368,3 +368,283 @@
   height: 10px;
   border-radius: 50%;
 }
+
+/* ======================================================================
+ * Price Monitor — dark graphite / Spring Bud lime pass.
+ * Official (fact) panels are visually distinct from estimated momentum.
+ * ====================================================================== */
+
+.predictor-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* The page predates the design system, so re-skin its `glow-card` sections
+ * rather than rewriting all of the markup. */
+.predictor-page .glow-card {
+  border: 1px solid var(--aero-line-strong);
+  border-radius: var(--aero-radius);
+  background: linear-gradient(145deg, #1b1c1c, #151616);
+  box-shadow: var(--aero-shadow);
+  overflow: hidden;
+}
+
+.predictor-page .glow-card-content {
+  padding: 18px;
+}
+
+.predictor-page .predictor-hero,
+.predictor-page .predictor-board {
+  padding: 0;
+}
+
+.predictor-page .section-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 1.08rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--aero-text);
+}
+
+.predictor-page .section-subtitle {
+  margin: 5px 0 0;
+  font-size: 0.76rem;
+  color: var(--aero-text-muted);
+}
+
+.predictor-page .predictor-grid h3 {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--aero-text-muted);
+  margin: 0 0 12px;
+}
+
+.predictor-page .predictor-card {
+  align-items: center;
+  border: 1px solid var(--aero-line);
+  border-radius: var(--aero-radius-sm);
+  background: var(--aero-surface);
+  padding: 10px;
+}
+
+.predictor-page .predictor-card img {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--aero-surface-hover);
+}
+
+.predictor-page .predictor-name {
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.predictor-page .predictor-meta {
+  font-size: 0.68rem;
+  color: var(--aero-text-muted);
+  margin-top: 3px;
+}
+
+.predictor-page .predictor-signal {
+  text-align: right;
+  font-size: 0.76rem;
+}
+
+.predictor-page .predictor-signal small {
+  display: block;
+  font-size: 0.64rem;
+  color: var(--aero-text-muted);
+  margin-top: 3px;
+}
+
+.predictor-page .predictor-card.rise .predictor-signal span { color: var(--aero-positive); }
+.predictor-page .predictor-card.fall .predictor-signal span { color: var(--aero-negative); }
+
+.predictor-page .predictor-error {
+  border-color: rgba(255, 76, 94, 0.4);
+  background: rgba(255, 76, 94, 0.08);
+  color: #ffb4bc;
+}
+
+/* ----------------------------------------------------- official changes */
+
+.predictor-official .aero-card-title {
+  align-items: center;
+}
+
+.official-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.official-grid h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--aero-text-muted);
+  margin: 0 0 10px;
+}
+
+.official-grid h3 span {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  color: var(--aero-text);
+}
+
+.official-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.official-row {
+  display: grid;
+  grid-template-columns: 1.4fr 0.7fr 0.8fr 0.8fr;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 8px;
+  border: 0;
+  border-top: 1px solid var(--aero-line);
+  background: transparent;
+  color: var(--aero-text);
+  font-family: inherit;
+  font-size: 0.78rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.official-row:first-child {
+  border-top: 0;
+}
+
+.official-row:hover {
+  background: var(--aero-surface-hover);
+}
+
+.official-name {
+  font-weight: 600;
+}
+
+.official-meta,
+.official-cost {
+  font-size: 0.7rem;
+  color: var(--aero-text-muted);
+}
+
+.official-row b {
+  text-align: right;
+  font-weight: 700;
+}
+
+@media (max-width: 720px) {
+  .official-row {
+    grid-template-columns: 1.3fr 0.8fr 0.9fr;
+  }
+
+  .official-meta {
+    display: none;
+  }
+}
+
+/* Charts and inputs predate the palette — bring them onto graphite/lime. */
+
+.predictor-page .ownership-chart svg {
+  background:
+    radial-gradient(circle at 22% 18%, rgba(165, 255, 1, 0.06), transparent 55%),
+    #131414;
+  border: 1px solid var(--aero-line);
+  box-shadow: none;
+}
+
+.predictor-page .ownership-grid line {
+  stroke: rgba(255, 255, 255, 0.08);
+}
+
+.predictor-page .ownership-axis {
+  stroke: var(--aero-line-strong);
+  fill: var(--aero-text-muted);
+}
+
+.predictor-page .ownership-axis text,
+.predictor-page .ownership-axis-label {
+  font-family: var(--font-main);
+  fill: var(--aero-text-muted);
+}
+
+.predictor-page .predictor-search-input input,
+.predictor-page .predictor-search-direction select,
+.predictor-page .predictor-filter select {
+  background: var(--aero-surface);
+  border: 1px solid var(--aero-line-strong);
+  border-radius: var(--aero-radius-sm);
+  color: var(--aero-text);
+  font-family: inherit;
+}
+
+.predictor-page .predictor-search-results {
+  border: 1px solid var(--aero-line-strong);
+  border-radius: var(--aero-radius-sm);
+  background: var(--aero-surface-raised);
+}
+
+.predictor-page .predictor-search-results button:hover {
+  background: var(--aero-surface-hover);
+}
+
+.predictor-page .predictor-chip {
+  border-color: transparent;
+  background: var(--aero-lime-wash);
+  color: var(--aero-lime);
+}
+
+.predictor-page .predictor-graph-card {
+  border: 1px solid var(--aero-line);
+  border-radius: var(--aero-radius-sm);
+  background: var(--aero-surface);
+}
+
+.predictor-page .predictor-delta.positive { color: var(--aero-positive); }
+.predictor-page .predictor-delta.negative { color: var(--aero-negative); }
+
+/* The legacy sections carry their own 2rem padding on the card AND on the
+ * inner content wrapper, which doubled up once the card was re-skinned. */
+.predictor-page .glow-card {
+  padding: 0;
+}
+
+/* `minmax(320px, …)` is a hard floor, so these grids overflowed narrow
+ * phones. Let the columns shrink below the preferred width. */
+.predictor-page .predictor-chart-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+  gap: 18px;
+}
+
+.predictor-page .predictor-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: 20px;
+}
+
+.predictor-page .official-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+}
+
+.predictor-page .predictor-graph-card {
+  gap: 12px;
+  min-width: 0;
+}
+
+.predictor-page .predictor-chart-list {
+  min-width: 0;
+}

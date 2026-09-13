@@ -1,0 +1,39 @@
+{
+  "date": "2026-09-04",
+  "policy": {
+    "sofascore_min_seconds_between_calls": 12.5,
+    "sofascore_daily_cap": 40,
+    "daily_cache": true
+  },
+  "requests": [
+    {
+      "source": "Football-Data.co.uk",
+      "count": 1,
+      "status": "success",
+      "result": "20 completed rows; 0 future rows"
+    },
+    {
+      "source": "Sofascore public API",
+      "count": 1,
+      "status": "blocked_http_403",
+      "result": "stopped immediately; no retries or match calls"
+    },
+    {
+      "source": "OddsPortal Premier League page",
+      "count": 2,
+      "status": "success",
+      "result": "one availability probe and one cached download; 20 GW3/GW4 1X2 fixtures parsed"
+    },
+    {
+      "source": "OddsPortal Champions League page",
+      "count": 1,
+      "status": "success",
+      "result": "cached schedule page; 18 fixtures parsed"
+    }
+  ],
+  "artifacts": [
+    "premier-league-gw3-gw4-odds-2026-09-04.json",
+    "premier-league-gw3-gw4-odds-2026-09-04.csv",
+    "champions-league-schedule-odds-2026-09-04.json"
+  ]
+}

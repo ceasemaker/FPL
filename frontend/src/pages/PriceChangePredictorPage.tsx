@@ -15,9 +15,18 @@ interface PriceSignalPlayer {
   image_url: string | null;
 }
 
+interface OfficialPriceChanges {
+  risers: PriceSignalPlayer[];
+  fallers: PriceSignalPlayer[];
+  riser_count: number;
+  faller_count: number;
+}
+
 interface PredictorResponse {
   risers: PriceSignalPlayer[];
   fallers: PriceSignalPlayer[];
+  /** Price changes the FPL API has already applied — facts, not estimates. */
+  official?: OfficialPriceChanges;
   limit: number;
 }
 
@@ -116,7 +125,7 @@ function MultiLineChart({
   const height = 280;
   const padding = 44;
   const rightPadding = 56;
-  const palette = ["#38bdf8", "#60a5fa", "#a78bfa", "#f97316", "#22c55e"];
+  const palette = ["#a5ff01", "#38bdf8", "#a78bfa", "#f59e0b", "#ff4c5e"];
   const formatValue = valueFormatter ?? ((value: number) => value.toFixed(1));
 
   const allValues = series.flatMap((item) => item.points.map((point) => point.value));
@@ -137,9 +146,10 @@ function MultiLineChart({
     <div className="ownership-chart">
       <svg viewBox={`0 0 ${width} ${height}`} role="img">
         <defs>
+          {/* Graphite plot ground, matching the surrounding cards. */}
           <linearGradient id="ownership-bg" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#050914" />
-            <stop offset="100%" stopColor="#0b1226" />
+            <stop offset="0%" stopColor="#1a1b1b" />
+            <stop offset="100%" stopColor="#131414" />
           </linearGradient>
           {palette.map((color, idx) => (
             <linearGradient key={color} id={`line-${idx}`} x1="0" y1="0" x2="1" y2="0">
@@ -477,24 +487,101 @@ export function PriceChangePredictorPage() {
     });
   };
 
+  const official = data?.official ?? null;
+
   return (
-    <div className="page">
-      <section className="glow-card predictor-hero">
-        <div className="glow-card-content">
-          <div className="section-title">📈 Price Change Predictor</div>
-          <p className="section-subtitle">
-            This is a momentum-based signal from transfers in/out. It is not an official FPL price predictor, but it
-            highlights who is trending toward rises or drops.
+    <main className="aero-page predictor-page">
+      <div className="aero-header">
+        <div>
+          <h1>Price Monitor</h1>
+          <p>
+            Price changes the FPL API has already applied, kept separate from a
+            transfer-momentum signal that only shows which way the market is leaning.
           </p>
-          {error && <div className="predictor-error">{error}</div>}
         </div>
+      </div>
+
+      {error && <p className="aero-error">{error}</p>}
+
+      {/* Facts first. */}
+      <section className="aero-card predictor-official">
+        <header className="aero-card-title">
+          <div>
+            <h2>Price changes this gameweek</h2>
+            <p>Straight from the official FPL bootstrap — no estimation.</p>
+          </div>
+          <span className="aero-chip accent">Official</span>
+        </header>
+        {official ? (
+          <div className="official-grid">
+            <div>
+              <h3>
+                Risen <span>{official.riser_count}</span>
+              </h3>
+              <div className="official-list">
+                {official.risers.length ? (
+                  official.risers.map((player) => (
+                    <button
+                      key={player.id}
+                      className="official-row"
+                      onClick={() => setModalPlayerId(player.id)}
+                    >
+                      <span className="official-name">{player.web_name}</span>
+                      <span className="official-meta">{player.team || "—"}</span>
+                      <span className="official-cost">{formatCost(player.now_cost)}</span>
+                      <b className="aero-positive">
+                        +£{Math.abs((player.cost_change_event ?? 0) / 10).toFixed(1)}m
+                      </b>
+                    </button>
+                  ))
+                ) : (
+                  <p className="aero-empty">No rises recorded yet this gameweek.</p>
+                )}
+              </div>
+            </div>
+            <div>
+              <h3>
+                Fallen <span>{official.faller_count}</span>
+              </h3>
+              <div className="official-list">
+                {official.fallers.length ? (
+                  official.fallers.map((player) => (
+                    <button
+                      key={player.id}
+                      className="official-row"
+                      onClick={() => setModalPlayerId(player.id)}
+                    >
+                      <span className="official-name">{player.web_name}</span>
+                      <span className="official-meta">{player.team || "—"}</span>
+                      <span className="official-cost">{formatCost(player.now_cost)}</span>
+                      <b className="aero-negative">
+                        −£{Math.abs((player.cost_change_event ?? 0) / 10).toFixed(1)}m
+                      </b>
+                    </button>
+                  ))
+                ) : (
+                  <p className="aero-empty">No falls recorded yet this gameweek.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="aero-empty">Official price changes are unavailable right now.</p>
+        )}
       </section>
+
+      <p className="aero-note">
+        Everything below is an <strong>estimate</strong>. The official FPL API publishes
+        actual price changes and transfer counts but no probability of a future change, so
+        these panels rank transfer momentum — they do not predict a price move, and we do
+        not show a probability we cannot validate.
+      </p>
 
       <section className="glow-card predictor-transfer">
         <div className="glow-card-content">
           <div className="predictor-chart-header">
             <div>
-              <div className="section-title">Transfer Pulse</div>
+              <div className="section-title">Transfer pulse <span className="aero-chip">Estimated</span></div>
               <p className="section-subtitle">Top 5 transfer momentum trends from recent snapshots.</p>
             </div>
             <label className="predictor-filter">
@@ -559,7 +646,7 @@ export function PriceChangePredictorPage() {
           {!loading && data && (
             <div className="predictor-grid">
               <div>
-                <h3>Potential Risers</h3>
+                <h3>Strongest net transfers in</h3>
                 <div className="predictor-list">
                   {data.risers.map((player) => (
                     <article
@@ -583,7 +670,7 @@ export function PriceChangePredictorPage() {
                 </div>
               </div>
               <div>
-                <h3>Potential Fallers</h3>
+                <h3>Strongest net transfers out</h3>
                 <div className="predictor-list">
                   {data.fallers.map((player) => (
                     <article
@@ -615,8 +702,8 @@ export function PriceChangePredictorPage() {
         <div className="glow-card-content">
           <div className="predictor-chart-header">
             <div>
-              <div className="section-title">Transfer Momentum</div>
-              <p className="section-subtitle">Top 5 movers with stock-style momentum charts.</p>
+              <div className="section-title">Transfer momentum <span className="aero-chip">Estimated</span></div>
+              <p className="section-subtitle">Top 5 movers by net transfers. Momentum only — not a price forecast.</p>
             </div>
             {historyLoading && <div className="predictor-loading">Loading charts...</div>}
           </div>
@@ -708,6 +795,6 @@ export function PriceChangePredictorPage() {
           onClose={() => setModalPlayerId(null)}
         />
       )}
-    </div>
+    </main>
   );
 }

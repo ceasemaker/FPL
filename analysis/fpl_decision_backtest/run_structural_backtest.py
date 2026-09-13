@@ -528,7 +528,9 @@ def score_models(predictions: pd.DataFrame, output_dir: Path) -> tuple[pd.DataFr
 
     # Realized three-gameweek value of holding a player picked at gameweek G:
     # points(G) + 0.9 * points(G+1) + 0.81 * points(G+2), matching the user's
-    # standard decision horizon. Missing future weeks contribute zero.
+    # standard decision horizon. A player disappearing from the population
+    # contributes zero, but GW37/38 are censored because the season itself has
+    # no complete three-week outcome.
     actual_lookup = joined.set_index(["season", "player_id", "gameweek"])["total_points"]
     horizon_weights = (1.0, 0.9, 0.81)
     future = np.zeros(len(joined))
@@ -538,9 +540,15 @@ def score_models(predictions: pd.DataFrame, output_dir: Path) -> tuple[pd.DataFr
             [keys[:, 0], keys[:, 1], keys[:, 2] + step]
         )
         future += weight * actual_lookup.reindex(shifted).fillna(0.0).to_numpy()
-    joined["realized_3gw"] = future
+    last_gameweek = joined.groupby("season")["gameweek"].transform("max")
+    joined["realized_3gw"] = np.where(
+        joined["gameweek"] + len(horizon_weights) - 1 <= last_gameweek,
+        future,
+        np.nan,
+    )
 
     def top5_3gw_utility(frame: pd.DataFrame, column: str) -> float:
+        frame = frame.dropna(subset=["realized_3gw"])
         return float(np.mean([
             week.nlargest(5, column)["realized_3gw"].mean()
             for _, week in frame.groupby("gameweek")
@@ -663,7 +671,7 @@ def main() -> None:
         "season_results": json.loads(comparison.round(5).to_json(orient="records")),
         "authority_gate": {
             "accepted_for_optimizer": accepted,
-            "rule": "on untouched 2025/26, hybrid must beat ridge MAE and not reduce correlation, top-five realized points, or three-gameweek top-five utility",
+            "rule": "on the 2025/26 evaluation season, hybrid must beat ridge MAE and not reduce correlation, top-five realized points, or complete-horizon three-gameweek top-five utility",
             "test_ridge_mae": round(float(test["ridge_xp_mae"]), 5),
             "test_hybrid_mae": round(float(test["hybrid_xp_mae"]), 5),
             "test_ridge_correlation": round(float(test["ridge_xp_correlation"]), 5),

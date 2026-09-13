@@ -103,3 +103,63 @@ that a 0/100 result is validated.
 Detailed audit trails are saved in `output/team_replay_gw2_weekly.csv` and
 `output/team_replay_gw10_weekly.csv`. The summary JSON files feed the local
 Decision Lab dashboard.
+
+## Update 2026-08-28: replays rerun with the stacked candidate forecast
+
+The stacked forecast candidate was fed to both replays via
+`--odds-predictions output/stacked_replay_predictions.csv`:
+
+| Start | Old median delta | New median delta | Paths won |
+|---|---:|---:|---:|
+| GW2 | −330.0 | −318.5 | 0/100 |
+| GW10 | −239.5 | −232.5 | 0/100 |
+
+A forecast improvement of proven statistical significance at the player-week
+level moved the replay deficit by under 3%. The deficit is therefore not a
+forecast-quality signal. The dominant cause is the benchmark itself:
+
+**The comparison cohort is an extreme order statistic.** The cohort is the
+eventual top ~100 of roughly 11 million managers, selected ex post on the
+very outcome being compared. For n ≈ 1.1e7, the top-100 threshold sits
+approximately 4.4 standard deviations above the mean season score. With a
+plausible inter-manager season standard deviation of 100–150 points in this
+base-points view, selection bias alone accounts for roughly 450–650 points —
+more than the entire observed deficit (model paths average ~2011 points over
+GW2–38 vs the cohort's ~2332). An unbiased ex-ante strategy is *expected* to
+lose to this cohort by a wide margin even if it is better than nearly every
+manager ex ante.
+
+Conclusion: this replay, as constructed, cannot validate or reject a
+forecast. To make it informative it needs an unbiased benchmark, e.g. a
+random sample of manager IDs archived at season start (not conditioned on
+finish), a template/most-owned-squad baseline, or the user's own historical
+entry. Until such a benchmark exists, model promotion should rest on the
+statistical gate, and the replay should be read only as "how far behind the
+luckiest 100 finishers an ex-ante strategy lands."
+
+## Update 2026-08-28 (later): paired internal hold benchmark added
+
+The replay now scores every model path against the identical starting squad
+held with zero transfers, with lineup and captain chosen by the same
+predictions. This paired comparison isolates transfer-path value much better
+than the direct eventual-top-100 score comparison. It is not fully
+survivorship-free: the starting squads still belong to a cohort selected ex
+post by final rank, and weekly prices are reconstructed.
+
+| Start | Median transfer value | Mean | Paths positive | Worst | Best |
+|---|---:|---:|---:|---:|---:|
+| GW2 | +206.0 | +195.2 | 93/100 | −133 | +611 |
+| GW10 | +27.5 | +39.5 | 60/100 | −145 | +255 |
+
+Interpretation: from an early-season start the transfer engine adds roughly
++200 points per season over holding — strong, consistent positive value
+(compare Pokharel et al. 2022, whose transfer engine *destroyed* 264 points
+against the same kind of baseline). From a GW10 start the edge is small and
+noisy: with only 28 remaining gameweeks and already-settled squads, transfer
+value is thinner and roughly 40% of paths would have done better holding.
+This suggests the confidence buffer on mid-season transfers should be larger
+than the early-season one.
+
+These transfer-value numbers are more decision-relevant than the direct
+top-100 cohort deltas, but still require confirmation on a representative or
+personally archived squad sample.

@@ -1,0 +1,15 @@
+/* CSS for xPoints badge */
+.xp-badge {
+    background-color: #8b5cf6;
+    /* Violet/Purple to distinguish from points */
+    color: white;
+}
+
+.player-list-xp {
+    background-color: #8b5cf6;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import ManagerSummary from "../components/ManagerSummary";
 import ManagerHistory from "../components/ManagerHistory";
 import ManagerGameweek from "../components/ManagerGameweek";
+import "./AnalyzeManagerPage.css";
 
 export function AnalyzeManagerPage() {
   const [managerId, setManagerId] = useState<string>("");
@@ -57,87 +58,90 @@ export function AnalyzeManagerPage() {
   };
 
   return (
-    <div className="page">
-      <div className="analyze-manager-container">
-        {/* Header Section */}
-        <div className="analyze-header">
-          <h1 className="analyze-title">Analyze Manager</h1>
-          <p className="analyze-subtitle">
-            Enter a manager ID to view detailed team analysis, history, and performance
+    <main className="aero-page analyze-page">
+      <div className="aero-header">
+        <div>
+          <h1>Analyze Manager</h1>
+          <p>
+            Look up any FPL manager to review their season history, squad and
+            gameweek performance.
           </p>
         </div>
+      </div>
 
-        {/* Input Section */}
-        <div className="analyze-input-section">
-          <div className="manager-id-input-wrapper">
-            <input
-              type="text"
-              className="manager-id-input"
-              placeholder="Enter Manager ID (e.g., 123456)"
-              value={managerId}
-              onChange={(e) => setManagerId(e.target.value)}
-              onKeyPress={handleKeyPress}
-            />
-            <button className="analyze-button" onClick={handleAnalyze}>
-              Analyze
+      <section className="aero-card analyze-lookup">
+        <label className="aero-field analyze-lookup-field">
+          <span>Manager ID</span>
+          <input
+            type="text"
+            inputMode="numeric"
+            className="aero-input"
+            placeholder="e.g. 123456"
+            value={managerId}
+            onChange={(e) => setManagerId(e.target.value)}
+            onKeyDown={handleKeyPress}
+          />
+        </label>
+        <button className="aero-button primary" onClick={handleAnalyze} disabled={!managerId.trim()}>
+          Analyze
+        </button>
+        <p className="analyze-hint">
+          Your ID is the number in your FPL profile URL:
+          {" "}fantasy.premierleague.com/entry/<strong>YOUR_ID</strong>/
+        </p>
+      </section>
+
+      {activeManagerId && (
+        <p className="aero-note analyze-data-note" role="status">
+          <strong>What you are seeing:</strong> the selected manager’s official public FPL squad and scores. The gameweek selector controls the snapshot; the team panel labels whether it is current or historical and when it was loaded.
+        </p>
+      )}
+
+      {activeManagerId ? (
+        <>
+          <div className="analyze-views" role="tablist" aria-label="Manager view">
+            <button
+              role="tab"
+              aria-selected={view === "gameweek"}
+              className={view === "gameweek" ? "active" : ""}
+              onClick={() => setView("gameweek")}
+            >
+              Gameweek team
+            </button>
+            <button
+              role="tab"
+              aria-selected={view === "history"}
+              className={view === "history" ? "active" : ""}
+              onClick={() => setView("history")}
+            >
+              Season history
             </button>
           </div>
-          <p className="input-hint">
-            💡 Find your manager ID in your FPL profile URL: fantasy.premierleague.com/entry/<strong>YOUR_ID</strong>/
-          </p>
-        </div>
 
-        {/* Content Section */}
-        {activeManagerId && (
-          <>
-            {/* View Toggle */}
-            <div className="view-toggle">
-              <button
-                className={`toggle-button ${view === "history" ? "active" : ""}`}
-                onClick={() => setView("history")}
-              >
-                📊 Season History
-              </button>
-              <button
-                className={`toggle-button ${view === "gameweek" ? "active" : ""}`}
-                onClick={() => setView("gameweek")}
-              >
-                ⚽ Gameweek Team
-              </button>
+          <div className="analyze-content-grid">
+            <div className="analyze-main-content">
+              {view === "history" ? (
+                <ManagerHistory managerId={activeManagerId} />
+              ) : (
+                <ManagerGameweek
+                  managerId={activeManagerId}
+                  selectedGameweek={selectedGameweek}
+                  onGameweekChange={setSelectedGameweek}
+                />
+              )}
             </div>
 
-            {/* Main Content Grid */}
-            <div className="analyze-content-grid">
-              {/* Left: Main Content */}
-              <div className="analyze-main-content">
-                {view === "history" ? (
-                  <ManagerHistory managerId={activeManagerId} />
-                ) : (
-                  <ManagerGameweek
-                    managerId={activeManagerId}
-                    selectedGameweek={selectedGameweek}
-                    onGameweekChange={setSelectedGameweek}
-                  />
-                )}
-              </div>
-
-              {/* Right: Manager Summary Sidebar */}
-              <div className="analyze-sidebar">
-                <ManagerSummary managerId={activeManagerId} />
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Empty State */}
-        {!activeManagerId && (
-          <div className="analyze-empty-state">
-            <div className="empty-state-icon">🔍</div>
-            <h3>Ready to Analyze</h3>
-            <p>Enter a manager ID above to get started with detailed team analysis</p>
+            <aside className="analyze-sidebar">
+              <ManagerSummary managerId={activeManagerId} />
+            </aside>
           </div>
-        )}
-      </div>
-    </div>
+        </>
+      ) : (
+        <section className="aero-card analyze-empty">
+          <h2>Ready when you are</h2>
+          <p>Enter a manager ID above to pull their squad, chips and rank history.</p>
+        </section>
+      )}
+    </main>
   );
 }

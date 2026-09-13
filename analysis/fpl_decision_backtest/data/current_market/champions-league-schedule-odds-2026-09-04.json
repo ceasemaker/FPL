@@ -1,0 +1,97 @@
+{
+  "source": "OddsPortal Champions League consensus page",
+  "source_url": "https://www.oddsportal.com/football/europe/champions-league/",
+  "downloaded_on": "2026-09-04",
+  "fixtures": [
+    {
+      "name": "AEK - LASK",
+      "start_utc": "2026-09-08T16:45:00.000Z",
+      "event_url": "https://www.oddsportal.com/pl/football/h2h/aek-ANpZncAM/lask-linz-MipWYeKQ/#EgODGq9F/"
+    },
+    {
+      "name": "Club Brugge - Aston Villa",
+      "start_utc": "2026-09-08T16:45:00.000Z",
+      "event_url": "https://www.oddsportal.com/pl/football/h2h/aston-villa-W00wmLO0/club-brugge-rgTHIK74/#hYMyrzBC/"
+    },
+    {
+      "name": "Lille - Betis",
+      "start_utc": "2026-09-08T19:00:00.000Z",
+      "event_url": "https://www.oddsportal.com/pl/football/h2h/betis-vJbTeCGP/lille-pfDZL71o/#StY6NNoJ/"
+    },
+    {
+      "name": "Borussia Dortmund - Villarreal",
+      "start_utc": "2026-09-08T19:00:00.000Z",
+      "event_url": "https://www.oddsportal.com/pl/football/h2h/dortmund-nP1i5US1/villarreal-lUatW5jE/#lGdh9XQ8/"
+    },
+    {
+      "name": "FC Porto - Manchester City",
+      "start_utc": "2026-09-08T19:00:00.000Z",
+      "event_url": "https://www.oddsportal.com/pl/football/h2h/fc-porto-S2NmScGp/manchester-city-Wtn9Stg0/#SYL9LRdk/"
+    },
+    {
+      "name": "Real Madryt - Inter",
+      "start_utc": "2026-09-08T19:00:00.000Z",
+      "event_url": "https://www.oddsportal.com/pl/football/h2h/inter-Iw7eKK25/real-madryt-W8mj7MDD/#foBRjez1/"
+    },
+    {
+      "name": "Barcelona - Feyenoord",
+      "start_utc": "2026-09-09T16:45:00.000Z",
+      "event_url": "https://www.oddsportal.com/pl/football/h2h/barcelona-SKbpVP5K/feyenoord-8zjySeoN/#nD1UprQ0/"
+    },
+    {
+      "name": "VfB Stuttgart - Viking",
+      "start_utc": "2026-09-09T16:45:00.000Z",
+      "event_url": "https://www.oddsportal.com/pl/football/h2h/stuttgart-nJQmYp1B/viking-bXAgOWwb/#xUAf7KE4/"
+    },
+    {
+      "name": "Napoli - Arsenal",
+      "start_utc": "2026-09-09T19:00:00.000Z",
+      "event_url": "https://www.oddsportal.com/pl/football/h2h/arsenal-hA1Zm19f/napoli-69Dxbc61/#juiAv14K/"
+    },
+    {
+      "name": "Liverpool - Atl. Madryt",
+      "start_utc": "2026-09-09T19:00:00.000Z",
+      "event_url": "https://www.oddsportal.com/pl/football/h2h/atl-madryt-jaarqpLQ/liverpool-lId4TMwf/#6aa0PFtQ/"
+    },
+    {
+      "name": "Sporting - Galatasaray",
+      "start_utc": "2026-09-09T19:00:00.000Z",
+      "event_url": "https://www.oddsportal.com/pl/football/h2h/galatasaray-riaqqurF/sporting-tljXuHBC/#QaIiWiUj/"
+    },
+    {
+      "name": "PSG - Slovan Bratys\u0142awa",
+      "start_utc": "2026-09-09T19:00:00.000Z",
+      "event_url": "https://www.oddsportal.com/pl/football/h2h/psg-CjhkPw0k/slovan-bratislava-QRaWdwQf/#vRfGDXa4/"
+    },
+    {
+      "name": "Fenerbahce - AS Roma",
+      "start_utc": "2026-09-10T16:45:00.000Z",
+      "event_url": "https://www.oddsportal.com/pl/football/h2h/as-roma-zVqqL0ma/fenerbahce-MsbmracL/#p4qtPzNN/"
+    },
+    {
+      "name": "PSV - Szachtar Donieck",
+      "start_utc": "2026-09-10T16:45:00.000Z",
+      "event_url": "https://www.oddsportal.com/pl/football/h2h/psv-M9UEHJWi/shakhtar-4ENWX2OA/#UTCOpiqp/"
+    },
+    {
+      "name": "Bayern Monachium - Bodo/Glimt",
+      "start_utc": "2026-09-10T19:00:00.000Z",
+      "event_url": "https://www.oddsportal.com/pl/football/h2h/bayern-nVp0wiqd/bodo-glimt-S0WZMUNG/#21qdVdR6/"
+    },
+    {
+      "name": "Como - RB Lipsk",
+      "start_utc": "2026-09-10T19:00:00.000Z",
+      "event_url": "https://www.oddsportal.com/pl/football/h2h/como-ttyLthOA/rb-leipzig-KbS1suSm/#WhVkZZ2L/"
+    },
+    {
+      "name": "Slavia Praga - Lens",
+      "start_utc": "2026-09-10T19:00:00.000Z",
+      "event_url": "https://www.oddsportal.com/pl/football/h2h/lens-IBmris38/slavia-praga-viXGgnyB/#YepM57w0/"
+    },
+    {
+      "name": "Manchester Utd - Sabah Baku",
+      "start_utc": "2026-09-10T19:00:00.000Z",
+      "event_url": "https://www.oddsportal.com/pl/football/h2h/manchester-utd-ppjDR086/sabah-baku-fNGcxbyr/#EwQ5ud74/"
+    }
+  ]
+}

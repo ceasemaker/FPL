@@ -6,6 +6,7 @@ from run_team_replay import (
     best_lineup,
     frozen_horizon_lookups,
     normalized_human_points,
+    realized_normal_points,
     squad_is_legal,
 )
 
@@ -54,6 +55,17 @@ class TeamReplayTests(unittest.TestCase):
             10,
         )
         self.assertEqual(lookups[1][1]["predicted_points"], 0.0)
+
+    def test_outfield_autosub_preserves_a_legal_formation(self):
+        starters = [1, 3, 4, 5, 8, 9, 10, 11, 13, 14, 15]
+        self.lookup[3]["actual_minutes"] = 0
+        self.lookup[3]["total_points"] = 0.0
+        self.lookup[6]["total_points"] = 5.0
+        points = realized_normal_points(
+            range(1, 16), starters, captain=15, vice_captain=14,
+            bench_order=[2, 6, 7, 12], lookup=self.lookup,
+        )
+        self.assertEqual(points, 16.0)
 
 
 if __name__ == "__main__":

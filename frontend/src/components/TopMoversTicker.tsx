@@ -1,5 +1,3 @@
-import { useEffect, useRef } from "react";
-import anime from "animejs";
 import { PlayerMover, PriceMovers } from "../types";
 import { cn } from "../utils/cn";
 
@@ -11,24 +9,6 @@ interface TopMoversTickerProps {
 }
 
 export function TopMoversTicker({ priceMovers, pointsMovers, loading, onPlayerClick }: TopMoversTickerProps) {
-  const stripRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!stripRef.current || !priceMovers || loading) return;
-
-    const animation = anime({
-      targets: stripRef.current,
-      translateX: [0, "-50%"],
-      duration: 20000,
-      easing: "linear",
-      loop: true,
-    });
-
-    return () => {
-      animation.pause();
-    };
-  }, [priceMovers, loading]);
-
   const moverCards = createTickerItems(priceMovers, pointsMovers, loading);
 
   return (
@@ -36,13 +16,10 @@ export function TopMoversTicker({ priceMovers, pointsMovers, loading, onPlayerCl
       <div className="glow-card-content">
         <div className="section-title">Top Movers</div>
         <p className="section-subtitle">Price changes and point scorers — risers 📈, fallers 📉, and top performers ⭐</p>
-        <div className="ticker-viewport">
-          <div className="ticker-strip" ref={stripRef}>
+        <div className="ticker-viewport static-ticker-viewport">
+          <div className="ticker-strip">
             {moverCards.map((mover) => (
               <TickerCard key={mover.key} mover={mover} onClick={onPlayerClick} />
-            ))}
-            {moverCards.map((mover) => (
-              <TickerCard key={`${mover.key}-clone`} mover={mover} onClick={onPlayerClick} />
             ))}
           </div>
         </div>
@@ -85,7 +62,7 @@ function createTickerItems(
     renderables.push({
       ...mover,
       key: `price-rise-${mover.id}`,
-      badge: `▲ £${(mover.value / 10).toFixed(1)}`,
+      badge: `⭡ £${(mover.value / 10).toFixed(1)}`,
       badgeTone: "rise",
     });
   });
@@ -94,7 +71,7 @@ function createTickerItems(
     renderables.push({
       ...mover,
       key: `price-fall-${mover.id}`,
-      badge: `▼ £${Math.abs(mover.value / 10).toFixed(1)}`,
+      badge: `⭣ £${Math.abs(mover.value / 10).toFixed(1)}`,
       badgeTone: "fall",
     });
   });

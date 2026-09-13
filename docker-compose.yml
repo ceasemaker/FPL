@@ -117,8 +117,12 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,django-web
+      - FPL_ANALYSIS_OUTPUT_DIR=/analysis/fpl_decision_backtest/output
+      - FPL_REPORT_DIR=/output/pdf
     volumes:
       - ./django_etl:/app
+      - ./analysis/fpl_decision_backtest:/analysis/fpl_decision_backtest:ro
+      - ./output/pdf:/output/pdf:ro
     entrypoint: ["/entrypoint.sh"]
     depends_on:
       - postgres

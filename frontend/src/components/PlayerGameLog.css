@@ -1,0 +1,40 @@
+.gamelog-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 14px; margin-bottom: 12px; }
+.gamelog-heading h3 { margin: 0 !important; }
+.gamelog-provenance { color: var(--aero-text-dim); font-size: .68rem; font-weight: 600; letter-spacing: .01em; }
+.gamelog-note { margin: -4px 0 10px; color: var(--aero-text-dim); font-size: .74rem; }
+.gamelog-empty { padding: 14px 0; color: var(--aero-text-dim); font-size: .8rem; }
+
+.percentile-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 22px; margin: 0; padding: 0; list-style: none; }
+.percentile-row { display: grid; grid-template-columns: 82px minmax(0, 1fr) 52px 44px; align-items: center; gap: 10px; min-width: 0; font-size: .76rem; }
+.percentile-label { color: var(--aero-text-dim); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.percentile-track { position: relative; height: 6px; overflow: hidden; border-radius: 3px; background: rgba(255,255,255,.07); }
+.percentile-fill { display: block; height: 100%; border-radius: 3px; background: var(--aero-text-dim); transition: width .3s ease; }
+.percentile-fill.high { background: var(--aero-lime); }
+.percentile-fill.mid { background: rgba(165,255,1,.45); }
+.percentile-value { color: var(--aero-text); font-variant-numeric: tabular-nums; text-align: right; }
+.percentile-pct { font-variant-numeric: tabular-nums; font-weight: 800; text-align: right; color: var(--aero-text-dim); }
+.percentile-pct.high { color: var(--aero-lime); }
+.percentile-pct.mid { color: var(--aero-text); }
+.percentile-pct small { margin-left: 1px; font-size: .6em; font-weight: 700; }
+
+.gamelog-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--aero-line); border-radius: 10px; }
+.gamelog-table { width: 100%; min-width: 980px; border-collapse: separate; border-spacing: 0; font-size: .74rem; font-variant-numeric: tabular-nums; }
+.gamelog-table th, .gamelog-table td { padding: 8px 9px; text-align: right; white-space: nowrap; line-height: 1.25; border-bottom: 1px solid var(--aero-line); }
+.gamelog-table thead th { position: sticky; top: 0; z-index: 2; background: #171818; color: var(--aero-text-dim); font-size: .64rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.gamelog-table tbody tr:last-child td { border-bottom: 0; }
+.gamelog-table tbody tr:hover td { background: rgba(255,255,255,.03); }
+.gamelog-table .sticky, .gamelog-table .sticky-2 { position: sticky; z-index: 1; text-align: left; background: #151616; }
+.gamelog-table .sticky { left: 0; width: 34px; font-weight: 800; color: var(--aero-text); }
+.gamelog-table .sticky-2 { left: 42px; min-width: 120px; box-shadow: 6px 0 10px -6px rgba(0,0,0,.6); }
+.gamelog-table thead .sticky, .gamelog-table thead .sticky-2 { z-index: 3; background: #171818; }
+.gamelog-table .fixture-cell { color: var(--aero-text-dim); }
+.gamelog-table .pts-cell { color: var(--aero-lime); font-weight: 800; }
+.gamelog-table .net-pos { color: var(--aero-lime); }
+.gamelog-table .net-neg { color: #f87171; }
+
+@media (max-width: 700px) {
+  .percentile-list { grid-template-columns: 1fr; }
+  .percentile-row { grid-template-columns: 74px minmax(0, 1fr) 46px 40px; gap: 8px; font-size: .72rem; }
+  .gamelog-table { font-size: .7rem; }
+  .gamelog-table th, .gamelog-table td { padding: 7px 7px; }
+}

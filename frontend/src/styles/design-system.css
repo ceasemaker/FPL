@@ -1,0 +1,295 @@
+/* AeroFPL design system — dark graphite + Spring Bud lime.
+ *
+ * Single source of truth for the tokens and primitives shared by the
+ * redesigned routes (Home, Players, Compare, Analyze Manager, Decision Lab,
+ * Price Monitor). Page stylesheets should reach for these variables and
+ * `.aero-*` primitives rather than re-declaring hex values.
+ */
+
+:root {
+  /* Graphite surfaces, darkest to lightest */
+  --aero-bg: #101011;
+  --aero-surface: #191919;
+  --aero-surface-raised: #1f2020;
+  --aero-surface-hover: #242424;
+
+  /* Borders */
+  --aero-line: #2e2f30;
+  --aero-line-strong: #3a3b3c;
+
+  /* Spring Bud lime accent */
+  --aero-lime: #a5ff01;
+  --aero-lime-dim: #78c800;
+  --aero-lime-wash: rgba(165, 255, 1, 0.12);
+
+  /* Status */
+  --aero-positive: #a5ff01;
+  --aero-negative: #ff4c5e;
+  --aero-warn: #e2b75b;
+
+  /* Text */
+  --aero-text: #ffffff;
+  --aero-text-dim: #b7b7b7;
+  --aero-text-muted: #8f8f8f;
+
+  /* Shape + depth */
+  --aero-radius: 16px;
+  --aero-radius-sm: 10px;
+  --aero-shadow: 0 14px 38px rgba(0, 0, 0, 0.22);
+
+  /* Fixture difficulty ramp, easiest to hardest */
+  --aero-fdr-1: #a5ff01;
+  --aero-fdr-2: #b8e986;
+  --aero-fdr-3: #95ae67;
+  --aero-fdr-4: #e2b75b;
+  --aero-fdr-5: #ff4c5e;
+}
+
+/* ---------------------------------------------------------------- layout */
+
+/* Page shell that sits beside the fixed 196px navigation rail. */
+.aero-page {
+  width: calc(100% - 196px);
+  margin-left: 196px;
+  min-height: 100vh;
+  padding: 22px 24px 40px;
+  background:
+    radial-gradient(circle at 68% 12%, rgba(165, 255, 1, 0.045), transparent 24%),
+    var(--aero-bg);
+  color: var(--aero-text);
+}
+
+.aero-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.aero-header h1 {
+  font-size: clamp(1.8rem, 2.6vw, 2.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+  margin: 0;
+}
+
+.aero-header p {
+  color: var(--aero-text-dim);
+  font-size: 0.95rem;
+  margin: 7px 0 0;
+  max-width: 62ch;
+}
+
+/* ----------------------------------------------------------------- cards */
+
+.aero-card {
+  border: 1px solid var(--aero-line-strong);
+  background: linear-gradient(145deg, #1b1c1c, #151616);
+  border-radius: var(--aero-radius);
+  box-shadow: var(--aero-shadow);
+  padding: 18px;
+}
+
+.aero-card-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.aero-card-title h2,
+.aero-card-title h3 {
+  font-size: 1.1rem;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.aero-card-title p {
+  font-size: 0.75rem;
+  color: var(--aero-text-muted);
+  margin: 4px 0 0;
+}
+
+/* --------------------------------------------------------------- controls */
+
+.aero-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--aero-text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.aero-input,
+.aero-select {
+  height: 42px;
+  padding: 0 12px;
+  border-radius: var(--aero-radius-sm);
+  border: 1px solid var(--aero-line-strong);
+  background: var(--aero-surface);
+  color: var(--aero-text);
+  font-size: 0.88rem;
+  font-family: inherit;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.aero-input:focus-visible,
+.aero-select:focus-visible,
+.aero-button:focus-visible {
+  outline: 2px solid var(--aero-lime);
+  outline-offset: 2px;
+}
+
+.aero-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 18px;
+  border-radius: var(--aero-radius-sm);
+  border: 1px solid var(--aero-line-strong);
+  background: var(--aero-surface-raised);
+  color: var(--aero-text);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.aero-button:hover:not(:disabled) {
+  background: var(--aero-surface-hover);
+  border-color: var(--aero-line-strong);
+}
+
+.aero-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.aero-button.primary {
+  background: linear-gradient(100deg, #b8ff37, #8fe800);
+  border-color: transparent;
+  color: #101011;
+  font-weight: 700;
+}
+
+.aero-button.primary:hover:not(:disabled) {
+  background: linear-gradient(100deg, #c6ff5c, #9dff0a);
+}
+
+.aero-button.ghost {
+  background: transparent;
+}
+
+/* ------------------------------------------------------------ small bits */
+
+.aero-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--aero-line-strong);
+  background: var(--aero-surface-raised);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--aero-text-dim);
+}
+
+.aero-chip.accent {
+  border-color: transparent;
+  background: var(--aero-lime-wash);
+  color: var(--aero-lime);
+}
+
+.aero-eyebrow {
+  color: var(--aero-lime);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* Fixture difficulty pill. `data-fdr` carries the 1-5 rating. */
+.aero-fdr {
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 7px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #101011;
+  background: var(--aero-line-strong);
+}
+
+.aero-fdr[data-fdr="1"] { background: var(--aero-fdr-1); }
+.aero-fdr[data-fdr="2"] { background: var(--aero-fdr-2); }
+.aero-fdr[data-fdr="3"] { background: var(--aero-fdr-3); }
+.aero-fdr[data-fdr="4"] { background: var(--aero-fdr-4); }
+.aero-fdr[data-fdr="5"] { background: var(--aero-fdr-5); color: #fff; }
+
+.aero-positive { color: var(--aero-positive); }
+.aero-negative { color: var(--aero-negative); }
+
+/* --------------------------------------------------------------- states */
+
+/* Honest empty/stale messaging — used wherever a snapshot cannot be shown
+ * as current. Never hide a mismatch behind a plausible-looking number. */
+.aero-note,
+.aero-empty {
+  color: var(--aero-text-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.aero-note {
+  border: 1px solid var(--aero-line-strong);
+  border-left: 3px solid var(--aero-warn);
+  border-radius: var(--aero-radius-sm);
+  background: var(--aero-surface);
+  padding: 11px 14px;
+}
+
+.aero-loading {
+  color: var(--aero-text-muted);
+  font-size: 0.85rem;
+  padding: 28px 0;
+}
+
+.aero-error {
+  border: 1px solid rgba(255, 76, 94, 0.4);
+  border-radius: var(--aero-radius-sm);
+  background: rgba(255, 76, 94, 0.08);
+  color: #ffb4bc;
+  font-size: 0.85rem;
+  padding: 14px 16px;
+}
+
+/* ------------------------------------------------------------ responsive */
+
+@media (max-width: 1050px) {
+  .aero-page {
+    width: calc(100% - 86px);
+    margin-left: 86px;
+  }
+}
+
+@media (max-width: 720px) {
+  .aero-page {
+    width: 100%;
+    margin: 0;
+    padding: 82px 14px 28px;
+  }
+}

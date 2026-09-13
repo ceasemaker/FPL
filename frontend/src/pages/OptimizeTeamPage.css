@@ -11,14 +11,17 @@
 }
 
 .optimizer-action {
-  background: linear-gradient(135deg, rgba(22, 242, 255, 0.8), rgba(79, 70, 229, 0.9));
-  border: none;
-  color: #020617;
-  padding: 0.75rem 1.4rem;
-  border-radius: 999px;
+  background: var(--accent-blue);
+  border: 1px solid transparent;
+  color: #000;
+  padding: 0.6rem 1.25rem;
+  border-radius: 4px; /* Sharper */
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .optimizer-action:disabled {
@@ -28,8 +31,9 @@
 }
 
 .optimizer-action:not(:disabled):hover {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 24px rgba(22, 242, 255, 0.25);
+  transform: translateY(1px);
+  background: #00d4eb; /* slightly darker neon cyan */
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
 }
 
 .optimizer-controls {
@@ -49,13 +53,23 @@
   letter-spacing: 0.08em;
 }
 
-.optimizer-field input {
-  background: rgba(8, 12, 30, 0.8);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 12px;
-  padding: 0.7rem 0.9rem;
+.optimizer-field input,
+.optimizer-field select {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px; /* Sharper */
+  padding: 0.6rem 0.8rem;
   color: var(--text-primary);
-  font-size: 1rem;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.optimizer-field input:focus,
+.optimizer-field select:focus {
+  outline: none;
+  border-color: var(--accent-green);
+  background: var(--bg-secondary);
+  box-shadow: 0 0 0 3px rgba(0, 220, 130, 0.25);
 }
 
 .optimizer-toggle {
@@ -74,9 +88,9 @@
   margin-top: 1.2rem;
   padding: 0.75rem 1rem;
   border-radius: 12px;
-  border: 1px solid rgba(248, 113, 113, 0.4);
+  border-left: 4px solid var(--accent-red);
   background: rgba(127, 29, 29, 0.4);
-  color: #fecaca;
+  color: #ffffff;
 }
 
 .optimizer-results {
@@ -189,6 +203,267 @@
   color: var(--accent-cyan);
 }
 
+/* GW Tabs */
+.gw-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.gw-tab {
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+.gw-tab:hover {
+  border-color: var(--accent-blue);
+}
+
+.gw-tab.active {
+  background: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: #000;
+}
+
+/* GW Panel */
+.gw-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Chip Badges */
+.chip-badges {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.chip-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  background: rgba(0, 220, 130, 0.2);
+  border: 1px solid rgba(0, 220, 130, 0.5);
+  color: #00dc82;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Transfer Panel */
+.transfer-panel {
+  display: flex;
+  align-items: stretch;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(15, 23, 42, 0.6);
+  flex-wrap: wrap;
+}
+
+.transfer-section {
+  flex: 1;
+  min-width: 200px;
+}
+
+.transfer-section h3 {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.transfer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0.75rem;
+}
+
+.transfer-out,
+.transfer-in {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 2px solid;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.transfer-out {
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.transfer-in {
+  border-color: rgba(34, 197, 94, 0.5);
+}
+
+.transfer-out img,
+.transfer-in img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.transfer-info {
+  text-align: center;
+  width: 100%;
+}
+
+.transfer-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
+
+.transfer-cost {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.no-transfers {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.9rem;
+}
+
+.transfer-arrow {
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  min-width: 2rem;
+}
+
+.transfer-summary {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.paid-transfer-warning {
+  color: #fecaca;
+  font-weight: 600;
+}
+
+/* Squad Sections */
+.squad-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.squad-section h3 {
+  margin: 0;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+}
+
+.squad-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 1rem;
+}
+
+.squad-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(8, 12, 30, 0.85);
+  transition: all 0.2s ease;
+}
+
+.squad-card:hover {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 12px rgba(0, 220, 130, 0.2);
+}
+
+.squad-card.bench {
+  opacity: 0.7;
+}
+
+.card-image {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.captain-crown {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  font-size: 1.5rem;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fbbf24;
+}
+
+.card-info {
+  text-align: center;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.card-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
+
+.card-meta {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.card-cost {
+  font-size: 0.8rem;
+  color: var(--accent-cyan);
+  font-weight: 600;
+}
+
 @media (max-width: 768px) {
   .optimizer-header {
     flex-direction: column;
@@ -198,4 +473,208 @@
   .optimizer-action {
     width: 100%;
   }
+
+  .transfer-panel {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .transfer-arrow {
+    display: none;
+  }
+
+  .squad-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 0.75rem;
+  }
+}
+
+/* ======================================================================
+ * Optimiser panel inside Decision Lab — graphite/Spring Bud pass.
+ * Scoped to `.optimizer-panel` so it only applies in its new home.
+ * ====================================================================== */
+
+.optimizer-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.optimizer-panel .glow-card {
+  border: 1px solid var(--aero-line-strong);
+  border-radius: var(--aero-radius);
+  background: linear-gradient(145deg, #1b1c1c, #151616);
+  box-shadow: var(--aero-shadow);
+  overflow: hidden;
+}
+
+.optimizer-panel .glow-card-content {
+  padding: 18px;
+}
+
+.optimizer-panel .section-title {
+  font-size: 1.08rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--aero-text);
+}
+
+.optimizer-panel .section-subtitle {
+  margin: 5px 0 0;
+  font-size: 0.78rem;
+  color: var(--aero-text-muted);
+  max-width: 68ch;
+}
+
+.optimizer-panel .optimizer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.optimizer-panel .optimizer-action {
+  height: 42px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: var(--aero-radius-sm);
+  background: linear-gradient(100deg, #b8ff37, #8fe800);
+  color: #101011;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+}
+
+.optimizer-panel .optimizer-action:not(:disabled):hover {
+  background: linear-gradient(100deg, #c6ff5c, #9dff0a);
+}
+
+.optimizer-panel .optimizer-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.optimizer-panel .optimizer-field > span,
+.optimizer-panel .optimizer-toggle {
+  color: var(--aero-text-muted);
+}
+
+.optimizer-panel .optimizer-field input,
+.optimizer-panel .optimizer-field select {
+  background: var(--aero-surface);
+  border: 1px solid var(--aero-line-strong);
+  border-radius: var(--aero-radius-sm);
+  color: var(--aero-text);
+  font-family: inherit;
+}
+
+.optimizer-panel .optimizer-field input:focus-visible,
+.optimizer-panel .optimizer-field select:focus-visible {
+  outline: 2px solid var(--aero-lime);
+  outline-offset: 2px;
+  border-color: transparent;
+}
+
+.optimizer-panel .optimizer-toggle input {
+  accent-color: var(--aero-lime);
+}
+
+.optimizer-panel .optimizer-error {
+  border-color: rgba(255, 76, 94, 0.4);
+  background: rgba(255, 76, 94, 0.08);
+  color: #ffb4bc;
+}
+
+.optimizer-panel .gw-tabs button {
+  background: var(--aero-surface);
+  border: 1px solid var(--aero-line-strong);
+  color: var(--aero-text-dim);
+}
+
+.optimizer-panel .gw-tabs button.active {
+  background: var(--aero-lime-wash);
+  border-color: transparent;
+  color: var(--aero-lime);
+}
+
+.optimizer-panel .chip-badge,
+.optimizer-panel .transfer-arrow {
+  color: var(--aero-lime);
+}
+
+.optimizer-panel .transfer-in {
+  border-color: rgba(165, 255, 1, 0.35);
+  background: rgba(165, 255, 1, 0.08);
+}
+
+.optimizer-panel .transfer-out {
+  border-color: rgba(255, 76, 94, 0.35);
+  background: rgba(255, 76, 94, 0.07);
+}
+
+.optimizer-panel .summary-metrics > div,
+.optimizer-panel .squad-card {
+  border: 1px solid var(--aero-line);
+  border-radius: var(--aero-radius-sm);
+  background: var(--aero-surface);
+}
+
+.optimizer-panel .optimizer-provenance {
+  margin-bottom: 16px;
+}
+
+/* `auto-fit` collapses the four metric tiles into one narrow column whenever
+ * the flex row leaves them little space; give them a fixed four-up grid that
+ * spans the full width instead. */
+.optimizer-panel .optimizer-summary {
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.optimizer-panel .summary-metrics {
+  flex: 1 1 100%;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.optimizer-panel .summary-metrics strong {
+  font-size: 1.2rem;
+}
+
+@media (max-width: 720px) {
+  .optimizer-panel .summary-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.optimizer-panel .transfer-panel {
+  border-color: var(--aero-line);
+  background: var(--aero-surface);
+}
+
+.optimizer-panel .transfer-section h4,
+.optimizer-panel .position-group h4,
+.optimizer-panel .no-transfers {
+  color: var(--aero-text-muted);
+}
+
+.optimizer-panel .squad-card {
+  border: 1px solid var(--aero-line);
+  background: linear-gradient(165deg, #202220, #171818);
+}
+
+.optimizer-panel .card-name {
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.optimizer-panel .card-meta,
+.optimizer-panel .card-cost {
+  font-size: 0.62rem;
+  color: var(--aero-text-muted);
 }

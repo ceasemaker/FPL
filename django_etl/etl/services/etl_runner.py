@@ -15,13 +15,19 @@ from django.utils.dateparse import parse_date, parse_datetime
 
 from ..models import (
     Athlete,
+    AthletePrediction,
     AthleteStat,
     ElementSummary,
     EventStatus,
     Fixture,
+    PriceSnapshot,
     RawEndpointSnapshot,
     SetPieceNote,
     Team,
+    Top100Manager,
+    Top100Pick,
+    Top100Summary,
+    Top100Transfer,
 )
 from .fpl_client import FPLClient
 
@@ -68,10 +74,143 @@ def _store_snapshot(endpoint: str, payload: object, identifier: str | None = Non
     RawEndpointSnapshot.objects.create(endpoint=endpoint, identifier=identifier, payload=payload)
 
 
+def _season_start_year(events_payload: Sequence[dict]) -> int | None:
+    """Return the calendar year the incoming season starts in.
+
+    FPL seasons always open in the northern-hemisphere summer, so the earliest
+    event deadline uniquely identifies the season without needing an extra
+    endpoint or a stored marker.
+    """
+    deadlines = [
+        parsed
+        for parsed in (_parse_datetime(event.get("deadline_time")) for event in events_payload)
+        if parsed is not None
+    ]
+    if not deadlines:
+        return None
+    return min(deadlines).year
+
+
+def _stored_season_start_year() -> int | None:
+    """Return the season year currently represented by persisted fixtures."""
+    earliest = (
+        Fixture.objects.exclude(kickoff_time=None)
+        .order_by("kickoff_time")
+        .values_list("kickoff_time", flat=True)
+        .first()
+    )
+    if earliest is None:
+        return None
+    return earliest.year
+
+
+def _purge_previous_season() -> None:
+    """Drop per-gameweek rows that belong to the season being replaced.
+
+    Team and athlete integer IDs are reused across seasons, so per-gameweek
+    tables keyed on those IDs would otherwise silently re-attribute last
+    season's numbers to whoever now holds the ID. Bootstrap-derived tables
+    (teams, athletes, fixtures) are fully rewritten by the sync functions and
+    are deliberately left alone so foreign keys stay valid.
+    """
+    logger.warning("Season rollover detected - clearing previous-season gameweek data")
+    AthleteStat.objects.all().delete()
+    ElementSummary.objects.all().delete()
+    EventStatus.objects.all().delete()
+    PriceSnapshot.objects.all().delete()
+    AthletePrediction.objects.all().delete()
+    # Top 100 tables are gameweek-scoped snapshots of other managers' squads;
+    # keeping them would surface last season's template as if it were current.
+    Top100Pick.objects.all().delete()
+    Top100Transfer.objects.all().delete()
+    Top100Summary.objects.all().delete()
+    Top100Manager.objects.all().delete()
+
+
+def _latest_played_gameweek(events_payload: Sequence[dict]) -> int | None:
+    """Highest gameweek that has actually kicked off, per the live bootstrap."""
+    played = [
+        event["id"]
+        for event in events_payload
+        if event.get("id") and (event.get("finished") or event.get("is_current"))
+    ]
+    if played:
+        return max(played)
+    # Pre-season: deadlines exist but nothing has been played yet.
+    return 0 if events_payload else None
+
+
+def _prune_unplayed_gameweeks(events_payload: Sequence[dict]) -> int:
+    """Delete per-gameweek rows for gameweeks that have not been played.
+
+    A gameweek that has not kicked off cannot legitimately hold statistics, so
+    anything found there is left over from a previous season whose IDs have
+    since been reassigned. Unlike the season-year check this is idempotent and
+    self-healing: it repairs a database that rolled over before the guard
+    existed, and it is a no-op during a normal in-season refresh.
+    """
+    latest_played = _latest_played_gameweek(events_payload)
+    if latest_played is None:
+        return 0
+
+    stale_stats = AthleteStat.objects.filter(game_week__gt=latest_played)
+    stale_predictions = AthletePrediction.objects.filter(game_week__gt=latest_played)
+    stale_picks = Top100Pick.objects.filter(game_week__gt=latest_played)
+    stale_transfers = Top100Transfer.objects.filter(game_week__gt=latest_played)
+    stale_summaries = Top100Summary.objects.filter(game_week__gt=latest_played)
+    stale_managers = Top100Manager.objects.filter(game_week__gt=latest_played)
+    stale_events = EventStatus.objects.filter(event__gt=latest_played)
+
+    removed = 0
+    for queryset in (
+        stale_stats,
+        stale_predictions,
+        stale_picks,
+        stale_transfers,
+        stale_summaries,
+        stale_managers,
+        stale_events,
+    ):
+        removed += queryset.delete()[0]
+
+    if removed:
+        logger.warning(
+            "Removed %s rows for gameweeks above the latest played gameweek %s",
+            removed,
+            latest_played,
+        )
+    return removed
+
+
+def _handle_season_rollover(events_payload: Sequence[dict]) -> bool:
+    """Purge season-scoped data when the incoming bootstrap is a new season."""
+    incoming_year = _season_start_year(events_payload)
+    stored_year = _stored_season_start_year()
+    if incoming_year is None or stored_year is None or incoming_year == stored_year:
+        return False
+    logger.info(
+        "Bootstrap season start year %s differs from stored %s", incoming_year, stored_year
+    )
+    _purge_previous_season()
+    return True
+
+
 def _sync_teams(teams_payload: Sequence[dict]) -> None:
+    # FPL reassigns the small 1..20 team IDs when promoted/relegated clubs enter
+    # a new season, while ``code`` remains the stable club identifier. Clear a
+    # stale row's code before updating the newly assigned ID so season rollover
+    # cannot violate the unique constraint and abort the entire refresh.
+    incoming_ids = {team_data["id"] for team_data in teams_payload}
+    Team.objects.exclude(id__in=incoming_ids).update(unavailable=True)
     for team_data in teams_payload:
+        team_code = team_data.get("code")
+        if team_code is not None:
+            Team.objects.filter(code=team_code).exclude(id=team_data["id"]).update(
+                code=None,
+                unavailable=True,
+            )
         defaults = {
-            "code": team_data.get("code"),
+            "code": team_code,
             "name": team_data.get("name"),
             "short_name": team_data.get("short_name"),
             "strength": team_data.get("strength"),
@@ -122,13 +261,36 @@ def _sync_athletes(athletes_payload: Sequence[dict]) -> None:
         "clean_sheets_per_90",
     }
 
+    incoming_ids = {athlete_data["id"] for athlete_data in athletes_payload}
+    Athlete.objects.exclude(id__in=incoming_ids).update(removed=True)
+
     for athlete_data in athletes_payload:
+        athlete_id = athlete_data["id"]
+        athlete_code = athlete_data.get("code")
+        if athlete_code is None:
+            # ``code`` is NOT NULL, so inserting would abort the whole atomic
+            # pass. Losing one malformed element beats losing the refresh.
+            logger.warning("Skipping athlete %s with no stable code", athlete_id)
+            continue
+        # ``code`` is the stable cross-season player identifier while ``id`` is
+        # reassigned each season. A player who kept their code but moved to a
+        # new ID would collide with the stale row, so retire that row first.
+        conflicting = Athlete.objects.filter(code=athlete_code).exclude(id=athlete_id).first()
+        if conflicting is not None:
+            temporary_code = -abs(int(athlete_code))
+            while Athlete.objects.filter(code=temporary_code).exclude(id=conflicting.id).exists():
+                temporary_code -= 1
+            conflicting.code = temporary_code
+            conflicting.removed = True
+            conflicting.has_temporary_code = True
+            conflicting.save(update_fields=["code", "removed", "has_temporary_code", "updated_at"])
+
         defaults: dict[str, object | None] = {
             "can_transact": athlete_data.get("can_transact"),
             "can_select": athlete_data.get("can_select"),
             "chance_of_playing_next_round": athlete_data.get("chance_of_playing_next_round"),
             "chance_of_playing_this_round": athlete_data.get("chance_of_playing_this_round"),
-            "code": athlete_data.get("code"),
+            "code": athlete_code,
             "cost_change_event": athlete_data.get("cost_change_event", 0),
             "cost_change_event_fall": athlete_data.get("cost_change_event_fall", 0),
             "cost_change_start": athlete_data.get("cost_change_start", 0),
@@ -212,7 +374,38 @@ def _sync_athletes(athletes_payload: Sequence[dict]) -> None:
         for field in decimal_fields:
             defaults[field] = _to_decimal(athlete_data.get(field))
 
-        Athlete.objects.update_or_create(id=athlete_data["id"], defaults=defaults)
+        Athlete.objects.update_or_create(id=athlete_id, defaults=defaults)
+
+
+def _snapshot_prices(athletes_payload: Sequence[dict]) -> None:
+    """
+    Create a lightweight price snapshot for each athlete.
+    This replaces the need to load full RawEndpointSnapshot JSON blobs.
+    """
+    snapshot_time = timezone.now()
+    snapshots_to_create = []
+
+    for athlete_data in athletes_payload:
+        athlete_id = athlete_data.get("id")
+        if not athlete_id:
+            continue
+
+        snapshot = PriceSnapshot(
+            athlete_id=athlete_id,
+            snapshot_time=snapshot_time,
+            cost=athlete_data.get("now_cost", 0),
+            transfers_in_total=athlete_data.get("transfers_in", 0),
+            transfers_out_total=athlete_data.get("transfers_out", 0),
+            transfers_in_event=athlete_data.get("transfers_in_event", 0),
+            transfers_out_event=athlete_data.get("transfers_out_event", 0),
+            total_points=athlete_data.get("total_points", 0),
+            form=str(athlete_data.get("form", "0.0")),
+            selected_by_percent=str(athlete_data.get("selected_by_percent", "0.0")),
+        )
+        snapshots_to_create.append(snapshot)
+
+    # Bulk create with ignore_conflicts to handle duplicate snapshot times
+    PriceSnapshot.objects.bulk_create(snapshots_to_create, ignore_conflicts=True)
 
 
 def _sync_fixtures(fixtures_payload: Sequence[dict]) -> None:
@@ -250,6 +443,63 @@ def _sync_element_summary(player_id: int, payload: dict) -> None:
         "history_past": payload.get("history_past", []),
     }
     ElementSummary.objects.update_or_create(athlete=athlete, defaults=defaults)
+
+
+def gameweek_context_from_history(history: list, valid_fixtures: set[tuple[int, int]] | None = None) -> dict[int, dict]:
+    """
+    Collapse element-summary `history` (one row per fixture) into one as-of
+    record per gameweek. `selected` and `value` are deadline snapshots and are
+    identical across a double gameweek's rows; transfers are per-round totals
+    repeated on each row, so they are taken once rather than summed.
+
+    When `valid_fixtures` is given, a row is only trusted if its
+    (fixture, round) pair is a fixture of the current season — summaries for
+    departed players can still carry last season's history.
+    """
+    by_round: dict[int, dict] = {}
+    for row in history or []:
+        round_no = row.get("round")
+        if not round_no or round_no in by_round:
+            continue
+        if valid_fixtures is not None and (row.get("fixture"), round_no) not in valid_fixtures:
+            continue
+        by_round[int(round_no)] = {
+            "selected": row.get("selected"),
+            "transfers_in": row.get("transfers_in"),
+            "transfers_out": row.get("transfers_out"),
+            "value": row.get("value"),
+        }
+    return by_round
+
+
+def current_season_fixture_keys() -> set[tuple[int, int]]:
+    return set(Fixture.objects.exclude(event=None).values_list("id", "event"))
+
+
+def sync_gameweek_context(
+    athlete: Athlete,
+    history: list,
+    valid_fixtures: set[tuple[int, int]] | None = None,
+) -> int:
+    """
+    Write per-gameweek ownership/transfer/price context onto existing
+    AthleteStat rows. Update-only: event-live decides which gameweeks exist, so
+    this never manufactures a stat row for a gameweek that has not been played.
+    """
+    if valid_fixtures is None:
+        valid_fixtures = current_season_fixture_keys()
+    updated = 0
+    for round_no, context in gameweek_context_from_history(history, valid_fixtures).items():
+        updated += AthleteStat.objects.filter(athlete=athlete, game_week=round_no).update(**context)
+    return updated
+
+
+def _sync_gameweek_context_for_elements(element_ids: Iterable[int]) -> None:
+    """Runs after event-live so the AthleteStat rows to enrich already exist."""
+    valid_fixtures = current_season_fixture_keys()
+    summaries = ElementSummary.objects.filter(athlete_id__in=list(element_ids)).select_related("athlete")
+    for summary in summaries.iterator():
+        sync_gameweek_context(summary.athlete, summary.history, valid_fixtures)
 
 
 def _sync_event_live(event_id: int, payload: dict) -> None:
@@ -305,7 +555,9 @@ def _sync_event_live(event_id: int, payload: dict) -> None:
 
 def _sync_event_status(payload: dict) -> None:
     for status in payload.get("status", []):
-        status_value = status.get("status")
+        # The endpoint reports the per-day state under `points` ("r" results,
+        # "l" live, "p" provisional); older payloads used `status`.
+        status_value = status.get("status") or status.get("points")
         if not status_value:
             logger.debug("Skipping event status entry without status value: %s", status)
             continue
@@ -344,6 +596,10 @@ def run_single_pass(client: FPLClient, config: PipelineConfig) -> None:
     if config.snapshot_payloads:
         _store_snapshot("bootstrap-static", bootstrap)
 
+    events_payload = bootstrap.get("events", [])
+    _handle_season_rollover(events_payload)
+    _prune_unplayed_gameweeks(events_payload)
+
     teams_payload = bootstrap.get("teams", [])
     _sync_teams(teams_payload)
 
@@ -352,8 +608,9 @@ def run_single_pass(client: FPLClient, config: PipelineConfig) -> None:
         elements_payload = elements_payload[: config.player_limit]
         logger.info("Limiting element processing to first %s players", config.player_limit)
     _sync_athletes(elements_payload)
+    _snapshot_prices(elements_payload)
 
-    events = [event.get("id") for event in bootstrap.get("events", []) if event.get("id")]
+    events = [event.get("id") for event in events_payload if event.get("id")]
 
     fixtures_payload = client.get_fixtures()
     if config.snapshot_payloads:
@@ -380,6 +637,10 @@ def run_single_pass(client: FPLClient, config: PipelineConfig) -> None:
         if config.snapshot_payloads:
             _store_snapshot("event-live", event_live_payload, identifier=str(event_id))
         _sync_event_live(event_id, event_live_payload)
+
+    _sync_gameweek_context_for_elements(
+        athlete_data.get("id") for athlete_data in elements_payload if athlete_data.get("id")
+    )
 
     event_status_payload = client.get_event_status()
     if config.snapshot_payloads:

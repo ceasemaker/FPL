@@ -1,0 +1,328 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=23mm,headheight=15pt]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,tabularx,array}
+\usepackage[dvipsnames,table]{xcolor}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{titlesec}
+
+\definecolor{Navy}{HTML}{132238}
+\definecolor{Blue}{HTML}{1D4ED8}
+\definecolor{Green}{HTML}{15803D}
+\definecolor{Amber}{HTML}{B45309}
+\definecolor{Red}{HTML}{B91C1C}
+\definecolor{LightBlue}{HTML}{EFF6FF}
+\definecolor{LightGray}{HTML}{F3F4F6}
+\definecolor{MidGray}{HTML}{64748B}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=Navy,
+  urlcolor=Blue,
+  pdftitle={FPL Player Decision Workbench},
+  pdfauthor={FPL Quantitative Decision System}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{FPL Player Decision Workbench}
+\rhead{Research Note}
+\cfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\titleformat{\section}{\Large\bfseries\color{Navy}}{\thesection}{0.7em}{}
+\titleformat{\subsection}{\large\bfseries\color{Navy}}{\thesubsection}{0.7em}{}
+\setlist{nosep,leftmargin=1.5em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.65em}
+\renewcommand{\arraystretch}{1.18}
+
+\newcommand{\xp}{\widehat{\mathrm{xP}}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\pass}{\textcolor{Green}{\textbf{Passed}}}
+\newcommand{\research}{\textcolor{Amber}{\textbf{Research}}}
+\newcommand{\fail}{\textcolor{Red}{\textbf{Not approved}}}
+
+\begin{document}
+
+\pagenumbering{gobble}
+\begin{titlepage}
+\pagecolor{Navy}
+\color{white}
+\vspace*{24mm}
+{\Huge\bfseries FPL Player\\Decision Workbench\par}
+\vspace{8mm}
+{\LARGE A transparent model for player value, risk, differentials, and captaincy\par}
+\vspace{18mm}
+{\large Research note accompanying the editable Excel workbench\par}
+\vfill
+\begin{tabular}{@{}ll@{}}
+Snapshot date: & 4 September 2026\\
+Decision horizon: & Gameweeks 3--5\\
+Coverage: & 652 players; 1,956 player-gameweek rows\\
+Manager entry: & 576154\\
+Status: & Decision support; optimizer not approved\\
+\end{tabular}
+\vspace{18mm}
+\end{titlepage}
+\nopagecolor
+\color{black}
+
+\pagenumbering{roman}
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+
+\section{Executive Summary}
+
+The model is now exposed as an auditable Excel workbench rather than hidden behind a single recommendation. Any player can be selected and compared with another player. Every headline number can be traced through expected minutes, market-implied team strength, Poisson goal and assist rates, clean-sheet probability, FPL scoring, ownership, price, and editable assumptions.
+
+The historical evidence supports using the stacked forecast to improve \emph{mean player valuation}. It does not yet support allowing the optimizer to make transfers automatically. Weekly top-five selection remains statistically inconclusive. The three-gameweek signal is promising, but has not passed every promotion gate.
+
+The correct present posture is therefore simple: use the model to discipline judgment, not replace it.
+
+\begin{center}
+\rowcolors{2}{LightGray}{white}
+\begin{tabularx}{0.94\textwidth}{>{\bfseries}l X l}
+\toprule
+Layer & Interpretation & Status\\
+\midrule
+Player valuation & Transparent component xP for every available player & \pass\\
+Outcome risk & Minutes, availability, return, and multi-return probabilities & \research\\
+Rank exposure & Differential upside and ownership-based omission risk & \research\\
+Three-week view & Weighted GW3--5 comparison & \research\\
+Transfer optimizer & Historical promotion rule not met & \fail\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{What the Workbook Contains}
+
+The workbook has eight tabs:
+
+\begin{enumerate}
+  \item \textbf{Read Me}: purpose, limitations, and workflow.
+  \item \textbf{Player Explorer}: two-player dropdown comparison and a focus gameweek selector.
+  \item \textbf{Player Model}: raw inputs and the complete formula chain for every player-gameweek.
+  \item \textbf{Fixture Odds}: consensus 1X2 odds, no-vig probabilities, and fitted team goal means.
+  \item \textbf{European Schedule}: the downloaded partial Champions League schedule.
+  \item \textbf{Assumptions}: editable yellow cells for priors, minutes, congestion, and horizon weights.
+  \item \textbf{Model Audit}: the historical authority gate and live workbook checks.
+  \item \textbf{Player List}: the dropdown source with FPL IDs to disambiguate names.
+\end{enumerate}
+
+The raw model columns are shaded blue and calculated columns green. This separation is deliberate: it should always be possible to tell whether a number was observed, imported, assumed, or derived.
+
+\section{What ``True Value'' Means}
+
+There is no directly observable true value for a player before a match. The model estimates a latent expected FPL contribution:
+
+\begin{equation}
+\xp_{i,g}
+= \xp^{app}_{i,g}
++ \xp^{goal}_{i,g}
++ \xp^{assist}_{i,g}
++ \xp^{CS}_{i,g}
++ \xp^{save}_{i,g}
++ \xp^{bonus}_{i,g}
++ \xp^{DC}_{i,g}
+- \xp^{cards}_{i,g}.
+\end{equation}
+
+The workbook shows each term separately. It then presents four different notions of value:
+
+\begin{align}
+\text{football value}_{i,g} &= \xp_{i,g},\\
+\text{budget efficiency}_{i,g} &= \frac{\xp_{i,g}}{\text{price}_{i}},\\
+\text{differential upside}_{i,g} &= \xp_{i,g}(1-o_i),\\
+\text{omission risk}_{i,g} &= \xp_{i,g}o_i,
+\end{align}
+
+where $o_i$ is ownership. Ownership does not change the football forecast. It changes the rank consequences of being right or wrong. Effective ownership by rank tier would be preferable to headline ownership once that data is available.
+
+\subsection{Three-gameweek value}
+
+The primary decision horizon uses
+
+\begin{equation}
+\xp^{3GW}_i = \xp_{i,g}+0.90\xp_{i,g+1}+0.81\xp_{i,g+2}.
+\end{equation}
+
+This favours nearer information without pretending that weeks two and three do not matter. The weights are editable.
+
+\section{Probability Model}
+
+\subsection{Team goal environment}
+
+For gameweeks with market data, an independent Poisson score model is fitted to no-vig home, draw, and away probabilities. This produces team means $\lambda_H$ and $\lambda_A$ satisfying the observed 1X2 market as closely as possible.
+
+The market transformation is useful but incomplete. A 1X2 market identifies match superiority more directly than the total scoring environment. Over/under and both-teams-to-score prices should therefore be added when a reliable free source is available. Where a market is absent, the workbook uses an explicitly labelled fixture-difficulty fallback.
+
+\subsection{Player goal and assist means}
+
+Raw per-90 rates are shrunk toward position priors:
+
+\begin{equation}
+r^{shrunk}_{i}
+= \frac{x_i+M_0r_{pos}/90}{m_i+M_0},
+\end{equation}
+
+where $x_i$ is the cumulative event total, $m_i$ is observed minutes, $r_{pos}$ is the position prior, and $M_0=450$ prior minutes. Shrinkage is essential after only two league matches; unregularised early-season rates would mostly measure noise.
+
+Expected player goal and assist counts are allocated from the team mean using each player's shrunk attacking weight and expected minutes. These become the Poisson means $\lambda_{goal}$ and $\lambda_{assist}$.
+
+If
+
+\begin{equation}
+\lambda_{attack}=\lambda_{goal}+\lambda_{assist},
+\end{equation}
+
+then the workbook reports
+
+\begin{align}
+\Prob(\text{at least one return})
+  &=1-e^{-\lambda_{attack}},\\
+\Prob(\text{two or more returns})
+  &=1-e^{-\lambda_{attack}}(1+\lambda_{attack}).
+\end{align}
+
+The second quantity is a multi-return proxy, not a complete haul model. A true FPL haul distribution must also incorporate appearance points, clean sheets, bonus, cards, saves, and the dependence between goals and bonus.
+
+\subsection{Clean sheets}
+
+Under the opponent Poisson model,
+
+\begin{equation}
+\Prob(CS)=e^{-\lambda_{opp}}.
+\end{equation}
+
+The expected clean-sheet points are multiplied by the player's probability of reaching 60 minutes. This is important because a team clean sheet does not guarantee the player's eligibility for clean-sheet points.
+
+\section{Minutes, Availability, and Schedule Risk}
+
+Minutes are modelled separately from production. The workbook estimates:
+
+\begin{itemize}
+  \item probability of starting;
+  \item probability of appearing as a substitute;
+  \item expected minutes conditional on starting;
+  \item probability of reaching 60 minutes;
+  \item official availability; and
+  \item an editable European-congestion multiplier.
+\end{itemize}
+
+A player cannot score FPL points while off the pitch, so multiplying event rates by a realistic minute distribution is preferable to treating ``per 90'' as a prediction.
+
+European scheduling remains partly a judgment layer. The downloaded Champions League page is partial, injuries cannot be predicted from the fixture list, and managers rotate asymmetrically. The multiplier is therefore visible and editable rather than presented as settled truth.
+
+\section{Worked Example: Haaland versus Bruno, GW3}
+
+\begin{center}
+\rowcolors{2}{LightGray}{white}
+\begin{tabular}{lrr}
+\toprule
+Metric & Haaland & Bruno Fernandes\\
+\midrule
+Expected points & 5.92 & 5.16\\
+Expected minutes & 76.44 & 81.70\\
+Team goal mean & 3.00 & 1.41\\
+Player goal mean & 0.703 & 0.244\\
+Player assist mean & 0.123 & 0.148\\
+Return probability & 56.2\% & 32.4\%\\
+Two-or-more-return proxy & 20.1\% & 5.9\%\\
+xP per \pounds1m & 0.382 & 0.430\\
+Differential upside & 1.66 & 2.66\\
+Omission risk & 4.26 & 2.50\\
+Weighted GW3--5 xP & 14.23 & 13.63\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The interpretation is nuanced rather than contradictory. Haaland is the stronger immediate captain and the larger risk not to own. Bruno is more budget-efficient and offers more differential upside because his ownership is lower. ``Best player,'' ``best value,'' and ``best differential'' should not be collapsed into one score.
+
+\subsection{Triple-captain interpretation}
+
+Normal captaincy adds one extra copy of the selected player's score. Triple captain adds two extra copies. Therefore the incremental value of the chip over normal captaincy is simply
+
+\begin{equation}
+\Delta \xp^{TC}_{i,g}=\xp_{i,g}.
+\end{equation}
+
+The current model assigns Haaland approximately 5.92 incremental expected points above normal captaincy in GW3. In the workbook's editable example, a hypothetical future fixture worth 9.14 xP beats using the chip now only if Haaland has at least
+
+\begin{equation}
+\frac{5.92}{9.14}=64.7\%
+\end{equation}
+
+availability for it. This is a scenario threshold, not a forecast that the future fixture will actually be worth 9.14 xP.
+
+\section{Historical Authority Gate}
+
+\begin{center}
+\rowcolors{2}{LightGray}{white}
+\begin{tabularx}{0.96\textwidth}{>{\bfseries}l X l}
+\toprule
+Test & Evidence & Status\\
+\midrule
+Mean forecast & MAE gain 0.036; week-cluster 95\% CI $[0.021,0.053]$ & \pass\\
+Weekly top five & Difference $-0.222$; CI $[-0.632,0.168]$ & \research\\
+Three-GW top five & Horizon gain 0.558; CI $[0.083,1.030]$ & \research\\
+Horizon correlation & Gain interval includes zero & \research\\
+Transfer optimizer & Full promotion rule not met & \fail\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+The mean improvement is small per player-gameweek, but may still matter when comparing close alternatives. It is not evidence of a magic ranking engine. The optimizer should remain outside the authority boundary until it improves the actual decisions we care about under a strict walk-forward test.
+
+\section{How to Use the Workbench}
+
+\begin{enumerate}
+  \item Open \textbf{Player Explorer}; select any two players and a focus gameweek.
+  \item Read football value, budget efficiency, differential upside, and omission risk separately.
+  \item Inspect the three-gameweek path rather than reacting to one fixture.
+  \item Change yellow cells on \textbf{Assumptions} to test your own view of minutes, congestion, priors, or fixture difficulty.
+  \item Trace surprising results in \textbf{Player Model}. Raw inputs are blue; calculated columns are green.
+  \item Check \textbf{Fixture Odds} and \textbf{European Schedule} before accepting a conclusion.
+  \item Archive the pre-deadline snapshot. Evaluate it after the match without rewriting history.
+\end{enumerate}
+
+\section{Improvement Agenda}
+
+The most valuable next additions are:
+
+\begin{enumerate}
+  \item totals and both-teams-to-score markets to identify team goal means more strongly;
+  \item effective ownership by rank tier, particularly for captaincy and omission risk;
+  \item a richer minutes model using predicted line-ups, substitutions, and manager rotation history;
+  \item fitted distributions for bonus and defensive contributions;
+  \item calibration plots plus Brier and log scores for event probabilities;
+  \item a strict walk-forward transfer backtest with costs, free-transfer banking, and exact squad constraints, but no chips.
+\end{enumerate}
+
+\section{Sources, Reproducibility, and Quality Checks}
+
+The workbook records dated inputs and source URLs. The current source set is:
+
+\begin{itemize}
+  \item \href{https://fantasy.premierleague.com/api/bootstrap-static/}{Official FPL player data}
+  \item \href{https://fantasy.premierleague.com/api/fixtures/}{Official FPL fixtures}
+  \item \href{https://www.oddsportal.com/football/england/premier-league/}{OddsPortal Premier League market page}
+  \item \href{https://www.oddsportal.com/football/europe/champions-league/}{OddsPortal European schedule page}
+  \item \href{https://www.football-data.co.uk/mmz4281/2627/E0.csv}{Football-Data archive and fallback}
+\end{itemize}
+
+Market collection is cached and limited to one daily run. The workbook contains 652 players and 1,956 player-gameweek rows. Its final spreadsheet scan found zero formula errors. The 20 no-vig fixture probability rows sum to one within rounding tolerance; aggregate deviation was 0.000002.
+
+\section{Verdict}
+
+The model has graduated from ``interesting spreadsheet in a trench coat'' to a proper research workbench. It can now explain why it likes a player. It has not yet earned the right to press the transfer button.
+
+\end{document}

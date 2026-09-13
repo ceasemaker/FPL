@@ -1,11 +1,20 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone as dt_timezone
 from decimal import Decimal
 from unittest.mock import Mock, patch
 
 from django.test import TestCase
 
-from ..models import Athlete, AthletePrediction, AthleteStat, Fixture, Team, RawEndpointSnapshot
+from ..models import (
+    Athlete,
+    AthletePrediction,
+    AthleteStat,
+    Fixture,
+    PriceSnapshot,
+    RawEndpointSnapshot,
+    Team,
+)
 
 
 class ApiViewTests(TestCase):
@@ -63,6 +72,7 @@ class ApiViewTests(TestCase):
                 predicted_points=Decimal("5.5"),
             )
 
+        # The landing endpoint still reads raw payload snapshots.
         RawEndpointSnapshot.objects.create(
             endpoint="bootstrap-static",
             payload={
@@ -77,20 +87,25 @@ class ApiViewTests(TestCase):
                 ]
             },
         )
-        RawEndpointSnapshot.objects.create(
-            endpoint="bootstrap-static",
-            payload={
-                "elements": [
-                    {
-                        "id": athlete.id,
-                        "transfers_in_event": athlete.id * 3,
-                        "transfers_out_event": athlete.id * 2,
-                        "selected_by_percent": str(athlete.id / 90),
-                    }
-                    for athlete in self.athletes
-                ]
-            },
-        )
+
+        # Price history reads the lightweight PriceSnapshot rows the ETL writes,
+        # not the raw bootstrap blobs.
+        base_time = datetime(2026, 9, 10, 2, 0, tzinfo=dt_timezone.utc)
+        for index, multiplier in enumerate((2, 3)):
+            snapshot_time = base_time + timedelta(days=index)
+            for athlete in self.athletes:
+                PriceSnapshot.objects.create(
+                    athlete=athlete,
+                    snapshot_time=snapshot_time,
+                    cost=athlete.now_cost,
+                    transfers_in_total=athlete.id * multiplier * 10,
+                    transfers_out_total=athlete.id * multiplier * 5,
+                    transfers_in_event=athlete.id * multiplier,
+                    transfers_out_event=athlete.id * (multiplier - 1),
+                    total_points=athlete.total_points,
+                    form=str(athlete.form),
+                    selected_by_percent=str(athlete.id / 100),
+                )
 
         Fixture.objects.create(
             id=1,
@@ -105,10 +120,17 @@ class ApiViewTests(TestCase):
         response = self.client.get("/api/optimize-team/?budget=1000&horizon=1")
         self.assertEqual(response.status_code, 200)
         payload = response.json()
-        player_ids = [player["id"] for player in payload["players"]]
+        first_gameweek = payload["gameweeks"][0]
+        squad = first_gameweek["squad"]["starters"] + first_gameweek["squad"]["bench"]
+        player_ids = [player["id"] for player in squad]
         self.assertEqual(len(player_ids), 15)
         self.assertEqual(len(set(player_ids)), 15)
-        self.assertEqual(payload["mode"], "open_pool")
+        self.assertFalse(payload["meta"]["personalized"])
+        self.assertEqual(payload["meta"]["risk_profile"], "balanced")
+
+    def test_optimize_team_rejects_unknown_risk_profile(self) -> None:
+        response = self.client.get("/api/optimize-team/?risk_profile=reckless")
+        self.assertEqual(response.status_code, 400)
 
     def test_fixtures_ticker_response_shape(self) -> None:
         response = self.client.get("/api/fixtures/ticker/?horizon=3")

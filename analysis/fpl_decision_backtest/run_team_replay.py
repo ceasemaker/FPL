@@ -449,6 +449,11 @@ def replay_manager(
     cumulative_human = 0.0
     raw_cumulative_model = 0.0
     raw_cumulative_human = 0.0
+    # Unbiased internal benchmark: the same starting squad held all season
+    # with no transfers, lineup and captain chosen by the same predictions.
+    # model-vs-hold isolates the value added (or destroyed) by the transfer
+    # engine, free of the cohort's survivorship bias.
+    raw_cumulative_hold = 0.0
     rows = []
 
     # The archived GW10 squad is the initial state. The first counterfactual
@@ -461,6 +466,10 @@ def replay_manager(
         )
         hit_cost = max(0, len(moves) - free_transfers) * 4
         model_points = realized_model_points(state.players, lineup, captain, lookup) - hit_cost
+        hold_squad = [player for player in start_ids if player in lookup]
+        hold_lineup, hold_captain, _ = best_lineup(hold_squad, lookup)
+        hold_points = realized_model_points(hold_squad, hold_lineup, hold_captain, lookup)
+        raw_cumulative_hold += hold_points
         human_squad = squads[gameweek][slot]
         human_points = normalized_human_points(human_squad, lookup)
         chip_values = set(human_squad["active_chip"].dropna().astype(str)) - {"No Chip"}
@@ -482,6 +491,9 @@ def replay_manager(
             "raw_cumulative_human": round(raw_cumulative_human, 2),
             "raw_cumulative_model": round(raw_cumulative_model, 2),
             "raw_cumulative_delta": round(raw_cumulative_model - raw_cumulative_human, 2),
+            "hold_points": round(hold_points, 2),
+            "raw_cumulative_hold": round(raw_cumulative_hold, 2),
+            "transfer_value_delta": round(raw_cumulative_model - raw_cumulative_hold, 2),
             "comparison_eligible": comparison_eligible,
             "free_transfers_before": free_transfers,
             "transfers": len(moves),
@@ -529,6 +541,16 @@ def build_summary(weekly: pd.DataFrame, season: int, start_gameweek: int) -> dic
             "best_delta": round(float(final["raw_cumulative_delta"].max()), 2),
             "worst_delta": round(float(final["raw_cumulative_delta"].min()), 2),
             "median_example_slot": int(final.iloc[(final["raw_cumulative_delta"] - final["raw_cumulative_delta"].median()).abs().argmin()]["squad_slot"]),
+        },
+        "transfer_value_results": {
+            "benchmark": "paired internal hold: same starting squad held with no transfers, lineup and captain by the same predictions; starting cohort remains ex-post selected",
+            "mean_delta": round(float(final["transfer_value_delta"].mean()), 2),
+            "median_delta": round(float(final["transfer_value_delta"].median()), 2),
+            "paths_transfers_added_value": int((final["transfer_value_delta"] > 0).sum()),
+            "paths_tied": int((final["transfer_value_delta"] == 0).sum()),
+            "paths_transfers_destroyed_value": int((final["transfer_value_delta"] < 0).sum()),
+            "best_delta": round(float(final["transfer_value_delta"].max()), 2),
+            "worst_delta": round(float(final["transfer_value_delta"].min()), 2),
         },
         "chip_excluded_results": {
             "mean_delta": round(float(final["cumulative_delta"].mean()), 2),

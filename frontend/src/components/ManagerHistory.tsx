@@ -132,7 +132,10 @@ const ManagerHistory: React.FC<ManagerHistoryProps> = ({ managerId }) => {
           </div>
           <div className="summary-stat">
             <span className="summary-label">Transfer Cost:</span>
-            <span className="summary-value">-{totalTransferCost} pts</span>
+            {/* Zero cost is not "-0". */}
+            <span className="summary-value">
+              {totalTransferCost > 0 ? `-${totalTransferCost}` : "0"} pts
+            </span>
           </div>
         </div>
       </div>
