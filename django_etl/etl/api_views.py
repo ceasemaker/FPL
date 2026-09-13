@@ -85,6 +85,11 @@ POSITION_LIMITS = {
     4: 3,
 }
 
+# Candidate-pool caps per position for the squad optimizer (see optimize_team).
+# 2 GKP + 5 DEF + 5 MID + 3 FWD squad slots; caps leave ample room for
+# transfers over a 5-gameweek horizon while keeping CBC's problem small.
+OPTIMIZER_POOL_CAPS = {"GKP": 12, "DEF": 45, "MID": 55, "FWD": 30}
+
 VALID_FORMATIONS = [
     (3, 4, 3),
     (3, 5, 2),
@@ -1847,9 +1852,22 @@ def optimize_team(request):
             status=400,
         )
 
+    # Cap the candidate pool. Every eligible player x every gameweek makes a
+    # MILP whose CBC child process alone peaked at ~107 MB, which on a 512 MB
+    # Render instance is the difference between a result and an OOM restart.
+    # Keep the strongest projected players per position plus the manager's own
+    # squad, which the transfer constraints need regardless of projection.
+    mean_projection = predictions_df.groupby(["element", "position"])["predicted_points"].mean()
+    candidate_ids: set[int] = set(manager_player_ids or [])
+    for position, cap in OPTIMIZER_POOL_CAPS.items():
+        ranked = mean_projection[mean_projection.index.get_level_values("position") == position]
+        candidate_ids.update(int(e) for e, _ in ranked.sort_values(ascending=False).index[:cap])
+    predictions_df = predictions_df[predictions_df["element"].isin(candidate_ids)]
+
     # Build gw_data: element, event (=current_gw), position, value, name.
     # Departed players keep stale prices and positions, so exclude them.
     players_qs = Athlete.objects.select_related("team").filter(
+        id__in=candidate_ids,
         element_type__in=POSITION_LIMITS.keys(),
         now_cost__gt=0,
         removed=False,
@@ -2063,6 +2081,7 @@ def optimize_team(request):
             "ownership_basis": "current overall ownership proxy",
             "projection_source": projection_source,
             "projection_note": projection_note,
+            "candidate_pool_size": len(candidate_ids),
         },
         "gameweeks": gameweeks_response,
     })

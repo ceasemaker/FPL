@@ -182,6 +182,17 @@ export function SquadOptimizer({ defaultManagerId = "" }: { defaultManagerId?: s
         `/api/optimize-team/?budget=${budgetValue}&horizon=${numericHorizon}&include_unavailable=${includeUnavailable}&free_transfers=${numericFreeTransfers}&risk_profile=${riskProfile}${managerParam}`
       );
 
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        // A 502/503 HTML page means the API instance restarted or ran out of
+        // memory mid-solve; say so instead of surfacing a JSON parse error.
+        throw new Error(
+          response.ok
+            ? "The optimizer returned an unexpected response. Please try again."
+            : `The optimizer service is unavailable (HTTP ${response.status}). It may have restarted — try again in a moment, or shorten the horizon.`
+        );
+      }
+
       if (!response.ok) {
         const payload = await response.json();
         throw new Error(payload?.error || "Failed to optimize team.");

@@ -79,6 +79,15 @@ autoDeploy on, so deploying = pushing to `main`.
   (`render_status.py`, `render_read.py`); the auto-mode classifier blocks `curl` with the
   key inline and blocks service `PATCH`es — use `git push` to `main` instead of switching
   the tracked branch.
+- **OOM incident 2026-09-13 23:42 UTC.** A 3-GW manager-squad solve restarted the instance
+  ("Instance restarted", no traceback; frontend showed `Unexpected token '<'`). Render's
+  memory metric showed the instance idling at **475–500 MB of 512 MB**: gunicorn + Celery
+  worker + Celery beat each loaded Django+pandas because `tasks.py` imported `api_views` at
+  module level; a solve added ~205 MB (gunicorn) + ~107 MB (CBC child). Fixes: `api_views`
+  imported lazily inside the task; beat embedded in the worker (`celery worker -B`, one
+  process fewer); optimizer candidate pool capped per position (`OPTIMIZER_POOL_CAPS`,
+  manager squad always kept) — CBC now ~40 MB; frontend reports a non-JSON 5xx honestly.
+  If memory creeps back, the next lever is the starter → standard plan, not more code.
 - Still to do on Render: nothing was migrated for `FixtureOdds` (empty by design),
   `AthletePrediction` is empty by design, SofaSport tables are empty (subscription cancelled).
   Celery beat's `run_daily_pipeline` (03:30 UTC) keeps FPL data fresh from here.

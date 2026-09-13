@@ -14,12 +14,8 @@ from django.core.cache import cache
 from django.core.management import call_command
 from io import StringIO
 
-from .api_views import (
-    _build_price_change_predictor_payload,
-    _build_price_predictor_history_payload,
-    _price_change_predictor_cache_key,
-    _price_predictor_history_cache_key,
-)
+# api_views pulls in pandas and the whole view layer; import it lazily inside the
+# tasks that need it so the Celery worker/beat processes stay small on Render.
 logger = logging.getLogger(__name__)
 
 # Base directory for ETL scripts
@@ -172,6 +168,7 @@ def update_radar_attributes():
 
 @shared_task(name='etl.tasks.warm_price_predictor_cache')
 def warm_price_predictor_cache():
+    from .api_views import _build_price_change_predictor_payload, _build_price_predictor_history_payload, _price_change_predictor_cache_key, _price_predictor_history_cache_key  # noqa: E402 (lazy: keeps pandas out of worker/beat)
     logger.info("Warming price predictor cache...")
     results = {}
 
