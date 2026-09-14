@@ -139,6 +139,22 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# The React app is built into frontend/dist by build.sh and served by the same
+# process: WhiteNoise serves its files (/, /assets/*, favicon) directly from
+# WHITENOISE_ROOT, and fpl_platform.views.spa_index returns index.html for any
+# non-API route so client-side routing works on a hard refresh.
+FRONTEND_DIST = Path(os.getenv("FRONTEND_DIST", BASE_DIR.parent / "frontend" / "dist"))
+WHITENOISE_ROOT = FRONTEND_DIST if FRONTEND_DIST.is_dir() else None
+WHITENOISE_INDEX_FILE = True
+
+
+def _vite_asset_is_immutable(path, url):
+    """Vite content-hashes everything under /assets/, so cache those forever."""
+    return url.startswith("/assets/")
+
+
+WHITENOISE_IMMUTABLE_FILE_TEST = _vite_asset_is_immutable
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

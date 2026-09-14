@@ -92,6 +92,23 @@ autoDeploy on, so deploying = pushing to `main`.
   `AthletePrediction` is empty by design, SofaSport tables are empty (subscription cancelled).
   Celery beat's `run_daily_pipeline` (03:30 UTC) keeps FPL data fresh from here.
 
+### Single-service architecture — 2026-09-14
+
+The separate `fpl-pulse-frontend` Render service (a `vite preview` process proxying `/api`)
+is retired. `build.sh` now runs `npm ci && npm run build` and **Django serves the React
+app**: WhiteNoise serves `frontend/dist` as `WHITENOISE_ROOT` (`/`, `/assets/*` with
+immutable caching), and `fpl_platform.views.spa_index` returns `index.html` for every
+non-`api/`/`admin/`/`static/` route so deep links survive a refresh. Tests:
+`etl/tests/test_spa_serving.py`. The React code is unchanged — it already used relative
+`/api/...` URLs; just never set `VITE_API_URL` at build time.
+
+Consequences: one origin (`aerofpl.net` and `aerofpl.net/api/...`), so CORS and the
+`api.` subdomain are no longer load-bearing (kept for compatibility); one fewer $7 service;
+a Django restart takes the whole site down rather than leaving a data-less shell, which
+was judged acceptable. **Manual steps:** move the `aerofpl.net` / `www` custom domains from
+the old frontend service to `fpl-pulse-web` (a domain can only live on one service), then
+delete `fpl-pulse-frontend` in the dashboard.
+
 ## Visual direction
 
 Dark graphite + Spring Bud lime, per the user-approved "Option 2" mockup:

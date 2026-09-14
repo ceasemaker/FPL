@@ -23,6 +23,12 @@ python -m pip install gunicorn supervisor celery[redis] redis whitenoise django-
 echo "📋 Verifying installed packages:"
 python -m pip list | grep -E "(celery|redis|whitenoise|gunicorn|supervisor|django-cors|psycopg2)"
 
+echo "🧱 Building the React frontend (served by Django via WhiteNoise)..."
+# Render's Python runtime ships Node; NODE_VERSION in render.yaml pins it.
+echo "🟢 Node version: $(node --version)"
+(cd frontend && npm ci --include=dev && npm run build)
+echo "📁 Frontend bundle: $(du -sh frontend/dist | cut -f1)"
+
 # Navigate to Django directory for management commands
 cd django_etl
 

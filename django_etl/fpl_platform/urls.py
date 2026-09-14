@@ -1,5 +1,7 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
+
+from fpl_platform.views import spa_index
 
 from etl.api_views import (
     landing_snapshot,
@@ -86,4 +88,9 @@ urlpatterns = [
     path("api/top100/chart/", top100_points_chart, name="top100-chart"),
     path("api/top100/transfers/", top100_transfers, name="top100-transfers"),
     path("api/top100/differentials/", top100_differentials, name="top100-differentials"),
+]
+
+# Everything that is not an API, admin or static path is the React app.
+urlpatterns += [
+    re_path(r"^(?!api/|admin/|static/|assets/).*$", spa_index, name="spa-index"),
 ]
