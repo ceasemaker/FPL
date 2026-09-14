@@ -25,7 +25,7 @@ services:
       - key: ALLOWED_HOSTS
         value: 'aerofpl.net,www.aerofpl.net,api.aerofpl.net,.onrender.com'
       - key: CORS_ALLOWED_ORIGINS
-        value: 'https://www.aerofpl.net,https://aerofpl.net,https://fpl-pulse-frontend-ptan.onrender.com,https://fpl-pulse-web-8u1j.onrender.com'
+        value: 'https://www.aerofpl.net,https://aerofpl.net,https://fpl-pulse-web-8u1j.onrender.com'
       - key: SOFASPORT_API_KEY
         sync: false
       - key: SOFASPORT_API_HOST
