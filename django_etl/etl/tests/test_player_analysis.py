@@ -182,14 +182,11 @@ class PlayerAnalysisViewTests(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
         build.assert_called_once_with([1, 2], gameweek=3, horizon=2)
 
-    def test_analysis_endpoint_rejects_more_than_two_players(self):
-        response = self.client.get("/api/decision-dashboard/player-analysis/?player_ids=1,2,3")
+    def test_analysis_endpoint_rejects_more_than_eight_players(self):
+        response = self.client.get("/api/decision-dashboard/player-analysis/?player_ids=1,2,3,4,5,6,7,8,9")
         self.assertEqual(response.status_code, 400)
 
-    @patch("etl.api_views.render_player_report_tex", return_value="\\documentclass{article}")
     @patch("etl.api_views.build_player_analysis", return_value={"players": [], "meta": {}})
-    def test_tex_report_download(self, _build, _render):
+    def test_tex_report_is_retired(self, _build):
         response = self.client.get("/api/decision-dashboard/player-report/?player_ids=1&format=tex")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Content-Type"], "application/x-tex; charset=utf-8")
-        self.assertIn("attachment", response["Content-Disposition"])
+        self.assertEqual(response.status_code, 400)

@@ -343,7 +343,7 @@ def build_player_analysis(
         raise ValueError(f"gameweek must be one of {available_gameweeks}")
     horizon = min(max(1, int(horizon)), 3)
     selected_gameweeks = [gw for gw in available_gameweeks if gw >= focus_gameweek][:horizon]
-    selected_ids = list(dict.fromkeys(player_ids))[:2]
+    selected_ids = list(dict.fromkeys(player_ids))[:8]
     if not selected_ids:
         raise ValueError("At least one player_id is required.")
 
@@ -547,8 +547,10 @@ def render_player_report_html(analysis: dict[str, Any]) -> str:
     table{{width:100%;border-collapse:collapse}} th,td{{text-align:left;border-bottom:1px solid var(--line);padding:9px 7px}} th{{background:var(--ink);color:white;font-size:12px}}
     .note{{background:#eff6ff;border-left:4px solid var(--blue);padding:14px 18px}} a{{color:var(--blue)}}
     @media(max-width:700px){{main{{margin:0;padding:22px}}.metrics{{grid-template-columns:repeat(2,1fr)}}table{{font-size:12px}}}}
-    @media print{{body{{background:white}}main{{margin:0;box-shadow:none;max-width:none}}}}
+    .report-actions{{display:flex;justify-content:flex-end;margin-bottom:18px}} .print-button{{border:0;border-radius:9px;padding:11px 16px;color:#101011;background:#a5ff01;font:inherit;font-weight:800;cursor:pointer}}
+    @media print{{body{{background:white}}main{{margin:0;box-shadow:none;max-width:none}}.report-actions{{display:none}}}}
     </style></head><body><main>
+    <div class="report-actions"><button class="print-button" onclick="window.print()">Print / Save PDF</button></div>
     <p class="eyebrow">FPL quantitative decision system</p><h1>Dynamic player analysis</h1>
     <p class="meta">Snapshot {html.escape(str(meta['snapshot_date']))} / focus GW{meta['focus_gameweek']} / {meta['horizon']}-gameweek horizon</p>
     <p class="note"><strong>Authority:</strong> {html.escape(meta['authority'])}</p>

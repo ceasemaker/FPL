@@ -1,4 +1,8 @@
 .decision-page { gap: 1.4rem; }
+.decision-public-header { max-width: 920px; padding: 2rem 0 .6rem; }
+.decision-public-header h1 { margin: .35rem 0 .65rem; font-size: clamp(2.35rem, 5vw, 4.6rem); line-height: .98; letter-spacing: -.055em; }
+.decision-public-header p { max-width: 760px; margin: 0; color: var(--text-secondary); font-size: 1.04rem; line-height: 1.6; }
+.report-format-note { align-self: center; color: var(--text-muted); font-size: .74rem; }
 .decision-hero { display: flex; align-items: end; justify-content: space-between; gap: 2rem; padding: 2.4rem 0 1.4rem; border-bottom: 1px solid var(--border-subtle); }
 .decision-hero h1 { margin: .25rem 0 .65rem; font-size: clamp(2rem, 5vw, 4rem); line-height: .98; letter-spacing: -.055em; }
 .decision-hero p { color: var(--text-secondary); max-width: 700px; line-height: 1.6; }

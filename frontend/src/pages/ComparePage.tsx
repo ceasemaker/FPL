@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { RadarChart } from "../components/RadarChart";
+import { PlayerGameLog } from "../components/PlayerGameLog";
 import "./ComparePage.css";
 
 // Use empty string for API base URL to use relative paths (proxied through Vite)
@@ -235,6 +236,7 @@ export function ComparePage() {
   const [players, setPlayers] = useState<DetailedPlayer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [profilePlayerId, setProfilePlayerId] = useState<number | null>(null);
 
   useEffect(() => {
     const playerIds = searchParams.get("ids")?.split(",").map(Number) || [];
@@ -306,6 +308,7 @@ export function ComparePage() {
       })
       .then((playersData) => {
         setPlayers(playersData);
+        setProfilePlayerId((current) => current ?? playersData[0]?.id ?? null);
         setError(null);
       })
       .catch((err) => {
@@ -663,6 +666,30 @@ export function ComparePage() {
             </div>
           ))}
         </div>
+      </section>
+
+      <section className="aero-card compare-block compare-profiles">
+        <header className="aero-card-title">
+          <div>
+            <h3>Full player profile</h3>
+            <p>Position percentiles and the complete official gameweek log for every player in this comparison.</p>
+          </div>
+        </header>
+        <div className="compare-profile-tabs" role="tablist" aria-label="Compared player profiles">
+          {players.map((player) => (
+            <button
+              key={player.id}
+              type="button"
+              role="tab"
+              aria-selected={profilePlayerId === player.id}
+              className={profilePlayerId === player.id ? "active" : ""}
+              onClick={() => setProfilePlayerId(player.id)}
+            >
+              {player.web_name}
+            </button>
+          ))}
+        </div>
+        {profilePlayerId !== null && <PlayerGameLog playerId={profilePlayerId} />}
       </section>
 
       {/* Attribute radar */}

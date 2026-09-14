@@ -28,7 +28,6 @@ from .services.player_analysis import (
     load_latest_snapshot,
     player_catalogue,
     render_player_report_html,
-    render_player_report_tex,
 )
 
 logger = logging.getLogger(__name__)
@@ -1630,8 +1629,8 @@ def _player_analysis_parameters(request) -> tuple[list[int], int | None, int]:
         player_ids = [int(value.strip()) for value in raw_ids.split(",") if value.strip()]
     except ValueError as exc:
         raise ValueError("player_ids must be a comma-separated list of numeric FPL IDs.") from exc
-    if not 1 <= len(player_ids) <= 2:
-        raise ValueError("Select one or two player_ids.")
+    if not 1 <= len(player_ids) <= 8:
+        raise ValueError("Select between one and eight player_ids.")
     raw_gameweek = request.GET.get("gameweek")
     try:
         gameweek = int(raw_gameweek) if raw_gameweek else None
@@ -1665,7 +1664,7 @@ def player_analysis(request):
 
 @require_GET
 def player_analysis_report(request):
-    """Generate an HTML report or downloadable LaTeX source for selected players."""
+    """Generate a printable HTML report for selected players."""
     try:
         player_ids, gameweek, horizon = _player_analysis_parameters(request)
         payload = build_player_analysis(player_ids, gameweek=gameweek, horizon=horizon)
@@ -1674,13 +1673,8 @@ def player_analysis_report(request):
     except FileNotFoundError as exc:
         return JsonResponse({"error": str(exc)}, status=404)
 
-    output_format = request.GET.get("format", "html").lower()
-    if output_format == "tex":
-        response = HttpResponse(render_player_report_tex(payload), content_type="application/x-tex; charset=utf-8")
-        response["Content-Disposition"] = 'attachment; filename="FPL_PLAYER_ANALYSIS.tex"'
-        return response
-    if output_format != "html":
-        return JsonResponse({"error": "format must be html or tex."}, status=400)
+    if request.GET.get("format", "html").lower() != "html":
+        return JsonResponse({"error": "The report is HTML. Use Print / Save PDF from the report."}, status=400)
     return HttpResponse(render_player_report_html(payload), content_type="text/html; charset=utf-8")
 
 

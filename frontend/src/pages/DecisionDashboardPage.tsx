@@ -265,7 +265,7 @@ const formatSigned = (value?: number, digits = 3) => value == null ? "—" : `${
 const formatInterval = (interval?: [number, number]) =>
   interval ? `[${formatSigned(interval[0])}, ${formatSigned(interval[1])}]` : "—";
 
-type LabMode = "decisions" | "optimizer";
+type LabMode = "players" | "decisions" | "optimizer";
 
 export function DecisionDashboardPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -273,11 +273,11 @@ export function DecisionDashboardPage() {
     searchParams.get("manager_id") || localStorage.getItem("fpl_manager_id") || "576154"
   );
   const [managerDraft, setManagerDraft] = useState(managerId);
-  const mode: LabMode = searchParams.get("mode") === "optimizer" ? "optimizer" : "decisions";
+  const mode: LabMode = searchParams.get("mode") === "optimizer" ? "optimizer" : searchParams.get("mode") === "decisions" ? "decisions" : "players";
   const setMode = (next: LabMode) => {
     const params = new URLSearchParams(searchParams);
-    if (next === "optimizer") params.set("mode", "optimizer");
-    else params.delete("mode");
+    if (next === "players") params.delete("mode");
+    else params.set("mode", next);
     setSearchParams(params, { replace: true });
   };
   const [profile, setProfile] = useState<RiskProfile>("balanced");
@@ -308,6 +308,7 @@ export function DecisionDashboardPage() {
   };
 
   useEffect(() => {
+    if (mode !== "decisions") return;
     const controller = new AbortController();
     setError(null);
     setData(null);
@@ -324,7 +325,7 @@ export function DecisionDashboardPage() {
         if (requestError.name !== "AbortError") setError(requestError.message);
       });
     return () => controller.abort();
-  }, [managerId, profile]);
+  }, [managerId, profile, mode]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -379,6 +380,146 @@ export function DecisionDashboardPage() {
     [data],
   );
 
+  const reportParams = new URLSearchParams({
+    player_ids: playerB && playerB !== playerA ? `${playerA},${playerB}` : playerA,
+    gameweek: String(analysisGameweek),
+    horizon: String(analysisHorizon),
+  });
+  const renderPlayerWorkbench = () => (
+<section className="decision-panel player-lab" id="player-lab">
+        <div className="research-heading">
+          <div>
+            <span className="decision-label">Player workbench</span>
+            <h2>Analyse anyone, without hiding the maths</h2>
+            <p>{playerAnalysis?.meta.data_policy ?? "Loading the latest saved pre-deadline snapshot..."}</p>
+          </div>
+          <div className="player-report-actions">
+            <a className="report-link" href={`/api/decision-dashboard/player-report/?${reportParams}`} target="_blank" rel="noreferrer">
+              Open dynamic report <span aria-hidden="true">↗</span>
+            </a>
+            <span className="report-format-note">Print the HTML report to save a PDF</span>
+          </div>
+        </div>
+
+        <div className="player-lab-controls">
+          <label htmlFor="player-analysis-a">
+            <span>Player A</span>
+            <select id="player-analysis-a" value={playerA} onChange={(event) => setPlayerA(event.target.value)}>
+              {catalogue?.players.map((player) => <option key={player.id} value={player.id}>{player.label}</option>)}
+            </select>
+          </label>
+          <label htmlFor="player-analysis-b">
+            <span>Player B</span>
+            <select id="player-analysis-b" value={playerB} onChange={(event) => setPlayerB(event.target.value)}>
+              {catalogue?.players.map((player) => <option key={player.id} value={player.id}>{player.label}</option>)}
+            </select>
+          </label>
+          <label htmlFor="player-analysis-gameweek">
+            <span>Focus gameweek</span>
+            <select id="player-analysis-gameweek" value={analysisGameweek} onChange={(event) => setAnalysisGameweek(Number(event.target.value))}>
+              {catalogue?.available_gameweeks.map((gameweek) => <option key={gameweek} value={gameweek}>GW{gameweek}</option>)}
+            </select>
+          </label>
+          <label htmlFor="player-analysis-horizon">
+            <span>Horizon</span>
+            <select id="player-analysis-horizon" value={analysisHorizon} onChange={(event) => setAnalysisHorizon(Number(event.target.value))}>
+              {[1, 2, 3].map((horizon) => <option key={horizon} value={horizon}>{horizon} GW{horizon > 1 ? "s" : ""}</option>)}
+            </select>
+          </label>
+        </div>
+
+        {playerAnalysisError && <div className="decision-error">{playerAnalysisError}</div>}
+        {playerAnalysisLoading && <div className="decision-loading">Calculating minutes, Poisson events, value, and rank exposure...</div>}
+
+        {!playerAnalysisLoading && playerAnalysis && (
+          <>
+            <div className="player-analysis-grid">
+              {playerAnalysis.players.map((player) => {
+                const focus = player.focus;
+                const maxComponent = Math.max(...Object.values(focus.components).map((value) => Math.abs(value)), 0.01);
+                return (
+                  <article className="player-analysis-card" key={player.id}>
+                    <div className="player-analysis-title">
+                      <div>
+                        <span>{player.position} · {player.team} · #{player.focus_rank} model rank</span>
+                        <h3>{player.name}</h3>
+                      </div>
+                      <strong>{focus.expected_points.toFixed(2)} <small>xP</small></strong>
+                    </div>
+
+                    <div className="player-analysis-kpis">
+                      <div><span>Expected minutes</span><strong>{focus.expected_minutes.toFixed(1)}</strong><small>{Math.round(focus.non_start_probability * 100)}% chance of no starts this GW</small></div>
+                      <div><span>Return probability</span><strong>{Math.round(focus.return_probability * 100)}%</strong><small>{Math.round(focus.multiple_return_probability * 100)}% multi-return</small></div>
+                      <div><span>{playerAnalysis.meta.horizon}-GW value</span><strong>{player.weighted_horizon_xp.toFixed(2)}</strong><small>weighted xP</small></div>
+                      <div><span>Budget value</span><strong>{focus.xp_per_m.toFixed(3)}</strong><small>xP per £m</small></div>
+                      <div><span>Differential upside</span><strong>{focus.differential_upside.toFixed(2)}</strong><small>xP × unowned</small></div>
+                      <div><span>Omission risk</span><strong>{focus.omission_risk.toFixed(2)}</strong><small>xP × owned</small></div>
+                    </div>
+
+                    <div className="component-list" aria-label={`${player.name} expected-points components`}>
+                      {Object.entries(focus.components).map(([name, value]) => (
+                        <div className="component-row" key={name}>
+                          <span>{name.replaceAll("_", " ")}</span>
+                          <i><b className={value < 0 ? "negative" : ""} style={{ width: `${Math.max(2, Math.abs(value) / maxComponent * 100)}%` }}></b></i>
+                          <strong>{value >= 0 ? "+" : ""}{value.toFixed(2)}</strong>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="fixture-path">
+                      {player.fixtures.flatMap((week) => week.matches ?? [week]).map((fixture) => (
+                        <div key={`${fixture.gameweek}-${fixture.fixture_id ?? "single"}`}>
+                          <span>GW{fixture.gameweek}</span>
+                          <strong>{fixture.opponent} <small>{fixture.venue}</small></strong>
+                          <b>{fixture.expected_points.toFixed(2)} xP</b>
+                          <small className={fixture.data_basis === "market" ? "market-basis" : "proxy-basis"}>
+                            {fixture.opponent === "Blank" ? "No fixture" : fixture.data_basis === "market" ? "market" : "FDR proxy"}
+                          </small>
+                        </div>
+                      ))}
+                    </div>
+
+                    <details className="model-detail">
+                      <summary>Inspect the probability model</summary>
+                      {(focus.fixture_count ?? 1) > 1 && <p>Points and minutes cover all matches this gameweek. Weekly probabilities assume independent matches, including availability.</p>}
+                      <dl>
+                        <div><dt>Team goal mean</dt><dd>{focus.team_lambda.toFixed(3)}</dd></div>
+                        <div><dt>Opponent goal mean</dt><dd>{focus.opponent_lambda.toFixed(3)}</dd></div>
+                        <div><dt>Player goal mean</dt><dd>{focus.goal_lambda.toFixed(3)}</dd></div>
+                        <div><dt>Player assist mean</dt><dd>{focus.assist_lambda.toFixed(3)}</dd></div>
+                        <div><dt>Attacking blank</dt><dd>{Math.round(focus.attacking_blank_probability * 100)}%</dd></div>
+                        <div><dt>{(focus.fixture_count ?? 1) > 1 ? "At least one team clean sheet" : "Team clean sheet"}</dt><dd>{Math.round(focus.clean_sheet_probability * 100)}%</dd></div>
+                        <div><dt>Captain total</dt><dd>{player.captain_total_xp.toFixed(2)}</dd></div>
+                        <div><dt>TC total</dt><dd>{player.triple_captain_total_xp.toFixed(2)}</dd></div>
+                      </dl>
+                    </details>
+                  </article>
+                );
+              })}
+            </div>
+            <div className="player-lab-footnote">
+              <strong>Authority:</strong> {playerAnalysis.meta.authority}
+              <span>Snapshot {playerAnalysis.meta.snapshot_date} · {playerAnalysis.meta.player_count} players</span>
+            </div>
+          </>
+        )}
+      </section>
+  );
+
+  if (mode === "players") {
+    return (
+      <main className="page decision-page">
+        <LabModeSwitch mode={mode} onChange={setMode} />
+        <header className="decision-public-header">
+          <span className="decision-kicker">All-player intelligence</span>
+          <h1>Transfer Decision Lab</h1>
+          <p>Compare every FPL player across expected minutes, scoring probabilities, fixtures, value, ownership risk, and multi-gameweek projections.</p>
+        </header>
+        {renderPlayerWorkbench()}
+      </main>
+    );
+  }
+
   if (mode === "optimizer") {
     return (
       <main className="page decision-page">
@@ -415,11 +556,6 @@ export function DecisionDashboardPage() {
   const replay = data.backtest.team_replay;
   const replays = data.backtest.team_replays?.length ? data.backtest.team_replays : (replay ? [replay] : []);
   const action = data.decision.recommended_action === "roll_transfer" ? "Roll the transfer" : "Make one transfer";
-  const reportParams = new URLSearchParams({
-    player_ids: playerB && playerB !== playerA ? `${playerA},${playerB}` : playerA,
-    gameweek: String(analysisGameweek),
-    horizon: String(analysisHorizon),
-  });
 
   return (
     <main className="page decision-page">
@@ -559,126 +695,7 @@ export function DecisionDashboardPage() {
         </details>
       </section>
 
-      <section className="decision-panel player-lab" id="player-lab">
-        <div className="research-heading">
-          <div>
-            <span className="decision-label">Player workbench</span>
-            <h2>Analyse anyone, without hiding the maths</h2>
-            <p>{playerAnalysis?.meta.data_policy ?? "Loading the latest saved pre-deadline snapshot..."}</p>
-          </div>
-          <div className="player-report-actions">
-            <a className="report-link" href={`/api/decision-dashboard/player-report/?${reportParams}`} target="_blank" rel="noreferrer">
-              Open dynamic report <span aria-hidden="true">↗</span>
-            </a>
-            <a className="report-link subtle" href={`/api/decision-dashboard/player-report/?${reportParams}&format=tex`}>
-              Download LaTeX
-            </a>
-          </div>
-        </div>
-
-        <div className="player-lab-controls">
-          <label htmlFor="player-analysis-a">
-            <span>Player A</span>
-            <select id="player-analysis-a" value={playerA} onChange={(event) => setPlayerA(event.target.value)}>
-              {catalogue?.players.map((player) => <option key={player.id} value={player.id}>{player.label}</option>)}
-            </select>
-          </label>
-          <label htmlFor="player-analysis-b">
-            <span>Player B</span>
-            <select id="player-analysis-b" value={playerB} onChange={(event) => setPlayerB(event.target.value)}>
-              {catalogue?.players.map((player) => <option key={player.id} value={player.id}>{player.label}</option>)}
-            </select>
-          </label>
-          <label htmlFor="player-analysis-gameweek">
-            <span>Focus gameweek</span>
-            <select id="player-analysis-gameweek" value={analysisGameweek} onChange={(event) => setAnalysisGameweek(Number(event.target.value))}>
-              {catalogue?.available_gameweeks.map((gameweek) => <option key={gameweek} value={gameweek}>GW{gameweek}</option>)}
-            </select>
-          </label>
-          <label htmlFor="player-analysis-horizon">
-            <span>Horizon</span>
-            <select id="player-analysis-horizon" value={analysisHorizon} onChange={(event) => setAnalysisHorizon(Number(event.target.value))}>
-              {[1, 2, 3].map((horizon) => <option key={horizon} value={horizon}>{horizon} GW{horizon > 1 ? "s" : ""}</option>)}
-            </select>
-          </label>
-        </div>
-
-        {playerAnalysisError && <div className="decision-error">{playerAnalysisError}</div>}
-        {playerAnalysisLoading && <div className="decision-loading">Calculating minutes, Poisson events, value, and rank exposure...</div>}
-
-        {!playerAnalysisLoading && playerAnalysis && (
-          <>
-            <div className="player-analysis-grid">
-              {playerAnalysis.players.map((player) => {
-                const focus = player.focus;
-                const maxComponent = Math.max(...Object.values(focus.components).map((value) => Math.abs(value)), 0.01);
-                return (
-                  <article className="player-analysis-card" key={player.id}>
-                    <div className="player-analysis-title">
-                      <div>
-                        <span>{player.position} · {player.team} · #{player.focus_rank} model rank</span>
-                        <h3>{player.name}</h3>
-                      </div>
-                      <strong>{focus.expected_points.toFixed(2)} <small>xP</small></strong>
-                    </div>
-
-                    <div className="player-analysis-kpis">
-                      <div><span>Expected minutes</span><strong>{focus.expected_minutes.toFixed(1)}</strong><small>{Math.round(focus.non_start_probability * 100)}% chance of no starts this GW</small></div>
-                      <div><span>Return probability</span><strong>{Math.round(focus.return_probability * 100)}%</strong><small>{Math.round(focus.multiple_return_probability * 100)}% multi-return</small></div>
-                      <div><span>{playerAnalysis.meta.horizon}-GW value</span><strong>{player.weighted_horizon_xp.toFixed(2)}</strong><small>weighted xP</small></div>
-                      <div><span>Budget value</span><strong>{focus.xp_per_m.toFixed(3)}</strong><small>xP per £m</small></div>
-                      <div><span>Differential upside</span><strong>{focus.differential_upside.toFixed(2)}</strong><small>xP × unowned</small></div>
-                      <div><span>Omission risk</span><strong>{focus.omission_risk.toFixed(2)}</strong><small>xP × owned</small></div>
-                    </div>
-
-                    <div className="component-list" aria-label={`${player.name} expected-points components`}>
-                      {Object.entries(focus.components).map(([name, value]) => (
-                        <div className="component-row" key={name}>
-                          <span>{name.replaceAll("_", " ")}</span>
-                          <i><b className={value < 0 ? "negative" : ""} style={{ width: `${Math.max(2, Math.abs(value) / maxComponent * 100)}%` }}></b></i>
-                          <strong>{value >= 0 ? "+" : ""}{value.toFixed(2)}</strong>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="fixture-path">
-                      {player.fixtures.flatMap((week) => week.matches ?? [week]).map((fixture) => (
-                        <div key={`${fixture.gameweek}-${fixture.fixture_id ?? "single"}`}>
-                          <span>GW{fixture.gameweek}</span>
-                          <strong>{fixture.opponent} <small>{fixture.venue}</small></strong>
-                          <b>{fixture.expected_points.toFixed(2)} xP</b>
-                          <small className={fixture.data_basis === "market" ? "market-basis" : "proxy-basis"}>
-                            {fixture.opponent === "Blank" ? "No fixture" : fixture.data_basis === "market" ? "market" : "FDR proxy"}
-                          </small>
-                        </div>
-                      ))}
-                    </div>
-
-                    <details className="model-detail">
-                      <summary>Inspect the probability model</summary>
-                      {(focus.fixture_count ?? 1) > 1 && <p>Points and minutes cover all matches this gameweek. Weekly probabilities assume independent matches, including availability.</p>}
-                      <dl>
-                        <div><dt>Team goal mean</dt><dd>{focus.team_lambda.toFixed(3)}</dd></div>
-                        <div><dt>Opponent goal mean</dt><dd>{focus.opponent_lambda.toFixed(3)}</dd></div>
-                        <div><dt>Player goal mean</dt><dd>{focus.goal_lambda.toFixed(3)}</dd></div>
-                        <div><dt>Player assist mean</dt><dd>{focus.assist_lambda.toFixed(3)}</dd></div>
-                        <div><dt>Attacking blank</dt><dd>{Math.round(focus.attacking_blank_probability * 100)}%</dd></div>
-                        <div><dt>{(focus.fixture_count ?? 1) > 1 ? "At least one team clean sheet" : "Team clean sheet"}</dt><dd>{Math.round(focus.clean_sheet_probability * 100)}%</dd></div>
-                        <div><dt>Captain total</dt><dd>{player.captain_total_xp.toFixed(2)}</dd></div>
-                        <div><dt>TC total</dt><dd>{player.triple_captain_total_xp.toFixed(2)}</dd></div>
-                      </dl>
-                    </details>
-                  </article>
-                );
-              })}
-            </div>
-            <div className="player-lab-footnote">
-              <strong>Authority:</strong> {playerAnalysis.meta.authority}
-              <span>Snapshot {playerAnalysis.meta.snapshot_date} · {playerAnalysis.meta.player_count} players</span>
-            </div>
-          </>
-        )}
-      </section>
+      {renderPlayerWorkbench()}
 
       <section className="decision-grid">
         <div className="decision-panel squad-panel">
@@ -849,10 +866,17 @@ function LabModeSwitch({ mode, onChange }: { mode: LabMode; onChange: (mode: Lab
     <nav className="lab-mode-switch" aria-label="Decision Lab mode">
       <button
         type="button"
+        className={mode === "players" ? "active" : ""}
+        onClick={() => onChange("players")}
+      >
+        All players
+      </button>
+      <button
+        type="button"
         className={mode === "decisions" ? "active" : ""}
         onClick={() => onChange("decisions")}
       >
-        Decision room
+        My team
       </button>
       <button
         type="button"

@@ -287,6 +287,35 @@
   justify-content: center;
 }
 
+.compare-profile-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 0 0 18px;
+}
+
+.compare-profile-tabs button {
+  flex: 0 0 auto;
+  border: 1px solid var(--aero-border);
+  border-radius: 999px;
+  padding: 9px 15px;
+  color: var(--aero-muted);
+  background: rgba(255, 255, 255, 0.025);
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.compare-profile-tabs button.active {
+  border-color: var(--aero-accent);
+  color: #111;
+  background: var(--aero-accent);
+}
+
+.compare-profiles .gamelog-section {
+  margin-top: 14px;
+}
+
 /* ---------------------------------------------------- collapsed details */
 
 .compare-details summary {
