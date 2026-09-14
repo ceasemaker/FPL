@@ -105,9 +105,15 @@ non-`api/`/`admin/`/`static/` route so deep links survive a refresh. Tests:
 Consequences: one origin (`aerofpl.net` and `aerofpl.net/api/...`), so CORS and the
 `api.` subdomain are no longer load-bearing (kept for compatibility); one fewer $7 service;
 a Django restart takes the whole site down rather than leaving a data-less shell, which
-was judged acceptable. **Manual steps:** move the `aerofpl.net` / `www` custom domains from
-the old frontend service to `fpl-pulse-web` (a domain can only live on one service), then
-delete `fpl-pulse-frontend` in the dashboard.
+was judged acceptable. Domains were moved via the API on 2026-09-14: `aerofpl.net` is **verified on
+`fpl-pulse-web`** and serving; `www.aerofpl.net` sits on it `unverified` until a `www` CNAME
+→ `fpl-pulse-web-8u1j.onrender.com` exists at the DNS provider. **Remaining manual step:**
+delete `fpl-pulse-frontend` (`srv-dajeqlfqj5pc73dblfr0`) in the dashboard — it no longer has
+domains or traffic but still bills $7/month while it exists.
+
+Memory after the change: new instance idles at ~355 MB. The previous instance had crept from
+370 to 450 MB over ~5 hours before the redeploy replaced it — watch for that drift; if it
+recurs, lower gunicorn `--max-requests` or look at the Celery worker's `--max-tasks-per-child`.
 
 ## Visual direction
 
