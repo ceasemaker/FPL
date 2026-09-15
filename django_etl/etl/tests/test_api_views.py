@@ -128,6 +128,20 @@ class ApiViewTests(TestCase):
         self.assertFalse(payload["meta"]["personalized"])
         self.assertEqual(payload["meta"]["risk_profile"], "balanced")
 
+    def test_landing_recommends_highest_projected_next_gameweek_captain(self) -> None:
+        Athlete.objects.filter(id__in=[athlete.id for athlete in self.athletes]).update(status="a")
+        AthletePrediction.objects.filter(athlete=self.athletes[2], game_week=2).update(
+            predicted_points=Decimal("9.25")
+        )
+
+        response = self.client.get("/api/landing/")
+
+        self.assertEqual(response.status_code, 200)
+        captain = response.json()["captain_recommendation"]
+        self.assertEqual(captain["athlete_id"], self.athletes[2].id)
+        self.assertEqual(captain["game_week"], 2)
+        self.assertEqual(captain["predicted_points"], 9.25)
+
     def test_optimize_team_rejects_unknown_risk_profile(self) -> None:
         response = self.client.get("/api/optimize-team/?risk_profile=reckless")
         self.assertEqual(response.status_code, 400)

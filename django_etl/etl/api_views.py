@@ -501,6 +501,30 @@ def landing_snapshot(request):
         or 0
     )
     prev_gw = current_gw - 1 if current_gw else None
+    next_gw = current_gw + 1 if current_gw else 1
+
+    captain_prediction = (
+        AthletePrediction.objects.filter(
+            game_week=next_gw,
+            athlete__removed=False,
+            athlete__status__in=("a", "d"),
+        )
+        .select_related("athlete", "athlete__team")
+        .order_by("-predicted_points")
+        .first()
+    )
+    captain_recommendation = None
+    if captain_prediction:
+        captain_athlete = captain_prediction.athlete
+        captain_recommendation = {
+            "athlete_id": captain_athlete.id,
+            "web_name": captain_athlete.web_name,
+            "team_short_name": captain_athlete.team.short_name if captain_athlete.team else None,
+            "game_week": next_gw,
+            "predicted_points": float(captain_prediction.predicted_points),
+            "image_url": _player_image(captain_athlete.photo),
+            "source": "stored_model_projection",
+        }
 
     price_risers_qs = (
         Athlete.objects.filter(cost_change_event__gt=0)
@@ -749,6 +773,7 @@ def landing_snapshot(request):
 
     response: dict[str, Any] = {
         "current_gameweek": current_gw,
+        "captain_recommendation": captain_recommendation,
         "pulse": {
             "value": round(pulse_index, 2),
             "total_points_current": total_points_current,

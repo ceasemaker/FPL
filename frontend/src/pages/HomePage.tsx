@@ -39,16 +39,13 @@ export function HomePage(){
   const eliteGw=elite?.game_week??null;
   const eliteIsCurrent=eliteGw!==null&&latestCompletedGw!==null&&eliteGw===latestCompletedGw;
 
-  const captain=eliteIsCurrent?elite?.most_captained?.[0]:undefined;
-  const captainPlayer=captain?elite?.template_squad.find(p=>p.athlete_id===captain.athlete_id):undefined;
+  const captain=data?.captain_recommendation??null;
   const easiest=useMemo(()=>fixtures?.teams.filter(t=>t.avg_difficulty!==null).sort((a,b)=>(a.avg_difficulty??9)-(b.avg_difficulty??9))[0],[fixtures]);
 
   const allValuePlayers=useMemo<ValuePlayer[]>(()=>{
     if(!values)return[];
     return[...values.goalkeepers,...values.defenders,...values.midfielders,...values.forwards];
   },[values]);
-  const formLeader=useMemo(()=>[...allValuePlayers].sort((a,b)=>b.form-a.form)[0],[allValuePlayers]);
-
   const watchlist=useMemo(()=>{
     if(!values)return[];
     return Object.entries({goalkeepers:values.goalkeepers,defenders:values.defenders,midfielders:values.midfielders,forwards:values.forwards})
@@ -89,14 +86,14 @@ export function HomePage(){
       </p>}
 
     <div className="command-layout"><section className="command-main">
-      {eliteIsCurrent&&captain
+      {captain
         ? <article className="captain-hero">
             <div className="captain-copy">
-              <span className="eyebrow">★ ELITE CAPTAIN SIGNAL · GW{eliteGw}</span>
+              <span className="eyebrow">★ MODEL CAPTAIN PICK · GW{captain.game_week}</span>
               <h2>Captain <em>{captain.web_name}</em></h2>
               <div className="captain-metrics">
-                <div><strong>{captain.percentage.toFixed(0)}%</strong><span>captained</span></div>
-                <div><strong>{captainPlayer?.total_points??"—"}</strong><span>total points</span></div>
+                <div><strong>{captain.predicted_points.toFixed(1)}</strong><span>projected points</span></div>
+                <div><strong>{(captain.predicted_points*2).toFixed(1)}</strong><span>captain total</span></div>
                 <div className="best-fixture"><b>♜</b><span><strong>{easiest?.team_short_name??"—"}</strong> best fixture run</span></div>
               </div>
             </div>
@@ -105,15 +102,14 @@ export function HomePage(){
           </article>
         : <article className="captain-hero">
             <div className="captain-copy">
-              <span className="eyebrow">▲ FORM LEADER · GW{latestCompletedGw??"—"}</span>
-              <h2>In form <em>{formLeader?.web_name??(isLoading?"loading…":"—")}</em></h2>
+              <span className="eyebrow">▲ CAPTAIN FORECAST · GW{nextGw??"—"}</span>
+              <h2>Captain pick <em>{isLoading?"loading…":"unavailable"}</em></h2>
               <div className="captain-metrics">
-                <div><strong>{formLeader?formLeader.form.toFixed(1):"—"}</strong><span>form</span></div>
-                <div><strong>{formLeader?.total_points??"—"}</strong><span>total points</span></div>
+                <div><strong>—</strong><span>projected points</span></div>
+                <div><strong>—</strong><span>captain total</span></div>
                 <div className="best-fixture"><b>♜</b><span><strong>{easiest?.team_short_name??"—"}</strong> best fixture run</span></div>
               </div>
             </div>
-            {formLeader?.image_url&&<img className="captain-image" src={formLeader.image_url} alt={formLeader.web_name}/>}
             <div className="hero-slash"/>
           </article>}
 

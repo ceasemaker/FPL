@@ -57,6 +57,15 @@ export interface NewsItem {
 
 export interface LandingData {
   current_gameweek: number;
+  captain_recommendation: {
+    athlete_id: number;
+    web_name: string;
+    team_short_name: string | null;
+    game_week: number;
+    predicted_points: number;
+    image_url: string | null;
+    source: "stored_model_projection";
+  } | null;
   pulse: PulseResponse;
   movers: Movers;
   transfers: Transfers;
