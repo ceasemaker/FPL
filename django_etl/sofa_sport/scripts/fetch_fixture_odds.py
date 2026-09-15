@@ -8,7 +8,7 @@ This script:
 4. Tracks previous odds for movement detection (arrows)
 
 Usage:
-    python fetch_fixture_odds.py --days=8  # Daily odds for the next 8 days
+    python fetch_fixture_odds.py --days=21  # Daily odds for the next 21 days
     python fetch_fixture_odds.py --status  # Read tally; makes no network call
     python fetch_fixture_odds.py --event-id=12345  # Fetch odds for specific fixture
 """
@@ -578,7 +578,7 @@ def daily_status(run_date: str | None = None) -> dict:
     }
 
 
-def sync_upcoming_fixtures_odds(days_ahead: int = 8, *, force: bool = False) -> dict:
+def sync_upcoming_fixtures_odds(days_ahead: int = 21, *, force: bool = False) -> dict:
     """
     Fetch and store odds for all upcoming fixtures within specified days.
     

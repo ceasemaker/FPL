@@ -11,8 +11,10 @@ from ..models import (
     AthletePrediction,
     AthleteStat,
     Fixture,
+    FixtureOdds,
     PriceSnapshot,
     RawEndpointSnapshot,
+    SofasportFixture,
     Team,
 )
 
@@ -154,6 +156,32 @@ class ApiViewTests(TestCase):
         self.assertEqual(payload["end_gameweek"], 4)
         self.assertEqual(payload["horizon"], 3)
         self.assertEqual(len(payload["teams"]), 5)
+
+    def test_fixtures_ticker_uses_live_fixture_odds(self) -> None:
+        mapped = SofasportFixture.objects.create(
+            sofasport_event_id=123456,
+            fixture=Fixture.objects.get(id=1),
+            sofasport_home_team_id=901,
+            sofasport_away_team_id=902,
+            sofasport_tournament_id=17,
+            sofasport_season_id=1,
+        )
+        FixtureOdds.objects.create(
+            fixture=mapped,
+            home_odds=Decimal("2.00"),
+            draw_odds=Decimal("4.00"),
+            away_odds=Decimal("4.00"),
+        )
+
+        response = self.client.get("/api/fixtures/ticker/?horizon=3")
+
+        payload = response.json()
+        home = next(team for team in payload["teams"] if team["team_id"] == self.teams[0].id)
+        away = next(team for team in payload["teams"] if team["team_id"] == self.teams[1].id)
+        self.assertEqual(home["fixtures"][0]["win_probability"], 0.5)
+        self.assertEqual(away["fixtures"][0]["win_probability"], 0.25)
+        self.assertEqual(payload["market"]["source"], "live fixture odds database")
+        self.assertEqual(payload["market"]["priced_fixture_count"], 1)
 
     def test_price_change_predictor(self) -> None:
         athlete_rise = self.athletes[0]

@@ -20,7 +20,8 @@ from django.http import FileResponse, JsonResponse, HttpResponse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 
-from .models import Athlete, AthletePrediction, AthleteStat, Fixture, PriceSnapshot, RawEndpointSnapshot, Team, SofasportHeatmap
+from .models import Athlete, AthletePrediction, AthleteStat, Fixture, FixtureOdds, PriceSnapshot, RawEndpointSnapshot, Team, SofasportHeatmap
+from .services.fixture_market import remove_vig
 from .services.decision_dashboard import build_decision_dashboard
 from .services.player_gameweeks import build_player_gameweeks
 from .services.player_analysis import (
@@ -901,34 +902,31 @@ def fixtures_ticker(request):
 
     market_lookup: dict[tuple[str, int], dict[str, float]] = {}
     market_snapshot_date = None
-    try:
-        market_snapshot = load_latest_snapshot()
-        market_snapshot_date = market_snapshot.get("snapshot_date")
-        for row in market_snapshot.get("rows", []):
-            if row.get("market_basis") != "1X2 Poisson fit":
+    market_source = None
+    odds_rows = (
+        FixtureOdds.objects.filter(
+            fixture__fixture__event__gte=start_gw,
+            fixture__fixture__event__lte=end_gw,
+        )
+        .select_related("fixture__fixture__team_h", "fixture__fixture__team_a")
+        .order_by("-last_updated")
+    )
+    for odds in odds_rows:
+        fixture = odds.fixture.fixture
+        probabilities = remove_vig(odds.home_odds, odds.draw_odds, odds.away_odds)
+        if fixture is None or probabilities is None:
+            continue
+        home_win, _, away_win = probabilities
+        for team, win_probability in ((fixture.team_h, home_win), (fixture.team_a, away_win)):
+            if team is None:
                 continue
-            key = (str(row.get("team") or ""), int(row.get("gameweek") or 0))
-            if key in market_lookup:
-                continue
-            team_lambda = float(row.get("team_lambda_market") or 0)
-            opponent_lambda = float(row.get("opponent_lambda_market") or 0)
-            if team_lambda <= 0 or opponent_lambda <= 0:
-                continue
-            # Independent Poisson result probability, truncated safely at ten goals.
-            win_probability = 0.0
-            for team_goals in range(11):
-                team_mass = math.exp(-team_lambda) * (team_lambda ** team_goals) / math.factorial(team_goals)
-                opponent_below = sum(
-                    math.exp(-opponent_lambda) * (opponent_lambda ** goals) / math.factorial(goals)
-                    for goals in range(team_goals)
-                )
-                win_probability += team_mass * opponent_below
-            market_lookup[key] = {
+            market_lookup[(team.short_name, fixture.event)] = {
                 "win_probability": round(win_probability, 4),
                 "odds_difficulty": 1 if win_probability >= .65 else 2 if win_probability >= .50 else 3 if win_probability >= .35 else 4 if win_probability >= .22 else 5,
             }
-    except (FileNotFoundError, TypeError, ValueError):
-        pass
+        if market_snapshot_date is None:
+            market_snapshot_date = odds.last_updated.date().isoformat()
+        market_source = "live fixture odds database"
 
     for fixture in fixtures_qs:
         if fixture.team_h_id in team_rows:
@@ -981,6 +979,9 @@ def fixtures_ticker(request):
         "market": {
             "available": bool(market_lookup),
             "snapshot_date": market_snapshot_date,
+            "source": market_source,
+            "priced_fixture_count": len(market_lookup) // 2,
+            "total_fixture_count": fixtures_qs.count(),
             "type": "1X2 match-result odds",
             "includes_clean_sheet_odds": False,
             "note": "Win probabilities are derived from margin-normalized home/draw/away prices. They are not clean-sheet probabilities.",

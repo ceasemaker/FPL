@@ -75,7 +75,7 @@ app.conf.beat_schedule = {
     'sync-fixture-odds': {
         'task': 'etl.tasks.sync_fixture_odds',
         'schedule': crontab(hour=5, minute=30),
-        'kwargs': {'days_ahead': 8}
+        'kwargs': {'days_ahead': 21}
     },
 
     # One lightweight CSV request. This is historical completed-match data,

@@ -263,14 +263,14 @@ def run_manual_update(script_name: str):
 
 
 @shared_task(name='etl.tasks.sync_fixture_odds')
-def sync_fixture_odds(days_ahead=8):
+def sync_fixture_odds(days_ahead=21):
     """
     Fetch and update betting odds for upcoming fixtures.
     Runs: Once daily. The script also enforces a persistent daily guard and
     no more than five public API calls per minute, including in Docker.
     
     Args:
-        days_ahead: Number of days ahead to fetch odds for (default: 8)
+        days_ahead: Number of days ahead to fetch odds for (default: 21)
     """
     logger.info(f"Starting fixture odds sync for next {days_ahead} days...")
     
