@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone as dt_timezone
 from decimal import Decimal
 from unittest.mock import Mock, patch
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from ..models import (
     Athlete,
@@ -130,6 +130,7 @@ class ApiViewTests(TestCase):
         self.assertFalse(payload["meta"]["personalized"])
         self.assertEqual(payload["meta"]["risk_profile"], "balanced")
 
+    @override_settings(CAPTAIN_PICK_ENABLED=True)
     def test_landing_recommends_highest_projected_next_gameweek_captain(self) -> None:
         Athlete.objects.filter(id__in=[athlete.id for athlete in self.athletes]).update(status="a")
         AthletePrediction.objects.filter(athlete=self.athletes[2], game_week=2).update(
@@ -143,6 +144,30 @@ class ApiViewTests(TestCase):
         self.assertEqual(captain["athlete_id"], self.athletes[2].id)
         self.assertEqual(captain["game_week"], 2)
         self.assertEqual(captain["predicted_points"], 9.25)
+        self.assertEqual(response.json()["captain_status"], "ok")
+
+    @override_settings(CAPTAIN_PICK_ENABLED=True)
+    def test_landing_omits_captain_when_every_projection_is_zero(self) -> None:
+        Athlete.objects.filter(id__in=[athlete.id for athlete in self.athletes]).update(status="a")
+        AthletePrediction.objects.filter(game_week=2).update(predicted_points=Decimal("0"))
+
+        response = self.client.get("/api/landing/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(response.json()["captain_recommendation"])
+        self.assertEqual(response.json()["captain_status"], "no_projection")
+
+    def test_landing_withholds_captain_until_model_is_validated(self) -> None:
+        Athlete.objects.filter(id__in=[athlete.id for athlete in self.athletes]).update(status="a")
+        AthletePrediction.objects.filter(athlete=self.athletes[2], game_week=2).update(
+            predicted_points=Decimal("9.25")
+        )
+
+        response = self.client.get("/api/landing/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(response.json()["captain_recommendation"])
+        self.assertEqual(response.json()["captain_status"], "unvalidated")
 
     def test_optimize_team_rejects_unknown_risk_profile(self) -> None:
         response = self.client.get("/api/optimize-team/?risk_profile=reckless")

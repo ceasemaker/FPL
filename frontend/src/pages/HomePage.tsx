@@ -40,6 +40,7 @@ export function HomePage(){
   const eliteIsCurrent=eliteGw!==null&&latestCompletedGw!==null&&eliteGw===latestCompletedGw;
 
   const captain=data?.captain_recommendation??null;
+  const captainOnHold=data?.captain_status==="unvalidated";
   const easiest=useMemo(()=>fixtures?.teams.filter(t=>t.avg_difficulty!==null).sort((a,b)=>(a.avg_difficulty??9)-(b.avg_difficulty??9))[0],[fixtures]);
 
   const allValuePlayers=useMemo<ValuePlayer[]>(()=>{
@@ -103,10 +104,12 @@ export function HomePage(){
         : <article className="captain-hero">
             <div className="captain-copy">
               <span className="eyebrow">▲ CAPTAIN FORECAST · GW{nextGw??"—"}</span>
-              <h2>Captain pick <em>{isLoading?"loading…":"unavailable"}</em></h2>
+              <h2>Captain pick <em>{isLoading?"loading…":captainOnHold?"on hold":"unavailable"}</em></h2>
               <div className="captain-metrics">
-                <div><strong>—</strong><span>projected points</span></div>
-                <div><strong>—</strong><span>captain total</span></div>
+                {captainOnHold
+                  ? <div className="captain-hold"><span>Our points model hasn't been validated against past gameweeks yet, so we're not naming a captain.</span></div>
+                  : <><div><strong>—</strong><span>projected points</span></div>
+                    <div><strong>—</strong><span>captain total</span></div></>}
                 <div className="best-fixture"><b>♜</b><span><strong>{easiest?.team_short_name??"—"}</strong> best fixture run</span></div>
               </div>
             </div>

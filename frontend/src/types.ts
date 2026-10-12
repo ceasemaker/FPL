@@ -66,6 +66,7 @@ export interface LandingData {
     image_url: string | null;
     source: "stored_model_projection";
   } | null;
+  captain_status: "ok" | "no_projection" | "unvalidated";
   pulse: PulseResponse;
   movers: Movers;
   transfers: Transfers;

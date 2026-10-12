@@ -30,6 +30,15 @@ def get_model_path(model_name: str) -> Path:
     return MODELS_DIR / f"fpl_{model_name}.joblib"
 
 
+def models_available() -> bool:
+    """True when the trained points model is on disk.
+
+    MODELS_DIR lives on the instance's ephemeral filesystem, so any restart
+    or redeploy wipes it until the next retrain.
+    """
+    return get_model_path("points_regressor").exists()
+
+
 @lru_cache(maxsize=16)
 def _load_model(path: str):
     """Load each immutable model artifact once per prediction process."""

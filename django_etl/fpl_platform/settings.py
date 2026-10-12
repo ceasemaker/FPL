@@ -14,6 +14,10 @@ SECRET_KEY = os.getenv("SECRET_KEY", os.getenv("DJANGO_SECRET_KEY", "insecure-de
 DEBUG = env_bool("DEBUG", default=env_bool("DJANGO_DEBUG", default=False))
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", os.getenv("DJANGO_ALLOWED_HOSTS", "*")).split(",")
 
+# The homepage captain pick comes from the points model, which has not been
+# validated against past gameweeks. Keep it off until it has.
+CAPTAIN_PICK_ENABLED = env_bool("CAPTAIN_PICK_ENABLED", default=False)
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",

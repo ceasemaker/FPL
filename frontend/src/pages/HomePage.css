@@ -48,3 +48,14 @@
 }
 .freshness-strip { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0 0 18px; padding: 10px 13px; border: 1px solid var(--aero-line); border-radius: 11px; background: rgba(255,255,255,.025); color: var(--aero-text-dim); font-size: .7rem; }
 .freshness-strip strong { color: var(--aero-lime); text-transform: uppercase; letter-spacing: .08em; }
+
+/* Captain pick withheld until the points model is validated. */
+.captain-metrics .captain-hold {
+  max-width: 340px;
+}
+
+.captain-metrics .captain-hold span {
+  margin-top: 0;
+  font-size: .8rem;
+  line-height: 1.4;
+}

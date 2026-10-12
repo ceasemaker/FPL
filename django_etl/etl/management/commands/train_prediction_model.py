@@ -1,6 +1,6 @@
 """Management command to train ML prediction models and populate predictions."""
 import logging
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 from django.db.models import Max
 
@@ -10,7 +10,12 @@ from etl.services.fixture_market import (
     calibrate_points,
     calibrate_probability,
 )
-from etl.ml.model import train_and_save_models, predict_points, predict_probability
+from etl.ml.model import (
+    models_available,
+    predict_points,
+    predict_probability,
+    train_and_save_models,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -35,11 +40,22 @@ class Command(BaseCommand):
         gameweek = options.get("gameweek")
 
         try:
-            # Train models if not skipping
+            # Train models if not skipping. A restart wipes the ephemeral model
+            # files, so --skip-training still has to train when they are gone.
+            if skip_training and not models_available():
+                self.stdout.write("Model files missing (instance restarted?); training first...")
+                skip_training = False
             if not skip_training:
                 self.stdout.write("Training ML models...")
                 train_and_save_models()
                 self.stdout.write(self.style.SUCCESS("✓ Models trained successfully"))
+
+            # Without a model every prediction would be 0.0. Writing those
+            # would overwrite real projections with numbers that mean nothing.
+            if not models_available():
+                raise CommandError(
+                    "No trained points model available; refusing to write predictions"
+                )
 
             # Determine gameweek to predict for
             if not gameweek:

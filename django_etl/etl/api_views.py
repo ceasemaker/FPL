@@ -504,16 +504,22 @@ def landing_snapshot(request):
     prev_gw = current_gw - 1 if current_gw else None
     next_gw = current_gw + 1 if current_gw else 1
 
-    captain_prediction = (
-        AthletePrediction.objects.filter(
-            game_week=next_gw,
-            athlete__removed=False,
-            athlete__status__in=("a", "d"),
+    captain_prediction = None
+    captain_status = "unvalidated"
+    if settings.CAPTAIN_PICK_ENABLED:
+        captain_prediction = (
+            AthletePrediction.objects.filter(
+                game_week=next_gw,
+                # A zero projection means no model output, not a pick; show nothing.
+                predicted_points__gt=0,
+                athlete__removed=False,
+                athlete__status__in=("a", "d"),
+            )
+            .select_related("athlete", "athlete__team")
+            .order_by("-predicted_points")
+            .first()
         )
-        .select_related("athlete", "athlete__team")
-        .order_by("-predicted_points")
-        .first()
-    )
+        captain_status = "ok" if captain_prediction else "no_projection"
     captain_recommendation = None
     if captain_prediction:
         captain_athlete = captain_prediction.athlete
@@ -775,6 +781,7 @@ def landing_snapshot(request):
     response: dict[str, Any] = {
         "current_gameweek": current_gw,
         "captain_recommendation": captain_recommendation,
+        "captain_status": captain_status,
         "pulse": {
             "value": round(pulse_index, 2),
             "total_points_current": total_points_current,
