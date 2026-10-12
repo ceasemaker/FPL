@@ -1,0 +1,160 @@
+{
+  "by_method": {
+    "all": {
+      "form_baseline": {
+        "weeks": 105,
+        "mean_captain_points": 5.343,
+        "mean_regret": 11.962,
+        "gk_def_pick_share": 0.162
+      },
+      "premium_baseline": {
+        "weeks": 105,
+        "mean_captain_points": 5.0,
+        "mean_regret": 12.305,
+        "gk_def_pick_share": 0.0
+      },
+      "prod_history": {
+        "weeks": 105,
+        "mean_captain_points": 6.61,
+        "mean_regret": 10.695,
+        "gk_def_pick_share": 0.038
+      },
+      "prod_within": {
+        "weeks": 105,
+        "mean_captain_points": 5.867,
+        "mean_regret": 11.438,
+        "gk_def_pick_share": 0.133
+      },
+      "stacked_xp": {
+        "weeks": 70,
+        "mean_captain_points": 7.629,
+        "mean_regret": 9.543,
+        "gk_def_pick_share": 0.0
+      }
+    },
+    "early_season_gw4_10": {
+      "form_baseline": {
+        "weeks": 21,
+        "mean_captain_points": 6.286,
+        "mean_regret": 10.81,
+        "gk_def_pick_share": 0.19
+      },
+      "premium_baseline": {
+        "weeks": 21,
+        "mean_captain_points": 6.286,
+        "mean_regret": 10.81,
+        "gk_def_pick_share": 0.0
+      },
+      "prod_history": {
+        "weeks": 21,
+        "mean_captain_points": 8.143,
+        "mean_regret": 8.952,
+        "gk_def_pick_share": 0.048
+      },
+      "prod_within": {
+        "weeks": 21,
+        "mean_captain_points": 5.048,
+        "mean_regret": 12.048,
+        "gk_def_pick_share": 0.095
+      },
+      "stacked_xp": {
+        "weeks": 14,
+        "mean_captain_points": 8.714,
+        "mean_regret": 8.429,
+        "gk_def_pick_share": 0.0
+      }
+    }
+  },
+  "vs_premium_baseline": {
+    "all": {
+      "form_baseline": {
+        "weeks": 105,
+        "mean_diff": 0.343,
+        "se": 0.632
+      },
+      "prod_history": {
+        "weeks": 105,
+        "mean_diff": 1.61,
+        "se": 0.596
+      },
+      "prod_within": {
+        "weeks": 105,
+        "mean_diff": 0.867,
+        "se": 0.545
+      },
+      "stacked_xp": {
+        "weeks": 70,
+        "mean_diff": 3.229,
+        "se": 0.754
+      }
+    },
+    "early_season_gw4_10": {
+      "form_baseline": {
+        "weeks": 21,
+        "mean_diff": 0.0,
+        "se": 1.643
+      },
+      "prod_history": {
+        "weeks": 21,
+        "mean_diff": 1.857,
+        "se": 1.566
+      },
+      "prod_within": {
+        "weeks": 21,
+        "mean_diff": -1.238,
+        "se": 1.325
+      },
+      "stacked_xp": {
+        "weeks": 14,
+        "mean_diff": 3.571,
+        "se": 1.86
+      }
+    }
+  },
+  "vs_form_baseline": {
+    "all": {
+      "premium_baseline": {
+        "weeks": 105,
+        "mean_diff": -0.343,
+        "se": 0.632
+      },
+      "prod_history": {
+        "weeks": 105,
+        "mean_diff": 1.267,
+        "se": 0.589
+      },
+      "prod_within": {
+        "weeks": 105,
+        "mean_diff": 0.524,
+        "se": 0.6
+      },
+      "stacked_xp": {
+        "weeks": 70,
+        "mean_diff": 2.171,
+        "se": 0.726
+      }
+    },
+    "early_season_gw4_10": {
+      "premium_baseline": {
+        "weeks": 21,
+        "mean_diff": 0.0,
+        "se": 1.643
+      },
+      "prod_history": {
+        "weeks": 21,
+        "mean_diff": 1.857,
+        "se": 0.884
+      },
+      "prod_within": {
+        "weeks": 21,
+        "mean_diff": -1.238,
+        "se": 1.142
+      },
+      "stacked_xp": {
+        "weeks": 14,
+        "mean_diff": 1.929,
+        "se": 1.151
+      }
+    }
+  }
+}

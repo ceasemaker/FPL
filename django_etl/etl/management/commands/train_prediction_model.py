@@ -19,6 +19,23 @@ from etl.ml.model import (
 
 logger = logging.getLogger(__name__)
 
+# FPL statuses for players who will not play: injured, suspended,
+# unavailable, not in the squad (e.g. on loan).
+UNAVAILABLE_STATUSES = {"i", "s", "u", "n"}
+
+
+def availability_factor(athlete: Athlete) -> float:
+    """Share of a normal projection a player can earn next gameweek.
+
+    The model's features cannot see injuries (FPL keeps no history of them),
+    so an injured player in form would otherwise be projected as if fit.
+    """
+    if athlete.removed or athlete.status in UNAVAILABLE_STATUSES:
+        return 0.0
+    if athlete.chance_of_playing_next_round is not None:
+        return max(0.0, min(1.0, athlete.chance_of_playing_next_round / 100))
+    return 1.0
+
 
 class Command(BaseCommand):
     help = "Train ML prediction models and populate next gameweek predictions"
@@ -119,6 +136,13 @@ class Command(BaseCommand):
                             bonus_prob,
                             min(1.0, bonus_prob * market_adjustment.multiplier),
                         )
+
+                    available = availability_factor(athlete)
+                    predicted_points *= available
+                    clean_sheet_prob, goal_prob, assist_prob, bonus_prob = (
+                        None if prob is None else prob * available
+                        for prob in (clean_sheet_prob, goal_prob, assist_prob, bonus_prob)
+                    )
 
                     # Create or update prediction
                     prediction, created = AthletePrediction.objects.update_or_create(

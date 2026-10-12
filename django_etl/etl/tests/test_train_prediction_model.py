@@ -7,7 +7,8 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import TestCase
 
-from ..models import AthletePrediction
+from ..management.commands.train_prediction_model import availability_factor
+from ..models import Athlete, AthletePrediction
 
 COMMAND = "etl.management.commands.train_prediction_model"
 
@@ -42,3 +43,22 @@ class TrainPredictionModelCommandTests(TestCase):
             )
 
         self.assertFalse(AthletePrediction.objects.exists())
+
+
+class AvailabilityFactorTests(TestCase):
+    def _athlete(self, **fields) -> Athlete:
+        defaults = {"removed": False, "status": "a", "chance_of_playing_next_round": None}
+        defaults.update(fields)
+        return Athlete(**defaults)
+
+    def test_fit_player_keeps_full_projection(self) -> None:
+        self.assertEqual(availability_factor(self._athlete()), 1.0)
+
+    def test_injured_suspended_and_removed_players_project_zero(self) -> None:
+        for status in ("i", "s", "u", "n"):
+            self.assertEqual(availability_factor(self._athlete(status=status)), 0.0)
+        self.assertEqual(availability_factor(self._athlete(removed=True)), 0.0)
+
+    def test_doubtful_player_scales_by_chance_of_playing(self) -> None:
+        athlete = self._athlete(status="d", chance_of_playing_next_round=75)
+        self.assertEqual(availability_factor(athlete), 0.75)
