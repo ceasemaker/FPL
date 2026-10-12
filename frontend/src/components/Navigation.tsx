@@ -7,6 +7,7 @@ const links = [
   { to: "/", label: "Overview", icon: "⌂" },
   { to: "/decision-lab", label: "Decision Lab", icon: "▣" },
   { to: "/players", label: "Players", icon: "♙" },
+  { to: "/chart-lab", label: "Chart Lab", icon: "◫" },
   { to: "/fixtures", label: "Fixtures", icon: "▦" },
   { to: "/price-monitor", label: "Price Monitor", icon: "↗" },
   { to: "/analyze", label: "Analyze Manager", icon: "◇" },

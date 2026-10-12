@@ -17,5 +17,7 @@
     "jsx": "react-jsx"
   },
   "include": ["src"],
+  // Unit tests run under Node (`npm test`), not in the browser bundle.
+  "exclude": ["src/**/*.test.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

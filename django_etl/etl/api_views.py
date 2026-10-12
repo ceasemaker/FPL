@@ -22,6 +22,7 @@ from django.views.decorators.http import require_GET
 
 from .models import Athlete, AthletePrediction, AthleteStat, Fixture, FixtureOdds, PriceSnapshot, RawEndpointSnapshot, Team, SofasportHeatmap
 from .services.fixture_market import remove_vig
+from .services import chart_lab
 from .services.decision_dashboard import build_decision_dashboard
 from .services.player_gameweeks import build_player_gameweeks
 from .services.player_analysis import (
@@ -1094,34 +1095,6 @@ def price_predictor_history(request):
 
 
 
-def _expected_clean_sheets(athlete_ids: Iterable[int]) -> dict[int, float]:
-    """Estimated clean sheets per player from expected goals conceded.
-
-    FPL publishes no xCS. With goals conceded ~ Poisson(xGC), the chance of a
-    clean sheet in a match is exp(-xGC). We sum that over appearances of 60+
-    minutes, the threshold FPL uses to award clean-sheet points. A gameweek
-    row merges a double gameweek, so its xGC and minutes are split evenly
-    across the team's fixtures that week.
-    """
-    fixtures_per_team_gw: dict[tuple[int, int], int] = defaultdict(int)
-    for team_h_id, team_a_id, event in Fixture.objects.filter(event__isnull=False).values_list(
-        "team_h_id", "team_a_id", "event"
-    ):
-        fixtures_per_team_gw[(team_h_id, event)] += 1
-        fixtures_per_team_gw[(team_a_id, event)] += 1
-
-    totals: dict[int, float] = defaultdict(float)
-    rows = AthleteStat.objects.filter(athlete_id__in=list(athlete_ids)).values_list(
-        "athlete_id", "athlete__team_id", "game_week", "minutes", "expected_goals_conceded"
-    )
-    for athlete_id, team_id, game_week, minutes, xgc in rows:
-        matches = fixtures_per_team_gw.get((team_id, game_week), 1) or 1
-        if (minutes or 0) / matches < 60:
-            continue
-        totals[athlete_id] += matches * math.exp(-float(xgc or 0) / matches)
-    return totals
-
-
 @require_GET
 def players_list(request):
     """Return all players with key stats for player grid view."""
@@ -1217,7 +1190,7 @@ def players_list(request):
     )
 
     players_page = list(players_qs_paginated)
-    expected_clean_sheets = _expected_clean_sheets(player.id for player in players_page)
+    expected_clean_sheets = chart_lab.expected_clean_sheets(player.id for player in players_page)
 
     # Calculate average FDR for next 3 fixtures per player (paginated)
     players_data = []
@@ -1269,7 +1242,7 @@ def players_list(request):
             "selected_by_percent": float(player.selected_by_percent) if player.selected_by_percent else None,
             "expected_goals": float(player.expected_goals) if player.expected_goals else None,
             "expected_assists": float(player.expected_assists) if player.expected_assists else None,
-            # Estimated, not an FPL field; see _expected_clean_sheets.
+            # Estimated, not an FPL field; see chart_lab.expected_clean_sheet_chance.
             "expected_clean_sheets": round(expected_clean_sheets.get(player.id, 0.0), 2),
             "points_last_3": last_3["points"],
             "minutes_last_3": last_3["minutes"],
@@ -3263,3 +3236,21 @@ def upcoming_fixtures_with_odds(request):
     cache.set(cache_key, response_data, 300)
     
     return JsonResponse(response_data)
+
+
+@require_GET
+def chart_lab_players(request):
+    """Season totals of every Chart Lab stat for every listed player."""
+    return JsonResponse(chart_lab.build_player_totals())
+
+
+@require_GET
+def chart_lab_series(request):
+    """Per-gameweek Chart Lab stats for up to six players (``?ids=1,2``)."""
+    try:
+        ids = [int(value) for value in request.GET.get("ids", "").split(",") if value.strip()]
+    except ValueError:
+        return JsonResponse({"error": "ids must be comma-separated integers"}, status=400)
+    if not ids:
+        return JsonResponse({"error": "ids is required"}, status=400)
+    return JsonResponse(chart_lab.build_player_series(ids))

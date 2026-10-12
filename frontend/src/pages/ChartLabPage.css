@@ -1,0 +1,360 @@
+/* Chart Lab — formula-driven charts, adapted from the A.R.G.U.S. Chart Lab. */
+
+.chart-lab-page code {
+  font-family: "SF Mono", ui-monospace, Menlo, monospace;
+  font-size: 0.85em;
+  color: var(--aero-lime);
+}
+
+.lab-layout {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+  max-width: 1340px;
+}
+
+.lab-main {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+/* ------------------------------------------------------------ controls */
+
+.lab-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lab-mode {
+  display: flex;
+  gap: 6px;
+}
+
+.lab-pill {
+  flex: 1;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--aero-line-strong);
+  background: var(--aero-surface);
+  color: var(--aero-text-dim);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.lab-pill.active {
+  background: var(--aero-lime);
+  border-color: transparent;
+  color: #101011;
+}
+
+.lab-formula-input {
+  font-family: "SF Mono", ui-monospace, Menlo, monospace;
+  font-size: 0.86rem;
+}
+
+.lab-formula-input.invalid {
+  border-color: var(--aero-negative);
+}
+
+.lab-formula-error {
+  color: var(--aero-negative);
+  font-size: 0.72rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.lab-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lab-chip {
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--aero-line-strong);
+  background: var(--aero-surface-raised);
+  color: var(--aero-text-dim);
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.lab-chip:hover {
+  border-color: var(--aero-lime);
+  color: var(--aero-lime);
+}
+
+.lab-filter-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.lab-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--aero-text-dim);
+  cursor: pointer;
+}
+
+.lab-check input {
+  accent-color: var(--aero-lime);
+}
+
+.lab-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lab-selected {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--aero-radius-sm);
+  border: 1px solid var(--aero-line);
+  background: var(--aero-surface);
+  font-size: 0.82rem;
+}
+
+.lab-selected i {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex: none;
+}
+
+.lab-selected span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.lab-selected small,
+.lab-search-results small {
+  color: var(--aero-text-muted);
+  font-size: 0.7rem;
+}
+
+.lab-selected button,
+.lab-saved-row button:last-child {
+  border: 0;
+  background: transparent;
+  color: var(--aero-text-muted);
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.lab-search {
+  position: relative;
+}
+
+.lab-search .aero-input {
+  width: 100%;
+}
+
+.lab-search-results {
+  position: absolute;
+  top: 46px;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--aero-line-strong);
+  border-radius: var(--aero-radius-sm);
+  background: var(--aero-surface-raised);
+  overflow: hidden;
+  box-shadow: var(--aero-shadow);
+}
+
+.lab-search-results button {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--aero-text);
+  font-family: inherit;
+  font-size: 0.82rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.lab-search-results button:hover:not(:disabled) {
+  background: var(--aero-surface-hover);
+}
+
+.lab-search-results button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.lab-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.lab-saved {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lab-saved-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lab-saved-row button:first-child {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  border-radius: var(--aero-radius-sm);
+  border: 1px solid var(--aero-line);
+  background: var(--aero-surface);
+  color: var(--aero-text-dim);
+  font-family: inherit;
+  font-size: 0.74rem;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+/* --------------------------------------------------------------- chart */
+
+.lab-chart-title {
+  font-family: "SF Mono", ui-monospace, Menlo, monospace;
+  font-size: 1rem !important;
+  word-break: break-word;
+}
+
+.lab-chart {
+  min-height: 300px;
+}
+
+.lab-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.lab-dot {
+  cursor: pointer;
+  transition: r 0.12s ease;
+}
+
+.lab-dot:hover {
+  r: 7;
+}
+
+.lab-chart-empty {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.lab-skeleton {
+  height: 380px;
+  border-radius: var(--aero-radius-sm);
+  background: linear-gradient(90deg, var(--aero-surface) 0%, var(--aero-surface-raised) 50%, var(--aero-surface) 100%);
+  background-size: 200% 100%;
+  animation: lab-shimmer 1.4s linear infinite;
+}
+
+@keyframes lab-shimmer {
+  to { background-position: -200% 0; }
+}
+
+.lab-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 10px;
+  font-size: 0.76rem;
+  color: var(--aero-text-dim);
+}
+
+.lab-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lab-legend i {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.lab-hint {
+  margin-top: 10px;
+}
+
+/* ----------------------------------------------------------- reference */
+
+.lab-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 6px;
+}
+
+.lab-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--aero-radius-sm);
+  border: 1px solid var(--aero-line);
+  background: var(--aero-surface);
+  color: var(--aero-text-dim);
+  font-family: inherit;
+  font-size: 0.74rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.lab-stat:hover {
+  border-color: var(--aero-lime);
+}
+
+.lab-stat code {
+  flex: none;
+  min-width: 42px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lab-skeleton { animation: none; }
+  .lab-dot { transition: none; }
+}
+
+@media (max-width: 1050px) {
+  .lab-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* The global button style uppercases and letter-spaces text. Formula names
+ * and stat keys are case-sensitive to read (xG vs XG), so undo it here. */
+.chart-lab-page button {
+  text-transform: none;
+  letter-spacing: 0;
+}
