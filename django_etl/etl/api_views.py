@@ -1093,6 +1093,35 @@ def price_predictor_history(request):
     return JsonResponse(payload)
 
 
+
+def _expected_clean_sheets(athlete_ids: Iterable[int]) -> dict[int, float]:
+    """Estimated clean sheets per player from expected goals conceded.
+
+    FPL publishes no xCS. With goals conceded ~ Poisson(xGC), the chance of a
+    clean sheet in a match is exp(-xGC). We sum that over appearances of 60+
+    minutes, the threshold FPL uses to award clean-sheet points. A gameweek
+    row merges a double gameweek, so its xGC and minutes are split evenly
+    across the team's fixtures that week.
+    """
+    fixtures_per_team_gw: dict[tuple[int, int], int] = defaultdict(int)
+    for team_h_id, team_a_id, event in Fixture.objects.filter(event__isnull=False).values_list(
+        "team_h_id", "team_a_id", "event"
+    ):
+        fixtures_per_team_gw[(team_h_id, event)] += 1
+        fixtures_per_team_gw[(team_a_id, event)] += 1
+
+    totals: dict[int, float] = defaultdict(float)
+    rows = AthleteStat.objects.filter(athlete_id__in=list(athlete_ids)).values_list(
+        "athlete_id", "athlete__team_id", "game_week", "minutes", "expected_goals_conceded"
+    )
+    for athlete_id, team_id, game_week, minutes, xgc in rows:
+        matches = fixtures_per_team_gw.get((team_id, game_week), 1) or 1
+        if (minutes or 0) / matches < 60:
+            continue
+        totals[athlete_id] += matches * math.exp(-float(xgc or 0) / matches)
+    return totals
+
+
 @require_GET
 def players_list(request):
     """Return all players with key stats for player grid view."""
@@ -1106,7 +1135,7 @@ def players_list(request):
     page_size = min(max(10, page_size), 1000)  # Between 10 and 1000
     
     # Build cache key based on filters
-    cache_key = f"players_list:search={search}:team={team_filter}:page={page}:size={page_size}:v3"
+    cache_key = f"players_list:search={search}:team={team_filter}:page={page}:size={page_size}:v4"
     
     # Try to get from cache first
     cached_response = cache.get(cache_key)
@@ -1187,9 +1216,12 @@ def players_list(request):
         )
     )
 
+    players_page = list(players_qs_paginated)
+    expected_clean_sheets = _expected_clean_sheets(player.id for player in players_page)
+
     # Calculate average FDR for next 3 fixtures per player (paginated)
     players_data = []
-    for player in players_qs_paginated:
+    for player in players_page:
         team = player.team
         team_id = team.id if team else None
         avg_fdr = None
@@ -1236,6 +1268,9 @@ def players_list(request):
             "bps": player.bps,
             "selected_by_percent": float(player.selected_by_percent) if player.selected_by_percent else None,
             "expected_goals": float(player.expected_goals) if player.expected_goals else None,
+            "expected_assists": float(player.expected_assists) if player.expected_assists else None,
+            # Estimated, not an FPL field; see _expected_clean_sheets.
+            "expected_clean_sheets": round(expected_clean_sheets.get(player.id, 0.0), 2),
             "points_last_3": last_3["points"],
             "minutes_last_3": last_3["minutes"],
             # Predicted Points (Next GW) - use prefetched data

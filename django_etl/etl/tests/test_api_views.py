@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from datetime import datetime, timedelta, timezone as dt_timezone
 from decimal import Decimal
 from unittest.mock import Mock, patch
@@ -168,6 +169,29 @@ class ApiViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIsNone(response.json()["captain_recommendation"])
         self.assertEqual(response.json()["captain_status"], "unvalidated")
+
+    def test_players_list_estimates_expected_clean_sheets(self) -> None:
+        keeper = self.athletes[12]  # DEF5, Team 5
+        Fixture.objects.create(id=20, event=20, team_h=self.teams[4], team_a=self.teams[0])
+        Fixture.objects.create(id=21, event=21, team_h=self.teams[4], team_a=self.teams[1])
+        Fixture.objects.create(id=22, event=21, team_h=self.teams[2], team_a=self.teams[4])
+        AthleteStat.objects.create(
+            athlete=keeper, game_week=20, minutes=90, expected_goals_conceded=Decimal("1.0")
+        )
+        # Double gameweek: 180 minutes and 2.0 xGC spread over two matches.
+        AthleteStat.objects.create(
+            athlete=keeper, game_week=21, minutes=180, expected_goals_conceded=Decimal("2.0")
+        )
+        # Sub appearance: under 60 minutes, so no clean-sheet chance counted.
+        AthleteStat.objects.create(
+            athlete=keeper, game_week=22, minutes=30, expected_goals_conceded=Decimal("0.1")
+        )
+
+        response = self.client.get("/api/players/?page_size=50")
+
+        self.assertEqual(response.status_code, 200)
+        row = next(p for p in response.json()["players"] if p["id"] == keeper.id)
+        self.assertAlmostEqual(row["expected_clean_sheets"], round(3 * math.exp(-1.0), 2))
 
     def test_optimize_team_rejects_unknown_risk_profile(self) -> None:
         response = self.client.get("/api/optimize-team/?risk_profile=reckless")

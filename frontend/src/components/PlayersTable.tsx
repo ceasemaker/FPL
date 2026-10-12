@@ -21,6 +21,9 @@ type SortField =
     | "expected_goals"
     | "goals_scored"
     | "assists"
+    | "expected_assists"
+    | "clean_sheets"
+    | "expected_clean_sheets"
     | "best_value";
 
 interface SortConfig {
@@ -120,6 +123,18 @@ export function PlayersTable({
                 valA = a.assists;
                 valB = b.assists;
                 break;
+            case "expected_assists":
+                valA = a.expected_assists || 0;
+                valB = b.expected_assists || 0;
+                break;
+            case "clean_sheets":
+                valA = a.clean_sheets;
+                valB = b.clean_sheets;
+                break;
+            case "expected_clean_sheets":
+                valA = a.expected_clean_sheets;
+                valB = b.expected_clean_sheets;
+                break;
             case "best_value":
                 valA = calculateBestValue(a);
                 valB = calculateBestValue(b);
@@ -152,6 +167,14 @@ export function PlayersTable({
                         <th onClick={() => handleSort("goals_scored")}>G <SortIcon field="goals_scored" /></th>
                         <th onClick={() => handleSort("assists")}>A <SortIcon field="assists" /></th>
                         <th onClick={() => handleSort("expected_goals")}>xG <SortIcon field="expected_goals" /></th>
+                        <th onClick={() => handleSort("expected_assists")}>xA <SortIcon field="expected_assists" /></th>
+                        <th onClick={() => handleSort("clean_sheets")}>CS <SortIcon field="clean_sheets" /></th>
+                        <th
+                            onClick={() => handleSort("expected_clean_sheets")}
+                            title="Estimated expected clean sheets: chance of keeping a clean sheet in each 60+ minute appearance, from expected goals conceded. FPL does not publish this."
+                        >
+                            xCS <SortIcon field="expected_clean_sheets" />
+                        </th>
                         <th onClick={() => handleSort("best_value")}>Value <SortIcon field="best_value" /></th>
                     </tr>
                 </thead>
@@ -207,6 +230,9 @@ export function PlayersTable({
                                 <td>{player.goals_scored}</td>
                                 <td>{player.assists}</td>
                                 <td>{player.expected_goals?.toFixed(2) ?? "-"}</td>
+                                <td>{player.expected_assists?.toFixed(2) ?? "-"}</td>
+                                <td>{player.clean_sheets}</td>
+                                <td>{player.expected_clean_sheets.toFixed(1)}</td>
                                 <td className="td-value">
                                     {bestValue > 0 ? bestValue.toFixed(2) : "-"}
                                 </td>

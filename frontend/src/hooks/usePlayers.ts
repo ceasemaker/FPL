@@ -18,6 +18,10 @@ export interface Player {
   goals_scored: number;
   assists: number;
   expected_goals: number | null;
+  expected_assists: number | null;
+  clean_sheets: number;
+  /** Estimated by the API from expected goals conceded; FPL does not publish it. */
+  expected_clean_sheets: number;
   points_last_3: number;
   minutes_last_3: number;
   news: string | null;
