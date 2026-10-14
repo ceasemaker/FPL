@@ -87,6 +87,18 @@ class FeatureLeakageTests(TestCase):
         self.assertTrue(first_week["xg90_s"].isna().all(), "no season-to-date numbers before a ball is kicked")
 
 
+class ModelFitTests(TestCase):
+    def test_fit_skips_empty_and_constant_columns(self):
+        from ..forecast.model import fit, predict
+
+        players, fixtures = synthetic_season()
+        features = build_features(players, fixtures)  # one season: no prior-season rates
+        model = fit(features)
+        self.assertNotIn("prev_xg90", model.columns)
+        self.assertNotIn("dc_era", model.columns)
+        self.assertEqual(len(predict(model, features)), len(features))
+
+
 class SelectionTests(TestCase):
     def squad(self):
         spec = [(1, 5, 90), (1, 1, 90)] + [(2, s, 90) for s in (6, 5, 4, 3, 2)] + \

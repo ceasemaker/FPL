@@ -27,15 +27,34 @@ def training_rows(features: pd.DataFrame) -> pd.DataFrame:
     return rows[rows["appearances"].notna()]
 
 
-def fit(features: pd.DataFrame) -> HistGradientBoostingRegressor:
+class PointsModel:
+    """The regressor plus the columns it was fitted on.
+
+    Columns that are empty or constant in the training window (last season's
+    rates when there is no last season; the DefCon flag before 2025/26) carry
+    no information, and recent scikit-learn refuses to bin them, so they are
+    left out of that fit.
+    """
+
+    def __init__(self, columns: list[str], regressor: HistGradientBoostingRegressor):
+        self.columns = columns
+        self.regressor = regressor
+
+    def predict(self, features: pd.DataFrame) -> np.ndarray:
+        return self.regressor.predict(features[self.columns].astype(float))
+
+
+def fit(features: pd.DataFrame) -> PointsModel:
     rows = training_rows(features)
-    model = HistGradientBoostingRegressor(**PARAMS)
-    model.fit(rows[FEATURES].astype(float), rows["total_points"].astype(float))
-    return model
+    X = rows[FEATURES].astype(float)
+    columns = [c for c in FEATURES if X[c].nunique(dropna=True) > 1]
+    regressor = HistGradientBoostingRegressor(**PARAMS)
+    regressor.fit(X[columns], rows["total_points"].astype(float))
+    return PointsModel(columns, regressor)
 
 
-def predict(model: HistGradientBoostingRegressor, features: pd.DataFrame) -> np.ndarray:
-    predictions = model.predict(features[FEATURES].astype(float))
+def predict(model: PointsModel, features: pd.DataFrame) -> np.ndarray:
+    predictions = model.predict(features)
     # Players with no history at all (new signings, promoted squads) get no
     # forecast rather than a guess from position and price alone.
     return np.where(features["appearances"].isna(), np.nan, predictions)
