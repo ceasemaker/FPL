@@ -155,6 +155,13 @@ Opta id). Re-running upserts.
 - **Championship 2026/27 has no stats yet** (checked 14 October 2026): 115
   matches played, but the leaderboards, match stats and player sheets are all
   empty. 2025/26 is fully populated, so the data may arrive later in the season.
+- **Championship 2024/25 has no stats at all** (checked 14 October 2026): the
+  season (id 723) lists 1,381 squad players, but the leaderboards and every
+  player sheet sampled are empty. Championship coverage starts with 2025/26.
+- **Loaded so far:** Premier League 2024/25 (SDP 725 players, classic 562),
+  2025/26 (SDP 790, classic 537) and 2026/27; Champions League 2024/25 (879),
+  2025/26 (871) and 2026/27 (623); Championship 2025/26 (503); club sheets for
+  all three PL seasons.
 
 ## What this adds over FPL
 
