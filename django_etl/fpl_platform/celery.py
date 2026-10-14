@@ -85,6 +85,19 @@ app.conf.beat_schedule = {
         'schedule': crontab(hour=6, minute=15),
     },
 
+    # Every 3 hours - near a deadline (within 36h), refresh team news, FPL's
+    # expected points and the shadow captain picks; otherwise a no-op.
+    'refresh-before-deadline': {
+        'task': 'etl.tasks.refresh_before_deadline',
+        'schedule': crontab(minute=10, hour='*/3'),
+    },
+
+    # Monday 4:30 AM - Re-run the points forecast backtest (gates the captain card)
+    'backtest-forecast': {
+        'task': 'etl.tasks.backtest_forecast',
+        'schedule': crontab(hour=4, minute=30, day_of_week=1),
+    },
+
     # Every 30 minutes - Warm price predictor cache for frontend charts
     'warm-price-predictor-cache': {
         'task': 'etl.tasks.warm_price_predictor_cache',

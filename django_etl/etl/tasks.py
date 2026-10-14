@@ -318,6 +318,7 @@ def run_daily_pipeline():
     6. clear_cache
     7. sync_fixture_odds (daily, rate-limited)
     8. populate_predictions (market-calibrated when odds exist)
+    9. run_forecast (points forecast v2: train, forecast, shadow captain picks)
     """
     logger.info("🚀 Starting Daily ETL Pipeline...")
     results = {}
@@ -389,7 +390,7 @@ def run_daily_pipeline():
         logger.info("Step 7: Collecting daily fixture odds...")
         results['sync_fixture_odds'] = sync_fixture_odds(days_ahead=8)
     except Exception as e:
-        logger.error(f"❌ Step 8 Failed: {str(e)}")
+        logger.error(f"❌ Step 7 Failed: {str(e)}")
         results['sync_fixture_odds'] = f"Error: {str(e)}"
 
     # Step 8: Populate predictions for next gameweek
@@ -397,8 +398,16 @@ def run_daily_pipeline():
         logger.info("Step 8: Populating next gameweek predictions...")
         results['populate_predictions'] = populate_predictions()
     except Exception as e:
-        logger.error(f"❌ Step 7 Failed: {str(e)}")
+        logger.error(f"❌ Step 8 Failed: {str(e)}")
         results['populate_predictions'] = f"Error: {str(e)}"
+
+    # Step 9: Points forecast v2 (also scores last week's shadow picks)
+    try:
+        logger.info("Step 9: Running the points forecast...")
+        results['run_forecast'] = run_forecast_task()
+    except Exception as e:
+        logger.error(f"❌ Step 9 Failed: {str(e)}")
+        results['run_forecast'] = f"Error: {str(e)}"
 
     logger.info("🏁 Daily ETL Pipeline Completed")
     return results
@@ -437,4 +446,55 @@ def populate_predictions():
         return {"status": "success", "output": output}
     except Exception as e:
         logger.error(f"❌ Prediction population failed: {str(e)}")
+        return {"status": "error", "output": str(e)}
+
+
+@shared_task(name='etl.tasks.run_forecast')
+def run_forecast_task():
+    """Train the points forecast, write forecasts, log and score shadow captain picks."""
+    from etl.forecast.service import run_forecast
+
+    try:
+        return {"status": "success", "result": run_forecast()}
+    except Exception as e:
+        logger.exception("Points forecast failed")
+        return {"status": "error", "output": str(e)}
+
+
+@shared_task(name='etl.tasks.refresh_before_deadline')
+def refresh_before_deadline():
+    """Re-read team news and FPL's expected points close to a deadline.
+
+    The daily pipeline runs at 03:30; team news often lands later on deadline
+    day. Within 36 hours of a deadline this refreshes player availability, the
+    deadline snapshot and the shadow picks, so the logged picks reflect what a
+    manager could have known at the deadline.
+    """
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from etl.services.etl_runner import _sync_athletes
+    from etl.services.forecast_sync import next_deadline, sync_forecast_tables
+    from etl.services.fpl_client import FPLClient
+
+    with FPLClient() as client:
+        bootstrap = client.get_bootstrap_static()
+    upcoming = next_deadline(bootstrap.get("events", []))
+    if upcoming is None or upcoming[1] - timezone.now() > timedelta(hours=36):
+        return {"status": "skipped", "reason": "no deadline within 36 hours"}
+    _sync_athletes(bootstrap.get("elements", []))
+    sync_forecast_tables(bootstrap.get("events", []), bootstrap.get("elements", []))
+    return run_forecast_task()
+
+
+@shared_task(name='etl.tasks.backtest_forecast')
+def backtest_forecast():
+    """Re-run the walk-forward backtest and store the verdict (gates the captain card)."""
+    try:
+        out = StringIO()
+        call_command('backtest_forecast', stdout=out, stderr=out)
+        return {"status": "success", "output": out.getvalue()[-2000:]}
+    except Exception as e:
+        logger.exception("Forecast backtest failed")
         return {"status": "error", "output": str(e)}

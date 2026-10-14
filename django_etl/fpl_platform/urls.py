@@ -3,6 +3,8 @@ from django.urls import path, re_path
 
 from fpl_platform.views import spa_index
 
+from etl.forecast.views import forecast_lab
+
 from etl.api_views import (
     chart_lab_players,
     chart_lab_series,
@@ -61,6 +63,7 @@ urlpatterns = [
     path("api/players/<int:player_id>/gameweeks/", player_gameweeks, name="player-gameweeks"),
     path("api/chart-lab/players/", chart_lab_players, name="chart-lab-players"),
     path("api/stats-explorer/", stats_explorer, name="stats-explorer"),
+    path("api/forecast-lab/", forecast_lab, name="forecast-lab"),
     path("api/chart-lab/series/", chart_lab_series, name="chart-lab-series"),
     path("api/decision-dashboard/", decision_dashboard, name="decision-dashboard"),
     path("api/decision-dashboard/research-report/", decision_research_report, name="decision-research-report"),

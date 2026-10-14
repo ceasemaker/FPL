@@ -1395,3 +1395,199 @@ class FixtureOdds(TimestampedModel):
         elif self.away_odds < self.prev_away_odds:
             return '↓'
         return None
+
+
+# --------------------------------------------------------------- forecasting
+#
+# The points forecast (etl.forecast) trains on every season we hold, so the
+# per-gameweek facts it needs live in season-keyed tables rather than in
+# AthleteStat, which only ever holds the current season. Players and teams are
+# keyed by their stable FPL `code` (the Opta id); element and team ids are
+# reused across seasons.
+
+
+class GameweekHistory(models.Model):
+    """One player's output in one gameweek (double gameweeks summed)."""
+
+    season = models.PositiveSmallIntegerField(help_text="Start year, e.g. 2025 for 2025/26")
+    gameweek = models.PositiveSmallIntegerField()
+    code = models.IntegerField(help_text="FPL player code (Opta id), stable across seasons")
+    element = models.IntegerField(help_text="FPL element id in that season")
+    web_name = models.CharField(max_length=100)
+    team_code = models.IntegerField()
+    position = models.PositiveSmallIntegerField(help_text="1 GK, 2 DEF, 3 MID, 4 FWD")
+    start_price = models.DecimalField(max_digits=4, decimal_places=1, null=True)
+    minutes = models.SmallIntegerField(default=0)
+    starts = models.SmallIntegerField(default=0)
+    goals_scored = models.SmallIntegerField(default=0)
+    assists = models.SmallIntegerField(default=0)
+    clean_sheets = models.SmallIntegerField(default=0)
+    goals_conceded = models.SmallIntegerField(default=0)
+    own_goals = models.SmallIntegerField(default=0)
+    penalties_saved = models.SmallIntegerField(default=0)
+    penalties_missed = models.SmallIntegerField(default=0)
+    yellow_cards = models.SmallIntegerField(default=0)
+    red_cards = models.SmallIntegerField(default=0)
+    saves = models.SmallIntegerField(default=0)
+    bonus = models.SmallIntegerField(default=0)
+    bps = models.SmallIntegerField(default=0)
+    expected_goals = models.FloatField(default=0)
+    expected_assists = models.FloatField(default=0)
+    expected_goals_conceded = models.FloatField(default=0)
+    total_points = models.SmallIntegerField(default=0)
+
+    class Meta:
+        db_table = "gameweek_history"
+        constraints = [
+            models.UniqueConstraint(fields=["season", "gameweek", "code"], name="uniq_gameweek_history"),
+        ]
+        indexes = [models.Index(fields=["season", "gameweek"])]
+
+    def __str__(self) -> str:
+        return f"{self.web_name} {self.season} GW{self.gameweek}"
+
+
+class FixtureHistory(models.Model):
+    season = models.PositiveSmallIntegerField()
+    fixture_id = models.IntegerField(help_text="FPL fixture id in that season")
+    gameweek = models.PositiveSmallIntegerField(null=True)
+    kickoff_time = models.DateTimeField(null=True)
+    team_h_code = models.IntegerField()
+    team_a_code = models.IntegerField()
+    team_h_score = models.SmallIntegerField(null=True)
+    team_a_score = models.SmallIntegerField(null=True)
+
+    class Meta:
+        db_table = "fixture_history"
+        constraints = [
+            models.UniqueConstraint(fields=["season", "fixture_id"], name="uniq_fixture_history"),
+        ]
+
+
+class DeadlineSnapshot(models.Model):
+    """FPL's own view of a player before a deadline, kept for later comparison.
+
+    `Athlete` is overwritten on every sync, so without this table FPL's
+    expected points (`ep_next`) for a gameweek are gone once it starts.
+    """
+
+    season = models.PositiveSmallIntegerField()
+    gameweek = models.PositiveSmallIntegerField()
+    element = models.IntegerField()
+    code = models.IntegerField()
+    ep_next = models.FloatField(null=True)
+    selected_by_percent = models.FloatField(null=True)
+    chance_of_playing = models.SmallIntegerField(null=True)
+    status = models.CharField(max_length=10, blank=True)
+    now_cost = models.SmallIntegerField(null=True)
+    captured_at = models.DateTimeField()
+
+    class Meta:
+        db_table = "deadline_snapshots"
+        constraints = [
+            models.UniqueConstraint(fields=["season", "gameweek", "element"], name="uniq_deadline_snapshot"),
+        ]
+
+
+class GameweekSummary(models.Model):
+    """Per-gameweek facts from the bootstrap `events` list."""
+
+    season = models.PositiveSmallIntegerField()
+    gameweek = models.PositiveSmallIntegerField()
+    deadline_time = models.DateTimeField(null=True)
+    finished = models.BooleanField(default=False)
+    most_captained = models.IntegerField(null=True, help_text="Element id")
+    most_selected = models.IntegerField(null=True)
+    average_entry_score = models.SmallIntegerField(null=True)
+    highest_score = models.SmallIntegerField(null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "gameweek_summaries"
+        constraints = [
+            models.UniqueConstraint(fields=["season", "gameweek"], name="uniq_gameweek_summary"),
+        ]
+
+
+class ModelArtifact(models.Model):
+    """A trained model, stored in Postgres because Render's disk is wiped on restart."""
+
+    name = models.CharField(max_length=50)
+    version = models.CharField(max_length=20)
+    trained_through_season = models.PositiveSmallIntegerField()
+    trained_through_gameweek = models.PositiveSmallIntegerField()
+    training_rows = models.IntegerField()
+    payload = models.BinaryField()
+    metadata = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "model_artifacts"
+        ordering = ["-created_at"]
+
+
+class ModelEvaluation(models.Model):
+    """A walk-forward backtest result. `accepted` is the gate for showing picks."""
+
+    name = models.CharField(max_length=50)
+    version = models.CharField(max_length=20)
+    accepted = models.BooleanField(default=False)
+    summary = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "model_evaluations"
+        ordering = ["-created_at"]
+
+
+class ForecastPrediction(models.Model):
+    season = models.PositiveSmallIntegerField()
+    gameweek = models.PositiveSmallIntegerField()
+    element = models.IntegerField()
+    code = models.IntegerField()
+    predicted_points = models.FloatField()
+    horizon = models.PositiveSmallIntegerField(default=1, help_text="1 = next gameweek")
+    model_version = models.CharField(max_length=20)
+    created_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "forecast_predictions"
+        constraints = [
+            models.UniqueConstraint(fields=["season", "gameweek", "element"], name="uniq_forecast_prediction"),
+        ]
+        indexes = [models.Index(fields=["season", "gameweek", "-predicted_points"])]
+
+
+class ShadowPick(models.Model):
+    """Captain picks logged before the deadline and scored afterwards.
+
+    Each strategy (the model, FPL's expected points, FPL's most-captained
+    player, a price-and-form rule) makes one pick per gameweek. Picks are
+    frozen once the deadline passes, so the live record can't be edited with
+    hindsight.
+    """
+
+    STRATEGIES = [
+        ("model", "AeroFPL model"),
+        ("ep_next", "FPL expected points"),
+        ("most_captained", "FPL most captained"),
+        ("premium_form", "Priciest attacker who started last week"),
+    ]
+
+    season = models.PositiveSmallIntegerField()
+    gameweek = models.PositiveSmallIntegerField()
+    strategy = models.CharField(max_length=20, choices=STRATEGIES)
+    element = models.IntegerField()
+    code = models.IntegerField()
+    web_name = models.CharField(max_length=100)
+    predicted = models.FloatField(null=True)
+    picked_at = models.DateTimeField()
+    actual_points = models.SmallIntegerField(null=True)
+    settled_at = models.DateTimeField(null=True)
+
+    class Meta:
+        db_table = "shadow_picks"
+        constraints = [
+            models.UniqueConstraint(fields=["season", "gameweek", "strategy"], name="uniq_shadow_pick"),
+        ]
+        ordering = ["-season", "-gameweek", "strategy"]

@@ -1,0 +1,371 @@
+/* Model Lab: a report on the forecast. Reads top to bottom; inherits design-system.css. */
+
+.ml-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-bottom: 64px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ml-page ::selection {
+  background: rgba(165, 255, 1, 0.35);
+  color: #fff;
+}
+
+.ml-page :focus-visible {
+  outline: 2px solid var(--aero-lime);
+  outline-offset: 2px;
+}
+
+.ml-page button {
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: inherit;
+}
+
+.ml-head h1 {
+  margin: 0;
+  font-size: 1.9rem;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+}
+
+.ml-head p {
+  max-width: 68ch;
+  margin: 6px 0 0;
+  color: var(--aero-text-dim);
+  font-size: 0.88rem;
+}
+
+.ml-panel,
+.ml-verdict {
+  padding: 18px 20px;
+  border: 1px solid var(--aero-line-strong);
+  border-radius: var(--aero-radius);
+  background: #151616;
+}
+
+.ml-panel h2,
+.ml-verdict h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.ml-section-head {
+  margin-bottom: 14px;
+}
+
+.ml-section-head p,
+.ml-verdict p,
+.ml-note,
+.ml-empty p {
+  max-width: 72ch;
+  margin: 6px 0 0;
+  color: var(--aero-text-dim);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+/* ------------------------------------------------------------- verdict */
+
+.ml-verdict {
+  display: grid;
+  gap: 4px;
+  background: #171818;
+}
+
+.ml-verdict h2 {
+  font-size: 1.4rem;
+}
+
+.ml-verdict.pass h2 {
+  color: var(--aero-lime);
+}
+
+.ml-verdict.hold h2 {
+  color: var(--aero-warn);
+}
+
+.ml-verdict .ml-meta {
+  color: var(--aero-text-muted);
+  font-size: 0.78rem;
+}
+
+/* ----------------------------------------------------------- intervals */
+
+.ml-intervals {
+  display: grid;
+  margin-bottom: 14px;
+}
+
+.ml-int-head,
+.ml-int-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 260px) minmax(160px, 1fr) 170px;
+  align-items: center;
+  gap: 16px;
+}
+
+.ml-int-head {
+  padding-bottom: 6px;
+  color: var(--aero-text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.ml-int-axis svg {
+  display: block;
+  width: 100%;
+  height: 16px;
+  overflow: visible;
+}
+
+.ml-int-axis text {
+  fill: var(--aero-text-muted);
+  font-size: 11px;
+}
+
+.ml-int-row {
+  min-height: 52px;
+  border-top: 1px solid var(--aero-line);
+}
+
+.ml-int-label {
+  font-size: 0.86rem;
+  color: var(--aero-text);
+}
+
+.ml-int-plot {
+  position: relative;
+  height: 28px;
+}
+
+.ml-int-plot svg {
+  display: block;
+  width: 100%;
+  height: 28px;
+  overflow: visible;
+}
+
+.ml-zero {
+  stroke: var(--aero-line-strong);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 3 3;
+}
+
+.ml-ci,
+.ml-cap {
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.ml-dot {
+  position: absolute;
+  top: 50%;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 2px #151616;
+  transform: translate(-50%, -50%);
+}
+
+.ml-int-row.better .ml-int-plot { color: var(--aero-lime); }
+.ml-int-row.worse .ml-int-plot { color: var(--aero-negative); }
+.ml-int-row.unclear .ml-int-plot { color: var(--aero-text-muted); }
+
+.ml-num {
+  text-align: right;
+}
+
+.ml-int-row .ml-num {
+  display: grid;
+  justify-items: end;
+  gap: 1px;
+}
+
+.ml-int-row .ml-num strong {
+  font-size: 0.95rem;
+}
+
+.ml-int-row .ml-num small {
+  color: var(--aero-text-muted);
+  font-size: 0.72rem;
+}
+
+.ml-int-row .ml-num em {
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--aero-text-dim);
+}
+
+/* --------------------------------------------------------------- tables */
+
+.ml-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--aero-line);
+  border-radius: var(--aero-radius-sm);
+}
+
+.ml-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.ml-table caption {
+  padding: 10px 12px 0;
+  text-align: left;
+  color: var(--aero-text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.ml-table th,
+.ml-table td {
+  padding: 9px 12px;
+  border-top: 1px solid var(--aero-line);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.ml-table thead th {
+  border-top: 0;
+  color: var(--aero-text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: normal;
+  vertical-align: bottom;
+}
+
+.ml-table th[scope="row"],
+.ml-table thead th:first-child {
+  text-align: left;
+  color: var(--aero-text-dim);
+}
+
+.ml-table tbody tr:nth-child(even) {
+  background-color: #171818;
+}
+
+.ml-table tfoot th,
+.ml-table tfoot td {
+  border-top: 1px solid var(--aero-line-strong);
+  font-weight: 700;
+}
+
+.ml-table td span {
+  margin-right: 8px;
+  color: var(--aero-text-dim);
+}
+
+.ml-table td.ml-top b {
+  color: var(--aero-lime);
+}
+
+.ml-table td.ml-na {
+  color: var(--aero-text-muted);
+}
+
+.ml-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 440px);
+  gap: 24px;
+  align-items: start;
+}
+
+.ml-split .ml-section-head {
+  margin: 0;
+}
+
+.ml-split .ml-table {
+  border: 1px solid var(--aero-line);
+  border-radius: var(--aero-radius-sm);
+}
+
+.ml-note {
+  margin-top: 12px;
+}
+
+.ml-empty {
+  padding: 14px 16px;
+  border: 1px dashed var(--aero-line-strong);
+  border-radius: var(--aero-radius-sm);
+}
+
+.ml-empty p {
+  margin: 0;
+}
+
+.ml-method ul {
+  max-width: 76ch;
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: var(--aero-text-dim);
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+
+.ml-state p {
+  color: var(--aero-text-dim);
+}
+
+.ml-skeleton {
+  height: 220px;
+  background: linear-gradient(90deg, #151616, #1b1c1c, #151616);
+  background-size: 200% 100%;
+  animation: ml-shimmer 1.4s ease-out infinite;
+}
+
+@keyframes ml-shimmer {
+  to { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ml-skeleton { animation: none; }
+}
+
+@media (max-width: 900px) {
+  .ml-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .ml-page {
+    gap: 14px;
+  }
+
+  .ml-head h1 {
+    font-size: 1.55rem;
+  }
+
+  .ml-panel,
+  .ml-verdict {
+    padding: 14px;
+  }
+
+  .ml-int-head {
+    display: none;
+  }
+
+  .ml-int-row {
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "label num" "plot plot";
+    gap: 6px 12px;
+    padding: 10px 0;
+  }
+
+  .ml-int-label { grid-area: label; }
+  .ml-int-plot { grid-area: plot; }
+  .ml-int-row .ml-num { grid-area: num; }
+}

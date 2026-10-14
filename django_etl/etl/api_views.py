@@ -497,6 +497,56 @@ def _pick_starting_xi(squad: list[OptimizationCandidate]) -> set[int]:
     return best_ids
 
 
+def _forecast_rows(start_gw: int, end_gw: int) -> list[dict]:
+    """Points-forecast rows for the horizon, in the shape the solver expects."""
+    from etl.models import ForecastPrediction
+
+    season = ForecastPrediction.objects.order_by("-season").values_list("season", flat=True).first()
+    if season is None:
+        return []
+    forecasts = list(
+        ForecastPrediction.objects.filter(season=season, gameweek__gte=start_gw, gameweek__lte=end_gw)
+        .values("element", "gameweek", "predicted_points")
+    )
+    if not forecasts or {f["gameweek"] for f in forecasts} != set(range(start_gw, end_gw + 1)):
+        return []
+    athletes = {
+        a["id"]: a
+        for a in Athlete.objects.filter(removed=False).values("id", "web_name", "element_type", "ep_next")
+    }
+    rows, covered = [], set()
+    for f in forecasts:
+        athlete = athletes.get(f["element"])
+        if not athlete:
+            continue
+        covered.add(f["element"])
+        rows.append({
+            "athlete_id": f["element"], "game_week": f["gameweek"], "predicted_points": f["predicted_points"],
+            "athlete__web_name": athlete["web_name"], "athlete__element_type": athlete["element_type"],
+        })
+    for athlete_id, athlete in athletes.items():
+        if athlete_id in covered or athlete["ep_next"] is None:
+            continue
+        for game_week in range(start_gw, end_gw + 1):
+            rows.append({
+                "athlete_id": athlete_id, "game_week": game_week, "predicted_points": float(athlete["ep_next"]),
+                "athlete__web_name": athlete["web_name"], "athlete__element_type": athlete["element_type"],
+            })
+    return rows
+
+
+def _forecast_captain(next_gw: int) -> dict | None:
+    """Top points forecast for the next gameweek among available players."""
+    from etl.forecast.service import available_elements
+    from etl.models import ForecastPrediction
+
+    available = available_elements()
+    for forecast in ForecastPrediction.objects.filter(gameweek=next_gw, horizon=1).order_by("-season", "-predicted_points")[:50]:
+        if forecast.element in available and forecast.predicted_points > 0:
+            return {"element": forecast.element, "predicted_points": forecast.predicted_points}
+    return None
+
+
 @require_GET
 def landing_snapshot(request):
     current_gw = (
@@ -523,6 +573,25 @@ def landing_snapshot(request):
         )
         captain_status = "ok" if captain_prediction else "no_projection"
     captain_recommendation = None
+    if captain_prediction is None and not settings.CAPTAIN_PICK_ENABLED:
+        # The points forecast's pick is shown only once its walk-forward
+        # backtest has beaten every baseline (etl.forecast.backtest).
+        from etl.forecast.service import captain_accepted
+
+        if captain_accepted():
+            pick = _forecast_captain(next_gw)
+            captain_status = "ok" if pick else "no_projection"
+            if pick:
+                athlete = Athlete.objects.select_related("team").get(id=pick["element"])
+                captain_recommendation = {
+                    "athlete_id": athlete.id,
+                    "web_name": athlete.web_name,
+                    "team_short_name": athlete.team.short_name if athlete.team else None,
+                    "game_week": next_gw,
+                    "predicted_points": round(pick["predicted_points"], 2),
+                    "image_url": _player_image(athlete.photo),
+                    "source": "points_forecast",
+                }
     if captain_prediction:
         captain_athlete = captain_prediction.athlete
         captain_recommendation = {
@@ -1802,11 +1871,17 @@ def optimize_team(request):
         except requests.RequestException as exc:
             return JsonResponse({"error": str(exc)}, status=500)
 
-    # Build predictions_df: element, event, predicted_points, name, position
-    prediction_rows = AthletePrediction.objects.filter(
-        game_week__gte=start_gw,
-        game_week__lte=end_gw,
-    ).select_related("athlete").values("athlete_id", "game_week", "predicted_points", "athlete__web_name", "athlete__element_type")
+    # Build predictions_df: element, event, predicted_points, name, position.
+    # Prefer the points forecast (etl.forecast), which trains on four seasons
+    # and is backtested; players it has no history for (new signings) take
+    # FPL's own expected points. The older stored model is the last resort.
+    prediction_rows = _forecast_rows(start_gw, end_gw)
+    used_forecast = bool(prediction_rows)
+    if not used_forecast:
+        prediction_rows = AthletePrediction.objects.filter(
+            game_week__gte=start_gw,
+            game_week__lte=end_gw,
+        ).select_related("athlete").values("athlete_id", "game_week", "predicted_points", "athlete__web_name", "athlete__element_type")
 
     recent_points: dict[int, list[float]] = defaultdict(list)
     for stat in AthleteStat.objects.filter(
@@ -1843,6 +1918,14 @@ def optimize_team(request):
 
     projection_source = "stored_model"
     projection_note = "Stored model projections for each gameweek in the horizon."
+    if used_forecast:
+        projection_source = "points_forecast"
+        projection_note = (
+            "AeroFPL points forecast, trained on four seasons and backtested on three. "
+            "Only the next gameweek is what the backtest measured; later weeks reuse "
+            "today's form with their own fixtures. Players with no FPL history use "
+            "FPL's expected points."
+        )
 
     if not predictions_data:
         # No trained-model output for this horizon. Rather than refusing to run

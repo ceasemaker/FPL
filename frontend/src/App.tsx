@@ -11,6 +11,7 @@ import { FixturesPage } from "./pages/FixturesPage";
 const PriceMonitorPage = lazy(() => import("./pages/PriceChangePredictorPage").then((m) => ({ default: m.PriceChangePredictorPage })));
 const StatsExplorerPage = lazy(() => import("./pages/StatsExplorerPage").then((m) => ({ default: m.StatsExplorerPage })));
 const ChartLabPage = lazy(() => import("./pages/ChartLabPage").then((m) => ({ default: m.ChartLabPage })));
+const ModelLabPage = lazy(() => import("./pages/ModelLabPage").then((m) => ({ default: m.ModelLabPage })));
 const DecisionDashboardPage = lazy(() => import("./pages/DecisionDashboardPage").then((m) => ({ default: m.DecisionDashboardPage })));
 
 import { Navigation } from "./components/Navigation";
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="/price-monitor" element={<PriceMonitorPage />} />
           <Route path="/stats" element={<StatsExplorerPage />} />
           <Route path="/chart-lab" element={<ChartLabPage />} />
+          <Route path="/model-lab" element={<ModelLabPage />} />
 
           {/* Retired routes kept as redirects so existing links keep working. */}
           <Route path="/optimize" element={<Navigate to="/decision-lab?mode=optimizer" replace />} />

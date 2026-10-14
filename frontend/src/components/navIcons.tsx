@@ -58,6 +58,14 @@ export const ChartLabIcon = () => (
   </Svg>
 );
 
+export const ModelLabIcon = () => (
+  <Svg>
+    <path d="M3.5 14.5a6.5 6.5 0 0113 0" />
+    <path d="M10 14.5l3-4.5" />
+    <path d="M3.5 17h13" />
+  </Svg>
+);
+
 export const FixturesIcon = () => (
   <Svg>
     <rect x="3" y="4.5" width="14" height="12" rx="2" />

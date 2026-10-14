@@ -29,6 +29,7 @@ from ..models import (
     Top100Summary,
     Top100Transfer,
 )
+from .forecast_sync import sync_forecast_tables
 from .fpl_client import FPLClient
 
 logger = logging.getLogger(__name__)
@@ -651,6 +652,13 @@ def run_single_pass(client: FPLClient, config: PipelineConfig) -> None:
     if config.snapshot_payloads:
         _store_snapshot("team/set-piece-notes", set_piece_notes_payload)
     _sync_set_piece_notes(set_piece_notes_payload)
+
+    # The forecast's history and deadline snapshots. A failure here must not
+    # undo the sync above, so it is logged rather than raised.
+    try:
+        sync_forecast_tables(events_payload, elements_payload)
+    except Exception:  # pragma: no cover - defensive
+        logger.exception("Syncing forecast tables failed")
 
     logger.info("Completed FPL ETL single pass")
 
