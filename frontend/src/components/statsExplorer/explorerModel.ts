@@ -21,6 +21,8 @@ export interface Stat {
   source: "Opta" | "FPL" | "Estimate";
   lowerIsBetter: boolean;
   format?: "number" | "price" | "percent";
+  shade?: boolean; // false: context, not good or bad (price, ownership)
+  per90?: boolean; // false: always a season count (starts)
 }
 
 export interface Lens {
@@ -127,14 +129,14 @@ export function statValue(stat: Stat, player: ExplorerPlayer, scope: Scope, norm
     value = sum(player, (stat.raw as string[]) ?? [], scope, stat.plOnly);
   }
   if (value === null) return null;
-  if (norm === "total") return value;
+  if (norm === "total" || stat.per90 === false) return value;
   const minutes = minutesFor(player, scope, stat.plOnly);
   return minutes > 0 ? (value / minutes) * 90 : null;
 }
 
 /** Whether per 90 applies to this stat (rates and FPL fields never change). */
 export function isNormalised(stat: Stat): boolean {
-  return stat.kind === "count" || stat.kind === "diff";
+  return (stat.kind === "count" || stat.kind === "diff") && stat.per90 !== false;
 }
 
 export function formatStat(stat: Stat, value: number | null, norm: Norm): string {
@@ -142,8 +144,9 @@ export function formatStat(stat: Stat, value: number | null, norm: Norm): string
   if (stat.kind === "rate") return `${Math.round(value * 100)}%`;
   if (stat.format === "price") return `£${value.toFixed(1)}m`;
   if (stat.format === "percent") return `${(stat.key === "ownership" ? value : value * 100).toFixed(1)}%`;
-  if (stat.kind === "fpl") return Number.isInteger(value) ? String(value) : value.toFixed(2);
-  if (norm === "total" && Number.isInteger(Math.round(value * 1000) / 1000)) return String(Math.round(value));
+  // Ratios keep two decimals even when they land on a whole number (4.00, not 4).
+  if (stat.kind === "fpl") return Number.isInteger(value) && stat.key !== "points_per_m" ? String(value) : value.toFixed(2);
+  if ((norm === "total" || stat.per90 === false) && Number.isInteger(Math.round(value * 1000) / 1000)) return String(Math.round(value));
   const sign = stat.kind === "diff" && value > 0 ? "+" : "";
   return `${sign}${value.toFixed(2)}`;
 }
@@ -202,7 +205,7 @@ export function shade(
   pct: number | null,
   norm: Norm,
 ): Shade | null {
-  if (value === null || sortedCohort.length < 2) return null;
+  if (value === null || sortedCohort.length < 2 || stat.shade === false) return null;
   const threshold = norm === "p90" ? DEFCON_THRESHOLD[stat.key]?.[position] : undefined;
   if (threshold) {
     return { level: Math.max(0, Math.min(1, value / threshold)), top: value >= threshold, defcon: threshold };

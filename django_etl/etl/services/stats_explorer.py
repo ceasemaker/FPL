@@ -41,10 +41,11 @@ GAP_EVIDENCE = {
 UCL = COMPETITIONS["champions-league"]["opta"]
 
 
-def _count(key, label, group, raw, help_text, *, pl_only=False, source="Opta", lower_is_better=False):
+def _count(key, label, group, raw, help_text, *, pl_only=False, source="Opta", lower_is_better=False, per90=True):
     return {
         "key": key, "label": label, "group": group, "kind": "count", "raw": raw,
         "help": help_text, "plOnly": pl_only, "source": source, "lowerIsBetter": lower_is_better,
+        "per90": per90,
     }
 
 
@@ -62,10 +63,11 @@ def _diff(key, label, group, plus, minus, help_text, *, pl_only=False, source="O
     }
 
 
-def _fpl(key, label, group, raw, help_text, *, fmt="number", lower_is_better=False):
+def _fpl(key, label, group, raw, help_text, *, fmt="number", lower_is_better=False, shade=True):
     return {
         "key": key, "label": label, "group": group, "kind": "fpl", "raw": raw, "format": fmt,
         "help": help_text, "plOnly": True, "source": "FPL", "lowerIsBetter": lower_is_better,
+        "shade": shade,
     }
 
 
@@ -127,11 +129,11 @@ CATALOGUE: list[dict] = [
     _count("yellow_cards", "Yellow cards", "Involvement", ["yellow_card"], "Yellow cards.", lower_is_better=True),
     _count("errors_to_shot", "Errors → shot", "Involvement", ["error_lead_to_shot", "error_lead_to_goal"], "Errors leading to an opposition shot or goal.", lower_is_better=True),
     # Market & rotation (FPL)
-    _fpl("price", "Price", "Market", "fpl_price", "Current FPL price.", fmt="price", lower_is_better=True),
-    _fpl("ownership", "Owned by", "Market", "fpl_ownership", "Share of FPL managers who own the player.", fmt="percent", lower_is_better=True),
+    _fpl("price", "Price", "Market", "fpl_price", "Current FPL price.", fmt="price", shade=False),
+    _fpl("ownership", "Owned by", "Market", "fpl_ownership", "Share of FPL managers who own the player. Low ownership means a differential.", fmt="percent", shade=False),
     _fpl("points", "FPL points", "Market", "fpl_points", "Total FPL points this season."),
     _fpl("points_per_m", "Points per £m", "Market", "fpl_points_per_m", "FPL points per £1m of price."),
-    _count("starts", "Starts", "Market", ["game_started"], "Starts (as opposed to sub appearances)."),
+    _count("starts", "Starts", "Market", ["game_started"], "Starts (as opposed to sub appearances). Always a season count, never per 90.", per90=False),
     _fpl("minutes_share", "Minutes share", "Market", "fpl_minutes_share", "Share of the club's league minutes the player has played.", fmt="percent"),
 ]
 
@@ -139,7 +141,7 @@ LENSES = {
     "attacking": {"label": "Attacking threat", "columns": ["xg", "xgot", "shots", "shots_on_target", "big_chances", "touches_in_box", "goals", "finishing", "placement"]},
     "creativity": {"label": "Creativity", "columns": ["xa", "chances_created", "big_chances_created", "assists", "assists_vs_xa", "box_entries", "final_third_passes", "progressive_carries", "dribbles"]},
     "defence": {"label": "Defence & keepers", "columns": ["cbit", "cbirt", "tackles", "interceptions", "clearances", "recoveries", "xcs", "clean_sheets", "goals_conceded"], "keeperColumns": ["saves", "save_pct", "xgot_faced", "goals_prevented", "high_claims", "clean_sheets", "xcs", "goals_conceded"]},
-    "market": {"label": "Market & rotation", "columns": ["price", "ownership", "points", "points_per_m", "starts", "minutes_share", "xg", "xa"]},
+    "market": {"label": "Market & rotation", "columns": ["ownership", "points", "points_per_m", "starts", "minutes_share", "xg", "xa"]},
 }
 
 TEAM_CATALOGUE = [
@@ -172,7 +174,7 @@ def _raw_keys() -> set[str]:
 
 def build_payload(season: int) -> dict:
     latest = AthleteStat.objects.aggregate(gw=Max("game_week"))["gw"] or 0
-    cache_key = f"stats_explorer:{season}:gw{latest}:v2"
+    cache_key = f"stats_explorer:{season}:gw{latest}:v3"
     cached = cache.get(cache_key)
     if cached:
         return cached

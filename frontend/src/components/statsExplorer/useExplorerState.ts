@@ -6,14 +6,12 @@ import type { Norm, Position, Scope } from "./explorerModel";
 
 export type Tab = "players" | "teams";
 export type ClubFilter = "all" | "only" | "exclude";
-export type Window = "season" | "l6" | "l3";
 
 export interface ExplorerState {
   tab: Tab;
   lens: string;
   scope: Scope;
   club: ClubFilter;
-  window: Window;
   norm: Norm;
   minMinutes: number;
   position: Position | "ALL";
@@ -30,7 +28,6 @@ export const DEFAULT_STATE: ExplorerState = {
   lens: "attacking",
   scope: "pl",
   club: "all",
-  window: "season",
   norm: "p90",
   minMinutes: 270,
   position: "ALL",
@@ -47,7 +44,6 @@ const KEYS: Record<keyof ExplorerState, string> = {
   lens: "lens",
   scope: "from",
   club: "ucl",
-  window: "window",
   norm: "per",
   minMinutes: "min",
   position: "pos",
@@ -68,7 +64,6 @@ function parse(params: URLSearchParams): ExplorerState {
     lens: get("lens") ?? DEFAULT_STATE.lens,
     scope: get("scope") === "all" ? "all" : "pl",
     club: (["only", "exclude"].includes(get("club") ?? "") ? get("club") : "all") as ClubFilter,
-    window: (["l6", "l3"].includes(get("window") ?? "") ? get("window") : "season") as Window,
     norm: get("norm") === "total" ? "total" : "p90",
     minMinutes: Number.isFinite(min) && get("minMinutes") !== null ? Math.max(0, min) : DEFAULT_STATE.minMinutes,
     position: (["GKP", "DEF", "MID", "FWD"].includes(get("position") ?? "") ? get("position") : "ALL") as Position | "ALL",

@@ -31,6 +31,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "fpl_platform.middleware.ApiGZipMiddleware",  # compress /api/ JSON only
     "whitenoise.middleware.WhiteNoiseMiddleware",  # Add WhiteNoise for static files
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

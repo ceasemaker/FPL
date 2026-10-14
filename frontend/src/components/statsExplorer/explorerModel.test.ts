@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { percentile, qualifies, shade, statValue, type ExplorerPlayer, type Stat } from "./explorerModel.ts";
+import { formatStat, isNormalised, percentile, qualifies, shade, statValue, type ExplorerPlayer, type Stat } from "./explorerModel.ts";
 
 const count = (key: string, raw: string[], extra: Partial<Stat> = {}): Stat => ({
   key, label: key, group: "g", kind: "count", raw, help: "", plOnly: false, source: "Opta", lowerIsBetter: false, ...extra,
@@ -49,4 +49,14 @@ test("a feed gap stays a gap instead of becoming 0", () => {
   const xgot = count("xgot", ["expectedGoalsOnTarget"], { plOnly: true });
   assert.equal(statValue(xgot, player({ mins_played: 450, expectedGoalsOnTarget: null }), "pl", "p90"), null);
   assert.equal(statValue(xgot, player({ mins_played: 450, expectedGoalsOnTarget: 0 }), "pl", "p90"), 0);
+});
+
+test("context stats aren't graded and season counts stay counts", () => {
+  const ownership: Stat = { ...count("ownership", []), kind: "fpl", raw: "ownership", format: "percent", shade: false };
+  assert.equal(shade(ownership, "MID", 40, [5, 10, 20, 40, 60], 70, "p90"), null);
+  const starts = count("starts", ["starts"], { per90: false });
+  const p = player({ starts: 6, mins_played: 540 });
+  assert.equal(statValue(starts, p, "pl", "p90"), 6);
+  assert.equal(isNormalised(starts), false);
+  assert.equal(formatStat(starts, 6, "p90"), "6");
 });

@@ -43,6 +43,13 @@ const WATCH_KEY = "aerofpl_stats_watchlist";
 const VIEWS_KEY = "aerofpl_stats_views";
 const CHART_LAB_KEY = "aerofpl_chart_lab_current";
 const POSITIONS: (Position | "ALL")[] = ["ALL", "GKP", "DEF", "MID", "FWD"];
+const POSITION_TITLES: Record<Position | "ALL", string> = {
+  ALL: "All positions; colours still rank each player within their position",
+  GKP: "Goalkeepers",
+  DEF: "Defenders",
+  MID: "Midfielders",
+  FWD: "Forwards",
+};
 
 function readStorage<T>(key: string, fallback: T): T {
   try {
@@ -192,7 +199,6 @@ export function StatsExplorerPage() {
     state.club !== DEFAULT_STATE.club,
     state.norm !== DEFAULT_STATE.norm,
     state.minMinutes !== DEFAULT_STATE.minMinutes,
-    state.position !== DEFAULT_STATE.position,
     state.maxPrice !== null,
     state.watchOnly,
   ].filter(Boolean).length;
@@ -249,7 +255,7 @@ export function StatsExplorerPage() {
           <h1>Stats Explorer</h1>
           <p>
             {data
-              ? `${data.seasonLabel} season to gameweek ${data.latestGameweek} · Opta stats from the Premier League, FPL prices and ownership`
+              ? `${data.seasonLabel} season to gameweek ${data.latestGameweek} · Opta stats from the ${state.tab === "players" && state.scope === "all" ? "Premier League and Champions League" : "Premier League"}, FPL prices and ownership`
               : "Loading this season's stats…"}
           </p>
         </div>
@@ -284,20 +290,17 @@ export function StatsExplorerPage() {
               ))}
             </div>
           )}
+          {state.tab === "players" && (
+            <div className="sx-positions" role="group" aria-label="Position">
+              {POSITIONS.map((p) => (
+                <button key={p} aria-pressed={state.position === p} className={state.position === p ? "active" : ""}
+                  title={POSITION_TITLES[p]} onClick={() => update({ position: p, sort: null })}>
+                  {p === "ALL" ? "All" : p === "GKP" ? "GK" : p}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="sx-controls-end">
-            {state.tab === "players" && (
-              <label className="sx-field inline sx-field-narrow">
-                <span className="sx-legend">Max £</span>
-                <input className="aero-input" type="number" min={4} step={0.5} inputMode="decimal" placeholder="Any"
-                  value={state.maxPrice ?? ""} onChange={(e) => update({ maxPrice: e.target.value ? Number(e.target.value) : null })} />
-              </label>
-            )}
-            {state.tab === "players" && (
-              <button className={`sx-btn${state.watchOnly ? " on" : ""}`} aria-pressed={state.watchOnly}
-                onClick={() => update({ watchOnly: !state.watchOnly })}>
-                <StarIcon filled={state.watchOnly} /> <span>Watchlist</span>
-              </button>
-            )}
             <label className="sx-search">
               <SearchIcon size={16} />
               <span className="sr-only">Search players or clubs</span>
@@ -317,16 +320,16 @@ export function StatsExplorerPage() {
         </div>
       </section>
 
-      {state.tab === "players" && (
+      {data && (
         <p className="sx-key" aria-hidden="true">
-          <span><i className="sx-key-ramp" /> Darker to brighter: lower to higher, within position</span>
-          <span><i className="top" /> Top 7% of the position</span>
-          {state.lens === "defence" && state.norm === "p90" && (
+          <span><i className="sx-key-ramp" /> Darker to brighter: lower to higher, {state.tab === "players" ? "within position" : "among the 20 clubs"}</span>
+          <span><i className="top" /> Top 7%{state.tab === "players" ? " of the position" : ""}</span>
+          {state.tab === "players" && state.lens === "defence" && state.norm === "p90" && (
             <span className="sx-wide-only">CBIT / CBIRT: lime when averaging FPL's 10 (DEF) or 12 (MID, FWD) for defensive points</span>
           )}
           <span className="sx-key-note">
             <span className="sx-wide-only">Hover or focus a cell for its exact rank. "–" means not enough minutes or no data.</span>
-            <span className="sx-phone-only">{state.norm === "p90" ? "Per 90. " : ""}Tap a player for details.</span>
+            <span className="sx-phone-only">{state.norm === "p90" ? (state.tab === "players" ? "Per 90. " : "Per match. ") : ""}Tap a number for its rank{state.tab === "players" ? ", a name for the profile" : ""}.</span>
           </span>
         </p>
       )}
@@ -420,7 +423,8 @@ export function StatsExplorerPage() {
         />
       )}
 
-      <FilterSheet open={sheetOpen} onClose={() => setSheetOpen(false)} activeFilters={activeFilters} onReset={reset}>
+      <FilterSheet open={sheetOpen} onClose={() => setSheetOpen(false)} activeFilters={activeFilters} onReset={reset}
+        resultLabel={state.tab === "players" ? `Show ${rows.length} player${rows.length === 1 ? "" : "s"}` : "Show clubs"}>
         <Controls state={state} update={update} tab={state.tab} stacked uclRule={data?.uclClubRule} />
       </FilterSheet>
 
@@ -507,40 +511,28 @@ function Controls({ state, update, tab, stacked, compact, uclRule }: {
           <option value="exclude">Exclude</option>
         </select>
       </label>
-      <Segmented label="Window" value={state.window} compact={compact} hideLabel
-        options={[
-          { value: "season", label: "Season" },
-          { value: "l6", label: "Last 6", disabled: "Needs per-match stats, coming next" },
-          { value: "l3", label: "Last 3", disabled: "Needs per-match stats, coming next" },
-        ]}
-        onChange={(window) => update({ window })} />
       <Segmented label="Show" value={state.norm} compact={compact} hideLabel
         options={[{ value: "p90", label: perLabel }, { value: "total", label: "Totals" }]}
         onChange={(norm) => update({ norm })} />
+      <p className="sx-window" title="Last 6 and last 3 gameweeks need per-match stats, which are coming next">
+        Season to date<span> · last 6 and last 3 coming</span>
+      </p>
       {tab === "players" && (
         <>
-          <label className={field}>
-            <span className="sx-legend">Position</span>
-            <select className="aero-select" value={state.position} onChange={(e) => update({ position: e.target.value as ExplorerState["position"], sort: null })}>
-              {POSITIONS.map((p) => <option key={p} value={p}>{p === "ALL" ? "All" : p}</option>)}
-            </select>
-          </label>
           <label className={`${field} sx-field-narrow`}>
             <span className="sx-legend">Min minutes</span>
             <input className="aero-input" type="number" min={0} step={90} inputMode="numeric" value={state.minMinutes}
               onChange={(e) => update({ minMinutes: Math.max(0, Number(e.target.value) || 0) })} />
           </label>
-          {!compact && <label className={`${field} sx-field-narrow`}>
+          <label className={`${field} sx-field-narrow`}>
             <span className="sx-legend">Max £</span>
-            <input className="aero-input" type="number" min={4} step={0.5} inputMode="decimal" placeholder="Any"
+            <input className="aero-input" type="number" min={3.5} step={0.1} inputMode="decimal" placeholder="Any"
               value={state.maxPrice ?? ""} onChange={(e) => update({ maxPrice: e.target.value ? Number(e.target.value) : null })} />
-          </label>}
-          {!compact && (
-            <label className="sx-check">
-              <input type="checkbox" checked={state.watchOnly} onChange={(e) => update({ watchOnly: e.target.checked })} />
-              Watchlist only
-            </label>
-          )}
+          </label>
+          <label className="sx-check">
+            <input type="checkbox" checked={state.watchOnly} onChange={(e) => update({ watchOnly: e.target.checked })} />
+            Watchlist only
+          </label>
         </>
       )}
     </div>
@@ -763,11 +755,7 @@ function PlayerTable({ rows, columns, state, sortKey, uclTeams, selected, watchl
                         {inUcl && <span className="sx-ucl" title="Club plays in the Champions League">UCL</span>}
                         {p.status && p.status !== "a" && (
                           <span className={`sx-status s-${p.status}`} title={p.news || "Availability flag"}>
-                            <span className="sx-wide-only">{p.status === "d" ? "Doubt" : "Out"}</span>
-                            <span className="sx-phone-only">
-                              <span aria-hidden="true">{p.status === "d" ? "D" : "O"}</span>
-                              <span className="sr-only">{p.status === "d" ? "Doubtful" : "Unavailable"}</span>
-                            </span>
+                            {p.status === "d" ? "Doubt" : "Out"}
                           </span>
                         )}
                       </span>
@@ -808,8 +796,8 @@ function TeamTable({ teams, catalogue, state, onSort }: {
   if (!teams.length) {
     return (
       <div className="sx-state">
-        <h2>Club stats aren't loaded yet</h2>
-        <p>Run <code>sync_team_season_stats --season 2026</code> to load the Premier League's club sheets.</p>
+        <h2>Club stats aren't here yet</h2>
+        <p>They arrive with the Premier League's stats feed, which refreshes after each gameweek. Check back after the next update.</p>
       </div>
     );
   }
@@ -892,7 +880,7 @@ function TeamTable({ teams, catalogue, state, onSort }: {
   );
 }
 
-// Floating explanation for shaded cells (mouse); screen readers get the same
+// Floating explanation for shaded cells (mouse, focus, tap); screen readers get the same
 // text from each cell's aria-label.
 function TableTooltip() {
   const [tip, setTip] = useState<{ text: string; x: number; y: number } | null>(null);
@@ -908,16 +896,21 @@ function TableTooltip() {
     };
     const leave = () => setTip(null);
     const focus = (e: FocusEvent) => over(e as unknown as MouseEvent);
+    // Touch has no hover: a tap shows the rank (focus does the same on most
+    // browsers, but iOS doesn't focus table cells).
+    const tap = (e: MouseEvent) => over(e);
     wrap.addEventListener("mouseover", over);
     wrap.addEventListener("mouseleave", leave);
     wrap.addEventListener("focusin", focus);
     wrap.addEventListener("focusout", leave);
+    wrap.addEventListener("click", tap);
     wrap.addEventListener("scroll", leave);
     return () => {
       wrap.removeEventListener("mouseover", over);
       wrap.removeEventListener("mouseleave", leave);
       wrap.removeEventListener("focusin", focus);
       wrap.removeEventListener("focusout", leave);
+      wrap.removeEventListener("click", tap);
       wrap.removeEventListener("scroll", leave);
     };
   }, []);
@@ -1089,8 +1082,8 @@ function PlayerDrawer({ player, data, state, lensKeys, cell, inUcl, watched, sel
   );
 }
 
-function FilterSheet({ open, onClose, activeFilters, onReset, children }: {
-  open: boolean; onClose: () => void; activeFilters: number; onReset: () => void; children: React.ReactNode;
+function FilterSheet({ open, onClose, activeFilters, onReset, resultLabel, children }: {
+  open: boolean; onClose: () => void; activeFilters: number; onReset: () => void; resultLabel: string; children: React.ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -1108,7 +1101,7 @@ function FilterSheet({ open, onClose, activeFilters, onReset, children }: {
       <div className="sx-sheet-body">{children}</div>
       <footer>
         <button className="sx-btn" onClick={onReset} disabled={!activeFilters}>Reset</button>
-        <button className="aero-button primary" onClick={onClose}>Show results</button>
+        <button className="aero-button primary" onClick={onClose}>{resultLabel}</button>
       </footer>
     </dialog>
   );

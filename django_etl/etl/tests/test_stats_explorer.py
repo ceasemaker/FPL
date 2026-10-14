@@ -113,3 +113,20 @@ class StatsExplorerEndpointTests(TestCase):
 
     def test_bad_season_is_rejected(self) -> None:
         self.assertEqual(self.client.get("/api/stats-explorer/?season=abc").status_code, 400)
+
+
+class ApiCompressionTests(TestCase):
+    def test_api_json_is_gzipped_when_asked(self) -> None:
+        response = self.client.get("/api/stats-explorer/?season=2026", HTTP_ACCEPT_ENCODING="gzip")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get("Content-Encoding"), "gzip")
+
+    def test_non_api_pages_are_not_compressed(self) -> None:
+        from django.http import HttpResponse
+        from django.test import RequestFactory
+
+        from fpl_platform.middleware import ApiGZipMiddleware
+
+        middleware = ApiGZipMiddleware(lambda request: HttpResponse("<p>page</p>" * 200))
+        request = RequestFactory().get("/stats", HTTP_ACCEPT_ENCODING="gzip")
+        self.assertIsNone(middleware(request).get("Content-Encoding"))
