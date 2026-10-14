@@ -9,6 +9,7 @@ import { AnalyzeManagerPage } from "./pages/AnalyzeManagerPage";
 import { FixturesPage } from "./pages/FixturesPage";
 
 const PriceMonitorPage = lazy(() => import("./pages/PriceChangePredictorPage").then((m) => ({ default: m.PriceChangePredictorPage })));
+const StatsExplorerPage = lazy(() => import("./pages/StatsExplorerPage").then((m) => ({ default: m.StatsExplorerPage })));
 const ChartLabPage = lazy(() => import("./pages/ChartLabPage").then((m) => ({ default: m.ChartLabPage })));
 const DecisionDashboardPage = lazy(() => import("./pages/DecisionDashboardPage").then((m) => ({ default: m.DecisionDashboardPage })));
 
@@ -43,6 +44,7 @@ export default function App() {
           <Route path="/analyze" element={<AnalyzeManagerPage />} />
           <Route path="/decision-lab" element={<DecisionDashboardPage />} />
           <Route path="/price-monitor" element={<PriceMonitorPage />} />
+          <Route path="/stats" element={<StatsExplorerPage />} />
           <Route path="/chart-lab" element={<ChartLabPage />} />
 
           {/* Retired routes kept as redirects so existing links keep working. */}

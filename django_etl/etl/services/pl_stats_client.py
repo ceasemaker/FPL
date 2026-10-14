@@ -92,6 +92,20 @@ class PLStatsClient(_PulseliveClient):
             if not cursor or not page.get("data"):
                 return
 
+    def get_season_teams(self, competition: int, season: int) -> list[dict]:
+        """The clubs in a season (``id`` is the Opta team id)."""
+        payload = self._get(f"v1/competitions/{competition}/seasons/{season}/teams", _limit=60) or {}
+        rows = payload.get("data", payload) if isinstance(payload, dict) else payload
+        return rows if isinstance(rows, list) else []
+
+    def get_team_season_stats(self, competition: int, season: int, opta_team_id: str) -> dict:
+        """A club's season sheet (~100 keys incl. xG, xGOT conceded, gamesPlayed)."""
+        payload = self._get(
+            f"v2/competitions/{competition}/seasons/{season}/teams/{opta_team_id}/stats"
+        ) or {}
+        stats = payload.get("stats")
+        return stats if isinstance(stats, dict) else {}
+
     def get_player_season_stats(self, competition: int, season: int, opta_player_id: str) -> dict:
         """Full season stat sheet (up to ~130 keys, including xG and xGOT)."""
         payload = self._get(

@@ -24,6 +24,7 @@ from .models import Athlete, AthletePrediction, AthleteStat, Fixture, FixtureOdd
 from .services.fixture_market import remove_vig
 from .services import chart_lab
 from .services.decision_dashboard import build_decision_dashboard
+from .services.stats_explorer import build_payload as build_stats_explorer_payload
 from .services.player_gameweeks import build_player_gameweeks
 from .services.player_analysis import (
     build_player_analysis,
@@ -3254,3 +3255,13 @@ def chart_lab_series(request):
     if not ids:
         return JsonResponse({"error": "ids is required"}, status=400)
     return JsonResponse(chart_lab.build_player_series(ids))
+
+
+@require_GET
+def stats_explorer(request):
+    """Raw season counts per competition plus FPL context for the Stats Explorer."""
+    try:
+        season = int(request.GET.get("season", "2026"))
+    except ValueError:
+        return JsonResponse({"error": "season must be a year, e.g. 2026"}, status=400)
+    return JsonResponse(build_stats_explorer_payload(season))

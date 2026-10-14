@@ -1,0 +1,374 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-14T09:21:48.137238+00:00",
+  "title": "Design System: AeroFPL",
+  "extensions": {
+    "colorMeta": {
+      "lime": {
+        "role": "primary",
+        "displayName": "Spring Bud Lime",
+        "canonical": "#a5ff01",
+        "tonalRamp": [
+          "#1e2615",
+          "#33461a",
+          "#4d5a33",
+          "#6f9e1c",
+          "#78c800",
+          "#8fe800",
+          "#a5ff01",
+          "#c6ff5c"
+        ]
+      },
+      "lime-dim": {
+        "role": "primary",
+        "displayName": "Pressed Lime",
+        "canonical": "#78c800"
+      },
+      "lime-wash": {
+        "role": "primary",
+        "displayName": "Lime Wash",
+        "canonical": "rgba(165, 255, 1, 0.12)"
+      },
+      "band-olive": {
+        "role": "secondary",
+        "displayName": "Olive Band",
+        "canonical": "#6f9e1c"
+      },
+      "band-moss": {
+        "role": "secondary",
+        "displayName": "Moss Band",
+        "canonical": "#33461a"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#101011",
+        "tonalRamp": [
+          "#101011",
+          "#151616",
+          "#171818",
+          "#191919",
+          "#1f2020",
+          "#242424",
+          "#2e2f30",
+          "#3a3b3c"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Graphite Surface",
+        "canonical": "#191919"
+      },
+      "surface-raised": {
+        "role": "neutral",
+        "displayName": "Graphite Raised",
+        "canonical": "#1f2020"
+      },
+      "surface-hover": {
+        "role": "neutral",
+        "displayName": "Graphite Hover",
+        "canonical": "#242424"
+      },
+      "sheet": {
+        "role": "neutral",
+        "displayName": "Sheet",
+        "canonical": "#151616"
+      },
+      "row": {
+        "role": "neutral",
+        "displayName": "Row",
+        "canonical": "#171818"
+      },
+      "row-alt": {
+        "role": "neutral",
+        "displayName": "Row Alt",
+        "canonical": "#1a1b1b"
+      },
+      "row-hover": {
+        "role": "neutral",
+        "displayName": "Row Hover",
+        "canonical": "#212222"
+      },
+      "row-selected": {
+        "role": "neutral",
+        "displayName": "Row Selected",
+        "canonical": "#1e2615"
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#2e2f30"
+      },
+      "line-strong": {
+        "role": "neutral",
+        "displayName": "Strong Hairline",
+        "canonical": "#3a3b3c"
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "White",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#3a3b3c",
+          "#57595a",
+          "#8f8f8f",
+          "#9c9c9c",
+          "#b7b7b7",
+          "#c8c8c8",
+          "#f4f4f2",
+          "#ffffff"
+        ]
+      },
+      "text-dim": {
+        "role": "neutral",
+        "displayName": "Dim Text",
+        "canonical": "#b7b7b7"
+      },
+      "text-muted": {
+        "role": "neutral",
+        "displayName": "Muted Text",
+        "canonical": "#8f8f8f"
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#f4f4f2"
+      },
+      "negative": {
+        "role": "status",
+        "displayName": "Coral",
+        "canonical": "#ff4c5e"
+      },
+      "warn": {
+        "role": "status",
+        "displayName": "Amber",
+        "canonical": "#e2b75b"
+      },
+      "fdr-2": {
+        "role": "status",
+        "displayName": "FDR 2 Pale Lime",
+        "canonical": "#b8e986"
+      },
+      "fdr-3": {
+        "role": "status",
+        "displayName": "FDR 3 Sage",
+        "canonical": "#95ae67"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Page titles."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Drawer and sheet titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card and section titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Descriptions and notes, about 62ch."
+      },
+      "data": {
+        "displayName": "Data",
+        "purpose": "Table cells with tabular numerals, numbers right-aligned."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Control legends, column groups and sub-lines, sentence case."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card-ambient",
+        "value": "0 14px 38px rgba(0, 0, 0, 0.22)",
+        "purpose": "Content cards."
+      },
+      {
+        "name": "menu",
+        "value": "0 18px 40px rgba(0, 0, 0, 0.5)",
+        "purpose": "Dropdown panels."
+      },
+      {
+        "name": "tray",
+        "value": "0 16px 40px rgba(0, 0, 0, 0.55)",
+        "purpose": "Floating compare tray."
+      },
+      {
+        "name": "drawer",
+        "value": "-18px 0 50px rgba(0, 0, 0, 0.5)",
+        "purpose": "Right-side profile drawer."
+      },
+      {
+        "name": "segment-lift",
+        "value": "0 1px 2px rgba(0, 0, 0, 0.4)",
+        "purpose": "Active option in a tab switch."
+      },
+      {
+        "name": "focus-ring",
+        "value": "outline: 2px solid #a5ff01; outline-offset: 2px",
+        "purpose": "Focus on every interactive element."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out-expo",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Drawer slide and bottom-sheet rise, 0.22s; removed under prefers-reduced-motion."
+      },
+      {
+        "name": "state",
+        "value": "0.15s-0.18s ease",
+        "purpose": "Background, border and colour changes on controls."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "rail-collapse",
+        "value": "1050px"
+      },
+      {
+        "name": "phone",
+        "value": "720px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one lit action per region.",
+      "html": "<button class=\"ds-btn-primary\">Compare 2</button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 18px;border-radius:var(--aero-radius-sm,10px);border:1px solid transparent;background:linear-gradient(100deg,#b8ff37,#8fe800);color:#101011;font:700 0.85rem Inter,sans-serif;cursor:pointer;transition:background .18s ease}.ds-btn-primary:hover{background:linear-gradient(100deg,#c6ff5c,#9dff0a)}.ds-btn-primary:focus-visible{outline:2px solid #a5ff01;outline-offset:2px}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Default action button.",
+      "html": "<button class=\"ds-btn\">Share link</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 18px;border-radius:10px;border:1px solid #3a3b3c;background:#1f2020;color:#fff;font:600 0.85rem Inter,sans-serif;cursor:pointer;transition:background .18s ease}.ds-btn:hover{background:#242424}.ds-btn:focus-visible{outline:2px solid #a5ff01;outline-offset:2px}.ds-btn:disabled{opacity:.45;cursor:not-allowed}"
+    },
+    {
+      "name": "Search Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Icon-led search shell; lime border on focus-within.",
+      "html": "<label class=\"ds-search\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 20 20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"><circle cx=\"8.5\" cy=\"8.5\" r=\"5\"/><path d=\"M12.5 12.5l4 4\"/></svg><input placeholder=\"Search players\"></label>",
+      "css": ".ds-search{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 12px;border-radius:10px;border:1px solid #3a3b3c;background:#191919;color:#8f8f8f}.ds-search:focus-within{border-color:rgba(165,255,1,.6)}.ds-search input{width:160px;border:0;outline:0;background:transparent;color:#fff;font:400 0.86rem Inter,sans-serif}"
+    },
+    {
+      "name": "Lens Pills",
+      "kind": "chip",
+      "refersTo": "lens-pill",
+      "description": "Pill toggles choosing the active view; selected is solid lime.",
+      "html": "<div class=\"ds-lenses\"><button class=\"active\">Attacking threat</button><button>Creativity</button><button>Defence &amp; keepers</button></div>",
+      "css": ".ds-lenses{display:flex;gap:8px}.ds-lenses button{height:36px;padding:0 16px;border-radius:999px;border:1px solid #3a3b3c;background:transparent;color:#b7b7b7;font:600 0.86rem Inter,sans-serif;cursor:pointer;transition:background .15s ease,color .15s ease}.ds-lenses button:hover{color:#fff;background:#191919}.ds-lenses button.active{background:#a5ff01;border-color:transparent;color:#101011}.ds-lenses button:focus-visible{outline:2px solid #a5ff01;outline-offset:2px}"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "custom",
+      "refersTo": "segmented-option",
+      "description": "Track of options; active steps up with an inset lime ring; unavailable options stay visible with a 'soon' marker.",
+      "html": "<div class=\"ds-seg\" role=\"group\"><button class=\"active\">Season</button><button disabled>Last 6 <span>soon</span></button><button disabled>Last 3 <span>soon</span></button></div>",
+      "css": ".ds-seg{display:inline-flex;padding:3px;border:1px solid #3a3b3c;border-radius:10px;background:#191919}.ds-seg button{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border:0;border-radius:7px;background:transparent;color:#b7b7b7;font:600 0.8rem Inter,sans-serif;cursor:pointer}.ds-seg button.active{background:#242424;color:#fff;box-shadow:inset 0 0 0 1px rgba(165,255,1,.45)}.ds-seg button:disabled{color:#8f8f8f;cursor:not-allowed}.ds-seg span{font-size:.6rem;font-weight:700;color:#e2b75b}.ds-seg button:focus-visible{outline:2px solid #a5ff01;outline-offset:2px}"
+    },
+    {
+      "name": "Provenance Badge",
+      "kind": "chip",
+      "refersTo": "provenance-badge",
+      "description": "Amber tag marking a number's source limit: 'PL only' or 'Estimate'.",
+      "html": "<span class=\"ds-col\">xGOT <span class=\"ds-badge\" title=\"Counts Premier League matches only.\">PL only</span></span> <span class=\"ds-col\">Defcon <span class=\"ds-badge\">Estimate</span></span>",
+      "css": ".ds-col{color:#b7b7b7;font:600 0.82rem Inter,sans-serif}.ds-badge{display:inline-block;margin-left:6px;padding:1px 5px;border-radius:5px;border:1px solid rgba(226,183,91,.55);color:#e2b75b;font-size:.6rem;font-weight:700;letter-spacing:.03em;vertical-align:middle}"
+    },
+    {
+      "name": "Percentile Cells",
+      "kind": "custom",
+      "refersTo": "data-cell-top",
+      "description": "Five-band shading within position: colour plus weight, rank in the label.",
+      "html": "<table class=\"ds-cells\"><tr><td class=\"b4\" aria-label=\"xG 0.62, 96th percentile among forwards\">0.62</td><td class=\"b3\">0.41</td><td class=\"b2\">0.28</td><td class=\"b1\">0.17</td><td class=\"b0\">0.05</td></tr></table>",
+      "css": ".ds-cells{border-collapse:separate;border-spacing:0;font:400 0.82rem Inter,sans-serif;font-variant-numeric:tabular-nums}.ds-cells td{height:34px;padding:0 10px;text-align:right;background:#171818;color:#b7b7b7;border-bottom:1px solid #222323}.ds-cells td.b4{background:#a5ff01;color:#101011;font-weight:700}.ds-cells td.b3{background:#6f9e1c;color:#101011;font-weight:600}.ds-cells td.b2{background:#33461a;color:#fff}.ds-cells td.b0{color:#8f8f8f}.ds-cells td:hover{outline:2px solid #a5ff01;outline-offset:-2px}"
+    },
+    {
+      "name": "Navigation Item",
+      "kind": "nav",
+      "refersTo": "",
+      "description": "Rail row with an authored 1.5px-stroke icon; active is a lime gradient.",
+      "html": "<nav class=\"ds-nav\"><a href=\"#\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"10\" cy=\"6.5\" r=\"3\"/><path d=\"M4.5 16.5c.6-3 2.9-4.8 5.5-4.8s4.9 1.8 5.5 4.8\"/></svg><span>Players</span></a><a href=\"#\" class=\"active\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"3.5\" width=\"14\" height=\"13\" rx=\"2\"/><path d=\"M3 7.5h14M7.5 7.5v9M3 12h14\"/></svg><span>Stats Explorer</span></a></nav>",
+      "css": ".ds-nav{display:flex;flex-direction:column;gap:8px;width:196px;padding:12px;background:linear-gradient(145deg,#171818,#111212 70%)}.ds-nav a{display:flex;align-items:center;gap:13px;min-height:48px;padding:0 14px;border-radius:8px;color:#c8c8c8;text-decoration:none;font:400 .86rem Inter,sans-serif;transition:.18s ease}.ds-nav a:hover{background:#202121;color:#fff}.ds-nav a.active{color:#101011;background:linear-gradient(100deg,#b8ff37,#6b951f)}.ds-nav a:focus-visible{outline:2px solid #a5ff01;outline-offset:2px}"
+    },
+    {
+      "name": "Compare Tray",
+      "kind": "card",
+      "refersTo": "",
+      "description": "Floating bottom bar holding selected players as chips plus compare/chart actions.",
+      "html": "<div class=\"ds-tray\"><div class=\"ds-chips\"><span class=\"ds-chip\">Haaland <button aria-label=\"Remove\">&times;</button></span><span class=\"ds-chip\">Isak <button aria-label=\"Remove\">&times;</button></span><small>2 of 4</small></div><button class=\"ds-go\">Compare</button></div>",
+      "css": ".ds-tray{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid rgba(165,255,1,.35);border-radius:14px;background:#181917;box-shadow:0 16px 40px rgba(0,0,0,.55);font-family:Inter,sans-serif}.ds-chips{display:flex;align-items:center;gap:8px}.ds-chip{display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 4px 0 12px;border-radius:999px;background:#242424;color:#fff;font-size:.82rem;font-weight:600}.ds-chip button{width:24px;height:24px;border:0;border-radius:999px;background:transparent;color:#8f8f8f;cursor:pointer}.ds-chip button:hover{color:#fff}.ds-chips small{color:#8f8f8f;font-size:.74rem}.ds-go{height:38px;padding:0 18px;border:0;border-radius:10px;background:linear-gradient(100deg,#b8ff37,#8fe800);color:#101011;font-weight:700;cursor:pointer}.ds-go:focus-visible{outline:2px solid #a5ff01;outline-offset:2px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Lit Instrument Panel",
+    "overview": "AeroFPL is a dark graphite instrument for weekly FPL decisions. The ground is near-black ink, surfaces step up in small tonal increments, and one lime voice lights only what matters: the current selection, the primary action, and the best numbers on the sheet. Everything else stays grey so that lime always means something.\n\nDensity is high and earned. Data surfaces are sheets, not dashboards of tiles: tight 34px rows, 1px hairlines, tabular figures, frozen identity columns. The system's honesty commitment from the product is visual too: provenance and limits (\"PL only\", \"Estimate\", stale-snapshot notes) are first-class components drawn in a warm amber, never hidden. Colour never carries meaning alone; weight, text and accessible labels travel with it.\n\nThe tokens and shared primitives live in `frontend/src/styles/design-system.css` (the `--aero-*` custom properties and `.aero-*` classes). `frontend/src/theme.css` still carries an older palette (pure black, iOS grey, blue tertiary, pill buttons); it is legacy, not the system.",
+    "keyCharacteristics": [
+      "Graphite ink ground with tonal surface steps, no pure black.",
+      "One accent, lime, reserved for selection, primary action and top-band data.",
+      "Inter throughout; tabular numerals on every data surface.",
+      "10px controls, 16px containers, pills only for toggles, chips and tags.",
+      "Authored 1.5px-stroke SVG icons on a 20px grid, currentColor.",
+      "Provenance badges in amber wherever a number has a source caveat."
+    ],
+    "rules": [
+      {
+        "name": "The One Voice Rule",
+        "body": "Lime marks selection, the primary action and the best data only. If more than one non-data element per region is lime, one of them is wrong.",
+        "section": "colors"
+      },
+      {
+        "name": "The Percentile Ramp Rule",
+        "body": "Data cells are shaded by percentile within the player's position (or among the 20 clubs): top fifth lime with ink text at weight 700, next fifth olive with ink text at weight 600, middle fifth moss with white text, fourth fifth unshaded dim text, bottom fifth unshaded muted text. Colour plus weight, never colour alone; every shaded cell carries its percentile and cohort in its accessible label and in a hover/focus tooltip.",
+        "section": "colors"
+      },
+      {
+        "name": "The Amber Caveat Rule",
+        "body": "Amber means \"read this number with care\". It is never decoration and never a second accent.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Rule",
+        "body": "Every surface that shows comparable numbers sets `font-variant-numeric: tabular-nums` and right-aligns numeric columns.",
+        "section": "typography"
+      },
+      {
+        "name": "The Sentence Case Control Rule",
+        "body": "Button and control text is sentence case with no extra tracking. The legacy global `button` style in `theme.css` uppercases with 0.3em tracking; aero surfaces override it, and new surfaces must too.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Sheet Rule",
+        "body": "Tables and control bars never cast shadows; depth there comes from the surface ramp and 1px lines. Shadow is for things that float.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** take every colour, radius and shadow from the `--aero-*` tokens in `design-system.css` rather than re-declaring hex values.",
+      "**Do** shade comparable numbers by percentile within a fair cohort, and pair each shade with weight and an accessible label carrying the rank.",
+      "**Do** set tabular numerals and right-align numbers on every data surface.",
+      "**Do** badge a number's provenance (\"PL only\", \"Estimate\") in amber whenever its source has a limit.",
+      "**Do** draw new icons as 20px, 1.5px-stroke, currentColor SVG.",
+      "**Do** keep control text in sentence case with no added tracking, overriding the legacy global button style.",
+      "**Do** move secondary filters into a bottom sheet on phones and keep the frozen identity column."
+    ],
+    "donts": [
+      "**Don't** use lime for secondary actions, ornaments or non-top data; beyond the faint radial glow on the page ground, it is the single voice.",
+      "**Don't** let colour alone carry meaning in shading, status or difficulty.",
+      "**Don't** use the olive or moss band colours outside data shading.",
+      "**Don't** reach for `theme.css` tokens (pure black, #8E8E93 grey, #007AFF blue) or its pill-shaped buttons and inputs on new surfaces.",
+      "**Don't** put shadows on tables or control bars.",
+      "**Don't** use emoji or text glyphs as icons."
+    ]
+  }
+}

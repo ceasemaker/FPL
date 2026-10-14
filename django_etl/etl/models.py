@@ -134,6 +134,38 @@ class PlayerSeasonStat(TimestampedModel):
         return f"{self.name} {self.season}/{(self.season + 1) % 100:02d} (competition {self.competition_id})"
 
 
+class TeamSeasonStat(TimestampedModel):
+    """
+    One club's season totals from the Premier League's SDP stats API (camelCase
+    keys, e.g. ``expectedGoals``, ``expectedGoalsOnTargetConceded``,
+    ``gamesPlayed``). Keyed by Opta team id, which equals FPL's ``Team.code``.
+    """
+    competition_id = models.PositiveIntegerField()  # Opta id: 8 = Premier League
+    season = models.PositiveIntegerField()  # start year: 2026 = 2026/27
+    opta_team_id = models.CharField(max_length=20)
+    team = models.ForeignKey(
+        "Team",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="season_stats",
+    )
+    name = models.CharField(max_length=100)
+    stats = models.JSONField(default=dict)
+
+    class Meta:
+        db_table = "team_season_stats"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["competition_id", "season", "opta_team_id"],
+                name="unique_team_season_stat",
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.name} {self.season}/{(self.season + 1) % 100:02d} (competition {self.competition_id})"
+
+
 class Team(TimestampedModel):
     id = models.IntegerField(primary_key=True)
     code = models.IntegerField(unique=True, null=True, blank=True)

@@ -1,16 +1,28 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import {
+  AnalyzeManagerIcon,
+  ChartLabIcon,
+  DecisionLabIcon,
+  FixturesIcon,
+  MenuIcon,
+  OverviewIcon,
+  PlayersIcon,
+  PriceMonitorIcon,
+  StatsExplorerIcon,
+} from "./navIcons";
 
 // Compare is reached from Players, and the optimiser now lives inside
 // Decision Lab, so neither needs a top-level entry.
 const links = [
-  { to: "/", label: "Overview", icon: "⌂" },
-  { to: "/decision-lab", label: "Decision Lab", icon: "▣" },
-  { to: "/players", label: "Players", icon: "♙" },
-  { to: "/chart-lab", label: "Chart Lab", icon: "◫" },
-  { to: "/fixtures", label: "Fixtures", icon: "▦" },
-  { to: "/price-monitor", label: "Price Monitor", icon: "↗" },
-  { to: "/analyze", label: "Analyze Manager", icon: "◇" },
+  { to: "/", label: "Overview", icon: <OverviewIcon /> },
+  { to: "/decision-lab", label: "Decision Lab", icon: <DecisionLabIcon /> },
+  { to: "/players", label: "Players", icon: <PlayersIcon /> },
+  { to: "/stats", label: "Stats Explorer", icon: <StatsExplorerIcon /> },
+  { to: "/chart-lab", label: "Chart Lab", icon: <ChartLabIcon /> },
+  { to: "/fixtures", label: "Fixtures", icon: <FixturesIcon /> },
+  { to: "/price-monitor", label: "Price Monitor", icon: <PriceMonitorIcon /> },
+  { to: "/analyze", label: "Analyze Manager", icon: <AnalyzeManagerIcon /> },
 ];
 
 export function Navigation() {
@@ -29,7 +41,7 @@ export function Navigation() {
         aria-label="Toggle navigation"
         aria-expanded={open}
       >
-        ☰
+        <MenuIcon />
       </button>
       <div className={`command-nav-links ${open ? "open" : ""}`}>
         {links.map((link) => (
