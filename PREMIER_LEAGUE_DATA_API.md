@@ -106,6 +106,39 @@ coverage (`coverageLevel: 13`), but it is not served. The closest substitutes:
 3. Text commentary: every shot, corner, free kick, offside and card, in order,
    with player ids.
 
+## Other competitions
+
+The SDP API lists 62 competitions and the classic API 115 (cups, women's, youth,
+friendlies, Scottish and Belgian leagues, and more). Being listed doesn't mean
+having data. Coverage of the ones that matter for transfers and promoted clubs,
+tested for 2025/26 on 14 October 2026:
+
+| Competition | SDP API | Classic API |
+|---|---|---|
+| Premier League | Full, **with xG/xA/xGOT** | Full (293 stats) |
+| Championship (promoted clubs) | Fixtures and results only; stat sheets empty | **Full player sheets** (e.g. 189 stats for 2025/26's top scorer); seasons through 2026/27 |
+| Champions League | Match and player stats, **no xG** | Full player sheets (169 stats, 2025/26) |
+| Europa League / Conference League | Match stats (175 / 164 keys), no xG | Listed; not tested |
+| La Liga | No 2025/26 matches | Full sheets (167 stats) **up to 2024/25 only** |
+| Serie A, Bundesliga, Ligue 1 | Not listed; no matches under their Opta ids (21, 22, 24) | Not listed |
+| Spanish Segunda División | — | Stops at 2017/18 |
+| Scottish Premiership | No 2025/26 matches | Basic stats only (7), up to 2024/25 |
+| Belgian Pro League | Fixtures, no stats | Listed; not tested |
+
+So for incoming players and promoted clubs, the **Championship** (classic API)
+and **Champions League** (both) are usable. Serie A, the Bundesliga and Ligue 1
+are not covered, and La Liga only up to 2024/25. Only the Premier League has xG.
+
+## Loaded into AeroFPL
+
+`python manage.py sync_pl_season_stats --season 2025` loads every 2025/26
+Premier League player's SDP season sheet into the `player_season_stats` table
+(`PlayerSeasonStat`), keyed by Opta id and linked to `Athlete` via
+`Athlete.code` (FPL's `code` is the Opta id). It lists players through the
+paginated leaderboard (`v2/competitions/8/seasons/{year}/players/stats/leaderboard`,
+cursor `_next`) and then fetches each full sheet; the leaderboard alone carries
+only 64 keys and no xG. Re-running upserts.
+
 ## What this adds over FPL
 
 FPL already gives xG, xA, xGC, ICT, bonus and the basics per gameweek. These APIs

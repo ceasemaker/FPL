@@ -84,6 +84,45 @@ class PriceSnapshot(models.Model):
         return f"{self.athlete.web_name} - {self.snapshot_time}: £{self.cost/10}m"
 
 
+class PlayerSeasonStat(TimestampedModel):
+    """
+    One player's season totals from the Premier League's stats API (Opta data;
+    see PREMIER_LEAGUE_DATA_API.md). ``stats`` holds the API's camelCase keys
+    as served, e.g. ``expectedGoals``, ``expectedGoalsOnTarget``, ``touches``.
+
+    Players are keyed by Opta id, which equals FPL's ``Athlete.code``; the
+    ``athlete`` link is empty for players no longer in the FPL game.
+    """
+    competition_id = models.PositiveIntegerField()  # Opta id: 8 = Premier League
+    season = models.PositiveIntegerField()  # start year: 2025 = 2025/26
+    opta_player_id = models.CharField(max_length=20)
+    athlete = models.ForeignKey(
+        "Athlete",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="season_stats",
+    )
+    name = models.CharField(max_length=200)
+    position = models.CharField(max_length=30, blank=True)
+    # The API reports the player's club at fetch time, not their club that season.
+    current_team_name = models.CharField(max_length=100, blank=True)
+    stats = models.JSONField(default=dict)
+
+    class Meta:
+        db_table = "player_season_stats"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["competition_id", "season", "opta_player_id"],
+                name="unique_player_season_stat",
+            )
+        ]
+        indexes = [models.Index(fields=["competition_id", "season"])]
+
+    def __str__(self) -> str:
+        return f"{self.name} {self.season}/{(self.season + 1) % 100:02d} (competition {self.competition_id})"
+
+
 class Team(TimestampedModel):
     id = models.IntegerField(primary_key=True)
     code = models.IntegerField(unique=True, null=True, blank=True)
