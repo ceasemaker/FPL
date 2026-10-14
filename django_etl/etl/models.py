@@ -86,16 +86,27 @@ class PriceSnapshot(models.Model):
 
 class PlayerSeasonStat(TimestampedModel):
     """
-    One player's season totals from the Premier League's stats API (Opta data;
-    see PREMIER_LEAGUE_DATA_API.md). ``stats`` holds the API's camelCase keys
-    as served, e.g. ``expectedGoals``, ``expectedGoalsOnTarget``, ``touches``.
+    One player's season totals from the Premier League's stats APIs (Opta data;
+    see PREMIER_LEAGUE_DATA_API.md). ``stats`` holds the source's keys as
+    served: camelCase from ``sdp`` (``expectedGoals``, ``expectedGoalsOnTarget``)
+    and snake_case from ``classic`` (``big_chance_created``, ``touches``). The
+    two overlap but neither is a superset: only ``sdp`` has xG, and ``classic``
+    has about twice as many stats and covers the Championship.
 
     Players are keyed by Opta id, which equals FPL's ``Athlete.code``; the
-    ``athlete`` link is empty for players no longer in the FPL game.
+    ``athlete`` link is empty for players not in the FPL game.
     """
-    competition_id = models.PositiveIntegerField()  # Opta id: 8 = Premier League
+    SOURCE_SDP = "sdp"
+    SOURCE_CLASSIC = "classic"
+    SOURCE_CHOICES = [(SOURCE_SDP, "SDP API"), (SOURCE_CLASSIC, "Classic API")]
+
+    source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default=SOURCE_SDP)
+    competition_id = models.PositiveIntegerField()  # Opta id: 8 = PL, 10 = Championship, 5 = UCL
     season = models.PositiveIntegerField()  # start year: 2025 = 2025/26
     opta_player_id = models.CharField(max_length=20)
+    # The source's own player id (pulselive id for classic), needed for its
+    # per-match endpoints.
+    source_player_id = models.CharField(max_length=20, blank=True)
     athlete = models.ForeignKey(
         "Athlete",
         on_delete=models.SET_NULL,
@@ -113,8 +124,8 @@ class PlayerSeasonStat(TimestampedModel):
         db_table = "player_season_stats"
         constraints = [
             models.UniqueConstraint(
-                fields=["competition_id", "season", "opta_player_id"],
-                name="unique_player_season_stat",
+                fields=["source", "competition_id", "season", "opta_player_id"],
+                name="unique_player_season_stat_per_source",
             )
         ]
         indexes = [models.Index(fields=["competition_id", "season"])]

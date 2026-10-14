@@ -131,13 +131,30 @@ are not covered, and La Liga only up to 2024/25. Only the Premier League has xG.
 
 ## Loaded into AeroFPL
 
-`python manage.py sync_pl_season_stats --season 2025` loads every 2025/26
-Premier League player's SDP season sheet into the `player_season_stats` table
-(`PlayerSeasonStat`), keyed by Opta id and linked to `Athlete` via
-`Athlete.code` (FPL's `code` is the Opta id). It lists players through the
-paginated leaderboard (`v2/competitions/8/seasons/{year}/players/stats/leaderboard`,
-cursor `_next`) and then fetches each full sheet; the leaderboard alone carries
-only 64 keys and no xG. Re-running upserts.
+`python manage.py sync_season_stats` loads season stat sheets into the
+`player_season_stats` table (`PlayerSeasonStat`). Rows are keyed by source,
+competition (Opta id: 8 PL, 10 Championship, 5 UCL), season (start year) and
+Opta player id, and linked to `Athlete` via `Athlete.code` (FPL's `code` is the
+Opta id). Re-running upserts.
+
+| Load | Command |
+|---|---|
+| Premier League, SDP (xG, xGOT; ~130 stats) | `sync_season_stats --season 2026` |
+| Premier League, classic (~260 stats) | `sync_season_stats --season 2026 --source classic` |
+| Champions League, classic | `sync_season_stats --season 2026 --source classic --competition champions-league` |
+| Championship, classic | `sync_season_stats --season 2026 --source classic --competition championship` |
+
+- **SDP** lists players through the paginated leaderboard
+  (`v2/competitions/{id}/seasons/{year}/players/stats/leaderboard`, cursor
+  `_next`), then fetches each full sheet; the leaderboard alone has only 64 keys
+  and no xG. Its paging can repeat a player, which the upsert absorbs.
+- **Classic** looks up the season id from its label, lists players through the
+  minutes leaderboard (`stats/ranked/players/mins_played`, so only players with
+  minutes), then fetches each sheet. `source_player_id` keeps the pulselive id
+  for the per-match endpoint.
+- **Championship 2026/27 has no stats yet** (checked 14 October 2026): 115
+  matches played, but the leaderboards, match stats and player sheets are all
+  empty. 2025/26 is fully populated, so the data may arrive later in the season.
 
 ## What this adds over FPL
 
