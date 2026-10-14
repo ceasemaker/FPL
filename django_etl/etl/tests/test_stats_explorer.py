@@ -90,5 +90,26 @@ class StatsExplorerEndpointTests(TestCase):
         self.assertEqual(payload["uclTeamIds"], [])
         self.assertIsNotNone(next(p for p in payload["players"] if p["name"] == "Haaland")["ucl"])
 
+    def test_absent_xg_is_a_gap_when_the_player_shot_and_zero_when_not(self) -> None:
+        payload = self.client.get("/api/stats-explorer/?season=2026").json()
+        players = {p["name"]: p for p in payload["players"]}
+
+        # Haaland's SDP sheet has expectedGoals but no expectedGoalsOnTarget,
+        # and his classic sheet has 20 shots but no shots-on-target key.
+        self.assertEqual(players["Haaland"]["pl"]["expectedGoals"], 4.82)
+        self.assertEqual(players["Haaland"]["pl"]["expectedGoalsOnTarget"], 0.0)
+        # Watkins has no SDP sheet at all and no shot keys: true zeros.
+        self.assertEqual(players["Watkins"]["pl"]["expectedGoals"], 0.0)
+
+    def test_absent_xg_with_shots_is_sent_as_null(self) -> None:
+        PlayerSeasonStat.objects.filter(opta_player_id="178301", source="classic").update(
+            stats={"mins_played": 450.0, "goals": 3.0, "total_scoring_att": 12.0, "ontarget_scoring_att": 5.0}
+        )
+        payload = self.client.get("/api/stats-explorer/?season=2026").json()
+        watkins = next(p for p in payload["players"] if p["name"] == "Watkins")
+
+        self.assertIsNone(watkins["pl"]["expectedGoals"])
+        self.assertIsNone(watkins["pl"]["expectedGoalsOnTarget"])
+
     def test_bad_season_is_rejected(self) -> None:
         self.assertEqual(self.client.get("/api/stats-explorer/?season=abc").status_code, 400)

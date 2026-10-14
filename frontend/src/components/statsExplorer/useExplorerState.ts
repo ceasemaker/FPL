@@ -1,7 +1,7 @@
 // Stats Explorer view state lives in the URL so any view can be shared by
 // link. Only non-default values are written, which keeps links short.
-import { useCallback, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import type { Norm, Position, Scope } from "./explorerModel";
 
 export type Tab = "players" | "teams";
@@ -94,15 +94,51 @@ function serialise(state: ExplorerState): URLSearchParams {
   return params;
 }
 
+const PLAYER_KEY = "player";
+
 export function useExplorerState() {
   const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
+  const pushedProfile = useRef(false);
   const state = useMemo(() => parse(params), [params]);
+  const player = Number(params.get(PLAYER_KEY)) || null;
+  useEffect(() => {
+    // Closed by the Back gesture: nothing left to pop.
+    if (!player) pushedProfile.current = false;
+  }, [player]);
+
   const update = useCallback(
     (patch: Partial<ExplorerState>) => {
-      setParams(serialise({ ...parse(params), ...patch }), { replace: true });
+      const next = serialise({ ...parse(params), ...patch });
+      const open = params.get(PLAYER_KEY);
+      if (open) next.set(PLAYER_KEY, open);
+      setParams(next, { replace: true });
     },
     [params, setParams],
   );
   const reset = useCallback(() => setParams(new URLSearchParams(), { replace: true }), [setParams]);
-  return { state, update, reset, search: serialise(state).toString() };
+
+  // Opening a profile pushes a history entry, so the phone's Back closes it
+  // and a copied link opens straight to that player.
+  const openPlayer = useCallback(
+    (id: number) => {
+      const next = new URLSearchParams(params);
+      next.set(PLAYER_KEY, String(id));
+      pushedProfile.current = !params.get(PLAYER_KEY);
+      setParams(next, { replace: Boolean(params.get(PLAYER_KEY)) });
+    },
+    [params, setParams],
+  );
+  const closePlayer = useCallback(() => {
+    if (pushedProfile.current) {
+      pushedProfile.current = false;
+      navigate(-1);
+      return;
+    }
+    const next = new URLSearchParams(params);
+    next.delete(PLAYER_KEY);
+    setParams(next, { replace: true });
+  }, [params, setParams, navigate]);
+
+  return { state, update, reset, search: serialise(state).toString(), player, openPlayer, closePlayer };
 }

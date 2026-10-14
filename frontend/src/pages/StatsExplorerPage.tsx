@@ -3,13 +3,16 @@ import { useNavigate } from "react-router-dom";
 import {
   CHART_LAB_FORMULA,
   POSITION_NAMES,
-  band,
+  TOP_PERCENTILE,
   formatStat,
   isNormalised,
   minutesFor,
   ordinal,
   percentile,
+  qualifies,
+  shade,
   statValue,
+  type Shade,
   type ExplorerPayload,
   type ExplorerPlayer,
   type ExplorerTeam,
@@ -64,13 +67,12 @@ interface SavedView { name: string; search: string }
 
 export function StatsExplorerPage() {
   const navigate = useNavigate();
-  const { state, update, reset, search } = useExplorerState();
+  const { state, update, reset, search, player: drawerId, openPlayer, closePlayer } = useExplorerState();
   const [data, setData] = useState<ExplorerPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<number[]>([]);
   const [watchlist, setWatchlist] = useState<number[]>(() => readStorage(WATCH_KEY, []));
   const [views, setViews] = useState<SavedView[]>(() => readStorage(VIEWS_KEY, []));
-  const [drawerId, setDrawerId] = useState<number | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [menu, setMenu] = useState<"columns" | "views" | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -104,28 +106,51 @@ export function StatsExplorerPage() {
     return all.map((k) => statsByKey.get(k)).filter((s): s is Stat => Boolean(s));
   }, [lens, state.position, state.extra, statsByKey]);
 
-  // Percentile cohorts: same position, enough minutes in the chosen scope.
-  // Club, price and search filters do not move the baseline.
+  // Cohorts: same position, enough minutes behind *this* stat (PL-only stats
+  // need PL minutes). Club, price and search filters do not move the baseline.
   const cohorts = useMemo(() => {
     const map = new Map<string, Map<Position, number[]>>();
     if (!data) return map;
     for (const stat of data.catalogue) {
       const byPos = new Map<Position, number[]>();
       for (const player of data.players) {
-        if (minutesFor(player, state.scope) < state.minMinutes) continue;
+        if (!qualifies(stat, player, state.scope, state.minMinutes)) continue;
         const value = statValue(stat, player, state.scope, state.norm);
         if (value === null) continue;
         const list = byPos.get(player.position) ?? [];
         list.push(value);
         byPos.set(player.position, list);
       }
+      for (const list of byPos.values()) list.sort((a, b) => a - b);
       map.set(stat.key, byPos);
     }
     return map;
   }, [data, state.scope, state.norm, state.minMinutes]);
 
-  const pctOf = (stat: Stat, player: ExplorerPlayer, value: number | null) =>
-    percentile(value, cohorts.get(stat.key)?.get(player.position) ?? [], stat.lowerIsBetter);
+  const cellOf = (stat: Stat, player: ExplorerPlayer): CellInfo => {
+    if (!qualifies(stat, player, state.scope, state.minMinutes)) {
+      const plMin = Math.round(minutesFor(player, "pl"));
+      return {
+        value: null, text: "–", pct: null, shade: null,
+        tip: `Only ${plMin} Premier League minutes (minimum ${state.minMinutes})`,
+        label: `${stat.label}: not enough Premier League minutes (${plMin})`,
+      };
+    }
+    const value = statValue(stat, player, state.scope, state.norm);
+    const text = formatStat(stat, value, state.norm);
+    if (value === null) {
+      const reason = stat.kind === "rate" ? "No attempts yet" : "Missing from the Opta feed for this player";
+      return { value, text: "–", pct: null, shade: null, tip: reason, label: `${stat.label}: ${reason.toLowerCase()}` };
+    }
+    const cohort = cohorts.get(stat.key)?.get(player.position) ?? [];
+    const pct = percentile(value, cohort, stat.lowerIsBetter);
+    const sh = shade(stat, player.position, value, cohort, pct, state.norm);
+    let tip = pct === null ? undefined : `${ordinal(pct)} percentile among ${cohort.length} ${POSITION_NAMES[player.position]}`;
+    if (sh?.defcon) {
+      tip = `${value.toFixed(1)} per 90 vs FPL's ${sh.defcon} for defensive points${tip ? ` · ${tip}` : ""}`;
+    }
+    return { value, text, pct, shade: sh, tip, label: `${stat.label} ${text}${tip ? `, ${tip}` : ""}` };
+  };
 
   const sortKey = state.sort && (statsByKey.has(state.sort) || state.sort === "name" || state.sort === "minutes")
     ? state.sort
@@ -149,7 +174,7 @@ export function StatsExplorerPage() {
     const valueOf = (p: ExplorerPlayer): number | string | null => {
       if (sortKey === "name") return p.name;
       if (sortKey === "minutes") return minutesFor(p, state.scope);
-      return stat ? statValue(stat, p, state.scope, state.norm) : null;
+      return stat ? cellOf(stat, p).value : null;
     };
     const dir = state.sort ? state.dir : (sortKey === "name" ? "asc" : "desc");
     return filtered.sort((a, b) => {
@@ -160,7 +185,7 @@ export function StatsExplorerPage() {
       const cmp = typeof va === "string" ? va.localeCompare(vb as string) : (va as number) - (vb as number);
       return dir === "asc" ? cmp : -cmp;
     });
-  }, [data, state, uclTeams, watchlist, statsByKey, sortKey]);
+  }, [data, state, uclTeams, watchlist, statsByKey, sortKey, cohorts]);
 
   const activeFilters = [
     state.scope !== DEFAULT_STATE.scope,
@@ -294,12 +319,14 @@ export function StatsExplorerPage() {
 
       {state.tab === "players" && (
         <p className="sx-key" aria-hidden="true">
-          <span><i className="b4" /> Top 20%</span>
-          <span><i className="b3" /> 20–40%</span>
-          <span><i className="b2" /> 40–60%</span>
+          <span><i className="sx-key-ramp" /> Darker to brighter: lower to higher, within position</span>
+          <span><i className="top" /> Top 7% of the position</span>
+          {state.lens === "defence" && state.norm === "p90" && (
+            <span className="sx-wide-only">CBIT / CBIRT: lime when averaging FPL's 10 (DEF) or 12 (MID, FWD) for defensive points</span>
+          )}
           <span className="sx-key-note">
-            <span className="sx-wide-only">Shading is the percentile among players in the same position. Hover or focus a cell for the exact rank.</span>
-            <span className="sx-phone-only">Percentile within position{state.norm === "p90" ? " · per 90" : ""}. Tap a player for details.</span>
+            <span className="sx-wide-only">Hover or focus a cell for its exact rank. "–" means not enough minutes or no data.</span>
+            <span className="sx-phone-only">{state.norm === "p90" ? "Per 90. " : ""}Tap a player for details.</span>
           </span>
         </p>
       )}
@@ -334,9 +361,9 @@ export function StatsExplorerPage() {
           uclTeams={uclTeams}
           selected={selected}
           watchlist={watchlist}
-          pctOf={pctOf}
+          cell={cellOf}
           onSort={(key) => update({ sort: key, dir: sortKey === key && state.dir === "desc" ? "asc" : "desc" })}
-          onOpen={setDrawerId}
+          onOpen={openPlayer}
           onSelect={toggleSelect}
           onWatch={toggleWatch}
           onReset={reset}
@@ -382,14 +409,14 @@ export function StatsExplorerPage() {
           data={data}
           state={state}
           lensKeys={columns.map((c) => c.key)}
-          pctOf={pctOf}
+          cell={cellOf}
           inUcl={drawerPlayer.teamId !== null && uclTeams.has(drawerPlayer.teamId)}
           watched={watchlist.includes(drawerPlayer.id)}
           selected={selected.includes(drawerPlayer.id)}
           canSelect={selected.length < MAX_COMPARE}
           onWatch={() => toggleWatch(drawerPlayer.id)}
           onSelect={() => toggleSelect(drawerPlayer.id)}
-          onClose={() => setDrawerId(null)}
+          onClose={closePlayer}
         />
       )}
 
@@ -400,6 +427,28 @@ export function StatsExplorerPage() {
       {toast && <div className="sx-toast" role="status">{toast}</div>}
     </main>
   );
+}
+
+interface CellInfo {
+  value: number | null;
+  text: string;
+  pct: number | null;
+  shade: Shade | null;
+  tip?: string;
+  label: string;
+}
+
+function cellClass(info: CellInfo): string {
+  let cls = "sx-num sx-cell";
+  if (info.value === null) cls += " na";
+  else if (info.shade?.top) cls += " top";
+  else if (info.shade && info.shade.level >= 0.4) cls += " strong";
+  return cls;
+}
+
+function cellStyle(info: CellInfo): React.CSSProperties | undefined {
+  if (!info.shade || info.shade.top) return undefined;
+  return { ["--sx-level" as string]: info.shade.level.toFixed(3) };
 }
 
 // ------------------------------------------------------------ controls
@@ -593,7 +642,7 @@ function ColumnsMenu({ catalogue, lensKeys, extra, onChange }: {
 
 // --------------------------------------------------------------- tables
 
-function PlayerTable({ rows, columns, state, sortKey, uclTeams, selected, watchlist, pctOf, onSort, onOpen, onSelect, onWatch, onReset }: {
+function PlayerTable({ rows, columns, state, sortKey, uclTeams, selected, watchlist, cell, onSort, onOpen, onSelect, onWatch, onReset }: {
   rows: ExplorerPlayer[];
   columns: Stat[];
   state: ExplorerState;
@@ -601,7 +650,7 @@ function PlayerTable({ rows, columns, state, sortKey, uclTeams, selected, watchl
   uclTeams: Set<number>;
   selected: number[];
   watchlist: number[];
-  pctOf: (stat: Stat, player: ExplorerPlayer, value: number | null) => number | null;
+  cell: (stat: Stat, player: ExplorerPlayer) => CellInfo;
   onSort: (key: string) => void;
   onOpen: (id: number) => void;
   onSelect: (id: number) => void;
@@ -732,20 +781,14 @@ function PlayerTable({ rows, columns, state, sortKey, uclTeams, selected, watchl
                 <td className="sx-num sx-wide-only">{(p.fpl.fpl_price ?? 0).toFixed(1)}</td>
                 <td className="sx-num sx-dim sx-wide-only">{Math.round(minutesFor(p, state.scope))}</td>
                 {columns.map((c, colIndex) => {
-                  const value = statValue(c, p, state.scope, state.norm);
-                  const pct = pctOf(c, p, value);
-                  const b = band(pct);
-                  const text = formatStat(c, value, state.norm);
-                  const label = pct === null
-                    ? `${c.label} ${text}`
-                    : `${c.label} ${text}, ${ordinal(pct)} percentile among ${POSITION_NAMES[p.position]}`;
+                  const info = cell(c, p);
                   return (
-                    <td key={c.key} className={`sx-num sx-cell${b !== null ? ` b${b}` : ""}`} aria-label={label}
+                    <td key={c.key} className={cellClass(info)} style={cellStyle(info)} aria-label={info.label}
                       data-r={rowIndex} data-c={colIndex}
                       tabIndex={active.r === rowIndex && active.c === colIndex ? 0 : -1}
                       onFocus={() => setActive({ r: rowIndex, c: colIndex })}
-                      data-tip={pct === null ? undefined : `${ordinal(pct)} percentile among ${POSITION_NAMES[p.position]}`}>
-                      {text}
+                      data-tip={info.tip}>
+                      {info.text}
                     </td>
                   );
                 })}
@@ -827,13 +870,16 @@ function TeamTable({ teams, catalogue, state, onSort }: {
               </th>
               {catalogue.map((d) => {
                 const v = valueOf(t, d);
-                const pct = percentile(v, teams.map((x) => valueOf(x, d)).filter((x): x is number => x !== null), Boolean(d.lowerIsBetter));
-                const b = d.key === "gamesPlayed" ? null : band(pct);
+                const cohort = teams.map((x) => valueOf(x, d)).filter((x): x is number => x !== null).sort((a, b) => a - b);
+                const pct = d.key === "gamesPlayed" ? null : percentile(v, cohort, Boolean(d.lowerIsBetter));
+                const sh = pct === null ? null : shade(
+                  { key: d.key, lowerIsBetter: Boolean(d.lowerIsBetter) } as Stat, "MID", v, cohort, pct, state.norm,
+                );
+                const tip = pct === null ? undefined : `${ordinal(pct)} percentile among ${cohort.length} clubs`;
+                const info: CellInfo = { value: v, text: fmt(d, v), pct, shade: sh, tip, label: `${d.label} ${fmt(d, v)}${tip ? `, ${tip}` : ""}` };
                 return (
-                  <td key={d.key} className={`sx-num sx-cell${b !== null ? ` b${b}` : ""}`}
-                    aria-label={pct === null || b === null ? `${d.label} ${fmt(d, v)}` : `${d.label} ${fmt(d, v)}, ${ordinal(pct)} percentile among clubs`}
-                    data-tip={pct === null || b === null ? undefined : `${ordinal(pct)} percentile among clubs`}>
-                    {fmt(d, v)}
+                  <td key={d.key} className={cellClass(info)} style={cellStyle(info)} aria-label={info.label} data-tip={tip}>
+                    {info.text}
                   </td>
                 );
               })}
@@ -892,12 +938,12 @@ function SkeletonTable() {
 
 // ----------------------------------------------------------- drawer, sheet
 
-function PlayerDrawer({ player, data, state, lensKeys, pctOf, inUcl, watched, selected, canSelect, onWatch, onSelect, onClose }: {
+function PlayerDrawer({ player, data, state, lensKeys, cell, inUcl, watched, selected, canSelect, onWatch, onSelect, onClose }: {
   player: ExplorerPlayer;
   data: ExplorerPayload;
   state: ExplorerState;
   lensKeys: string[];
-  pctOf: (stat: Stat, player: ExplorerPlayer, value: number | null) => number | null;
+  cell: (stat: Stat, player: ExplorerPlayer) => CellInfo;
   inUcl: boolean;
   watched: boolean;
   selected: boolean;
@@ -907,12 +953,32 @@ function PlayerDrawer({ player, data, state, lensKeys, pctOf, inUcl, watched, se
   onClose: () => void;
 }) {
   const closeRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null;
     closeRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onCloseRef.current(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { onCloseRef.current(); return; }
+      if (e.key !== "Tab") return;
+      // Keep focus inside the profile while it is open (it is modal).
+      const panel = panelRef.current;
+      if (!panel) return;
+      const focusables = [...panel.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), summary, [href], input, select, [tabindex]:not([tabindex="-1"])',
+      )].filter((el) => el.offsetParent !== null);
+      if (!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && (document.activeElement === first || !panel.contains(document.activeElement))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && (document.activeElement === last || !panel.contains(document.activeElement))) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
     document.addEventListener("keydown", onKey);
     return () => {
       document.removeEventListener("keydown", onKey);
@@ -941,7 +1007,7 @@ function PlayerDrawer({ player, data, state, lensKeys, pctOf, inUcl, watched, se
         const pl = statValue(s, player, "pl", state.norm);
         const ucl = uclOnly(s);
         const combined = statValue(s, player, "all", state.norm);
-        const pct = pctOf(s, player, statValue(s, player, state.scope, state.norm));
+        const pct = cell(s, player).pct;
         return (
           <tr key={s.key}>
             <th scope="row" title={s.help}>
@@ -955,7 +1021,7 @@ function PlayerDrawer({ player, data, state, lensKeys, pctOf, inUcl, watched, se
             <td className="sx-pct">
               {pct !== null && (
                 <span className="sx-pctbar" role="img" aria-label={`${ordinal(pct)} percentile among ${POSITION_NAMES[player.position]}`}>
-                  <i style={{ width: `${Math.max(3, pct)}%` }} className={`b${band(pct)}`} />
+                  <i style={{ width: `${Math.max(3, pct)}%` }} className={pct >= TOP_PERCENTILE ? "top" : ""} />
                 </span>
               )}
             </td>
@@ -968,7 +1034,7 @@ function PlayerDrawer({ player, data, state, lensKeys, pctOf, inUcl, watched, se
   return (
     <div className="sx-drawer-layer">
       <button className="sx-drawer-scrim" aria-label="Close player profile" onClick={onClose} tabIndex={-1} />
-      <aside className="sx-drawer" role="dialog" aria-modal="true" aria-labelledby="sx-drawer-title">
+      <aside ref={panelRef} className="sx-drawer" role="dialog" aria-modal="true" aria-labelledby="sx-drawer-title">
         <header className="sx-drawer-head">
           <div>
             <h2 id="sx-drawer-title">{player.name}</h2>
@@ -1014,6 +1080,9 @@ function PlayerDrawer({ player, data, state, lensKeys, pctOf, inUcl, watched, se
             </details>
           ))}
           <p className="sx-muted sx-foot"><InfoIcon size={14} /> UCL has no xG feed, so xG-family stats are Premier League only.</p>
+        </div>
+        <div className="sx-drawer-foot">
+          <button className="aero-button" onClick={onClose}>Close</button>
         </div>
       </aside>
     </div>

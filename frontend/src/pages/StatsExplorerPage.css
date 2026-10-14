@@ -5,9 +5,8 @@
   --sx-row: #171818;
   --sx-row-alt: #1a1b1b;
   --sx-row-hover: #212222;
-  --sx-band-4: #a5ff01;
-  --sx-band-3: #6f9e1c;
-  --sx-band-2: #33461a;
+  --sx-top: #a5ff01;
+  --sx-ramp-rgb: 74, 115, 22; /* #4a7316: the ramp's darkest-to-brightest green */
   --sx-frozen-w: 290px;
   display: flex;
   flex-direction: column;
@@ -213,9 +212,13 @@
   border-radius: 3px;
 }
 
-.sx-key i.b4 { background: var(--sx-band-4); }
-.sx-key i.b3 { background: var(--sx-band-3); }
-.sx-key i.b2 { background: var(--sx-band-2); }
+.sx-key i.top { background: var(--sx-top); }
+
+.sx-key i.sx-key-ramp {
+  width: 44px;
+  background: linear-gradient(90deg, rgba(var(--sx-ramp-rgb), 0.08), rgba(var(--sx-ramp-rgb), 1));
+  box-shadow: inset 0 0 0 1px var(--aero-line-strong);
+}
 
 .sx-key-note {
   color: var(--aero-text-muted);
@@ -688,7 +691,7 @@ th[aria-sort="descending"] .sx-sort {
 
 .sx-table tbody td,
 .sx-table tbody th {
-  height: 34px;
+  height: 39px;
   padding: 0 10px;
   border-bottom: 1px solid #222323;
   background-color: var(--sx-row);
@@ -833,43 +836,46 @@ th[aria-sort="descending"] .sx-sort {
   color: var(--aero-text-muted);
 }
 
-/* Percentile bands: colour plus weight, never colour alone. */
+/* Size-based shading: intensity follows the value within the position
+   group (--sx-level 0–1); lime is reserved for the top ~7% or a player on
+   track for FPL defensive points. Text weight and the cell label carry the
+   same information, so colour is never the only signal. */
 .sx-cell {
+  --sx-level: 0;
   color: var(--aero-text-dim);
 }
 
-.sx-table tbody td.b4 {
-  background-image: linear-gradient(var(--sx-band-4), var(--sx-band-4));
+.sx-table tbody td.sx-cell {
+  background-image: linear-gradient(rgba(var(--sx-ramp-rgb), var(--sx-level)), rgba(var(--sx-ramp-rgb), var(--sx-level)));
+}
+
+.sx-table tbody td.sx-cell.strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+.sx-table tbody td.sx-cell.top {
+  background-image: linear-gradient(var(--sx-top), var(--sx-top));
   color: #101011;
   font-weight: 700;
 }
 
-.sx-table tbody td.b4:focus-visible {
-  outline-color: #fff;
+.sx-table tbody td.sx-cell.na {
+  color: var(--aero-text-muted);
 }
 
 .sx-table tbody td.sx-cell:focus-visible {
-  outline-offset: -2px;
+  outline-offset: -3px;
 }
 
-.sx-table tbody td.b3 {
-  background-image: linear-gradient(var(--sx-band-3), var(--sx-band-3));
-  color: #101011;
-  font-weight: 600;
-}
-
-.sx-table tbody td.b2 {
-  background-image: linear-gradient(var(--sx-band-2), var(--sx-band-2));
-  color: var(--aero-text);
-}
-
-.sx-table tbody td.b0 {
-  color: var(--aero-text-muted);
+/* A lime ring vanishes on a lime cell; ink is 15:1 there. */
+.sx-table tbody td.sx-cell.top:focus-visible {
+  outline-color: #101011;
 }
 
 .sx-tip {
   position: fixed;
-  z-index: 60;
+  z-index: 1150;
   transform: translate(-50%, calc(-100% - 8px));
   padding: 5px 9px;
   border-radius: 7px;
@@ -930,7 +936,7 @@ th[aria-sort="descending"] .sx-sort {
   position: fixed;
   left: 50%;
   bottom: 96px;
-  z-index: 70;
+  z-index: 1200;
   transform: translateX(-50%);
   padding: 10px 16px;
   border-radius: 10px;
@@ -1029,7 +1035,7 @@ th[aria-sort="descending"] .sx-sort {
 .sx-drawer-layer {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: 1100; /* above the site's fixed nav (1000) */
 }
 
 .sx-drawer-scrim {
@@ -1172,10 +1178,8 @@ th[aria-sort="descending"] .sx-sort {
   background: #4a4b4b;
 }
 
-/* Same ramp as the table cells. */
-.sx-pctbar i.b2 { background: var(--sx-band-2); }
-.sx-pctbar i.b3 { background: var(--sx-band-3); }
-.sx-pctbar i.b4 { background: var(--sx-band-4); }
+.sx-pctbar i { background: rgb(var(--sx-ramp-rgb)); }
+.sx-pctbar i.top { background: var(--sx-top); }
 
 .sx-more {
   margin-top: 10px;
@@ -1199,6 +1203,10 @@ th[aria-sort="descending"] .sx-sort {
 
 .sx-more[open] summary svg {
   transform: rotate(90deg);
+}
+
+.sx-drawer-foot {
+  display: none;
 }
 
 .sx-foot {
@@ -1279,6 +1287,16 @@ th[aria-sort="descending"] .sx-sort {
 }
 
 /* ------------------------------------------------------------ responsive */
+
+@media (max-width: 1280px) {
+  .sx-bar-top {
+    flex-wrap: wrap;
+  }
+
+  .sx-bar-top .sx-lenses {
+    flex: 1 1 100%;
+  }
+}
 
 @media (max-width: 1050px) {
   .sx-tray {
@@ -1480,6 +1498,17 @@ th[aria-sort="descending"] .sx-sort {
   .sx-drawer {
     width: 100%;
     border-left: 0;
+  }
+
+  .sx-drawer-foot {
+    display: flex;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--aero-line);
+    background: #161717;
+  }
+
+  .sx-drawer-foot .aero-button {
+    flex: 1;
   }
 
   .sx-toast {

@@ -29,7 +29,9 @@ export interface Lens {
   keeperColumns?: string[];
 }
 
-export type Counts = Record<string, number>;
+// null = a feed gap (the player had the underlying actions but the key is
+// missing), which must render as "–", never as 0.
+export type Counts = Record<string, number | null>;
 
 export interface ExplorerPlayer {
   id: number;
@@ -77,16 +79,30 @@ export interface ExplorerPayload {
 
 /** Minutes behind a value: PL only for PL-only stats, otherwise per scope. */
 export function minutesFor(player: ExplorerPlayer, scope: Scope, plOnly = false): number {
-  const pl = player.pl.mins_played ?? 0;
+  const pl = (player.pl.mins_played ?? 0) as number;
   if (scope === "pl" || plOnly) return pl;
-  return pl + (player.ucl?.mins_played ?? 0);
+  return pl + ((player.ucl?.mins_played ?? 0) as number);
 }
 
-function sum(player: ExplorerPlayer, keys: string[], scope: Scope, plOnly: boolean): number {
+/** Whether the player has enough minutes behind this particular stat. A
+ *  PL-only stat needs the minimum in Premier League minutes alone, even when
+ *  Champions League minutes count towards the scope. */
+export function qualifies(stat: Stat, player: ExplorerPlayer, scope: Scope, minMinutes: number): boolean {
+  if (stat.kind === "fpl") return true;
+  return minutesFor(player, scope, stat.plOnly) >= minMinutes;
+}
+
+function sum(player: ExplorerPlayer, keys: string[], scope: Scope, plOnly: boolean): number | null {
   let total = 0;
   for (const key of keys) {
-    total += player.pl[key] ?? 0;
-    if (scope === "all" && !plOnly) total += player.ucl?.[key] ?? 0;
+    const pl = player.pl[key];
+    if (pl === null) return null;
+    total += pl ?? 0;
+    if (scope === "all" && !plOnly) {
+      const ucl = player.ucl?.[key];
+      if (ucl === null) return null;
+      total += ucl ?? 0;
+    }
   }
   return total;
 }
@@ -99,11 +115,18 @@ export function statValue(stat: Stat, player: ExplorerPlayer, scope: Scope, norm
   }
   if (stat.kind === "rate") {
     const den = sum(player, stat.den ?? [], scope, stat.plOnly);
-    return den > 0 ? sum(player, stat.num ?? [], scope, stat.plOnly) / den : null;
+    const num = sum(player, stat.num ?? [], scope, stat.plOnly);
+    return den !== null && num !== null && den > 0 ? num / den : null;
   }
-  const value = stat.kind === "diff"
-    ? sum(player, stat.plus ?? [], scope, stat.plOnly) - sum(player, stat.minus ?? [], scope, stat.plOnly)
-    : sum(player, (stat.raw as string[]) ?? [], scope, stat.plOnly);
+  let value: number | null;
+  if (stat.kind === "diff") {
+    const plus = sum(player, stat.plus ?? [], scope, stat.plOnly);
+    const minus = sum(player, stat.minus ?? [], scope, stat.plOnly);
+    value = plus === null || minus === null ? null : plus - minus;
+  } else {
+    value = sum(player, (stat.raw as string[]) ?? [], scope, stat.plOnly);
+  }
+  if (value === null) return null;
   if (norm === "total") return value;
   const minutes = minutesFor(player, scope, stat.plOnly);
   return minutes > 0 ? (value / minutes) * 90 : null;
@@ -141,10 +164,55 @@ export function percentile(value: number | null, cohort: number[], lowerIsBetter
   return lowerIsBetter ? 100 - pct : pct;
 }
 
-/** Shading band 0–4 (bottom fifth to top fifth). */
-export function band(pct: number | null): number | null {
-  if (pct === null) return null;
-  return Math.min(4, Math.floor(pct / 20));
+/** Top-of-position highlight: lime is reserved for roughly the top 7%. */
+export const TOP_PERCENTILE = 93;
+
+/** FPL defensive contribution: points for 10 CBIT (defenders) or 12 CBIRT
+ *  (midfielders and forwards) in a match. Per 90 is the per-match proxy. */
+export const DEFCON_THRESHOLD: Record<string, Partial<Record<Position, number>>> = {
+  cbit: { DEF: 10 },
+  cbirt: { MID: 12, FWD: 12 },
+};
+
+export interface Shade {
+  level: number; // 0–1 intensity, by value within the cohort
+  top: boolean; // lime highlight
+  defcon?: number; // the FPL threshold this cell was judged against
+}
+
+function quantile(sorted: number[], q: number): number {
+  if (!sorted.length) return 0;
+  const pos = (sorted.length - 1) * q;
+  const lo = Math.floor(pos);
+  const hi = Math.ceil(pos);
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo);
+}
+
+/**
+ * Cell shading by size, not rank: intensity follows where the value sits
+ * between the cohort's 5th and 95th percentile values, so 2.32 reads clearly
+ * brighter than 1.08 and 1.08 ≈ 1.06. Lime marks only the top ~7%, or, for
+ * DefCon columns per 90, a player averaging FPL's points threshold.
+ */
+export function shade(
+  stat: Stat,
+  position: Position,
+  value: number | null,
+  sortedCohort: number[],
+  pct: number | null,
+  norm: Norm,
+): Shade | null {
+  if (value === null || sortedCohort.length < 2) return null;
+  const threshold = norm === "p90" ? DEFCON_THRESHOLD[stat.key]?.[position] : undefined;
+  if (threshold) {
+    return { level: Math.max(0, Math.min(1, value / threshold)), top: value >= threshold, defcon: threshold };
+  }
+  const lo = quantile(sortedCohort, 0.05);
+  const hi = quantile(sortedCohort, 0.95);
+  let level = hi > lo ? (value - lo) / (hi - lo) : 0.5;
+  level = Math.max(0, Math.min(1, level));
+  if (stat.lowerIsBetter) level = 1 - level;
+  return { level, top: pct !== null && pct >= TOP_PERCENTILE };
 }
 
 export function ordinal(n: number): string {

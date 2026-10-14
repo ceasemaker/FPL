@@ -27,6 +27,17 @@ POSITION_LABELS = {1: "GKP", 2: "DEF", 3: "MID", 4: "FWD"}
 # players with UCL minutes usually played them for a previous club or on loan.
 UCL_CLUB_MIN_PLAYERS = 8
 PL = COMPETITIONS["premier-league"]["opta"]
+
+# Stat sheets omit zero values, so an absent key usually means 0. For the xG
+# family that is only true when the player had none of the underlying actions:
+# an absent xGOT for a player with shots on target is a feed gap, not a zero.
+# Gaps are sent as null so the page shows "–" instead of a plausible 0.00.
+GAP_EVIDENCE = {
+    "expectedGoals": ("total_scoring_att",),
+    "expectedGoalsOnTarget": ("ontarget_scoring_att",),
+    "expectedAssists": ("total_att_assist",),
+    "expectedGoalsOnTargetConceded": ("saves", "goals_conceded"),
+}
 UCL = COMPETITIONS["champions-league"]["opta"]
 
 
@@ -161,7 +172,7 @@ def _raw_keys() -> set[str]:
 
 def build_payload(season: int) -> dict:
     latest = AthleteStat.objects.aggregate(gw=Max("game_week"))["gw"] or 0
-    cache_key = f"stats_explorer:{season}:gw{latest}:v1"
+    cache_key = f"stats_explorer:{season}:gw{latest}:v2"
     cached = cache.get(cache_key)
     if cached:
         return cached
@@ -196,6 +207,7 @@ def build_payload(season: int) -> dict:
         athlete = athletes.get(pid)
         if athlete is None or not scopes["pl"].get("mins_played"):
             continue
+        _mark_feed_gaps(scopes["pl"])
         price = (athlete.now_cost or 0) / 10
         points = athlete.total_points or 0
         fpl_minutes = athlete.minutes or 0
@@ -245,6 +257,15 @@ def build_payload(season: int) -> dict:
     }
     cache.set(cache_key, payload, CACHE_TTL)
     return payload
+
+
+def _mark_feed_gaps(counts: dict) -> None:
+    """Make absent xG-family keys explicit: 0.0 when truly zero, None when a gap."""
+    for key, evidence in GAP_EVIDENCE.items():
+        if key in counts:
+            continue
+        had_actions = any((counts.get(e) or 0) > 0 for e in evidence)
+        counts[key] = None if had_actions else 0.0
 
 
 def _team_league_minutes() -> dict[int, int]:
