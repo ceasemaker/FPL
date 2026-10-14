@@ -58,27 +58,30 @@ zero against every baseline:
 
 Intervals come from a bootstrap over gameweeks.
 
-### First result (v2.0, 2026-10-14)
+### First result (v2.0, production run 2026-10-14)
 
 | Captain points per week | 2023/24–2025/26 |
 |---|---|
-| Model | 6.82 |
+| Model | 6.75 |
 | Top-100 managers' captain | 8.20 |
 | Priciest attacker who started | 5.20 |
 | Best last-six form | 5.31 |
 | Best possible | 17.79 |
 
-- **Against "priciest attacker":** +1.61 (95% interval +0.52 to +2.68).
-- **Against "last-six form":** +1.51 (+0.22 to +2.80).
-- **Against the top-100 consensus:** −1.39 (−2.43 to −0.40).
+- **Against "priciest attacker":** +1.54 (95% interval +0.45 to +2.61).
+- **Against "last-six form":** +1.44 (+0.27 to +2.62).
+- **Against the top-100 consensus:** −1.46 (−2.40 to −0.55).
 - **Verdict: not accepted.** The homepage shows no captain.
+
+A local run (scikit-learn 1.6) gave 6.82 with the same verdict; the gap comes
+from library versions, not from the data.
 
 The top-100 baseline is survivorship-biased: those managers are in the sample
 because their choices worked. They also had team news, which the model lacks.
 
 **Lineups:** the model picks the XI and captain from the top-100 managers' real
-squads, all scored with ordinary autosubs and no chips. It beats form by +2.45
-(+1.18 to +3.73) and trails the managers' own choices by −2.10 (−2.91 to −1.35).
+squads, all scored with ordinary autosubs and no chips. It beats form by +2.39
+(lower bound +1.19) and trails the managers' own choices by −2.16 (lower bound −2.92).
 
 **Forecast accuracy over 58,682 player-weeks:**
 
