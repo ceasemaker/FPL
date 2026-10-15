@@ -145,10 +145,9 @@ def main() -> None:
     players, fixtures = zip(*(season_frames(args.data_root.expanduser(), args.fixtures_dir, s) for s in SEASONS))
     players = pd.concat(players, ignore_index=True)
     fixtures = pd.concat(fixtures, ignore_index=True)
-    # Drop rows for players who were never in a matchday squad that week and
-    # never played all season: they carry no information and halve the file.
-    ever_played = players.groupby(["season", "code"])["minutes"].transform("sum") > 0
-    players = players[ever_played]
+    # Every registered player is kept, including those who never played all
+    # season: whether a player will play is not known at earlier deadlines, so
+    # dropping them would select the population with hindsight.
     for column in ("expected_goals", "expected_assists", "expected_goals_conceded"):
         players[column] = players[column].round(2)
 

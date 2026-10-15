@@ -43,19 +43,23 @@ def walk_forward(features: pd.DataFrame, test_seasons=TEST_SEASONS, retrain_ever
     """Predictions for every test week, each from a model trained on earlier weeks only."""
     t = features["season"] * 100 + features["gameweek"]
     played = features["total_points"].notna()
-    out, model = [], None
+    out, model, iterations = [], None, []
     weeks = sorted({(s, g) for s, g in features.loc[features["season"].isin(test_seasons), ["season", "gameweek"]].itertuples(index=False)})
     started = time.time()
     for index, (season, gameweek) in enumerate(weeks):
         now = season * 100 + gameweek
         if model is None or index % retrain_every == 0:
             model = fit(features[played & (t < now)], params=params, **({"feature_list": feature_list} if feature_list else {}))
+            iterations.append(int(getattr(model.regressor, "n_iter_", 0)))
         week = features[(t == now) & played].copy()
         week["pred"] = predict(model, week)
         out.append(week)
         if gameweek % 10 == 0:
             log(f"  {season}/{(season + 1) % 100:02d} GW{gameweek} ({time.time() - started:.0f}s)")
-    return pd.concat(out, ignore_index=True)
+    preds = pd.concat(out, ignore_index=True)
+    # Boosting iterations actually used per fit (early stopping can end before max_iter).
+    preds.attrs["iterations"] = iterations
+    return preds
 
 
 def _bootstrap(diffs: np.ndarray, rng: np.random.Generator) -> dict:
@@ -71,7 +75,8 @@ def captain_picks(preds: pd.DataFrame, squads: pd.DataFrame) -> pd.DataFrame:
     elite = (
         squads[squads["is_captain"] == 1]
         .groupby(["season", "gameweek", "code"]).size().rename("n").reset_index()
-        .sort_values("n", ascending=False).drop_duplicates(["season", "gameweek"])
+        # Most captains first; a tie goes to the lower player code, so the pick is deterministic.
+        .sort_values(["n", "code"], ascending=[False, True]).drop_duplicates(["season", "gameweek"])
     )
     elite = elite.set_index(["season", "gameweek"])["code"]
     rows = []
@@ -79,15 +84,23 @@ def captain_picks(preds: pd.DataFrame, squads: pd.DataFrame) -> pd.DataFrame:
         points = week.set_index("code")["total_points"]
         names = week.set_index("code")["web_name"]
 
-        def pick(frame, column):
+        def pick(frame, column, tiebreak=None):
             frame = frame.dropna(subset=[column])
-            return None if frame.empty else int(frame.loc[frame[column].idxmax(), "code"])
+            if frame.empty:
+                return None
+            # Highest value first; ties broken by ``tiebreak``, then by code, so
+            # every rule is deterministic.
+            order = [column] + ([tiebreak] if tiebreak else []) + ["code"]
+            ranked = frame.assign(**{tiebreak: frame[tiebreak].fillna(-1e9)} if tiebreak else {})
+            ranked = ranked.sort_values(order, ascending=[False] * (len(order) - 1) + [True])
+            return int(ranked.iloc[0]["code"])
 
         attackers = week[(week["position"] >= 3) & (week["mins_l1"] >= 60)]
         regulars = week[week["mins_m3"] >= 60]
         choice = {
             "model": pick(week, "pred"),
-            "premium": pick(attackers.assign(key=attackers["start_price"] + attackers["pts_m6"].fillna(0) / 100), "key"),
+            # Price first; six-week points only break exact price ties.
+            "premium": pick(attackers, "start_price", tiebreak="pts_m6"),
             "form": pick(regulars, "pts_m6"),
             "elite": int(elite.get((season, gameweek))) if (season, gameweek) in elite.index else None,
             "best": int(week.loc[week["total_points"].idxmax(), "code"]),

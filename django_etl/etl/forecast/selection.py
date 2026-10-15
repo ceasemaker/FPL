@@ -58,8 +58,8 @@ def _legal(xi: list[Player]) -> bool:
     return counts[1] == 1 and all(counts[p] >= MIN_OUTFIELD[p] for p in (2, 3, 4))
 
 
-def score_lineup(lineup: Lineup) -> float:
-    """Points for the week with ordinary autosubs and captaincy."""
+def score_lineup_parts(lineup: Lineup) -> tuple[float, float]:
+    """(points from the eleven after autosubs, extra points from the armband)."""
     xi = list(lineup.starters)
     bench = list(lineup.bench)
     for index, starter in enumerate(list(xi)):
@@ -74,9 +74,15 @@ def score_lineup(lineup: Lineup) -> float:
                 xi = trial
                 bench.remove(sub)
                 break
-    total = sum(p.points for p in xi)
+    eleven = sum(p.points for p in xi)
+    armband = 0.0
     if lineup.captain.minutes > 0:
-        total += lineup.captain.points
+        armband = lineup.captain.points
     elif lineup.vice.minutes > 0 and any(p is lineup.vice for p in xi):
-        total += lineup.vice.points
-    return float(total)
+        armband = lineup.vice.points
+    return float(eleven), float(armband)
+
+
+def score_lineup(lineup: Lineup) -> float:
+    """Points for the week with ordinary autosubs and captaincy."""
+    return sum(score_lineup_parts(lineup))
