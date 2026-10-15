@@ -180,7 +180,7 @@ export function useChangesView(active: boolean, config: ChangesConfig, update: (
     takeaway = (
       <>
         {top && <><strong>{top.label}</strong> moved the most: {info.short} {top.before.toFixed(info.digits)} → {top.after.toFixed(info.digits)}. </>}
-        {kept && config.direction === "rise" && <>Do big rises last? Mostly: the biggest risers in past seasons kept about {pct(kept.medianKept)} of the rise the season after, and {pct(kept.stillAbove)} stayed above their old level.</>}
+        {kept && config.direction === "rise" && <>Do big rises last? {kept.medianKept >= 0.6 ? "Mostly" : kept.medianKept >= 0.35 ? "Partly" : "Often not"}: the biggest risers in past seasons kept about {pct(kept.medianKept)} of the rise the season after, and {pct(kept.stillAbove)} stayed above their old level.</>}
         {leap.data.inProgress && <> This season is still early, so these numbers can still swing.</>}
       </>
     );
