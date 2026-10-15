@@ -3,7 +3,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{lmodern}
-\usepackage[margin=2.6cm]{geometry}
+\usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
 \usepackage{tabularx}
@@ -13,8 +13,10 @@
 \usepackage{microtype}
 \usepackage[round,sort]{natbib}
 \usepackage[hidelinks]{hyperref}
+\usepackage{xurl}
 
 \captionsetup{font=small,labelfont=bf}
+\input{results.tex}
 
 \title{Forecasting Fantasy Premier League Points:\\
 A Walk-Forward Evaluation of Captaincy and Lineup Decisions}
@@ -28,22 +30,24 @@ A Walk-Forward Evaluation of Captaincy and Lineup Decisions}
 \noindent
 Fantasy Premier League (FPL) managers choose, every week, eleven starters from a fifteen-player
 squad and a captain whose points are doubled. We forecast each player's points for the coming
-gameweek with gradient-boosted regression trees trained on four seasons of player-level match
-data (2022/23--2025/26; 79{,}885 player-gameweeks), using only information available before
-each deadline. The model is evaluated walk-forward over 114 gameweeks (2023/24--2025/26),
-retrained every week on all earlier weeks, and its decisions are compared with fixed baselines
-under an acceptance rule stated before the first run. The forecast is more accurate than recent
-form (mean absolute error 1.42 versus 1.50 points; correlation 0.51 versus 0.41). As a captain
-rule it outscores choosing the most expensive attacker who started the previous week by $+1.54$
-points per week (95\% bootstrap interval $+0.45$ to $+2.61$) and choosing the best recent form by
-$+1.44$ ($+0.27$ to $+2.62$), but trails the captain most often chosen by the managers who
-finished the season in the overall top 100 by $-1.46$ ($-2.40$ to $-0.55$). Selecting starting
-elevens from those managers' actual squads, the model beats a form rule by $+2.39$ points per week
-but trails the managers' own choices by $-2.16$. Ablations show which inputs carry the forecast,
-and the conclusions are stable across model settings. We also test whether a player's share of
-his team's possession-ending actions, an adaptation of basketball's usage rate, adds information.
-We discuss why the strongest baseline is both informative and biased, and why single-season
-evaluations cannot separate decision rules that differ by less than about one point per week.
+gameweek with gradient-boosted regression trees and evaluate them on four seasons of data
+(2022/23--2025/26), with expanding training windows that contain only earlier weeks. Over 114
+test gameweeks (2023/24--2025/26) and every registered player, the forecast is more accurate than
+recent form, a fixture-adjusted form rule and a ridge regression (forecasts exist for every player
+with at least one earlier club-fixture week). It also ranks realistic
+selection candidates better within each week. Its decisions are less clearly better. As a captain
+rule it outscores the most expensive attacker who played at least 60 minutes per fixture in his
+previous club-fixture week by \vsPremiumMean{}
+points per week (95\% bootstrap interval \vsPremiumLow{} to \vsPremiumHigh{}), almost entirely
+because of one season, and unadjusted recent form by \vsFormMean{}. Its advantages over a form
+rule scaled by the coming week's fixture count and over a ridge regression are not distinguishable
+from zero. It trails the captain most often chosen by the managers who finished each season in the
+overall top 100 by \vsEliteMean{} (\vsEliteLow{} to \vsEliteHigh{}); that cohort is defined after
+the season, so this is a retrospective reference. The model does not meet a decision criterion
+recorded before the first evaluation. A football adaptation of basketball's usage rate reduced
+forecast error by about 0.3\% and had no detectable effect on decisions. Performance varies
+markedly between seasons, and resolving captaincy differences of a point per week or less needs
+several seasons of prospective evaluation.
 \end{abstract}
 
 \section{Introduction}
@@ -55,112 +59,115 @@ score for playing time, goals, assists, clean sheets, saves and bonus points and
 for defensive actions. Two decisions recur every week regardless of transfers: who starts, and
 who captains. Both reduce to ranking players by expected points in the coming week.
 
-A small literature forecasts FPL points with statistical and machine-learning models. Early
-work treated team selection as sequential decision-making under uncertainty
-\citep{matthews2012}. Later studies forecast points from recent match histories using time-series
-and recurrent models \citep{gupta2019}, convolutional and recurrent networks over a player's last
-five matches \citep{lombu2024}, and ridge regression, gradient boosting and convolutional networks
-\citep{frees2024}. Others add information beyond match statistics, such as news and betting
-markets \citep{bonello2019}, or couple forecasts with mixed-integer squad selection
-\citep{ramezani2025}. These studies mostly report forecast error or season-long team totals.
-Fewer ask whether forecasts make better \emph{weekly decisions} than the rules and expert
-consensus managers already use, and fewer fix the criterion for success before looking at the
-results.
+A small literature forecasts FPL points. Early work treated team selection as sequential
+decision-making under uncertainty \citep{matthews2012}. Later studies forecast points from recent
+match histories using time-series and recurrent models \citep{gupta2019}, convolutional and
+recurrent networks over a player's last five matches \citep{lombu2024}, and ridge regression,
+gradient boosting and convolutional networks \citep{frees2024}. Others add news and betting-market
+information \citep{bonello2019} or couple forecasts with mixed-integer squad selection
+\citep{ramezani2025}. These studies mostly report forecast error or season-long team totals. We
+ask whether a forecast makes better \emph{weekly decisions} than simple rules and expert consensus,
+judged against a criterion fixed before the results were seen.
 
-This paper asks that question. We are explicit about two things that often go unstated in
-sports forecasting: information leakage, meaning the use of data that would not have been known
-at decision time \citep{tashman2000}, and the noise of weekly outcomes, which limits what any
+Two issues receive particular attention: information leakage, meaning the use of anything not
+known at decision time \citep{tashman2000}, and the noise of weekly outcomes, which limits what any
 evaluation can show. Our contributions are:
 \begin{enumerate}
-  \item a deadline-safe feature set that carries players' form across seasons and uses the
-        previous season's rates as a prior, following the logic of empirical Bayes shrinkage
-        \citep{efronmorris1975,brown2008};
-  \item a walk-forward evaluation that retrains every week and compares \emph{decisions}
-        against fixed baselines, with an acceptance rule set in advance \citep{nosek2018};
-  \item lineup evaluation on 11{,}400 real squads, with substitutions applied by the game's
-        rules;
-  \item ablation and sensitivity analyses, so that results do not rest on unexamined
-        choices; and
-  \item a test of whether ball usage, adapted from basketball's usage rate
-        \citep{bbrefglossary,oliver2004}, adds information.
+  \item a deadline-ordered feature set that carries players' form across seasons;
+  \item a walk-forward evaluation that retrains every week on every registered player, and
+        compares decisions with mechanical, statistical and expert comparators;
+  \item lineup evaluation on 11{,}400 real squads, split into the eleven and the armband;
+  \item ablation, sensitivity and dependence analyses; and
+  \item a test of whether ball usage, adapted from basketball \citep{bbrefglossary,oliver2004},
+        adds information.
 \end{enumerate}
 
 \section{Data}
 
 \subsection{Player-gameweek records}
-We use official FPL data for four complete seasons, 2022/23 to 2025/26
-\citep{fplapi}. Fixture lists and club identifiers for past seasons come from a public archive of
-the same data \citep{anandfpl}. For every player and gameweek we record:
+We use official FPL data for four complete seasons, 2022/23 to 2025/26 \citep{fplapi}. These
+weekly records were collected by the author during each season. Fixture lists and club identifiers
+for past seasons come from a public archive of the same source \citep{anandfpl}. For every
+registered player and gameweek we record:
 \begin{itemize}
   \item minutes, starts, goals, assists, clean sheets, goals conceded and saves;
   \item bonus points and the bonus points system score;
   \item expected goals (xG), expected assists (xA) and expected goals conceded;
   \item total FPL points.
 \end{itemize}
-Expected goals estimate the probability that a shot is scored from its location and context
-\citep{rathke2017}; FPL publishes Opta's values. In a double gameweek, when a club plays twice,
-the two matches are summed. Players and clubs keep the same identifier across seasons. Players
-with no minutes in a season are excluded for that season (Table~\ref{tab:data}). Because fixtures
-are known, a week with no fixture (a blank gameweek) is distinguished from a week in which a
-player did not play.
+Expected goals estimate the probability that a shot is scored given its characteristics
+\citep{rathke2017}; FPL publishes Opta's values. Double gameweeks, in which a club plays twice, are
+summed. Players and clubs keep the same identifier across seasons.
+
+Every registered player is kept, including those who never played that season
+(Table~\ref{tab:data}). Whether a player will play is not known at earlier deadlines, so removing
+those who end the season without minutes would select the evaluated population with hindsight.
 
 \begin{table}[ht]
 \centering
-\caption{Player-gameweek records by season.}
+\caption{Player-gameweek records by season (every registered player).}
 \label{tab:data}
 \begin{tabular}{lrrr}
 \toprule
 Season & Player-gameweeks & Players & Total FPL points \\
 \midrule
-2022/23 & 19{,}501 & 554 & 31{,}724 \\
-2023/24 & 20{,}526 & 570 & 31{,}273 \\
-2024/25 & 20{,}215 & 562 & 31{,}291 \\
-2025/26 & 19{,}643 & 537 & 34{,}382 \\
+2022/23 & 26{,}337 & 778 & 31{,}724 \\
+2023/24 & 29{,}679 & 865 & 31{,}271 \\
+2024/25 & 27{,}279 & 784 & 31{,}291 \\
+2025/26 & 29{,}747 & 841 & 34{,}382 \\
 \midrule
-Total   & 79{,}885 &     &           \\
+Total   & 113{,}042 &    &           \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 Weekly prices were not archived, so each player carries his start-of-season price. The 2025/26
 scoring rules added points for defensive actions \citep{fplrules}, which partly explains that
-season's higher total.
+season's higher total; a season indicator lets the model treat it separately.
+
+\paragraph{Fixtures.} Fixture assignments are the final ones. When a match is postponed, its
+original gameweek becomes a blank for both clubs and its new gameweek may become a double. At the
+original deadline the match was still expected, so final assignments contain some hindsight about
+which clubs play. We cannot reconstruct the schedule as it stood at each deadline. Instead, we
+report results separately for the \nRegularWeeks{} test weeks in which every club played exactly
+once and the \nIrregularWeeks{} weeks with a blank or double gameweek
+(Table~\ref{tab:captainrobust}). We also assume that a gameweek's outcomes were known by the next
+deadline, which holds for completed gameweeks in FPL's schedule.
 
 \subsection{Squads of top-ranked managers}
 For 2023/24 to 2025/26 we hold the weekly fifteen-player squads, starting elevens, bench order,
 captain and vice-captain of the 100 managers who finished each season in the overall top 100:
-$3\times38\times100 = 11{,}400$ squad-weeks. Their most-captained player is a baseline, and their
-squads are a realistic test bed for lineup decisions. The sample is selected on the outcome: these
-managers are included \emph{because} their season went well. Selecting on survival inflates
-apparent performance, a problem documented for investment funds \citep{brown1992}, and it
-matters here (Section~\ref{sec:discussion}).
+$3\times38\times100=11{,}400$ squad-weeks. Membership of this cohort is determined by the end of
+the season, so the cohort is selected on the outcome \citep{brown1992}. We use its most-captained
+player as a retrospective reference and its squads as a realistic test bed. Lineup results are
+therefore conditional on these managers' squads.
 
 \subsection{Season event data}
 For the usage analysis (Section~\ref{sec:usage}) we use Opta season totals for every Premier
-League player from 2021/22 to 2025/26, published through the Premier League's statistics
-services \citep{plstats}. Each player is assigned to the club he played for that season, taken
-from the season's squad lists, or, for players who left mid-season, from the club where he
-played most of his minutes.
+League player from 2021/22 to 2025/26, published through the Premier League's statistics services
+\citep{plstats}. Each player is assigned to the club whose season squad lists him or, for players
+who left mid-season, to the club where he played most of his minutes.
 
 \section{Method}
 
-\subsection{Notation and the information constraint}
+\subsection{Notation and information ordering}
 Index players by $i$, seasons by $s$ and gameweeks by $g$, and write $t=(s,g)$ for a point in time
 ordered lexicographically. Let $y_{it}$ be player $i$'s points in week $t$, $m_{it}$ his minutes and
-$n_{it}\in\{0,1,2\}$ the number of fixtures his club plays. The forecast for week $t$ may use only
-weeks $t'<t$, together with quantities fixed before the deadline (position, start-of-season price,
-the fixture list, and the previous season's totals). We test this by perturbing the outcomes of one
-week and confirming that features for that week and all earlier weeks are unchanged.
+$n_{it}\in\{0,1,2\}$ the number of fixtures his club plays. Features for week $t$ are computed from
+weeks $t'<t$ and from quantities fixed before the deadline: position, start-of-season price,
+previous-season totals and the fixture list (subject to the caveat above). We check the ordering by
+perturbing the outcomes of one week and confirming that features for that week and all earlier
+weeks are unchanged.
 
 \subsection{Features}
-Player state is updated after each week in which the player's club had a fixture; the features
-for week $t$ take the most recent state from a strictly earlier week. Table~\ref{tab:choices}
-lists each design choice with its basis.
+A player's state is updated after each gameweek in which his club had a fixture (a
+\emph{club-fixture week}); the features for week $t$ take the latest state from a strictly earlier
+week. Table~\ref{tab:choices} lists the design choices with their basis.
 
-\paragraph{Form and role.} Minutes per fixture in the last week and averaged over the last three
-and six club-fixture weeks; the share of fixtures started over the last six; points per fixture
-over the last three and six. Short rolling windows of recent matches are the common input in FPL
-forecasting \citep{lombu2024,frees2024,ramezani2025}.
+\paragraph{Form and role.} Minutes per fixture in the last club-fixture week and averaged over the
+last three and six; the average, over the last six, of starts per fixture; and points per fixture
+averaged over the last three and six. Rolling windows of recent matches are the common input in
+FPL forecasting \citep{lombu2024,frees2024,ramezani2025}. Windows run across season boundaries.
 
 \paragraph{Per-90 rates.} Over the last six club-fixture weeks $\mathcal{W}_6$, for a statistic
 $z$ (xG, xA, bonus, bonus points system score, saves),
@@ -170,33 +177,34 @@ $z$ (xG, xA, bonus, bonus points system score, saves),
 where the floor of 90 minutes stops a short cameo from producing an extreme rate.
 
 \paragraph{Season to date.} The same rates for xG, xA and points accumulated over the current
-season; the share of available minutes played, $\sum m / (90\sum n)$; and the number of fixtures
-so far. These are missing in a season's first week.
+season, the share of available minutes played, $\sum m / (90\sum n)$, and the number of fixtures
+so far. In a season's first week the rates are missing and the fixture count is zero.
 
 \paragraph{Prior season.} The player's xG, xA and points per 90, and his share of the season's
-minutes, in the previous season. Early in a season the current sample is a few matches and
-observed rates are dominated by noise. Combining them with a longer-run prior is the principle
-behind empirical Bayes estimation, which in sport outperforms the raw early-season rate
-\citep{efronmorris1975,brown2008}. Here the trees learn how much weight the prior deserves at each
-point of the season; Section~\ref{sec:sensitivity} tests whether it helps.
+minutes, in the previous season. The motivation is by analogy with empirical Bayes estimation,
+which improves noisy early-season rates by combining them with a longer-run prior
+\citep{efronmorris1975,brown2008}. The model is not an empirical Bayes estimator; the trees decide
+how to use these inputs, and Section~\ref{sec:sensitivity} tests whether they help.
 
 \paragraph{Club and opponent strength.} For club $c$ in week $t$, let
-$G^{+}_{ct}=\sum_{i\in c}\mathrm{xG}_{it}$ be its xG and
-$G^{-}_{ct}=\sum_{o} G^{+}_{ot}/n_{ot}$ its xG conceded, summing over its opponents $o$ that week.
-Over the previous eight gameweeks, the club's attacking and defensive strength are
+$G^{+}_{ct}=\sum_{i\in c}\mathrm{xG}_{it}$. As a proxy for xG conceded we take
+$G^{-}_{ct}=\sum_{o} G^{+}_{ot}/n_{ot}$ over its opponents $o$ that week. In a double gameweek this
+splits an opponent's weekly xG equally across its fixtures, an approximation forced by weekly
+rather than match-level data. Over the club's previous eight club-fixture weeks, which can span
+two seasons,
 \[
   A_{ct} = \frac{\sum_{t'} G^{+}_{ct'}}{\sum_{t'} n_{ct'}}, \qquad
   D_{ct} = \frac{\sum_{t'} G^{-}_{ct'}}{\sum_{t'} n_{ct'}}.
 \]
-Separate attack and defence parameters per club are the basis of the standard goal models for
-football \citep{maher1982,dixoncoles1997}. We estimate them from xG rather than goals because xG
-is less noisy over short windows \citep{rathke2017}. The player receives his club's $A$ and $D$,
-the average of his opponents' $A$ and $D$ in week $t$, the number of fixtures, and the share
-played at home.
+Separate attacking and defensive strengths per club are the basis of the standard goal models for
+football \citep{maher1982,dixoncoles1997}. We build them from xG because goals are rare and xG
+summarises the quality of the chances a team creates and concedes \citep{rathke2017}. The player
+receives his club's $A$ and $D$, his opponents' average $A$ and $D$ in week $t$, his number of
+fixtures and the share played at home.
 
-\paragraph{Static.} Position, start-of-season price, gameweek number, an indicator for the
-defensive-action scoring rules, appearances to date, and the number of weeks since his last
-club-fixture week.
+\paragraph{Static and exposure.} Position, start-of-season price, gameweek number, an indicator
+for the defensive-action scoring rules, the number of earlier weeks in which he played, and the
+number of gameweeks since his last club-fixture week.
 
 \begin{table}[ht]
 \centering
@@ -207,20 +215,20 @@ club-fixture week.
 \toprule
 Choice & Basis \\
 \midrule
-Previous-season rates as a prior & Shrinkage of noisy early-season rates
-  \citep{efronmorris1975,brown2008}; no average gain in ablation (Table~\ref{tab:sensitivity}) \\
-Rolling windows of recent matches & Standard in FPL forecasting
-  \citep{lombu2024,frees2024,ramezani2025} \\
-Club attack/defence strength & Goal models with team attack and defence parameters
-  \citep{maher1982,dixoncoles1997}; xG as a lower-noise input \citep{rathke2017} \\
-Gradient-boosted trees & \citet{friedman2001}; histogram variant \citep{ke2017}; used for FPL
-  by \citet{frees2024} \\
-Model settings & Fixed before evaluation; sensitivity reported in Table~\ref{tab:sensitivity} \\
-Walk-forward evaluation & Rolling-origin out-of-sample testing
-  \citep{tashman2000,bergmeir2012} \\
-Paired comparison by week & Comparing forecasts on common outcomes \citep{dieboldmariano1995};
-  weeks resampled by bootstrap \citep{efron1993} \\
-Acceptance rule set in advance & Pre-registration \citep{nosek2018} \\
+Previous-season rates & By analogy with empirical Bayes shrinkage \citep{efronmorris1975,brown2008};
+  tested by ablation (Table~\ref{tab:sensitivity}) \\
+Rolling windows of recent matches & Common in FPL forecasting \citep{lombu2024,frees2024,ramezani2025} \\
+Club attack and defence strength & Team attack and defence parameters in goal models
+  \citep{maher1982,dixoncoles1997}; xG as a summary of chance quality \citep{rathke2017} \\
+Gradient-boosted trees & \citet{friedman2001}; histogram-based variant as popularised by
+  \citet{ke2017}; boosting used for FPL by \citet{frees2024} \\
+Model settings & Fixed before evaluation; sensitivity in Table~\ref{tab:sensitivity} \\
+Rolling-origin evaluation & \citet{tashman2000}; on cross-validation with dependent data,
+  \citet{bergmeir2012} \\
+Paired comparison on common outcomes & \citet{dieboldmariano1995}; bootstrap
+  \citep{efron1993,kunsch1989,politis1994} \\
+Decision criterion recorded in advance & In the spirit of pre-registration \citep{nosek2018}; not
+  formally registered \\
 Usage rate & Basketball usage percentage \citep{bbrefglossary,oliver2004}; football adaptation
   \citep{sincerefc2025a,sincerefc2025b} \\
 \bottomrule
@@ -228,122 +236,131 @@ Usage rate & Basketball usage percentage \citep{bbrefglossary,oliver2004}; footb
 \end{table}
 
 \subsection{Model}
-The target is $y_{it}$, the player's total points in week $t$. We fit a gradient-boosted
-ensemble of regression trees \citep{friedman2001} with histogram binning of the inputs
-\citep{ke2017}, as implemented in scikit-learn \citep{pedregosa2011}, minimising squared error.
+The target is $y_{it}$. We fit histogram-based gradient-boosted regression trees
+\citep{friedman2001}, in scikit-learn's implementation \citep{pedregosa2011}, which follows the
+histogram approach of \citet{ke2017}; no LightGBM model was fitted. The loss is squared error.
 The settings are:
 \begin{itemize}
-  \item learning rate 0.05 and at most 250 boosting iterations, stopped early when the loss on a
-        random 10\% of the training window stops improving for ten iterations (the library's
-        default whenever there are more than 10{,}000 training rows);
-  \item at most 31 leaves per tree;
-  \item at least 80 observations per leaf;
+  \item learning rate 0.05 and at most 250 boosting iterations, with the library's default early
+        stopping above 10{,}000 training rows (training stops when the loss on a random 10\% of
+        the training window fails to improve for ten iterations);
+  \item at most 31 leaves per tree and at least 80 observations per leaf;
   \item an $L_2$ penalty of 1.0.
 \end{itemize}
-They start from the library defaults (learning rate 0.1, 100 iterations, 20 observations per
-leaf, no penalty) and move each setting in the conservative direction suited to a noisy target.
-They were fixed before evaluation and not tuned on the test seasons; Section~\ref{sec:sensitivity}
-reports the effect of changing them.
-
-Missing inputs, such as prior-season rates for a player new to the league, are handled natively
-by the trees. Features that are constant or entirely missing within a training window are dropped
-for that fit. A player with no previous club-fixture weeks receives no forecast. Training uses
-every player-week with a fixture and at least one prior observation. Squared error makes the
-forecast an estimate of the conditional mean, the right target for a captain choice that
-maximises expected points.
+They start from the library defaults (learning rate 0.1, 100 iterations, 20 observations per leaf,
+no penalty) and move each setting in the conservative direction suited to a noisy target. In the
+114 weekly fits, early stopping ended training after \iterMin{} to \iterMax{} iterations (median
+\iterMedian). The internal validation split uses only the training window, so it does not leak
+information from the test week. Missing inputs are handled natively by the trees. Features that are
+constant or entirely missing within a training window are dropped for that fit. A player with no
+earlier club-fixture week receives no forecast. Training uses every player-week with a fixture and
+at least one earlier club-fixture week.
 
 \subsection{Decision rules}
-\paragraph{Captain.} In each test week, the model captains the player with the highest
-forecast among those whose club has a fixture.
+\paragraph{Captain.} The model captains the player with the highest forecast among those whose
+club has a fixture. The captain endpoint is the nominated player's own points that week, single
+and without vice-captain fallback.
 
 \paragraph{Lineup.} Given a fifteen-player squad, the model chooses the legal formation that
-maximises the sum of forecasts. A formation has one goalkeeper, $d$ defenders, $m$ midfielders
-and $f$ forwards, with $d\in\{3,4,5\}$, $m\in\{2,\dots,5\}$, $f\in\{1,2,3\}$ and $d+m+f=10$. The
-two highest forecasts in the eleven are captain and vice-captain. The bench lists the reserve
-goalkeeper first and the outfield players by forecast.
+maximises the sum of forecasts. A formation has one goalkeeper, $d$ defenders, $m$ midfielders and
+$f$ forwards, with $d\in\{3,4,5\}$, $m\in\{2,\dots,5\}$, $f\in\{1,2,3\}$ and $d+m+f=10$. The two
+highest forecasts in the eleven are captain and vice-captain. The bench lists the reserve
+goalkeeper first and the outfield players by forecast. Lineups are scored by the game's ordinary
+rules \citep{fplrules}:
+\begin{itemize}
+  \item a starter with no minutes is replaced by the first bench player, in bench order, who played
+        and whose entry keeps the formation legal;
+  \item the captain's points are doubled, or the vice-captain's if the captain did not play;
+  \item chips are ignored (a triple captain counts as an ordinary captain, a bench boost as an
+        ordinary week).
+\end{itemize}
 
-\paragraph{Scoring.} Every strategy is scored by the game's ordinary rules \citep{fplrules}. A
-starter with no minutes is replaced by the first bench player, in bench order, who played and
-whose entry keeps the formation legal (goalkeeper for goalkeeper; at least three defenders, two
-midfielders and one forward). The captain's points are doubled; if he did not play, the
-vice-captain's are. Chips are ignored: a triple captain counts as an ordinary captain and a
-bench boost as an ordinary week.
-
-\subsection{Baselines}
-All baselines use only information available at the deadline.
+\subsection{Comparators}
 \begin{description}
-  \item[Top-100 consensus.] The player most often captained that week by the 100 managers who
-        finished the season in the overall top 100. This is the collective judgement of strong
-        managers \citep{surowiecki2004}, but the group is defined after the fact.
-  \item[Premium attacker.] The most expensive midfielder or forward (by start-of-season price)
-        who played at least 60 minutes per fixture in his previous club-fixture week. Ties are
-        broken by points per fixture over the last six.
-  \item[Recent form.] The highest points per fixture over the last six, among players averaging
-        at least 60 minutes per fixture over the last three.
+  \item[Premium attacker.] The midfielder or forward with the highest start-of-season price among
+        those who played at least 60 minutes per fixture in their previous club-fixture week. Exact
+        price ties are broken by points per fixture over the last six, then by player identifier.
+  \item[Recent form.] The highest points per fixture over the last six, among players averaging at
+        least 60 minutes per fixture over the last three.
+  \item[Top-100 consensus.] The player most often captained that week by the managers who finished
+        the season in the overall top 100 (ties to the lower identifier). Not available at the
+        deadline; a retrospective reference.
 \end{description}
-For lineups, the baselines are the manager's actual eleven, bench order and captain, and the
-model's own selection procedure ranking players by recent form.
+Two further comparators were added after an independent review, so they are not part of the
+decision criterion.
+\emph{Recent form $\times$ fixtures} multiplies recent form by the number of fixtures in the coming
+week. \emph{Ridge regression} is a walk-forward linear model on start-of-season price, recent
+minutes, position and the number of fixtures. For lineups, the comparators are the managers' own
+eleven, bench order and captain, and the model's selection procedure applied to each comparator's
+ranking.
 
 \subsection{Evaluation}
 For each test week $w$ the model is retrained on all weeks before $w$, including earlier weeks of
 the same season, and used to forecast week $w$. This rolling-origin design mirrors live use
-\citep{tashman2000} and avoids the leakage that random cross-validation introduces in time-ordered
-data \citep{bergmeir2012}. The test period is the 114 gameweeks of 2023/24, 2024/25 and 2025/26.
+\citep{tashman2000}. Random cross-validation can misstate accuracy when observations are
+dependent over time \citep{bergmeir2012}; here, rolling form and the season structure create
+exactly that dependence. The test period is the 114 gameweeks of 2023/24, 2024/25 and 2025/26.
 
-Comparisons are paired by week, so that two rules are judged on the same outcomes
-\citep{dieboldmariano1995}. For rule $A$ and baseline $B$, let
+Comparisons are paired by week, so rules are judged on the same outcomes
+\citep{dieboldmariano1995}. For rule $A$ and comparator $B$, let
 $d_w=\mathrm{pts}_w(A)-\mathrm{pts}_w(B)$; for lineups, $\mathrm{pts}_w$ is first averaged over the 100
-squads in week $w$. Weeks are the unit of resampling, since players and squads within a week share
-the same matches. We report $\bar d$ with a 95\% percentile interval from 10{,}000 bootstrap
-resamples of the 114 weekly differences \citep{efron1993}.
+squads in week $w$. The primary interval resamples the 114 weekly differences with replacement
+\citep{efron1993}, 10{,}000 times. Because consecutive weeks may be dependent, we also report a
+moving-block bootstrap with blocks of six weeks that never cross a season
+\citep{kunsch1989,politis1994}, the lag-one autocorrelation of $d_w$, and season-by-season
+estimates. Inference refers to these three seasons; extrapolating to future seasons assumes the
+game and the data stay comparable.
 
-\paragraph{Acceptance rule.} Stated before the first evaluation: the model's captain choice is
-accepted only if the lower end of the interval is above zero against \emph{every} captain
-baseline. The same rule applies to lineups. The absence of a detectable difference is not treated
-as evidence of parity.
+\paragraph{Decision criterion.} Written into the evaluation code before the first run, and
+recorded in that code's first version-controlled commit: the model's captain choice meets the
+criterion only if the lower end of the interval is above zero against \emph{every} comparator in
+the original set (premium attacker, recent form, top-100 consensus). This is an
+intersection--union rule, so no multiplicity adjustment is needed. The same rule applies to
+lineups. The study was not formally registered, so this pre-specification is reported by the
+author.
 
-\paragraph{Forecast accuracy.} We report the mean absolute error (MAE) and the Pearson correlation
-of forecasts with outcomes over all test player-weeks with a fixture. We compare against a form
-forecast: points per fixture over the last six or, where unavailable, the prior season's points
-per 90 scaled by the player's share of minutes.
+\paragraph{Forecast accuracy.} We report the mean absolute error (MAE), root mean squared error and
+Pearson correlation over all test player-weeks with a fixture. We also report the mean, over
+weeks, of the within-week Spearman rank correlation, and the same measures among \emph{regulars}
+(players averaging at least 60 minutes per fixture over the last three), who are the realistic
+selection candidates.
 
 \section{Results}
 
 \subsection{Forecast accuracy}
-Over 58{,}682 test player-weeks, the model's MAE is 1.42 points against 1.50 for recent form, and
-its correlation with outcomes is 0.51 against 0.41 (Table~\ref{tab:accuracy}). Most player-weeks
-score two points or fewer, so the correlation is the more informative comparison of ranking
-ability.
+Table~\ref{tab:accuracy} compares the model with the three forecasting comparators over
+\nTestRows{} test player-weeks. The model has the lowest error and the highest correlation on
+every measure. Its within-week rank correlation is \rhoModel{}, against \rhoForm{} for form
+$\times$ fixtures and \rhoReg{} for the ridge regression. Among regulars, the players a manager
+actually chooses between, the gap is wider: \rhoCandModel{} against \rhoCandForm{} and
+\rhoCandReg{}. Paired by week, the model's MAE is lower than form $\times$ fixtures by
+\maeGainFormScaled{} and lower than the ridge regression by \maeGainReg{}. A pooled linear
+calibration check, regressing outcomes on forecasts, gives a slope of \calSlope{} and an intercept
+of \calIntercept{}. The rank correlations are point estimates; we did not compute intervals for
+them.
 
 \begin{table}[ht]
 \centering
-\caption{Forecast accuracy over all test player-weeks with a fixture (2023/24--2025/26).}
+\small
+\caption{Forecast accuracy over all test player-weeks with a fixture, and among regulars
+(\nCandRows{} player-weeks). Weekly rank is the mean within-week Spearman correlation.}
 \label{tab:accuracy}
-\begin{tabular}{lcc}
-\toprule
- & Mean absolute error (points) & Correlation with outcome \\
-\midrule
-Model       & 1.42 & 0.51 \\
-Recent form & 1.50 & 0.41 \\
-\bottomrule
-\end{tabular}
+\input{accuracy_table.tex}
 \end{table}
 
 \subsection{Captaincy}
-Table~\ref{tab:captain} gives each rule's captain points per week (single, not doubled), and
-Figure~\ref{fig:intervals} the paired differences.
+Table~\ref{tab:captain} and Figure~\ref{fig:intervals} give the captain results. The model's
+captains average \capModel{} points per week.
 \begin{itemize}
-  \item The model averages 6.75 points per week.
-  \item It outscores the premium-attacker rule by $+1.54$ (95\% interval $+0.45$ to $+2.61$) and
-        the recent-form rule by $+1.44$ ($+0.27$ to $+2.62$).
-  \item It trails the top-100 consensus captain by $-1.46$ ($-2.40$ to $-0.55$), so under the
-        stated rule it is \emph{not accepted}.
-  \item The best possible captain each week scored 17.79 points on average, a mean regret of
-        11.04 points.
+  \item It outscores the premium-attacker rule by \vsPremium{} and unadjusted recent form by
+        \vsForm{}.
+  \item Against the comparators added after review the differences are not distinguishable from
+        zero: \vsFormScaled{} against form $\times$ fixtures and \vsReg{} against the ridge
+        regression. Much of the advantage over unadjusted form therefore comes from knowing which
+        players have two fixtures.
+  \item It trails the top-100 consensus by \vsElite{}, so it does not meet the decision criterion.
 \end{itemize}
-In 2023/24 the premium-attacker rule outscored the model (6.05 against 5.21); only in the two
-later seasons does the model clearly lead the mechanical rules. The top-100 consensus leads in
-every season.
+The best possible captain each week averaged \capBest{} points, a mean regret of \capRegret{}.
 
 \begin{table}[ht]
 \centering
@@ -353,219 +370,254 @@ every season.
 \toprule
 Season & Model & Top-100 consensus & Premium attacker & Recent form \\
 \midrule
-2023/24 & 5.21 & 7.29 & 6.05 & 4.87 \\
-2024/25 & 8.82 & 10.13 & 5.26 & 6.71 \\
-2025/26 & 6.21 & 7.18 & 4.29 & 4.34 \\
+2023/24 & \capModelA & \capEliteA & \capPremiumA & \capFormA \\
+2024/25 & \capModelB & \capEliteB & \capPremiumB & \capFormB \\
+2025/26 & \capModelC & \capEliteC & \capPremiumC & \capFormC \\
 \midrule
-All (114 weeks) & 6.75 & 8.20 & 5.20 & 5.31 \\
+All (114 weeks) & \capModel & \capElite & \capPremium & \capForm \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \begin{figure}[ht]
 \centering
-\begin{tikzpicture}[x=1.45cm,y=0.8cm]
-  \draw[gray!60] (-3,0.4) -- (3,0.4);
-  \foreach \x in {-3,-2,-1,0,1,2,3} {
-    \draw[gray!60] (\x,0.4) -- (\x,0.28) node[below,font=\scriptsize,text=black] {$\x$};
-  }
-  \draw[dashed,gray] (0,0.4) -- (0,6.0);
-  \node[font=\scriptsize] at (0,-0.45) {Model minus baseline (points per gameweek)};
-  \node[anchor=east,font=\small] at (-3.1,5.4) {Captain vs top-100 consensus};
-  \draw[thick] (-2.404,5.4) -- (-0.553,5.4); \fill (-1.456,5.4) circle (2.4pt);
-  \node[anchor=east,font=\small] at (-3.1,4.6) {Captain vs premium attacker};
-  \draw[thick] (0.447,4.6) -- (2.614,4.6); \fill (1.544,4.6) circle (2.4pt);
-  \node[anchor=east,font=\small] at (-3.1,3.8) {Captain vs recent form};
-  \draw[thick] (0.272,3.8) -- (2.623,3.8); \fill (1.439,3.8) circle (2.4pt);
-  \node[anchor=east,font=\small] at (-3.1,2.4) {Lineup vs managers' own};
-  \draw[thick] (-2.923,2.4) -- (-1.421,2.4); \fill (-2.159,2.4) circle (2.4pt);
-  \node[anchor=east,font=\small] at (-3.1,1.6) {Lineup vs recent form};
-  \draw[thick] (1.185,1.6) -- (3.0,1.6); \draw[thick,->] (2.9,1.6) -- (3.15,1.6);
-  \fill (2.39,1.6) circle (2.4pt);
-\end{tikzpicture}
-\caption{Paired weekly differences with 95\% bootstrap intervals over 114 gameweeks. Points to the
-right of zero favour the model. The upper end of the last interval ($+3.61$) lies beyond the axis.}
+\input{figure_intervals.tex}
+\caption{Paired weekly differences with 95\% bootstrap intervals over 114 gameweeks. Right of zero
+favours the model. Form $\times$ fixtures and the ridge regression were added after review.}
 \label{fig:intervals}
 \end{figure}
 
-\subsection{Lineups}
-On the 11{,}400 top-100 squad-weeks, the model's elevens and captains score 66.13 points per
-squad-week, against 68.29 for the managers' own choices and 63.74 for the form rule. The model
-beats the form rule by $+2.39$ ($+1.19$ to $+3.61$) and trails the managers by $-2.16$
-($-2.92$ to $-1.42$); it is not accepted for lineups either.
+Table~\ref{tab:captainrobust} examines the inference.
+\begin{itemize}
+  \item \emph{Seasons differ.} The advantage over the premium rule is \seasonPremiumA{},
+        \seasonPremiumB{} and \seasonPremiumC{} points per week in 2023/24, 2024/25 and 2025/26, so it
+        rests almost entirely on 2024/25. The deficit to the top-100 consensus appears in every
+        season (\seasonEliteA{}, \seasonEliteB{}, \seasonEliteC{}).
+  \item \emph{Serial dependence.} Averaged over seasons, the lag-one autocorrelations of the weekly
+        differences lie between \acMin{} and \acMax{}; for individual comparator--season pairs they
+        range from \acSeasonMin{} to \acSeasonMax. Three- and six-week block bootstraps within
+        seasons give intervals close to the independent resampling. Lag-one correlations alone do
+        not rule out longer-range dependence, and the lineup, accuracy and usage intervals use
+        independent weeks only.
+  \item \emph{Regular weeks.} Over the \nRegularWeeks{} weeks in which every club played once, the
+        mean advantages are \regularPremium{} over the premium rule, \regularForm{} over recent form,
+        \regularFormScaled{} over form $\times$ fixtures and \regularReg{} over the ridge
+        regression, against \regularElite{} for the top-100 consensus. These point estimates resemble
+        the full results, but regularity is itself judged from final fixture assignments, and
+        training data still carry any schedule hindsight, so this does not remove the
+        limitation.
+\end{itemize}
 
-\subsection{Which inputs matter, and how fragile are the settings?}\label{sec:sensitivity}
-Table~\ref{tab:sensitivity} repeats the full walk-forward evaluation with one change at a time:
-a block of features removed, or one model setting moved. All runs, including the headline results,
-use the same software environment (scikit-learn 1.9.1, pandas 3.0.6, NumPy 2.4.6).
-\IfFileExists{sensitivity_table.tex}{%
+\begin{table}[ht]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3.5pt}
+\caption{Captain comparisons under alternative inference. Columns: comparator points per week; the
+model's mean advantage with the independent-week interval; the within-season six-week block
+bootstrap interval; season means; and the mean over regular weeks (every club playing once).
+$^a$Blocks never cross a season. $^b$Cohort defined after the season; retrospective reference.}
+\label{tab:captainrobust}
+\input{captain_table.tex}
+\end{table}
+
+\subsection{Lineups}
+On the \nSquadWeeks{} squad-weeks, the model's choices score \lineModel{} points per squad-week,
+against \lineManager{} for the managers' own choices and \lineForm{} for the form rule. The model
+beats the form rule by \lineVsForm{} and trails the managers by \lineVsManager{}.
+Table~\ref{tab:lineup} splits these totals into the eleven (after substitutions) and the armband.
+\begin{itemize}
+  \item The managers' advantage comes from both parts: \lineElevenVsManager{} in the eleven and
+        \lineArmVsManager{} from the armband.
+  \item Against form $\times$ fixtures the model gains \lineVsFormScaled{} in total.
+  \item Against the ridge regression there is no detectable difference in total (\lineVsReg{}). The
+        model picks the better eleven (\lineElevenVsReg{}), and the regression the better captain
+        (\lineArmVsReg{}).
+\end{itemize}
+
+\begin{table}[ht]
+\centering
+\scriptsize
+\caption{Lineup points per squad-week, split into the eleven and the armband, and the model's
+paired differences with 95\% intervals.}
+\label{tab:lineup}
+\input{lineup_table.tex}
+\end{table}
+
+\subsection{Ablations and settings}\label{sec:sensitivity}
+Table~\ref{tab:sensitivity} repeats the evaluation with one change at a time: a block of features
+removed, or one model setting moved, giving \nVariants{} variants plus the reference. Ablation
+shows what each block contributes \emph{to each endpoint} given the others. Correlated blocks can
+substitute for one another, so the changes are not intrinsic importances.
+\begin{itemize}
+  \item \emph{Accuracy.} Removing minutes and starts raises MAE from \refMae{} to \ablMinsMae{} and
+        lowers correlation from \refCorr{} to \ablMinsCorr{}. Removing club and opponent strength
+        gives \ablClubMae{} and \ablClubCorr{}, and removing season-to-date rates \ablSeasonMae{}
+        and \ablSeasonCorr{}. Removing last season's rates gives \ablPriorMae{} and \ablPriorCorr{}.
+  \item \emph{Captain and lineup points} change between variants, not always in the direction of
+        accuracy. We did not estimate paired intervals for these changes, so they should not be read
+        as differences between variants.
+  \item \emph{The verdict.} Across all variants MAE stays within \sensMaeSpread{} and correlation
+        within \sensCorrSpread{} of the reference. Every variant beats the premium-attacker rule
+        (lowest lower bound \sensPremLowMin) and trails the top-100 consensus (highest upper bound
+        \sensEliteHighMax). The advantage over recent form is less robust: in \sensFormFail{} of the
+        \nVariants{} variants plus the reference its interval includes zero.
+\end{itemize}
+
 \begin{table}[ht]
 \centering
 \small
-\caption{Ablations and sensitivity. MAE and correlation over all test player-weeks; captain
-points per week; and the captain's mean weekly difference from the top-100 consensus and premium
-baselines. Each row is a full walk-forward run over 2023/24--2025/26.}
+\caption{Ablations and settings. MAE and correlation over test player-weeks; captain points per
+week; the captain's mean weekly difference from the top-100 and premium comparators; and the
+lower end of its interval against recent form.}
 \label{tab:sensitivity}
 \input{sensitivity_table.tex}
-\end{table}}{\textit{[Sensitivity table pending.]}}
-
-Three findings stand out.
-\begin{itemize}
-  \item \emph{Accuracy depends most on minutes and starts.} Removing them raises MAE from 1.415
-        to 1.442 and lowers correlation from 0.508 to 0.488, the largest loss of any block. Club
-        and opponent strength (1.427, 0.501) and season-to-date rates (1.424, 0.502) come next.
-  \item \emph{Last season's rates add nothing on average.} Removing them leaves MAE and
-        correlation unchanged (1.415, 0.508). The motivation for including them, stabilising
-        early-season estimates, is not borne out over whole seasons. Carrying the rolling
-        windows across season boundaries and the start-of-season price may already supply that
-        information. Whether the prior helps in the first weeks alone is not tested here.
-  \item \emph{The conclusions do not depend on the settings.} Across all eleven variants, MAE
-        stays within 0.027 and correlation within 0.020 of the reference. Captain points range
-        from 6.25 to 7.10 per week, but every variant still beats the premium-attacker rule
-        (lower interval bounds $+0.02$ or above) and still trails the top-100 consensus (upper
-        bounds $-0.22$ or below). The acceptance verdict is the same in every row.
-\end{itemize}
-The spread in captain points is itself informative. A preliminary run of the same variants under
-an earlier library version moved several of them in the opposite direction (for example, 63
-leaves per tree gave 6.50 there and 7.10 here). Differences of half a point per week in captain
-points are within the noise of three seasons (Section~\ref{sec:discussion}). They should not be
-used to choose settings, and we have not done so.
+\end{table}
 
 \section{Extension: ball usage}\label{sec:usage}
 
 \subsection{Motivation and definition}
 In basketball, usage percentage estimates the share of a team's possessions a player ends with a
-shot, free throws or a turnover while he is on the floor \citep{bbrefglossary}. It builds on the
-possession-based framework of \citet{oliver2004}. It separates how much of the ball a player
-consumes from what he produces with it. A recent football adaptation
+shot, free throws or a turnover while on the floor \citep{bbrefglossary}, building on the
+possession framework of \citet{oliver2004}. A football adaptation
 \citep{sincerefc2025a,sincerefc2025b} counts \emph{possession-ending actions}: shots, and every way
-of losing the ball (an incomplete pass or cross, a failed take-on, being tackled or dispossessed,
-a miscontrol). It argues that the measure describes a player's role and hierarchy within a team.
-A player used to being his team's main option may struggle to produce when he joins a club that
-already has one. If so, last season's usage should carry information about this season's output,
-especially for players who change club, where the prior-season rates in our model are least
-reliable.
+of losing the ball. It argues that the measure describes a player's role within a team, and that
+a player used to being the main option may struggle at a club that already has one. If so,
+last season's usage could inform this season's output, particularly after a transfer.
 
-We define a player's possession-ending actions as Opta's possessions lost plus his shots.
-Possessions lost covers incomplete passes and crosses, failed take-ons, being tackled and
-miscontrols, and a little more: for Premier League players with at least 1{,}500 minutes in
-2023/24--2025/26 it is a median 8\% larger than the sum of those itemised components (middle 90\%
-of players: 1\% to 32\% larger). Following the basketball formula with eleven players in
-place of five,
+We count a player's actions as Opta's possessions lost plus his shots. A shot does not always end
+a possession, so this is an approximation. Possessions lost covers incomplete passes and crosses,
+failed take-ons, being tackled and miscontrols, and more: for Premier League players with at least
+1{,}500 minutes in 2023/24--2025/26, it is a median \possMedianLow--\possMedianHigh\% larger than
+the sum of those itemised components, depending on the season (the seasons' 5th and 95th
+percentiles span \possPLow--\possPHigh\% larger). We
+then compute a minutes-adjusted share of the team's recorded actions, following the basketball
+formula with eleven players in place of five:
 \[
-  \mathrm{USG}_i = 100\cdot\frac{\mathrm{PEA}_i\cdot(\text{team minutes}/11)}{\text{minutes}_i\cdot\mathrm{PEA}_{\text{team}}},
+  \mathrm{USG}_i = 100\cdot\frac{\mathrm{PEA}_i\cdot(\text{team minutes}/11)}{\text{minutes}_i\cdot\mathrm{PEA}_{\text{team}}}.
 \]
-where team totals are taken over every player of the club he played for that season. For
-creation we use Opta's chances created: passes that lead directly to a shot. The adaptation
-above uses a broader measure of shot-creating actions, which our source does not publish.
+Team totals sum every player of that club with recorded actions. Season totals cannot isolate the
+team's actions while the player was on the pitch. A player who changed clubs mid-season has all his
+season's actions assigned to one club. For creation we use Opta's chances created (passes leading
+directly to a shot); the adaptation's broader shot-creating actions are not available to us.
 
 \subsection{Features and test}
-We add eight features computed from the \emph{previous} season's totals, so all are known
-before the season being forecast:
+Six features summarise the previous season:
 \begin{itemize}
   \item usage rate;
   \item possession-ending actions per 90;
-  \item chances created per 90;
-  \item chances created per possession-ending action;
+  \item chances created per 90 and per action;
   \item touches in the opposition box per 90;
-  \item the club's possession share;
-  \item an indicator that the player has changed club;
-  \item the highest previous-season usage among his current teammates.
+  \item club possession share.
 \end{itemize}
-The last feature asks whether the club he now plays for already has a dominant ball user. We
-then rerun the walk-forward evaluation with and without these features on identical weeks, and
-bootstrap the paired weekly differences.
+Two describe the player's current context at the deadline: an indicator that his current club
+differs from the club he ended last season with, and the highest previous-season usage among his
+current teammates (excluding himself). We rerun the walk-forward evaluation with and without these
+eight features on identical weeks.
 
-\IfFileExists{usage_table.tex}{%
 \begin{table}[ht]
 \centering
 \small
-\caption{Walk-forward evaluation with and without the usage features (2023/24--2025/26).
-Differences are with-usage minus without, paired by gameweek, with 95\% bootstrap intervals.
-$^a$Reduction in MAE (positive means the usage features help).}
+\caption{Walk-forward evaluation with and without the usage features (2023/24--2025/26), paired by
+gameweek with 95\% bootstrap intervals. $^a$Mean over weeks of the reduction in weekly MAE
+(positive means the usage features help); the MAE columns are pooled over player-weeks.}
 \label{tab:usage}
 \input{usage_table.tex}
-\end{table}}{\textit{[Usage results pending.]}}
+\end{table}
 
 \subsection{Result}
-The usage features were present for 57\% of test player-weeks; the rest belong to players with
-no Premier League season the year before. Players who had changed club since the previous season
-account for 10\% of test player-weeks. Table~\ref{tab:usage} shows no detectable effect:
+Coverage is measured on the usage rate itself, over all 84{,}995 test player-weeks with a fixture
+(including the 795 without earlier history, which receive no forecast). The usage rate is present
+for \usageCover{} of these player-weeks and \usageCoverRegulars{} of regulars' player-weeks. Of all test player-weeks, \usageMissNoPL{} belong to players with no
+Premier League minutes the season before. A further \usageMissOther{} belong to players who had
+minutes but no matched or complete usage record. Players who had changed club account for
+\usageMovers{} of test player-weeks.
 \begin{itemize}
-  \item forecast error is unchanged (MAE reduction $0.000$, 95\% interval $-0.003$ to $+0.003$),
-        including for players who changed club ($+0.001$, $-0.005$ to $+0.006$);
-  \item captain points change by $-0.27$ per week ($-1.26$ to $+0.69$);
-  \item lineup points are unchanged ($+0.00$, $-0.71$ to $+0.74$).
+  \item \emph{Accuracy.} Weekly MAE falls by \usageMaeGain{}: detectable, but about 0.3\% of the
+        error. For players who changed club the change is \usageMoverGain{}.
+  \item \emph{Decisions.} Captain points change by \usageCapGain{} and lineup points by
+        \usageLineGain{}, neither distinguishable from zero.
 \end{itemize}
-Over these three seasons, last season's ball usage adds nothing that last season's xG, xA, points
-and minutes do not already carry, so we do not adopt it. Two caveats apply. First, the measure is
-a season total; an in-season, match-level version would capture role changes as they happen.
-Second, usage may matter for questions this model does not ask, such as how a new signing's
-arrival redistributes the ball among his teammates, which needs club-level rather than
-player-level modelling.
+In this implementation and sample, last season's usage adds a small amount of information about
+points and no detectable value for decisions. The intervals do not exclude captain gains of up to
+\usageCapHigh{} points per week. A match-level, in-season measure, or a club-level model of how a
+signing redistributes the ball, may behave differently.
 
 \section{Discussion}\label{sec:discussion}
 
-\paragraph{What the model has learned.} The forecast ranks players better than recent points do:
-its correlation with outcomes is about a quarter higher. As a decision rule it beats both
-mechanical captain heuristics, and it picks better elevens than form does from the same squads.
-These gains come mainly from minutes security, club and opponent strength and current-season
-rates (Section~\ref{sec:sensitivity}), and from not over-reacting to a short run of high or low
-scores. Neither last season's rates nor last season's ball usage improved the forecast on
-average.
+\paragraph{What the evidence supports.} The forecast is more accurate than every forecasting
+comparator, ranks regulars better within each week, and passes a pooled linear calibration
+check. Better forecasts do
+not yet translate into clearly better decisions. As a captain rule the model beats a pure price
+rule and unadjusted form, but not by a detectable margin once the comparator accounts for double
+gameweeks or is itself a simple regression. In lineups it beats both form rules, including the
+fixture-scaled one, and shows no detectable difference from the regression. The undetected
+captain differences are under a point per week, which three seasons resolve poorly (see the
+precision and power analysis below).
 
-\paragraph{Why the top-100 consensus is hard to beat.} The consensus baseline has two advantages.
-The first is genuine. At the deadline, managers know team news, late injuries, the likely penalty
-taker and the betting market's view of each fixture, none of which the model sees. Betting
-markets in particular are known to carry information beyond statistical models
-\citep{dixoncoles1997}, and adding news and market data has improved FPL forecasts in earlier work
-\citep{bonello2019}. The second is an artefact of selection. These managers are in the sample
-because their season went well, so their captaincy choices are, on average, those that worked out
-\citep{brown1992}. A fair comparison would use the consensus of a sample fixed before the season.
+\paragraph{The top-100 comparison.} The model trails the top-100 consensus. The data cannot say
+how much of that gap is information the model lacks, how much is skill, and how much is selection.
+The cohort is chosen after the season, so its choices are, on average, ones that worked out
+\citep{brown1992}. At the deadline managers also knew team news, late injuries and penalty duty;
+earlier work found that adding news and betting-market information improves FPL forecasts
+\citep{bonello2019}. A cohort fixed before the season, such as the previous season's top managers,
+would be the fair deployable benchmark; we did not have its weekly squads.
 
-\paragraph{How much evidence a season provides.} Inverting the reported intervals gives a
-standard deviation of the weekly paired captain difference of roughly 5 to 6 points: for the
-top-100 comparison, $\hat\sigma\approx0.93\sqrt{114}/1.96\approx5.0$. With $\sigma=5$, a 95\%
-interval of half-width $h$ requires about $(1.96\,\sigma/h)^2$ weeks. That is 96 weeks for $h=1$
-point and about 380 weeks for $h=0.5$; a single season gives $h\approx1.6$. Claims that one
-captaincy rule beats another by half a point per week cannot be supported by one season, or even
-three.
+\paragraph{Precision and power.} The standard deviation of the weekly captain difference ranges
+from \sdMin{} to \sdMax{} points across comparators. Taking $\sigma=5$ for illustration and assuming
+independent weeks:
+\begin{itemize}
+  \item A 95\% interval of half-width $h$ needs about $(1.96\,\sigma/h)^2$ weeks: 96 weeks for $h=1$,
+        384 for $h=0.5$. One season gives $h\approx1.6$.
+  \item Detecting a true difference $\delta$ with 80\% power in a two-sided 5\% test needs about
+        $\bigl((1.96+0.84)\,\sigma/\delta\bigr)^2$ weeks: 196 weeks (about five seasons) for
+        $\delta=1$ and 784 (about twenty) for $\delta=0.5$.
+\end{itemize}
+A season of results therefore says little about captaincy rules that differ by a point a week or
+less, and larger $\sigma$ makes this worse. Differences between variants of the same model need their own paired estimates, which
+Table~\ref{tab:sensitivity} does not provide.
 
 \paragraph{Limitations.}
 \begin{itemize}
-  \item \emph{Missing information.} The model has no team news, injury history, set-piece
-        duties or bookmaker prices.
+  \item \emph{Information.} No team news, injury history, set-piece duties or bookmaker prices.
+  \item \emph{Schedules.} Final fixture assignments contain some hindsight about postponements;
+        regular-week results are reported for comparison.
   \item \emph{Prices.} Only start-of-season prices are available historically.
-  \item \emph{Selection on the outcome.} The top-100 sample is selected on how the season
-        turned out.
-  \item \emph{Serial dependence.} Weekly differences may be serially dependent within a season;
-        a block or stationary bootstrap \citep{kunsch1989,politis1994} would widen the intervals
-        somewhat.
-  \item \emph{Reuse of the test seasons.} The usage extension and any further development
-        evaluated on these same three seasons risk overstating performance; improvements should
-        be confirmed prospectively.
+  \item \emph{Outcome-selected cohort.} The top-100 comparisons are retrospective.
+  \item \emph{Proxies.} Weekly rather than match-level data force the xG-conceded allocation and
+        season-total usage measures described above.
+  \item \emph{Reuse.} The usage extension and the added comparators were evaluated on the same
+        seasons as the main analysis; confirmation should be prospective.
+  \item \emph{Usage measurement.} We did not check the completeness of team denominators or the
+        sensitivity of usage to minimum-minute thresholds.
 \end{itemize}
 
-\paragraph{Prospective evaluation.} From the seventh gameweek of 2026/27, the following
-captains are logged before each deadline:
+\paragraph{Prospective protocol.} From gameweek 7 of 2026/27, three captains are logged before each
+deadline and frozen at it:
 \begin{itemize}
   \item the model's;
-  \item the one implied by the official game's expected-points figure;
-  \item the premium-attacker rule's.
+  \item the one with the highest official expected-points figure;
+  \item a live premium rule.
 \end{itemize}
-The most-captained player across all managers is recorded once the gameweek begins. Logs are
-frozen at the deadline and scored when the gameweek finishes. The official expected points,
-ownership and availability flags are stored at each deadline. This closes part of the
-information gap for future model versions and gives an out-of-sample record that cannot be
-revised with hindsight.
+The live premium rule differs from the historical one. It uses the current price, a start in the
+previous calendar gameweek and current form, because that information is available live. The
+most-captained player across all managers is recorded once the gameweek begins. Official expected
+points, ownership and availability flags are archived at each deadline.
 
 \section{Conclusion}
-A gradient-boosted forecast trained on four seasons of public data makes better captain and
-lineup choices than simple rules, and ranks players better than recent form. It does not yet
-match the collective judgement of the season's best managers, whose advantage reflects both
-information the model lacks and the way they were selected. Distinguishing good rules from
-slightly better ones requires many more weeks than a season provides. Evaluation should therefore
-be prospective, pre-specified and patient.
+Evaluated week by week over three seasons on every registered player, a gradient-boosted forecast
+predicts and ranks players better than form-based and regression comparators. Its captain choices
+beat naive rules but are not distinguishable from those of a fixture-aware form rule or a simple
+regression. Its lineups beat both form rules and are not distinguishable from the regression's.
+Both fall short of the choices of each season's eventual top 100 managers.
+Distinguishing rules that differ by a point a week or less needs several seasons of evidence, so
+further evaluation should be prospective and specified in advance.
+
+\paragraph{Reproducibility.} All results were produced in one software environment (Python 3.11,
+scikit-learn 1.9.1, pandas 3.0.6, NumPy 2.4.6) from the analysis scripts accompanying this paper.
+The numbers in the results sections, tables and figures are generated from the result files by
+script; Table~\ref{tab:data} and the illustrative precision and power calculations are written by
+hand. Weekly captain selections and outcomes are archived with the scripts; player-level forecasts
+and weekly lineup differences are not.
 
 \begin{thebibliography}{30}
 \setlength{\itemsep}{2pt}\small
@@ -698,7 +750,7 @@ Premier League.
 \bibitem[Ramezani and Dinh(2025)]{ramezani2025}
 D.~Ramezani and T.~Dinh.
 \newblock A data-driven framework for team selection in Fantasy Premier League.
-\newblock arXiv:2505.02170, 2025.
+\newblock arXiv:2505.02170 (version 3, 2026), 2025.
 
 \bibitem[Rathke(2017)]{rathke2017}
 A.~Rathke.
@@ -715,11 +767,6 @@ Sincere FC.
 \newblock The NBA stat that explains football transfers.
 \newblock Video, \url{https://www.youtube.com/watch?v=-Ga-oiyM0aQ}, 2025.
 
-\bibitem[Surowiecki(2004)]{surowiecki2004}
-J.~Surowiecki.
-\newblock \emph{The Wisdom of Crowds}.
-\newblock Doubleday, 2004.
-
 \bibitem[Tashman(2000)]{tashman2000}
 L.~J. Tashman.
 \newblock Out-of-sample tests of forecasting accuracy: an analysis and review.
@@ -733,22 +780,22 @@ L.~J. Tashman.
 \begin{table}[ht]
 \centering
 \small
-\caption{Model inputs. ``Club-fixture week'' means a gameweek in which the player's club played;
-all windows end strictly before the forecast week. The usage block is used only in the extension
-of Section~\ref{sec:usage}.}
+\caption{Model inputs. A club-fixture week is a gameweek in which the player's club played; all
+windows end strictly before the forecast week. The usage block is used only in
+Section~\ref{sec:usage}.}
 \begin{tabularx}{\textwidth}{lX}
 \toprule
 Group & Features \\
 \midrule
 Static & position; start-of-season price; gameweek number; defensive-action scoring era (0/1) \\
-Fixture & number of fixtures in the week; share at home; own club's rolling xG for and against;
-          opponents' rolling xG for and against (eight-gameweek windows) \\
-Form & minutes per fixture (last 1, mean of last 3, mean of last 6); share of fixtures started
+Fixture & number of fixtures in the week; share at home; own club's and opponents' rolling xG for
+          and xG-conceded proxy (previous eight club-fixture weeks) \\
+Form & minutes per fixture (last 1, mean of last 3, mean of last 6); mean starts per fixture
        (last 6); points per fixture (last 3, last 6) \\
 Per-90 rates (last 6) & xG, xA, bonus points, bonus points system score, saves \\
 Season to date & xG, xA and points per 90; share of available minutes played; fixtures so far \\
 Prior season & xG, xA and points per 90; share of the season's minutes \\
-Exposure & appearances to date; weeks since the last club-fixture week \\
+Exposure & number of earlier weeks with minutes; gameweeks since the last club-fixture week \\
 Usage (extension) & previous season's usage rate, possession-ending actions per 90, chances
   created per 90 and per action, box touches per 90, club possession; changed club (0/1);
   highest previous-season usage among current teammates \\

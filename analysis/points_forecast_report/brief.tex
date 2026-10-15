@@ -1,0 +1,165 @@
+\documentclass[10pt,a4paper,twocolumn]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=1.7cm,columnsep=0.7cm]{geometry}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{caption}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage[round,sort]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xurl}
+\usepackage{titlesec}
+
+\captionsetup{font=small,labelfont=bf}
+\setlist{nosep,leftmargin=1.2em}
+\titleformat{\section}{\normalfont\large\bfseries}{}{0pt}{}
+\titlespacing*{\section}{0pt}{8pt}{3pt}
+\setlength{\parskip}{3pt}
+\setlength{\parindent}{0pt}
+\pagestyle{empty}
+\input{results.tex}
+
+\begin{document}
+
+\twocolumn[{%
+\begin{center}
+{\LARGE\bfseries Better forecasts, not yet better captains}\\[5pt]
+{\large Forecasting Fantasy Premier League points: a three-season walk-forward test}\\[7pt]
+{\normalsize [Author name] \;·\; [Affiliation] \;·\; Research brief, October 2026}
+\end{center}
+\vspace{2pt}
+\noindent\fbox{\parbox{\dimexpr\textwidth-2\fboxsep-2\fboxrule}{\small
+\textbf{In short.} We forecast every player's Fantasy Premier League points with gradient-boosted
+trees and tested them week by week on 114 gameweeks they had not seen, across every registered
+player. The forecasts are clearly more accurate than recent form or a simple regression. The
+decisions they lead to are less clearly better. The model's captains beat a ``priciest attacker''
+rule, but not a form rule that accounts for double gameweeks. They also trail the captain chosen
+most often by each season's eventual top-100 managers by \gapElite{} points a week. Basketball's
+``usage rate'', adapted to football, barely helped.}}
+\vspace{10pt}
+}]
+
+\section{The question}
+Every week, Fantasy Premier League (FPL) managers pick eleven starters and a captain whose points are
+doubled \citep{fplrules}. Several studies forecast FPL points \citep{gupta2019,lombu2024,frees2024,ramezani2025},
+mostly judged by forecast error. We ask whether a forecast leads to better weekly
+\emph{decisions} than the rules and consensus managers already use.
+
+\section{How we tested it}
+\begin{itemize}
+  \item \textbf{Data.} Every registered player, every gameweek, 2022/23--2025/26 (113,042
+        player-weeks), including players who never played \citep{fplapi}.
+  \item \textbf{Model.} Gradient-boosted trees \citep{friedman2001} on 32 inputs:
+        recent minutes and form, per-90 xG and xA, season and prior-season rates, and club and
+        opponent strength from xG \citep{maher1982,dixoncoles1997}.
+  \item \textbf{No peeking.} Each week is forecast by a model retrained only on earlier weeks
+        \citep{tashman2000}.
+  \item \textbf{Comparators.} The priciest attacker who played last week; the best recent form;
+        form scaled by the coming week's fixture count; a ridge regression; and the top-100
+        managers' consensus captain.
+  \item \textbf{A rule set in advance.} To pass, the model's weekly advantage over every original
+        comparator needed a 95\% interval above zero \citep{nosek2018,efron1993}.
+\end{itemize}
+
+\section{What we found}
+
+\noindent\begin{minipage}{\columnwidth}
+\centering
+\input{figure_brief.tex}
+\captionof{figure}{Model minus comparator, points per gameweek, with 95\% intervals over 114
+gameweeks. Right of zero favours the model. XI comparisons use the top-100 managers' real squads.}
+\end{minipage}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lcc}
+\toprule
+ & Error (MAE) & Weekly rank$^*$ \\
+\midrule
+Model & \maeModel & \rhoCandModel \\
+Ridge regression & \maeReg & \rhoCandReg \\
+Recent form $\times$ fixtures & \maeFormScaled & \rhoCandForm \\
+\bottomrule
+\end{tabular}
+\caption{Accuracy over \nTestRows{} player-weeks. $^*$Within-week rank correlation among regular
+starters, the players managers actually choose between.}
+\end{table}
+
+\begin{itemize}
+  \item \textbf{Forecasts: clearly better.} Lower error than every comparator and the best
+        ranking of regular starters within each week.
+  \item \textbf{Captains: better than naive rules only.} The model beats the priciest attacker
+        by \vsPremiumMean{} points a week and unadjusted form by \vsFormMean{}. Against form scaled
+        by fixtures (\vsFormScaled) and the regression (\vsReg) the difference is within noise.
+        The edge over the price rule comes almost entirely from 2024/25.
+  \item \textbf{Behind the best managers.} Their consensus captain outscores the model's by
+        \gapElite{} points a week, and their elevens beat its picks too. So the model fails the
+        pre-set rule.
+  \item \textbf{Robust.} Ten variants with inputs removed or settings changed, plus a block
+        bootstrap, give the same verdict.
+\end{itemize}
+
+\section{Why the best managers still win}
+They know things the model does not: team news, late injuries, penalty duty
+\citep{bonello2019}. The comparison also flatters them: they are in the sample \emph{because}
+their season went well, a survivorship effect \citep{brown1992}.
+
+\section{Usage rate, explained}
+Basketball's usage rate is the share of a team's possessions a player ends while on the floor
+\citep{bbrefglossary,oliver2004}. A football version \citep{sincerefc2025a,sincerefc2025b} counts
+shots plus every lost ball. With Opta data \citep{plstats},
+\[
+  \text{usage}_i = 100\cdot\frac{\text{actions}_i\cdot(\text{team minutes}/11)}{\text{minutes}_i\cdot\text{team actions}}.
+\]
+It is a revealing chart of who needs the ball and who makes the most of it. As a predictor,
+last season's usage cut forecast error by only \usageMaeGain{} points. Captain and lineup choices
+did not change detectably.
+
+\section{One lesson for anyone judging FPL advice}
+Weekly captain scores are noisy: two captaincy rules' weekly difference has a standard deviation of
+about 5 points. Measuring a one-point-a-week edge to $\pm1$ takes about 96 gameweeks. Reliably
+detecting it takes about 196, five seasons. A good month proves very little.
+
+\section{Takeaways for managers}
+\begin{itemize}
+  \item Minutes first. Recent minutes and starts matter more than any other input group.
+  \item Count fixtures. Much of a model's apparent edge over simple form disappears once form is
+        scaled for double gameweeks.
+  \item Judge advice over seasons, not weeks.
+\end{itemize}
+
+\section{What happens next}
+From gameweek 7 of 2026/27, the model's captain is logged before every deadline beside the official
+expected-points pick and a price rule. Logs are frozen at the deadline and scored afterwards.
+
+{\footnotesize
+\setlength{\bibsep}{1pt}
+\begin{thebibliography}{21}
+\bibitem[Basketball-Reference(2026)]{bbrefglossary} Basketball-Reference. Glossary: usage percentage. \url{https://www.basketball-reference.com/about/glossary.html}.
+\bibitem[Bonello et~al.(2019)]{bonello2019} N.~Bonello, J.~Beel, S.~Lawless, J.~Debattista. Multi-stream data analytics for enhanced performance prediction in fantasy football. \emph{AICS}, 284--292, 2019.
+\bibitem[Brown et~al.(1992)]{brown1992} S.~J. Brown, W.~Goetzmann, R.~G. Ibbotson, S.~A. Ross. Survivorship bias in performance studies. \emph{Rev. Financ. Stud.} 5(4):553--580, 1992.
+\bibitem[Dixon and Coles(1997)]{dixoncoles1997} M.~J. Dixon, S.~G. Coles. Modelling association football scores and inefficiencies in the football betting market. \emph{J. R. Stat. Soc. C} 46(2):265--280, 1997.
+\bibitem[Efron and Tibshirani(1993)]{efron1993} B.~Efron, R.~J. Tibshirani. \emph{An Introduction to the Bootstrap}. Chapman \& Hall, 1993.
+\bibitem[Fantasy Premier League(2026a)]{fplapi} Fantasy Premier League. Public data endpoints. \url{https://fantasy.premierleague.com/api/}.
+\bibitem[Fantasy Premier League(2026b)]{fplrules} Fantasy Premier League. Rules. \url{https://fantasy.premierleague.com/help/rules}.
+\bibitem[Frees et~al.(2024)]{frees2024} D.~Frees, P.~Ravella, C.~Zhang. Deep learning and transfer learning architectures for English Premier League player performance forecasting. arXiv:2405.02412, 2024.
+\bibitem[Friedman(2001)]{friedman2001} J.~H. Friedman. Greedy function approximation: a gradient boosting machine. \emph{Ann. Stat.} 29(5):1189--1232, 2001.
+\bibitem[Gupta(2019)]{gupta2019} A.~Gupta. Time series modeling for dream team in Fantasy Premier League. arXiv:1909.12938, 2019.
+\bibitem[Lombu et~al.(2024)]{lombu2024} A.~S. Lombu, I.~V. Paputungan, C.~K. Dewa. Predicting Fantasy Premier League points using CNN and LSTM. \emph{JUTIF} 5(1):263--272, 2024.
+\bibitem[Maher(1982)]{maher1982} M.~J. Maher. Modelling association football scores. \emph{Stat. Neerl.} 36(3):109--118, 1982.
+\bibitem[Nosek et~al.(2018)]{nosek2018} B.~A. Nosek, C.~R. Ebersole, A.~C. DeHaven, D.~T. Mellor. The preregistration revolution. \emph{PNAS} 115(11):2600--2606, 2018.
+\bibitem[Oliver(2004)]{oliver2004} D.~Oliver. \emph{Basketball on Paper}. Potomac Books, 2004.
+\bibitem[Premier League(2026)]{plstats} Premier League. Player and club statistics (Opta data). \url{https://www.premierleague.com/stats}.
+\bibitem[Ramezani and Dinh(2025)]{ramezani2025} D.~Ramezani, T.~Dinh. A data-driven framework for team selection in Fantasy Premier League. arXiv:2505.02170 (v3), 2025.
+\bibitem[Sincere FC(2025a)]{sincerefc2025a} Sincere FC. The NBA stat that could change football. YouTube, 2025. \url{https://www.youtube.com/watch?v=iydcB3OM6EE}.
+\bibitem[Sincere FC(2025b)]{sincerefc2025b} Sincere FC. The NBA stat that explains football transfers. YouTube, 2025. \url{https://www.youtube.com/watch?v=-Ga-oiyM0aQ}.
+\bibitem[Tashman(2000)]{tashman2000} L.~J. Tashman. Out-of-sample tests of forecasting accuracy: an analysis and review. \emph{Int. J. Forecast.} 16(4):437--450, 2000.
+\end{thebibliography}
+}
+
+\end{document}

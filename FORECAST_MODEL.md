@@ -58,37 +58,27 @@ zero against every baseline:
 
 Intervals come from a bootstrap over gameweeks.
 
-### First result (v2.0, production run 2026-10-14)
+### Current result (v2.0, every registered player, production run 2026-10-15)
 
-| Captain points per week | 2023/24–2025/26 |
-|---|---|
-| Model | 6.75 |
-| Top-100 managers' captain | 8.20 |
-| Priciest attacker who started | 5.20 |
-| Best last-six form | 5.31 |
-| Best possible | 17.79 |
+The full write-up, with every number generated from production result files, is
+`analysis/points_forecast_report/points_forecast.pdf` (two-page brief: `brief.pdf`).
+In short:
 
-- **Against "priciest attacker":** +1.54 (95% interval +0.45 to +2.61).
-- **Against "last-six form":** +1.44 (+0.27 to +2.62).
-- **Against the top-100 consensus:** −1.46 (−2.40 to −0.55).
-- **Verdict: not accepted.** The homepage shows no captain.
+- **Accuracy:** MAE 0.996, correlation 0.575 over 84,200 player-weeks. That beats recent form
+  (1.052, 0.493), form × fixtures (1.053) and a ridge regression (1.046, 0.547).
+- **Captain:** 6.61 points per week.
+  - Against the priciest attacker: +1.46 (+0.42 to +2.49), almost all from 2024/25.
+  - Against unadjusted form: +1.37 (+0.22 to +2.48).
+  - Against form × fixtures (+0.43, −0.81 to +1.62) and the ridge regression (+0.87, −0.21 to +1.93): no detectable difference.
+  - Against the top-100 consensus: −1.59 (−2.50 to −0.73).
+  - Verdict: not accepted.
+- **Lineups:**
+  - Beats form by +2.25 and form × fixtures by +1.61.
+  - No detectable difference from the ridge regression.
+  - Trails the managers' own choices by −2.29 (−1.28 from the eleven, −1.01 from the armband).
 
-A local run (scikit-learn 1.6) gave 6.82 with the same verdict; the gap comes
-from library versions, not from the data.
-
-The top-100 baseline is survivorship-biased: those managers are in the sample
-because their choices worked. They also had team news, which the model lacks.
-
-**Lineups:** the model picks the XI and captain from the top-100 managers' real
-squads, all scored with ordinary autosubs and no chips. It beats form by +2.39
-(lower bound +1.19) and trails the managers' own choices by −2.16 (lower bound −2.92).
-
-**Forecast accuracy over 58,682 player-weeks:**
-
-| | Average miss (points) | Correlation |
-|---|---|---|
-| Model | 1.42 | 0.51 |
-| Last-six form | 1.50 | 0.41 |
+Earlier figures (6.75 etc.) came from a history that dropped players who never played
+that season. That is hindsight, and an independent review caught it, so they are superseded.
 
 ## Production
 

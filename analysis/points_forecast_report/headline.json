@@ -1,0 +1,91 @@
+{
+ "accuracy": {
+  "form_mae": 1.052,
+  "form_corr": 0.493,
+  "model_mae": 0.996,
+  "model_corr": 0.575,
+  "player_weeks": 84200
+ },
+ "captain": {
+  "weeks": 114,
+  "points_per_week": {
+   "best": 17.789,
+   "form": 5.246,
+   "elite": 8.202,
+   "model": 6.614,
+   "premium": 5.158
+  },
+  "versus": {
+   "form": {
+    "low": 0.219,
+    "high": 2.483,
+    "mean": 1.368,
+    "weeks": 114
+   },
+   "elite": {
+    "low": -2.5,
+    "high": -0.728,
+    "mean": -1.588,
+    "weeks": 114
+   },
+   "premium": {
+    "low": 0.421,
+    "high": 2.491,
+    "mean": 1.456,
+    "weeks": 114
+   }
+  },
+  "by_season": {
+   "2023": {
+    "form": 4.684,
+    "elite": 7.289,
+    "model": 5.895,
+    "premium": 5.921
+   },
+   "2024": {
+    "form": 6.711,
+    "elite": 10.132,
+    "model": 9.105,
+    "premium": 5.263
+   },
+   "2025": {
+    "form": 4.342,
+    "elite": 7.184,
+    "model": 4.842,
+    "premium": 4.289
+   }
+  },
+  "regret": 11.175
+ },
+ "lineup": {
+  "versus": {
+   "form": {
+    "low": 1.162,
+    "high": 3.348,
+    "mean": 2.248,
+    "weeks": 114
+   },
+   "manager": {
+    "low": -3.045,
+    "high": -1.578,
+    "mean": -2.288,
+    "weeks": 114
+   }
+  },
+  "squad_weeks": 11400,
+  "points_per_week": {
+   "form": 63.757,
+   "model": 66.005,
+   "manager": 68.293
+  }
+ },
+ "accepted": {
+  "lineup": false,
+  "captain": false
+ },
+ "testSeasons": [
+  "2023/24",
+  "2024/25",
+  "2025/26"
+ ]
+}

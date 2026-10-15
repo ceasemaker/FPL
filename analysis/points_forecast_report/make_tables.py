@@ -73,6 +73,7 @@ def main() -> None:
     for key, name in (("model", "Model"), ("elite", "Elite"), ("premium", "Premium"), ("form", "Form"), ("best", "Best")):
         m.add(f"cap{name}", num(cap["points_per_week"][key]))
     m.add("capRegret", num(cap["regret"]))
+    m.add("gapElite", num(abs(cap["versus"]["elite"]["mean"])))
     for key, name in (("elite", "Elite"), ("premium", "Premium"), ("form", "Form")):
         v = cap["versus"][key]
         m.add(f"vs{name}", interval(v)); m.add(f"vs{name}Mean", signed(v["mean"]))
@@ -92,10 +93,24 @@ def main() -> None:
 
     # ----------------------------------------------------- robustness
     it = rob["iterations"]
-    m.add("iterMin", str(it["min"])); m.add("iterMedian", f"{it['median']:.0f}"); m.add("iterMax", str(it["max"]))
+    m.add("iterMin", str(it["min"])); m.add("iterMedian", f"{it['median']:g}"); m.add("iterMax", str(it["max"]))
+
+    # Weekly captain differences from the archived selections: per-season lag-one
+    # autocorrelations and the standard deviation of each comparison.
+    import pandas as pd
+    weeks = pd.read_csv(HERE / "robustness_weeks.csv")
+    acs, sds = [], []
+    for key in ("elite", "premium", "form", "form_scaled", "regression"):
+        d = (weeks["model_points"] - weeks[f"{key}_points"]).rename("d")
+        frame = weeks.assign(d=d).dropna(subset=["d"])
+        sds.append(frame["d"].std())
+        acs += [g["d"].autocorr(1) for _, g in frame.groupby("season")]
+    m.add("acSeasonMin", signed(min(acs))); m.add("acSeasonMax", signed(max(acs)))
+    m.add("sdMin", num(min(sds), 1)); m.add("sdMax", num(max(sds), 1))
     ra = rob["accuracy"]
     m.add("rhoModel", num(ra["weekly_spearman_all"]["pred"])); m.add("rhoForm", num(ra["weekly_spearman_all"]["form_scaled"]))
     m.add("rhoReg", num(ra["weekly_spearman_all"]["reg"]))
+    m.add("maeReg", num(ra["all"]["reg"]["mae"], 3)); m.add("maeFormScaled", num(ra["all"]["form_scaled"]["mae"], 3))
     m.add("rhoCandModel", num(ra["weekly_spearman_candidates"]["pred"]))
     m.add("rhoCandForm", num(ra["weekly_spearman_candidates"]["form_scaled"]))
     m.add("rhoCandReg", num(ra["weekly_spearman_candidates"]["reg"]))
@@ -107,6 +122,16 @@ def main() -> None:
     for key, name in (("form_scaled", "FormScaled"), ("regression", "Reg")):
         m.add(f"cap{name}", num(rc["points_per_week"][key]))
         m.add(f"vs{name}", interval(rc[f"vs_{key}"]["iid"]))
+    for key, name in (("premium", "Premium"), ("form", "Form"), ("form_scaled", "FormScaled"),
+                      ("regression", "Reg"), ("elite", "Elite")):
+        for season, suffix in SEASONS.items():
+            m.add(f"season{name}{suffix}", signed(rc[f"vs_{key}"]["by_season"][season]["mean"]))
+        m.add(f"regular{name}", signed(rc[f"vs_{key}"]["regular_weeks"]["mean"]))
+    rl0 = rob["lineup"]
+    m.add("lineElevenVsManager", interval(rl0["vs_manager"]["eleven"])); m.add("lineArmVsManager", interval(rl0["vs_manager"]["armband"]))
+    m.add("lineVsReg", interval(rl0["vs_regression"]["total"])); m.add("lineElevenVsReg", interval(rl0["vs_regression"]["eleven"]))
+    m.add("lineArmVsReg", interval(rl0["vs_regression"]["armband"]))
+    m.add("lineVsFormScaled", interval(rl0["vs_form_scaled"]["total"]))
     m.add("nRegularWeeks", str(rob["weeks"]["regular"])); m.add("nIrregularWeeks", str(rob["weeks"]["irregular"]))
     autocorrs = [rc[f"vs_{k}"]["lag1_autocorr"] for k in ("elite", "premium", "form", "form_scaled", "regression")]
     m.add("acMin", signed(min(autocorrs))); m.add("acMax", signed(max(autocorrs)))
@@ -124,7 +149,9 @@ def main() -> None:
         r = rc[f"vs_{key}"]
         blocks = {b["block"]: b for b in r["blocks"]}
         seasons = " & ".join(signed(r["by_season"][s]["mean"]) for s in ("2023", "2024", "2025"))
-        rows.append(f"{label} & {num(rc['points_per_week'][key])} & {interval(r['iid'])} & "
+        # The original comparators use the headline evaluation's interval, so text and table agree.
+        main = cap["versus"].get(key, r["iid"]) if key in ("elite", "premium", "form") else r["iid"]
+        rows.append(f"{label} & {num(rc['points_per_week'][key])} & {interval(main)} & "
                     f"{signed(blocks[6]['low'])} to {signed(blocks[6]['high'])} & {seasons} & {signed(r['regular_weeks']['mean'])} \\\\")
     table("captain_table.tex",
           r"Comparator & Pts/wk & Model minus comparator (95\% CI) & Block CI$^a$ & 23/24 & 24/25 & 25/26 & Regular wks",
