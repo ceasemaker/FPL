@@ -39,7 +39,7 @@ import pandas as pd  # noqa: E402
 from sklearn.linear_model import Ridge  # noqa: E402
 
 from etl.forecast.backtest import SEED, TEST_SEASONS, walk_forward  # noqa: E402
-from etl.forecast.data import load_fixtures, load_players, load_usage  # noqa: E402
+from etl.forecast.data import load_fixtures, load_players  # noqa: E402
 from etl.forecast.features import build_features, team_weeks  # noqa: E402
 from etl.forecast.selection import Lineup, Player, choose_lineup, score_lineup_parts  # noqa: E402
 from etl.services.forecast_sync import elite_squads  # noqa: E402
@@ -95,6 +95,8 @@ def main() -> None:
     features = build_features(players, fixtures)
     preds = walk_forward(features, log=lambda *_: None)
     iterations = preds.attrs.get("iterations", [])
+    import gc
+    gc.collect()
     features["reg"] = regression_baseline(features)
     preds = preds.merge(features[["season", "gameweek", "code", "reg"]], on=["season", "gameweek", "code"], how="left")
     preds["form"] = preds["pts_m6"].fillna(preds["pts90_prev"].fillna(0) * preds["min_share_prev"].fillna(0))
@@ -234,19 +236,6 @@ def main() -> None:
             "armband": iid_interval((lineups["model_arm"] - lineups[f"{base}_arm"]).values, rng),
         }
     result["lineup"] = lineup
-
-    # ------------------------------------------------- usage missingness
-    usage_features = build_features(players, fixtures, load_usage())
-    test = usage_features[usage_features["season"].isin(TEST_SEASONS) & usage_features["total_points"].notna()]
-    played_last = test["prev_xg90"].notna()
-    has_usage = test["prev_usage"].notna()
-    result["usage_coverage"] = {
-        "rows": int(len(test)),
-        "with_usage": round(float(has_usage.mean()), 3),
-        "missing_no_pl_minutes_last_season": round(float((~has_usage & ~played_last).mean()), 3),
-        "missing_despite_pl_minutes_last_season": round(float((~has_usage & played_last).mean()), 3),
-        "regulars_with_usage": round(float(test.loc[test["mins_m3"] >= 60, "prev_usage"].notna().mean()), 3),
-    }
 
     print("RESULT_JSON " + json.dumps(result), flush=True)
     for record in weeks.replace({np.nan: None}).to_dict("records"):
