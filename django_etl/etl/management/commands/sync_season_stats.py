@@ -35,6 +35,8 @@ class Command(BaseCommand):
         )
         parser.add_argument("--delay", type=float, default=0.4, help="Seconds between requests")
         parser.add_argument("--limit", type=int, default=None, help="Only the first N players (for testing)")
+        parser.add_argument("--workers", type=int, default=1,
+                            help="Fetch this many sheets at once (each worker keeps --delay between its own requests)")
 
     def handle(self, *args, **options):
         season = options["season"]
@@ -85,11 +87,41 @@ class Command(BaseCommand):
     def _limited(self, players: list, options) -> list:
         return players[: options["limit"]] if options["limit"] else players
 
+    @staticmethod
+    def _fetch_all(items, fetch, workers: int):
+        """Run ``fetch`` over ``items``, in parallel when asked; results keep input order.
+
+        Only the HTTP requests run in threads; the caller writes to the
+        database from the main thread.
+        """
+        if workers <= 1:
+            for item in items:
+                yield item, fetch(item)
+            return
+        import threading
+        from concurrent.futures import ThreadPoolExecutor
+
+        local = threading.local()
+
+        def run(item):
+            return fetch(item, local)
+
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            yield from zip(items, pool.map(run, items))
+
     def _sdp_rows(self, competition: int, season: int, options):
         client = PLStatsClient(delay=options["delay"])
         players = self._limited(list(client.iter_season_players(competition, season)), options)
         self.stdout.write(f"{len(players)} players listed")
-        for meta in players:
+
+        def fetch(meta, local=None):
+            worker = client
+            if local is not None:
+                worker = getattr(local, "client", None) or PLStatsClient(delay=options["delay"])
+                local.client = worker
+            return worker.get_player_season_stats(competition, season, str(meta["id"]))
+
+        for meta, stats in self._fetch_all(players, fetch, options["workers"]):
             opta_id = str(meta["id"])
             yield {
                 "opta_player_id": opta_id,
@@ -97,7 +129,7 @@ class Command(BaseCommand):
                 "name": meta.get("name") or "",
                 "position": meta.get("position") or "",
                 "team": (meta.get("currentTeam") or {}).get("name") or "",
-                "stats": client.get_player_season_stats(competition, season, opta_id),
+                "stats": stats,
             }
 
     def _classic_rows(self, competition: int, season: int, options):
@@ -107,7 +139,14 @@ class Command(BaseCommand):
             raise CommandError(f"Classic API has no {season} season for competition {competition}")
         players = self._limited(list(client.iter_players_with_minutes(competition, season_id)), options)
         self.stdout.write(f"{len(players)} players with minutes (classic season id {season_id})")
-        for owner in players:
+        def fetch(owner, local=None):
+            worker = client
+            if local is not None:
+                worker = getattr(local, "client", None) or ClassicStatsClient(delay=options["delay"])
+                local.client = worker
+            return worker.get_player_season_stats(int(owner["id"]), competition, season_id)
+
+        for owner, stats in self._fetch_all(players, fetch, options["workers"]):
             pulselive_id = int(owner["id"])
             opta = ((owner.get("altIds") or {}).get("opta") or "").lstrip("p")
             yield {
@@ -118,5 +157,5 @@ class Command(BaseCommand):
                 "name": (owner.get("name") or {}).get("display") or "",
                 "position": CLASSIC_POSITIONS.get((owner.get("info") or {}).get("position"), ""),
                 "team": (owner.get("currentTeam") or {}).get("name") or "",
-                "stats": client.get_player_season_stats(pulselive_id, competition, season_id),
+                "stats": stats,
             }

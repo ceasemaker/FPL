@@ -118,6 +118,10 @@ class PlayerSeasonStat(TimestampedModel):
     position = models.CharField(max_length=30, blank=True)
     # The API reports the player's club at fetch time, not their club that season.
     current_team_name = models.CharField(max_length=100, blank=True)
+    # The club he played for that season, from the season's squad lists
+    # (sync_season_teams). A mid-season move keeps the later club.
+    season_team_id = models.CharField(max_length=20, blank=True)
+    season_team_name = models.CharField(max_length=100, blank=True)
     stats = models.JSONField(default=dict)
 
     class Meta:

@@ -8,6 +8,7 @@ import {
   type LineSeries,
   type ScatterPoint,
 } from "../components/chartLab/LabCharts";
+import { DEFAULT_USAGE, useUsageView, type UsageConfig } from "../components/chartLab/UsageView";
 import { compileFormula, FORMULA_FUNCTIONS, type StatValues } from "../utils/formula";
 import "./ChartLabPage.css";
 
@@ -16,7 +17,7 @@ import "./ChartLabPage.css";
 // version replaces the fixed metric list with free-form formulas over the
 // season's base stats.
 
-type Mode = "scatter" | "bars" | "trend";
+type Mode = "scatter" | "bars" | "trend" | "usage";
 type Position = "ALL" | "GKP" | "DEF" | "MID" | "FWD";
 
 interface Metric { key: string; label: string }
@@ -35,6 +36,7 @@ interface LabConfig {
   barCount: number;
   barSource: "top" | "selected";
   cumulative: boolean;
+  usage: UsageConfig;
 }
 
 interface SavedChart { name: string; config: LabConfig }
@@ -54,6 +56,7 @@ const DEFAULT_CONFIG: LabConfig = {
   barCount: 15,
   barSource: "top",
   cumulative: true,
+  usage: DEFAULT_USAGE,
 };
 
 const PRESETS: { label: string; formula: string }[] = [
@@ -90,7 +93,11 @@ function writeStorage(key: string, value: unknown) {
 export function ChartLabPage() {
   const [data, setData] = useState<PlayersPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [config, setConfig] = useState<LabConfig>(() => ({ ...DEFAULT_CONFIG, ...readStorage<Partial<LabConfig>>(CURRENT_KEY, {}) }));
+  const [config, setConfig] = useState<LabConfig>(() => {
+    const stored = readStorage<Partial<LabConfig>>(CURRENT_KEY, {});
+    return { ...DEFAULT_CONFIG, ...stored, usage: { ...DEFAULT_USAGE, ...(stored.usage ?? {}) } };
+  });
+  const [usageHighlight, setUsageHighlight] = useState<Set<number>>(new Set());
   const [saved, setSaved] = useState<SavedChart[]>(() => readStorage<SavedChart[]>(SAVED_KEY, []));
   const [series, setSeries] = useState<SeriesPayload | null>(null);
   const [search, setSearch] = useState("");
@@ -99,6 +106,14 @@ export function ChartLabPage() {
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const update = (patch: Partial<LabConfig>) => setConfig((current) => ({ ...current, ...patch }));
+  const updateUsage = (patch: Partial<UsageConfig>) => setConfig((current) => ({ ...current, usage: { ...current.usage, ...patch } }));
+  const toggleUsage = (id: number) => setUsageHighlight((current) => {
+    const next = new Set(current);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+  const isUsage = config.mode === "usage";
+  const usageView = useUsageView(isUsage, config.usage, updateUsage, usageHighlight, toggleUsage);
 
   useEffect(() => { writeStorage(CURRENT_KEY, config); }, [config]);
 
@@ -217,8 +232,8 @@ export function ChartLabPage() {
     else update({ formula });
   };
 
-  const chartTitle = config.mode === "scatter" ? `${config.y}  vs  ${config.x}` : config.formula;
-  const chartSubtitle = config.mode === "trend"
+  const chartTitle = isUsage ? usageView.title : config.mode === "scatter" ? `${config.y}  vs  ${config.x}` : config.formula;
+  const chartSubtitle = isUsage ? usageView.subtitle : config.mode === "trend"
     ? `${config.cumulative ? "Season to date" : "Each gameweek"} · ${config.selected.length} player${config.selected.length === 1 ? "" : "s"}`
     : [
         config.mode === "scatter" ? `${scatterPoints.length} of ${pool.length} players` : `${pool.length} players`,
@@ -319,22 +334,23 @@ export function ChartLabPage() {
         <div>
           <span className="aero-eyebrow">Build your own</span>
           <h1>Chart Lab</h1>
-          <p>Write any formula over this season's stats, like <code>xg * xa</code> or <code>per90(xg) / xa</code>, then plot it as a scatter, a ranking or a gameweek trend.</p>
+          <p>Write any formula over this season's stats, like <code>xg * xa</code> or <code>per90(xg) / xa</code>, then plot it as a scatter, a ranking or a gameweek trend. Usage plots how much of the ball a player uses against what he makes of it.</p>
         </div>
       </div>
 
       <div className="lab-layout">
         <aside className="aero-card lab-controls">
           <div className="lab-mode" role="tablist" aria-label="Chart type">
-            {(["scatter", "bars", "trend"] as Mode[]).map((mode) => (
+            {(["scatter", "bars", "trend", "usage"] as Mode[]).map((mode) => (
               <button key={mode} role="tab" aria-selected={config.mode === mode}
                 className={`lab-pill ${config.mode === mode ? "active" : ""}`}
                 onClick={() => update({ mode })}>
-                {mode === "scatter" ? "Scatter" : mode === "bars" ? "Ranking" : "Trend"}
+                {mode === "scatter" ? "Scatter" : mode === "bars" ? "Ranking" : mode === "trend" ? "Trend" : "Usage"}
               </button>
             ))}
           </div>
 
+          {isUsage ? usageView.controls : (<>
           {config.mode === "scatter" ? (
             <>
               {formulaField("x", "X axis formula")}
@@ -428,6 +444,8 @@ export function ChartLabPage() {
             )}
           </div>
 
+          </>)}
+
           <div className="lab-actions">
             <button className="aero-button" onClick={saveChart}>★ Save chart</button>
             <button className="aero-button" onClick={exportPng}>⤓ Export PNG</button>
@@ -438,7 +456,7 @@ export function ChartLabPage() {
               <div className="aero-field">Saved charts</div>
               {saved.map((chart, index) => (
                 <div key={chart.name} className="lab-saved-row">
-                  <button onClick={() => setConfig({ ...DEFAULT_CONFIG, ...chart.config })} title={chart.name}>{chart.name}</button>
+                  <button onClick={() => setConfig({ ...DEFAULT_CONFIG, ...chart.config, usage: { ...DEFAULT_USAGE, ...(chart.config.usage ?? {}) } })} title={chart.name}>{chart.name}</button>
                   <button aria-label={`Delete ${chart.name}`} onClick={() => deleteSaved(index)}>✕</button>
                 </div>
               ))}
@@ -455,7 +473,7 @@ export function ChartLabPage() {
               </div>
             </div>
             <div ref={chartRef} className="lab-chart">
-              {!data ? <div className="lab-skeleton" /> :
+              {isUsage ? usageView.chart : !data ? <div className="lab-skeleton" /> :
                 config.mode === "scatter" ? (
                   compiledX.ok && compiledY.ok
                     ? <ScatterChart points={scatterPoints} xLabel={config.x} yLabel={config.y} highlighted={highlighted} onToggle={toggleSelected} />
@@ -476,9 +494,10 @@ export function ChartLabPage() {
                 ) : <p className="aero-empty lab-chart-empty">Fix the formula on the left to draw the chart.</p>}
             </div>
             {config.mode === "scatter" && <p className="aero-empty lab-hint">Dashed lines are the medians. Click any dot to highlight that player.</p>}
+            {isUsage && <p className="aero-empty lab-hint">{usageView.hint} Click any dot to highlight that player.</p>}
           </article>
 
-          <article className="aero-card lab-reference">
+          {!isUsage && <article className="aero-card lab-reference">
             <div className="aero-card-title">
               <div>
                 <h3>Stats you can use</h3>
@@ -493,7 +512,7 @@ export function ChartLabPage() {
               ))}
             </div>
             <p className="aero-empty lab-hint">xCS is an estimate (FPL does not publish it): the clean-sheet chance in each 60+ minute appearance, from expected goals conceded. Ownership is season-level only, so it is blank in trends.</p>
-          </article>
+          </article>}
         </section>
       </div>
     </main>

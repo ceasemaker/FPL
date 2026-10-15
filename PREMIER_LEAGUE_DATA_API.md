@@ -158,6 +158,14 @@ Opta id). Re-running upserts.
 - **Championship 2024/25 has no stats at all** (checked 14 October 2026): the
   season (id 723) lists 1,381 squad players, but the leaderboards and every
   player sheet sampled are empty. Championship coverage starts with 2025/26.
+- **Season clubs.** Player sheets carry only the club a player is at *today*.
+  `sync_season_teams --season S [--competition C]` reads each club's squad for
+  that season (SDP `v2/competitions/{c}/seasons/{s}/teams/{team}/squad`; classic
+  `teams/{team}/compseasons/{cs}/staff`, matched on the squad entry's `id`, not
+  `playerId`) and fills `season_team_id`/`season_team_name`. Usage rates need it.
+- **Speed and rate limits.** `sync_season_stats --workers 3` fetches sheets in
+  parallel (about 2–3 minutes a season). Six workers triggered HTTP 429; the
+  client now backs off on 429 (Retry-After, else 15 s × attempt).
 - **Loaded so far:** Premier League 2024/25 (SDP 725 players, classic 562),
   2025/26 (SDP 790, classic 537) and 2026/27; Champions League 2024/25 (879),
   2025/26 (871) and 2026/27 (623); Championship 2025/26 (503); club sheets for

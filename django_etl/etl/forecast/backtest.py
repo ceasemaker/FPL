@@ -38,7 +38,8 @@ BOOTSTRAP_DRAWS = 10_000
 SEED = 20261014
 
 
-def walk_forward(features: pd.DataFrame, test_seasons=TEST_SEASONS, retrain_every: int = 1, log=print) -> pd.DataFrame:
+def walk_forward(features: pd.DataFrame, test_seasons=TEST_SEASONS, retrain_every: int = 1, log=print,
+                 feature_list: list[str] | None = None, params: dict | None = None) -> pd.DataFrame:
     """Predictions for every test week, each from a model trained on earlier weeks only."""
     t = features["season"] * 100 + features["gameweek"]
     played = features["total_points"].notna()
@@ -48,7 +49,7 @@ def walk_forward(features: pd.DataFrame, test_seasons=TEST_SEASONS, retrain_ever
     for index, (season, gameweek) in enumerate(weeks):
         now = season * 100 + gameweek
         if model is None or index % retrain_every == 0:
-            model = fit(features[played & (t < now)])
+            model = fit(features[played & (t < now)], params=params, **({"feature_list": feature_list} if feature_list else {}))
         week = features[(t == now) & played].copy()
         week["pred"] = predict(model, week)
         out.append(week)
@@ -131,13 +132,16 @@ def lineup_scores(preds: pd.DataFrame, squads: pd.DataFrame, players: pd.DataFra
 
 
 def evaluate(players: pd.DataFrame, fixtures: pd.DataFrame, squads: pd.DataFrame,
-             test_seasons=TEST_SEASONS, retrain_every: int = 1, log=print) -> dict:
+             test_seasons=TEST_SEASONS, retrain_every: int = 1, log=print,
+             feature_list: list[str] | None = None, params: dict | None = None,
+             usage: pd.DataFrame | None = None, features: pd.DataFrame | None = None) -> dict:
     rng = np.random.default_rng(SEED)
-    log("Building features")
-    features = build_features(players, fixtures)
-    log(f"  {len(features):,} player-weeks with a fixture")
+    if features is None:
+        log("Building features")
+        features = build_features(players, fixtures, usage)
+        log(f"  {len(features):,} player-weeks with a fixture")
     log("Walk-forward predictions")
-    preds = walk_forward(features, test_seasons, retrain_every, log)
+    preds = walk_forward(features, test_seasons, retrain_every, log, feature_list=feature_list, params=params)
 
     scored = preds.dropna(subset=["pred"])
     form = scored["pts_m6"].fillna(scored["pts90_prev"].fillna(0) * scored["min_share_prev"].fillna(0))
@@ -187,4 +191,7 @@ def evaluate(players: pd.DataFrame, fixtures: pd.DataFrame, squads: pd.DataFrame
         "lineup": lineup,
         "accepted": {"captain": accepted_captain, "lineup": accepted_lineup},
         "recent_picks": picks.tail(38).replace({np.nan: None}).to_dict("records"),
+        "_preds": preds,
+        "_picks": picks,
+        "_lineups": lineups,
     }

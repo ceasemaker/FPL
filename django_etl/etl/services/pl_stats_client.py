@@ -40,7 +40,7 @@ class _PulseliveClient:
     # The APIs only answer browser-origin requests from their own site.
     HEADERS = {"Origin": "https://www.premierleague.com", "Accept": "application/json"}
 
-    def __init__(self, timeout: int = 30, delay: float = 0.4, retries: int = 3) -> None:
+    def __init__(self, timeout: int = 30, delay: float = 0.4, retries: int = 5) -> None:
         self.session = requests.Session()
         self.session.headers.update(self.HEADERS)
         self.timeout = timeout
@@ -60,6 +60,11 @@ class _PulseliveClient:
                 if attempt == self.retries:
                     raise
                 wait = self.delay * 5 * attempt
+                status = getattr(getattr(exc, "response", None), "status_code", None)
+                if status == 429:
+                    # Rate limited: honour Retry-After, else back off hard.
+                    retry_after = exc.response.headers.get("Retry-After", "")
+                    wait = float(retry_after) if retry_after.isdigit() else 15.0 * attempt
                 logger.warning("Pulselive %s failed (%s); retry %s in %.1fs", path, exc, attempt, wait)
                 time.sleep(wait)
             finally:
@@ -106,6 +111,16 @@ class PLStatsClient(_PulseliveClient):
         stats = payload.get("stats")
         return stats if isinstance(stats, dict) else {}
 
+    def get_season_squad(self, competition: int, season: int, opta_team_id: str) -> list[dict]:
+        """A club's squad *in that season* (each player's ``id`` is his Opta id).
+
+        Player sheets only carry the club a player is at today, so this is the
+        way to know who played for whom in a past season.
+        """
+        payload = self._get(f"v2/competitions/{competition}/seasons/{season}/teams/{opta_team_id}/squad") or {}
+        players = payload.get("players") if isinstance(payload, dict) else None
+        return players if isinstance(players, list) else []
+
     def get_player_season_stats(self, competition: int, season: int, opta_player_id: str) -> dict:
         """Full season stat sheet (up to ~130 keys, including xG and xGOT)."""
         payload = self._get(
@@ -149,6 +164,17 @@ class ClassicStatsClient(_PulseliveClient):
             page += 1
             if page >= (block.get("pageInfo") or {}).get("numPages", 0):
                 return
+
+    def get_season_teams(self, season_id: int) -> list[dict]:
+        """The clubs in a classic season (``id`` is the pulselive team id)."""
+        payload = self._get(f"compseasons/{season_id}/teams", pageSize=100) or []
+        return payload if isinstance(payload, list) else []
+
+    def get_season_squad(self, team_id: int, season_id: int) -> list[dict]:
+        """A club's players in that season (``playerId`` is the pulselive id)."""
+        payload = self._get(f"teams/{team_id}/compseasons/{season_id}/staff", pageSize=100, altIds="true") or {}
+        players = payload.get("players") if isinstance(payload, dict) else None
+        return players if isinstance(players, list) else []
 
     def get_player_season_stats(self, player_id: int, competition: int, season_id: int) -> dict:
         """A player's full season sheet as {stat name: value} (~260 stat names)."""

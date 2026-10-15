@@ -40,6 +40,8 @@ export interface ScatterPoint {
   detail: string;
   x: number;
   y: number;
+  /** Optional third variable shown as dot area (e.g. goals + assists). */
+  size?: number;
 }
 
 interface ScatterProps {
@@ -48,9 +50,16 @@ interface ScatterProps {
   yLabel: string;
   highlighted: Set<number>;
   onToggle: (id: number) => void;
+  /** A line through the origin, y = slope × x (e.g. the group's average return per action). */
+  originLine?: { slope: number; label: string };
+  /** Players labelled without being highlighted (e.g. the outliers). */
+  labelled?: Set<number>;
+  /** Start both axes at zero so a line through the origin reads correctly. */
+  fromZero?: boolean;
+  sizeLabel?: string;
 }
 
-export function ScatterChart({ points, xLabel, yLabel, highlighted, onToggle }: ScatterProps) {
+export function ScatterChart({ points, xLabel, yLabel, highlighted, onToggle, originLine, labelled, fromZero, sizeLabel }: ScatterProps) {
   if (!points.length) return <p className="aero-empty lab-chart-empty">No players match these filters.</p>;
   const w = 720, h = 420, L = 56, R = 16, T = 18, B = 46;
   const iw = w - L - R, ih = h - T - B;
@@ -58,12 +67,17 @@ export function ScatterChart({ points, xLabel, yLabel, highlighted, onToggle }: 
   let ymin = Math.min(...points.map((p) => p.y)), ymax = Math.max(...points.map((p) => p.y));
   const xpad = (xmax - xmin) * 0.06 || 1, ypad = (ymax - ymin) * 0.08 || 1;
   xmin -= xpad; xmax += xpad; ymin -= ypad; ymax += ypad;
+  if (fromZero) { xmin = Math.min(0, xmin + xpad); ymin = Math.min(0, ymin + ypad); }
+  const sizes = points.map((p) => p.size ?? 0);
+  const maxSize = Math.max(1, ...sizes);
+  // Area, not radius, carries the value, so a player with twice the output reads as twice the ink.
+  const radius = (p: ScatterPoint, base: number) => (p.size === undefined ? base : 2.5 + 9 * Math.sqrt(Math.max(0, p.size) / maxSize));
   const X = (v: number) => L + ((v - xmin) / (xmax - xmin)) * iw;
   const Y = (v: number) => T + ih - ((v - ymin) / (ymax - ymin)) * ih;
   const medX = median(points.map((p) => p.x)), medY = median(points.map((p) => p.y));
 
   const plain = points.filter((p) => !highlighted.has(p.id));
-  const selected = points.filter((p) => highlighted.has(p.id));
+  const selected = points.filter((p) => highlighted.has(p.id) || labelled?.has(p.id));
 
   // Greedy label placement from A.R.G.U.S.: try six anchors, keep the first
   // that hits neither another highlighted dot nor an already placed label.
@@ -73,7 +87,7 @@ export function ScatterChart({ points, xLabel, yLabel, highlighted, onToggle }: 
     [9, -6, "start"], [9, 15, "start"], [-9, -6, "end"], [-9, 15, "end"], [0, -12, "middle"], [0, 21, "middle"],
   ];
   const labels = selected.map((p, index) => {
-    const cx = X(p.x), cy = Y(p.y), lw = p.name.length * 6.6 + 6, lh = 14;
+    const cx = X(p.x), cy = Y(p.y), lw = p.name.length * 7.2 + 8, lh = 14;
     let pick: { lx: number; ly: number; anchor: "start" | "end" | "middle"; x0: number; x1: number; y0: number; y1: number } | null = null;
     for (const [dx, dy, anchor] of anchors) {
       const lx = cx + dx, ly = cy + dy;
@@ -84,7 +98,10 @@ export function ScatterChart({ points, xLabel, yLabel, highlighted, onToggle }: 
       const hitsBox = boxes.some((b) => box.x1 > b.x0 && box.x0 < b.x1 && box.y1 > b.y0 && box.y0 < b.y1);
       if (!hitsDot && !hitsBox) { pick = { lx, ly, anchor, ...box }; break; }
     }
-    if (!pick) pick = { lx: cx + 9, ly: cy - 6, anchor: "start", x0: cx + 9, x1: cx + 9 + lw, y0: cy - 20, y1: cy - 4 };
+    // Nothing fits cleanly: at least keep the label inside the chart.
+    if (!pick) pick = cx > w / 2
+      ? { lx: cx - 9, ly: cy - 6, anchor: "end", x0: cx - 9 - lw, x1: cx - 9, y0: cy - 20, y1: cy - 4 }
+      : { lx: cx + 9, ly: cy - 6, anchor: "start", x0: cx + 9, x1: cx + 9 + lw, y0: cy - 20, y1: cy - 4 };
     boxes.push(pick);
     return { p, cx, cy, pick };
   });
@@ -103,27 +120,48 @@ export function ScatterChart({ points, xLabel, yLabel, highlighted, onToggle }: 
           <text x={X(t)} y={h - 28} textAnchor="middle" fontSize="10" fill={AXIS_TEXT}>{formatValue(t)}</text>
         </g>
       ))}
-      <line x1={X(medX)} x2={X(medX)} y1={T} y2={T + ih} stroke="#a5ff01" strokeOpacity="0.25" strokeDasharray="4 4" />
-      <line x1={L} x2={w - R} y1={Y(medY)} y2={Y(medY)} stroke="#a5ff01" strokeOpacity="0.25" strokeDasharray="4 4" />
+      {originLine ? (() => {
+        // Clip y = slope·x to the plot box.
+        const xEnd = Math.min(xmax, originLine.slope > 0 ? ymax / originLine.slope : xmax);
+        const x0 = Math.max(xmin, 0);
+        return (
+          <g>
+            <line x1={X(x0)} y1={Y(originLine.slope * x0)} x2={X(xEnd)} y2={Y(originLine.slope * xEnd)}
+              stroke="#a5ff01" strokeOpacity="0.55" strokeDasharray="6 5" strokeWidth={1.4} />
+            <text x={X(xEnd) - 4} y={Y(originLine.slope * xEnd) - 6} textAnchor="end" fontSize="10" fill="#a5ff01" fillOpacity="0.8">
+              {originLine.label}
+            </text>
+          </g>
+        );
+      })() : (
+        <>
+          <line x1={X(medX)} x2={X(medX)} y1={T} y2={T + ih} stroke="#a5ff01" strokeOpacity="0.25" strokeDasharray="4 4" />
+          <line x1={L} x2={w - R} y1={Y(medY)} y2={Y(medY)} stroke="#a5ff01" strokeOpacity="0.25" strokeDasharray="4 4" />
+        </>
+      )}
       <text x={L + iw / 2} y={h - 8} textAnchor="middle" fontSize="11" fill="#b7b7b7">{xLabel}</text>
       <text x={14} y={T + ih / 2} textAnchor="middle" fontSize="11" fill="#b7b7b7" transform={`rotate(-90 14 ${T + ih / 2})`}>{yLabel}</text>
-      {plain.map((p) => (
-        <circle key={p.id} className="lab-dot" cx={X(p.x)} cy={Y(p.y)} r={3.6}
-          fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.45)" strokeWidth={0.6}
+      {plain.filter((p) => !labelled?.has(p.id)).map((p) => (
+        <circle key={p.id} className="lab-dot" cx={X(p.x)} cy={Y(p.y)} r={radius(p, 3.6)}
+          fill="rgba(255,255,255,0.22)" stroke="rgba(255,255,255,0.5)" strokeWidth={0.6}
           onClick={() => onToggle(p.id)}>
-          <title>{`${p.name} (${p.detail}) · x ${formatValue(p.x)} · y ${formatValue(p.y)} — click to highlight`}</title>
+          <title>{`${p.name} (${p.detail}) · x ${formatValue(p.x)} · y ${formatValue(p.y)}${p.size !== undefined ? ` · ${sizeLabel ?? "size"} ${formatValue(p.size)}` : ""} — click to highlight`}</title>
         </circle>
       ))}
-      {labels.map(({ p, cx, cy, pick }) => (
-        <g key={p.id}>
-          <circle className="lab-dot" cx={cx} cy={cy} r={5.8} fill="#a5ff01" stroke="#101011" strokeWidth={1.2}
-            onClick={() => onToggle(p.id)}>
-            <title>{`${p.name} (${p.detail}) · x ${formatValue(p.x)} · y ${formatValue(p.y)} — click to remove`}</title>
-          </circle>
-          <text x={pick.lx} y={pick.ly} textAnchor={pick.anchor} fontSize="10.5" fontWeight="700" fill="#a5ff01"
-            stroke="#101011" strokeWidth={3} paintOrder="stroke" strokeLinejoin="round">{p.name}</text>
-        </g>
-      ))}
+      {labels.map(({ p, cx, cy, pick }) => {
+        const strong = highlighted.has(p.id);
+        return (
+          <g key={p.id}>
+            <circle className="lab-dot" cx={cx} cy={cy} r={radius(p, 5.8)}
+              fill={strong ? "#a5ff01" : "rgba(255,255,255,0.55)"} stroke="#101011" strokeWidth={1.2}
+              onClick={() => onToggle(p.id)}>
+              <title>{`${p.name} (${p.detail}) · x ${formatValue(p.x)} · y ${formatValue(p.y)}${p.size !== undefined ? ` · ${sizeLabel ?? "size"} ${formatValue(p.size)}` : ""} — click to ${strong ? "remove" : "highlight"}`}</title>
+            </circle>
+            <text x={pick.lx} y={pick.ly} textAnchor={pick.anchor} fontSize="10.5" fontWeight="700" fill={strong ? "#a5ff01" : "#e6e6e6"}
+              stroke="#101011" strokeWidth={3} paintOrder="stroke" strokeLinejoin="round">{p.name}</text>
+          </g>
+        );
+      })}
     </svg>
   );
 }

@@ -30,6 +30,8 @@ class Command(BaseCommand):
         players = load_players()
         players = players[players["season"] <= max(TEST_SEASONS)]
         summary = evaluate(players, load_fixtures(), elite_squads(), retrain_every=options["retrain_every"], log=self.stdout.write)
+        for private in [k for k in summary if k.startswith("_")]:
+            summary.pop(private)
         brief = {k: summary[k] for k in ("accuracy", "accepted")}
         brief["captain"] = {k: summary["captain"][k] for k in ("points_per_week", "versus")}
         brief["lineup"] = summary["lineup"]

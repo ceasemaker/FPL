@@ -24,3 +24,35 @@ def load_fixtures() -> pd.DataFrame:
         FixtureHistory.objects.exclude(gameweek=None).values_list(*FIXTURE_COLUMNS), columns=FIXTURE_COLUMNS
     )
     return frame
+
+
+def load_usage() -> pd.DataFrame:
+    """Season usage profiles from the Premier League's Opta sheets, one row per player-season.
+
+    Columns: season, code, usage, pea90, created90, create_per_pea, box90,
+    team_possession. Used as *previous-season* features, so they are known
+    before any gameweek of the season being forecast.
+    """
+    from ..models import PlayerSeasonStat
+    from ..services.usage import player_usage
+
+    seasons = sorted(set(PlayerSeasonStat.objects.filter(competition_id=8).values_list("season", flat=True)))
+    rows = []
+    for season in seasons:
+        for p in player_usage(season, "premier-league"):
+            if not p["minutes"] or p["pea"] is None or not str(p["id"]).isdigit():
+                continue
+            per90 = lambda v: None if v is None else v / p["minutes"] * 90
+            rows.append({
+                "season": season,
+                "code": int(p["id"]),
+                "usage": p["usage"],
+                "pea90": per90(p["pea"]),
+                "created90": per90(p["created"]),
+                "create_per_pea": (p["created"] / p["pea"]) if p["created"] is not None and p["pea"] else None,
+                "box90": per90(p.get("box_touches")),
+                "team_possession": p["teamPossession"],
+                "usage_minutes": p["minutes"],
+            })
+    return pd.DataFrame(rows, columns=["season", "code", "usage", "pea90", "created90", "create_per_pea",
+                                       "box90", "team_possession", "usage_minutes"])

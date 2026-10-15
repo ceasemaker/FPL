@@ -44,11 +44,11 @@ class PointsModel:
         return self.regressor.predict(features[self.columns].astype(float))
 
 
-def fit(features: pd.DataFrame) -> PointsModel:
+def fit(features: pd.DataFrame, feature_list: list[str] = FEATURES, params: dict | None = None) -> PointsModel:
     rows = training_rows(features)
-    X = rows[FEATURES].astype(float)
-    columns = [c for c in FEATURES if X[c].nunique(dropna=True) > 1]
-    regressor = HistGradientBoostingRegressor(**PARAMS)
+    X = rows[feature_list].astype(float)
+    columns = [c for c in feature_list if X[c].nunique(dropna=True) > 1]
+    regressor = HistGradientBoostingRegressor(**{**PARAMS, **(params or {})})
     regressor.fit(X[columns], rows["total_points"].astype(float))
     return PointsModel(columns, regressor)
 

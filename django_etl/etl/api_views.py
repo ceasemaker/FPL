@@ -3341,6 +3341,22 @@ def chart_lab_series(request):
 
 
 @require_GET
+def usage_chart(request):
+    """Usage rate and creation per player for one season and competition (Chart Lab)."""
+    from etl.services.pl_stats_client import COMPETITIONS
+    from etl.services.usage import build_payload as build_usage_payload
+
+    competition = request.GET.get("competition", "premier-league")
+    if competition not in COMPETITIONS:
+        return JsonResponse({"error": f"competition must be one of {sorted(COMPETITIONS)}"}, status=400)
+    try:
+        season = int(request.GET.get("season", "2025"))
+    except ValueError:
+        return JsonResponse({"error": "season must be a year, e.g. 2025"}, status=400)
+    return JsonResponse(build_usage_payload(season, competition))
+
+
+@require_GET
 def stats_explorer(request):
     """Raw season counts per competition plus FPL context for the Stats Explorer."""
     try:

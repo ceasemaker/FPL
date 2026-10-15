@@ -27,6 +27,14 @@ FEATURES = [
     "appearances", "weeks_since",
 ]
 
+# v2.1: last season's usage profile (Opta, via the Premier League) and the
+# club context a player arrives into. All are fixed before the season starts.
+USAGE_FEATURES = [
+    "prev_usage", "prev_pea90", "prev_created90", "prev_create_per_pea", "prev_box90",
+    "prev_team_possession", "moved_club", "team_top_usage",
+]
+FEATURES_V21 = FEATURES + USAGE_FEATURES
+
 TEAM_WINDOW = 8  # gameweeks of club form (≈ 7–8 matches)
 
 
@@ -136,10 +144,44 @@ def _previous_season(panel: pd.DataFrame) -> pd.DataFrame:
     })
 
 
-def build_features(players: pd.DataFrame, fixtures: pd.DataFrame) -> pd.DataFrame:
+def _usage_context(targets: pd.DataFrame, players: pd.DataFrame, usage: pd.DataFrame) -> pd.DataFrame:
+    """Attach last season's usage profile, a moved-club flag and the club's top returning user."""
+    prev = usage.rename(columns={
+        "usage": "prev_usage", "pea90": "prev_pea90", "created90": "prev_created90",
+        "create_per_pea": "prev_create_per_pea", "box90": "prev_box90", "team_possession": "prev_team_possession",
+    }).drop(columns=["usage_minutes"], errors="ignore")
+    prev = prev.assign(season=prev["season"] + 1)
+    targets = targets.merge(prev, on=["code", "season"], how="left")
+
+    # Moved club: his club now differs from the one he finished last season with.
+    last_club = (
+        players.dropna(subset=["minutes"]).sort_values(["season", "gameweek"])
+        .groupby(["code", "season"])["team_code"].last().rename("prev_team_code").reset_index()
+        .assign(season=lambda f: f["season"] + 1)
+    )
+    targets = targets.merge(last_club, on=["code", "season"], how="left")
+    targets["moved_club"] = np.where(
+        targets["prev_team_code"].isna(), np.nan, (targets["prev_team_code"] != targets["team_code"]).astype(float)
+    )
+
+    # The heaviest user among his current teammates last season (himself excluded):
+    # a high value means the club already has its "main man".
+    squad = targets[["season", "gameweek", "team_code", "code", "prev_usage"]].dropna(subset=["prev_usage"])
+    ranked = squad.sort_values("prev_usage", ascending=False).groupby(["season", "gameweek", "team_code"])
+    top = ranked.nth(0)[["season", "gameweek", "team_code", "code", "prev_usage"]].rename(
+        columns={"code": "top_code", "prev_usage": "top1"})
+    second = ranked.nth(1)[["season", "gameweek", "team_code", "prev_usage"]].rename(columns={"prev_usage": "top2"})
+    targets = targets.merge(top, on=["season", "gameweek", "team_code"], how="left").merge(
+        second, on=["season", "gameweek", "team_code"], how="left")
+    targets["team_top_usage"] = np.where(targets["top_code"] == targets["code"], targets["top2"], targets["top1"])
+    return targets.drop(columns=["prev_team_code", "top_code", "top1", "top2"])
+
+
+def build_features(players: pd.DataFrame, fixtures: pd.DataFrame, usage: pd.DataFrame | None = None) -> pd.DataFrame:
     """Feature rows for every player-week whose club has a fixture.
 
     ``players`` may include future rows (stats NaN) for the weeks to forecast.
+    ``usage`` (from ``data.load_usage``) adds the v2.1 usage features.
     Returns the features plus ``total_points`` (NaN for future rows).
     """
     weeks = team_weeks(players, fixtures)
@@ -168,7 +210,12 @@ def build_features(players: pd.DataFrame, fixtures: pd.DataFrame) -> pd.DataFram
     targets["home_frac"] = targets["home_n"] / targets["n_fix"]
     targets["dc_era"] = (targets["season"] >= 2025).astype(int)
     targets = targets.rename(columns={"roll_xgf": "team_xgf", "roll_xga": "team_xga", "o_xgf": "opp_xgf", "o_xga": "opp_xga"})
-    keep = ["season", "gameweek", "code", "element", "web_name", "team_code", "minutes", "total_points", *FEATURES]
+    if usage is not None and not usage.empty:
+        targets = _usage_context(targets, panel, usage)
+    else:
+        for column in USAGE_FEATURES:
+            targets[column] = np.nan
+    keep = ["season", "gameweek", "code", "element", "web_name", "team_code", "minutes", "total_points", *FEATURES_V21]
     out = targets[list(dict.fromkeys(keep))].sort_values(["season", "gameweek", "code"]).reset_index(drop=True)
     return out
 

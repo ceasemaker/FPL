@@ -30,12 +30,14 @@
 }
 
 .lab-mode {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px;
 }
 
 .lab-pill {
-  flex: 1;
+  min-width: 0;
+  padding: 0 4px;
   height: 36px;
   border-radius: 999px;
   border: 1px solid var(--aero-line-strong);
@@ -94,8 +96,15 @@
 
 .lab-filter-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 10px;
+}
+
+.lab-filter-row .aero-input,
+.lab-filter-row .aero-select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .lab-check {
@@ -348,8 +357,14 @@
 
 @media (max-width: 1050px) {
   .lab-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
+}
+
+.lab-controls .aero-select,
+.lab-controls .aero-input {
+  max-width: 100%;
+  min-width: 0;
 }
 
 /* The global button style uppercases and letter-spaces text. Formula names
