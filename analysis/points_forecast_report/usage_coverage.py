@@ -27,7 +27,7 @@ def main() -> None:
     players = players[players["season"] <= max(TEST_SEASONS)]
     features = build_features(players, load_fixtures(), load_usage())
     test = features[features["season"].isin(TEST_SEASONS) & features["total_points"].notna()]
-    played_last = test["prev_xg90"].notna()
+    played_last = test["min_share_prev"].fillna(0) > 0  # had Premier League minutes last season
     has_usage = test["prev_usage"].notna()
     result = {
         "rows": int(len(test)),
