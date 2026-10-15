@@ -178,7 +178,7 @@ minutes, in the previous season. Early in a season the current sample is a few m
 observed rates are dominated by noise. Combining them with a longer-run prior is the principle
 behind empirical Bayes estimation, which in sport outperforms the raw early-season rate
 \citep{efronmorris1975,brown2008}. Here the trees learn how much weight the prior deserves at each
-point of the season.
+point of the season; Section~\ref{sec:sensitivity} tests whether it helps.
 
 \paragraph{Club and opponent strength.} For club $c$ in week $t$, let
 $G^{+}_{ct}=\sum_{i\in c}\mathrm{xG}_{it}$ be its xG and
@@ -208,7 +208,7 @@ club-fixture week.
 Choice & Basis \\
 \midrule
 Previous-season rates as a prior & Shrinkage of noisy early-season rates
-  \citep{efronmorris1975,brown2008}; tested by ablation (Table~\ref{tab:sensitivity}) \\
+  \citep{efronmorris1975,brown2008}; no average gain in ablation (Table~\ref{tab:sensitivity}) \\
 Rolling windows of recent matches & Standard in FPL forecasting
   \citep{lombu2024,frees2024,ramezani2025} \\
 Club attack/defence strength & Goal models with team attack and defence parameters
@@ -409,6 +409,28 @@ baselines. Each row is a full walk-forward run over 2023/24--2025/26.}
 \input{sensitivity_table.tex}
 \end{table}}{\textit{[Sensitivity table pending.]}}
 
+Three findings stand out.
+\begin{itemize}
+  \item \emph{Accuracy depends most on minutes and starts.} Removing them raises MAE from 1.415
+        to 1.442 and lowers correlation from 0.508 to 0.488, the largest loss of any block. Club
+        and opponent strength (1.427, 0.501) and season-to-date rates (1.424, 0.502) come next.
+  \item \emph{Last season's rates add nothing on average.} Removing them leaves MAE and
+        correlation unchanged (1.415, 0.508). The motivation for including them, stabilising
+        early-season estimates, is not borne out over whole seasons. Carrying the rolling
+        windows across season boundaries and the start-of-season price may already supply that
+        information. Whether the prior helps in the first weeks alone is not tested here.
+  \item \emph{The conclusions do not depend on the settings.} Across all eleven variants, MAE
+        stays within 0.027 and correlation within 0.020 of the reference. Captain points range
+        from 6.25 to 7.10 per week, but every variant still beats the premium-attacker rule
+        (lower interval bounds $+0.02$ or above) and still trails the top-100 consensus (upper
+        bounds $-0.22$ or below). The acceptance verdict is the same in every row.
+\end{itemize}
+The spread in captain points is itself informative. A preliminary run of the same variants under
+an earlier library version moved several of them in the opposite direction (for example, 63
+leaves per tree gave 6.50 there and 7.10 here). Differences of half a point per week in captain
+points are within the noise of three seasons (Section~\ref{sec:discussion}). They should not be
+used to choose settings, and we have not done so.
+
 \section{Extension: ball usage}\label{sec:usage}
 
 \subsection{Motivation and definition}
@@ -426,8 +448,9 @@ reliable.
 
 We define a player's possession-ending actions as Opta's possessions lost plus his shots.
 Possessions lost covers incomplete passes and crosses, failed take-ons, being tackled and
-miscontrols; across Premier League players with at least 1{,}500 minutes it is within a few
-per cent of the sum of those components. Following the basketball formula with eleven players in
+miscontrols, and a little more: for Premier League players with at least 1{,}500 minutes in
+2023/24--2025/26 it is a median 8\% larger than the sum of those itemised components (middle 90\%
+of players: 1\% to 32\% larger). Following the basketball formula with eleven players in
 place of five,
 \[
   \mathrm{USG}_i = 100\cdot\frac{\mathrm{PEA}_i\cdot(\text{team minutes}/11)}{\text{minutes}_i\cdot\mathrm{PEA}_{\text{team}}},
@@ -464,14 +487,32 @@ $^a$Reduction in MAE (positive means the usage features help).}
 \input{usage_table.tex}
 \end{table}}{\textit{[Usage results pending.]}}
 
+\subsection{Result}
+The usage features were present for 57\% of test player-weeks; the rest belong to players with
+no Premier League season the year before. Players who had changed club since the previous season
+account for 10\% of test player-weeks. Table~\ref{tab:usage} shows no detectable effect:
+\begin{itemize}
+  \item forecast error is unchanged (MAE reduction $0.000$, 95\% interval $-0.003$ to $+0.003$),
+        including for players who changed club ($+0.001$, $-0.005$ to $+0.006$);
+  \item captain points change by $-0.27$ per week ($-1.26$ to $+0.69$);
+  \item lineup points are unchanged ($+0.00$, $-0.71$ to $+0.74$).
+\end{itemize}
+Over these three seasons, last season's ball usage adds nothing that last season's xG, xA, points
+and minutes do not already carry, so we do not adopt it. Two caveats apply. First, the measure is
+a season total; an in-season, match-level version would capture role changes as they happen.
+Second, usage may matter for questions this model does not ask, such as how a new signing's
+arrival redistributes the ball among his teammates, which needs club-level rather than
+player-level modelling.
+
 \section{Discussion}\label{sec:discussion}
 
 \paragraph{What the model has learned.} The forecast ranks players better than recent points do:
 its correlation with outcomes is about a quarter higher. As a decision rule it beats both
 mechanical captain heuristics, and it picks better elevens than form does from the same squads.
-These gains come from combining several weak signals (minutes security, underlying chance
-quality, opponent strength) and from not over-reacting to a short run of high or low scores. The
-ablations show which of these signals carry the forecast.
+These gains come mainly from minutes security, club and opponent strength and current-season
+rates (Section~\ref{sec:sensitivity}), and from not over-reacting to a short run of high or low
+scores. Neither last season's rates nor last season's ball usage improved the forecast on
+average.
 
 \paragraph{Why the top-100 consensus is hard to beat.} The consensus baseline has two advantages.
 The first is genuine. At the deadline, managers know team news, late injuries, the likely penalty

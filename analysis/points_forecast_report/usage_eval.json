@@ -1,0 +1,121 @@
+{
+ "coverage": {
+  "test_player_weeks": 59224,
+  "with_prev_usage": 0.571,
+  "moved_club_share": 0.097,
+  "usage_seasons": [
+   2021,
+   2022,
+   2023,
+   2024,
+   2025,
+   2026
+  ]
+ },
+ "base": {
+  "mae": 1.415,
+  "corr": 0.508,
+  "captain": 6.746,
+  "captain_versus": {
+   "elite": {
+    "mean": -1.456,
+    "low": -2.404,
+    "high": -0.553,
+    "weeks": 114
+   },
+   "premium": {
+    "mean": 1.544,
+    "low": 0.447,
+    "high": 2.614,
+    "weeks": 114
+   },
+   "form": {
+    "mean": 1.439,
+    "low": 0.272,
+    "high": 2.623,
+    "weeks": 114
+   }
+  },
+  "lineup": 66.134,
+  "lineup_versus": {
+   "manager": {
+    "mean": -2.159,
+    "low": -2.923,
+    "high": -1.421,
+    "weeks": 114
+   },
+   "form": {
+    "mean": 2.39,
+    "low": 1.185,
+    "high": 3.607,
+    "weeks": 114
+   }
+  }
+ },
+ "with_usage": {
+  "mae": 1.414,
+  "corr": 0.507,
+  "captain": 6.474,
+  "captain_versus": {
+   "elite": {
+    "mean": -1.728,
+    "low": -2.851,
+    "high": -0.684,
+    "weeks": 114
+   },
+   "premium": {
+    "mean": 1.272,
+    "low": 0.307,
+    "high": 2.246,
+    "weeks": 114
+   },
+   "form": {
+    "mean": 1.167,
+    "low": 0.07,
+    "high": 2.272,
+    "weeks": 114
+   }
+  },
+  "lineup": 66.137,
+  "lineup_versus": {
+   "manager": {
+    "mean": -2.156,
+    "low": -2.931,
+    "high": -1.406,
+    "weeks": 114
+   },
+   "form": {
+    "mean": 2.393,
+    "low": 1.239,
+    "high": 3.568,
+    "weeks": 114
+   }
+  }
+ },
+ "paired": {
+  "mae_reduction": {
+   "mean": 0.0,
+   "low": -0.003,
+   "high": 0.003,
+   "weeks": 114
+  },
+  "mae_reduction_movers": {
+   "mean": 0.001,
+   "low": -0.005,
+   "high": 0.006,
+   "weeks": 114
+  },
+  "captain_points": {
+   "mean": -0.272,
+   "low": -1.263,
+   "high": 0.693,
+   "weeks": 114
+  },
+  "lineup_points": {
+   "mean": 0.003,
+   "low": -0.709,
+   "high": 0.745,
+   "weeks": 114
+  }
+ }
+}

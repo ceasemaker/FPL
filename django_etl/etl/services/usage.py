@@ -6,7 +6,8 @@ version popularised by the Sincere FC video series:
 * A **possession-ending action** (PEA) is a shot, or losing the ball:
   an incomplete pass or cross, a failed take-on, being tackled or
   dispossessed, or a miscontrol. Opta's "possession lost" counts the losses
-  (within ~4% of the sum of its parts), so PEA = possession lost + shots.
+  (a median 8% more than the sum of those itemised parts for regular PL
+  starters, 2023/24-2025/26), so PEA = possession lost + shots.
 * **Usage rate** is the share of his team's PEAs a player accounts for while
   on the pitch, with team totals taken from the club he played for that season:
 
