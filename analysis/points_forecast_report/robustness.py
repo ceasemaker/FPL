@@ -50,7 +50,8 @@ REG_COLUMNS = ["start_price", "mins_m3", "mins_l1", "n_fix", "pos_1", "pos_2", "
 
 def regression_baseline(features: pd.DataFrame) -> pd.Series:
     """Walk-forward ridge on price, recent minutes, position and fixture count."""
-    frame = features.assign(**{f"pos_{p}": (features["position"] == p).astype(float) for p in (1, 2, 3, 4)})
+    cols = ["season", "gameweek", "position", "start_price", "mins_m3", "mins_l1", "n_fix", "total_points", "appearances"]
+    frame = features[cols].assign(**{f"pos_{p}": (features["position"] == p).astype(float) for p in (1, 2, 3, 4)})
     X = frame[REG_COLUMNS].astype(float).fillna(0.0)
     t = frame["season"] * 100 + frame["gameweek"]
     played = frame["total_points"].notna() & frame["appearances"].notna()
@@ -99,6 +100,10 @@ def main() -> None:
     gc.collect()
     features["reg"] = regression_baseline(features)
     preds = preds.merge(features[["season", "gameweek", "code", "reg"]], on=["season", "gameweek", "code"], how="left")
+    keep = ["season", "gameweek", "code", "team_code", "position", "minutes", "total_points", "expected_goals"]
+    del features
+    players = players[keep]
+    gc.collect()
     preds["form"] = preds["pts_m6"].fillna(preds["pts90_prev"].fillna(0) * preds["min_share_prev"].fillna(0))
     preds["form_scaled"] = preds["form"] * preds["n_fix"]
     scored = preds.dropna(subset=["pred"]).copy()
