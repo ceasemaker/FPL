@@ -3356,6 +3356,31 @@ def usage_chart(request):
     return JsonResponse(build_usage_payload(season, competition))
 
 
+def _season_param(request, default: int):
+    try:
+        return int(request.GET.get("season", str(default))), None
+    except ValueError:
+        return None, JsonResponse({"error": "season must be a year, e.g. 2025"}, status=400)
+
+
+@require_GET
+def turnover_chart(request):
+    """Goalkeeper and defender minutes each club lost since last season (Chart Lab)."""
+    from etl.services.squad_changes import current_season, turnover_payload
+
+    season, error = _season_param(request, current_season() or 2025)
+    return error or JsonResponse(turnover_payload(season))
+
+
+@require_GET
+def leap_chart(request):
+    """Players at the same club two seasons running, with both seasons' profiles (Chart Lab)."""
+    from etl.services.squad_changes import current_season, leap_payload
+
+    season, error = _season_param(request, current_season() or 2025)
+    return error or JsonResponse(leap_payload(season))
+
+
 @require_GET
 def stats_explorer(request):
     """Raw season counts per competition plus FPL context for the Stats Explorer."""

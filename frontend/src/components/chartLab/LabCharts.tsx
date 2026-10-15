@@ -232,9 +232,12 @@ export interface BarItem {
   highlighted: boolean;
 }
 
-export function BarChart({ items }: { items: BarItem[] }) {
+// `compact` is for phone widths: a narrower canvas so text renders larger,
+// and labels without the detail line.
+export function BarChart({ items, format = formatValue, compact = false }: { items: BarItem[]; format?: (value: number) => string; compact?: boolean }) {
   if (!items.length) return <p className="aero-empty lab-chart-empty">No players match these filters.</p>;
-  const w = 720, labelW = 190, valueW = 64, rowH = 30;
+  const w = compact ? 400 : 720, labelW = compact ? 118 : 190, valueW = compact ? 48 : 64, rowH = 30;
+  const maxLabel = compact ? 15 : 18;
   const h = items.length * rowH + 8;
   const min = Math.min(0, ...items.map((i) => i.value));
   const max = Math.max(0, ...items.map((i) => i.value));
@@ -252,14 +255,73 @@ export function BarChart({ items }: { items: BarItem[] }) {
         return (
           <g key={item.id}>
             <text x={0} y={y + 15} fontSize="12" fontWeight="600" fill="#ffffff">
-              {item.label.length > 18 ? `${item.label.slice(0, 17)}…` : item.label}
-              <tspan fill={AXIS_TEXT} fontWeight="400" fontSize="10.5">{`  ${item.detail}`}</tspan>
+              {item.label.length > maxLabel ? `${item.label.slice(0, maxLabel - 1)}…` : item.label}
+              {!compact && <tspan fill={AXIS_TEXT} fontWeight="400" fontSize="10.5">{`  ${item.detail}`}</tspan>}
             </text>
             <rect x={x0} y={y + 2} width={bw} height={18} rx={4} fill={color}>
-              <title>{`${item.label}: ${formatValue(item.value)}`}</title>
+              <title>{`${item.label}: ${format(item.value)}`}</title>
             </rect>
             <text x={Math.max(X(0), X(item.value)) + 6} y={y + 15} fontSize="12" fontWeight="700" fill={item.highlighted ? "#a5ff01" : "#d8d8d8"}>
-              {formatValue(item.value)}
+              {format(item.value)}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+export interface ChangeItem {
+  id: string;
+  label: string;
+  detail: string;
+  before: number;
+  after: number;
+}
+
+// Before → after per row: a grey dot for the earlier value, a lime dot for the
+// later one, joined by a line. Reads like a ranking with the old value kept in view.
+export function ChangeChart({ items, beforeLabel, afterLabel, digits = 2, compact = false }: { items: ChangeItem[]; beforeLabel: string; afterLabel: string; digits?: number; compact?: boolean }) {
+  if (!items.length) return <p className="aero-empty lab-chart-empty">No players match these filters.</p>;
+  const w = compact ? 400 : 720, labelW = compact ? 118 : 200, valueW = compact ? 46 : 70, rowH = 30, top = 26;
+  const maxLabel = compact ? 15 : 18;
+  const legendX = compact ? 0 : labelW;
+  const h = top + items.length * rowH + 6;
+  const max = Math.max(...items.flatMap((i) => [i.before, i.after]));
+  const min = Math.min(0, ...items.flatMap((i) => [i.before, i.after]));
+  const span = max - min || 1;
+  const trackW = w - labelW - valueW - 12;
+  const X = (v: number) => labelW + ((v - min) / span) * trackW;
+  const fmt = (v: number) => v.toFixed(digits);
+
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="lab-svg" role="img" aria-label={`Change from ${beforeLabel} to ${afterLabel}`}>
+      <g fontSize="11" fill={AXIS_TEXT}>
+        <circle cx={legendX + 6} cy={10} r={5} fill="#6b6b6b" />
+        <text x={legendX + 16} y={14}>{beforeLabel}</text>
+        <circle cx={legendX + 116} cy={10} r={5} fill="#a5ff01" />
+        <text x={legendX + 126} y={14}>{afterLabel}</text>
+      </g>
+      {items.map((item, i) => {
+        const y = top + i * rowH + 12;
+        const rise = item.after >= item.before;
+        const delta = item.after - item.before;
+        return (
+          <g key={item.id}>
+            <text x={0} y={y + 4} fontSize="12" fontWeight="600" fill="#ffffff">
+              {item.label.length > maxLabel ? `${item.label.slice(0, maxLabel - 1)}…` : item.label}
+              {!compact && <tspan fill={AXIS_TEXT} fontWeight="400" fontSize="10.5">{`  ${item.detail}`}</tspan>}
+            </text>
+            <line x1={labelW} x2={labelW + trackW} y1={y} y2={y} stroke={GRID} />
+            <line x1={X(item.before)} x2={X(item.after)} y1={y} y2={y} stroke={rise ? "#5f7a2e" : "#7a3b3b"} strokeWidth={4} strokeLinecap="round" />
+            <circle cx={X(item.before)} cy={y} r={5.5} fill="#6b6b6b" stroke="#101011" strokeWidth={2}>
+              <title>{`${item.label}, ${beforeLabel}: ${fmt(item.before)}`}</title>
+            </circle>
+            <circle cx={X(item.after)} cy={y} r={6} fill="#a5ff01" stroke="#101011" strokeWidth={2}>
+              <title>{`${item.label}, ${afterLabel}: ${fmt(item.after)}`}</title>
+            </circle>
+            <text x={w - valueW + 8} y={y + 4} fontSize="12" fontWeight="700" fill={rise ? "#a5ff01" : "#ff8a8a"}>
+              {`${delta >= 0 ? "+" : "−"}${fmt(Math.abs(delta))}`}
             </text>
           </g>
         );

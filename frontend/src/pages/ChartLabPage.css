@@ -29,11 +29,19 @@
   gap: 16px;
 }
 
+/* Five chart types: the three formula charts on the first row, the two
+ * ready-made views (Usage, Changes) on the second. */
 .lab-mode {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 6px;
 }
+
+.lab-mode > .lab-pill { grid-column: span 2; }
+.lab-mode > .lab-pill:nth-child(n + 4) { grid-column: span 3; }
+
+.lab-mode.lab-mode-two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.lab-mode.lab-mode-two > .lab-pill { grid-column: auto; }
 
 .lab-pill {
   min-width: 0;
@@ -316,6 +324,59 @@
 
 .lab-hint {
   margin-top: 10px;
+}
+
+/* ----------------------------------------------------------- changes */
+
+.lab-takeaway {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--aero-lime);
+  border-radius: var(--aero-radius-sm);
+  background: var(--aero-lime-wash);
+  color: var(--aero-text);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.lab-takeaway strong { color: var(--aero-lime); }
+
+.lab-table-wrap {
+  margin-top: 14px;
+  overflow-x: auto;
+}
+
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.lab-table th {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--aero-line-strong);
+  color: var(--aero-text-muted);
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.lab-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--aero-line);
+  color: var(--aero-text-dim);
+  vertical-align: top;
+}
+
+.lab-table td:first-child {
+  color: var(--aero-text);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.lab-table-num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 /* ----------------------------------------------------------- reference */
