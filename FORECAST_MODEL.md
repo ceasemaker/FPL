@@ -80,6 +80,21 @@ In short:
 Earlier figures (6.75 etc.) came from a history that dropped players who never played
 that season. That is hindsight, and an independent review caught it, so they are superseded.
 
+### Squad changes, tested and not adopted (local run 2026-10-15)
+
+`analysis/points_forecast_report/squad_changes_eval.py` added two ideas from Sincere FC's videos to v2.0 and reran the same
+walk-forward backtest (results in `squad_changes_eval.json`). Gains are paired by gameweek, with 95% bootstrap ranges.
+
+- **Defensive turnover** (the share of last season's goalkeeper and defender minutes that left the club, own and opponents'):
+  - Error fell by 0.004 points (0.002 to 0.006), and by 0.007 for goalkeepers and defenders in GW1-8.
+  - Captain −0.07 (−0.72 to +0.64) and lineup +0.19 (−0.36 to +0.78): no detectable change in decisions.
+- **Made the leap** (season-to-date xG + xA and minutes share against last season, plus last season's same-club rise in usage and xG + xA):
+  - No accuracy gain: −0.001 (−0.002 to 0.000).
+  - Captain +0.50 (−0.29 to +1.32): within noise.
+
+Neither changes picks, and both were tested on seasons already used to build the model, so production stays on v2.0.
+Turnover is the stronger candidate to re-test on a season the model hasn't seen. Both measures are in Chart Lab's Changes mode.
+
 ## Production
 
 `run_forecast` runs as step 9 of the daily pipeline, and through
