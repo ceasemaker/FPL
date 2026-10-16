@@ -6,7 +6,7 @@ from django.test import TestCase
 from ..models import MatchGoal, PlayerSeasonStat, PlMatch
 from ..services import clutch
 from ..services.holdup import holdup_players
-from ..services.match_goals import goals_from_events
+from ..services.match_goals import goals_from_events, goals_from_feed
 
 
 def goal(time, period, player, kind="Goal", stamp="", assist=None):
@@ -25,6 +25,17 @@ class GoalOrderTests(TestCase):
                          [("20", 12, 0, 1), ("10", 45, 1, 1), ("99", 60, 1, 2), ("11", 90, 2, 2)])
         self.assertEqual(goals[2]["team_id"], "2", "an own goal counts for the team it helped")
 
+
+    def test_raw_feed_leaves_out_var_cancelled_goals(self):
+        # Chelsea 1-0 Spurs, April 2025: the events list still had two goals VAR cancelled.
+        feed = {"liveData": {"goal": [
+            {"type": "G", "periodId": 2, "timeMin": 50, "timestamp": "T1", "opScorerId": "448047",
+             "opAssistPlayerId": "244851", "homeScore": 1, "awayScore": 0},
+        ]}}
+        goals = goals_from_feed(feed, "8", "6")
+        self.assertEqual([(g["team_id"], g["minute"], g["player_id"], g["home_after"], g["away_after"]) for g in goals],
+                         [("8", 50, "448047", 1, 0)])
+        self.assertEqual(goals[0]["assist_player_id"], "244851")
 
 class ClutchTests(TestCase):
     def setUp(self):

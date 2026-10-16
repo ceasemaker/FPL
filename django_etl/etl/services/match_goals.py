@@ -2,8 +2,10 @@
 
 One request per page of a season's matches, then one per finished match not
 yet stored (a full season is ~385 requests; a weekly refresh ~10). A match's
-goals are only kept when they add up to its final score, so a half-published
-match is retried on the next run instead of being stored wrong.
+goals are only kept when they add up to its final score. The events endpoint
+still lists goals VAR later cancelled (about one match in thirty in 2024/25),
+so when it doesn't add up the raw Opta feed, which leaves them out, is used
+instead; a match that still doesn't add up is retried on the next run.
 """
 from __future__ import annotations
 
@@ -73,6 +75,37 @@ def goals_from_events(events: dict) -> list[dict]:
     return out
 
 
+OPTA_TYPES = {"G": "Goal", "PG": "Penalty", "OG": "Own"}
+
+
+def goals_from_feed(feed: dict, home_team_id: str, away_team_id: str) -> list[dict]:
+    """Goals from the raw Opta feed; the side is read from the score change."""
+    raw = sorted((feed.get("liveData") or {}).get("goal") or [], key=lambda g: (g.get("timestamp") or "", g.get("timeMin") or 0))
+    out, home, away = [], 0, 0
+    for order, goal in enumerate(raw, start=1):
+        is_home = int(goal.get("homeScore", home)) > home
+        home, away = int(goal.get("homeScore", home)), int(goal.get("awayScore", away))
+        period = {1: "FirstHalf", 2: "SecondHalf"}.get(goal.get("periodId"), "")
+        out.append({
+            "order": order,
+            "team_id": home_team_id if is_home else away_team_id,
+            "is_home": is_home,
+            "minute": _minute({"time": goal.get("timeMin", 0), "period": period}),
+            "period": period,
+            "goal_type": OPTA_TYPES.get(goal.get("type"), "Goal"),
+            "player_id": str(goal.get("opScorerId") or ""),
+            "assist_player_id": str(goal.get("opAssistPlayerId") or ""),
+            "home_after": home,
+            "away_after": away,
+        })
+    return out
+
+
+def _adds_up(goals: list[dict], match: PlMatch) -> bool:
+    home = sum(1 for g in goals if g["is_home"])
+    return home == match.home_score and len(goals) - home == match.away_score
+
+
 def sync_season(season: int, client: PLStatsClient | None = None, refresh: bool = False, log=logger.info) -> dict:
     client = client or PLStatsClient()
     stored = skipped = 0
@@ -94,10 +127,11 @@ def sync_season(season: int, client: PLStatsClient | None = None, refresh: bool 
         if not finished or (match.goals_synced and not refresh):
             continue
         goals = goals_from_events(client.get_match_events(match.match_id))
-        home_count = sum(1 for g in goals if g["is_home"])
-        if home_count != match.home_score or len(goals) - home_count != match.away_score:
-            logger.warning("Match %s: goals %s-%s don't match the score %s-%s; retrying next run",
-                           match.match_id, home_count, len(goals) - home_count, match.home_score, match.away_score)
+        if not _adds_up(goals, match):
+            goals = goals_from_feed(client.get_match_feed(match.match_id), match.home_team_id, match.away_team_id)
+        if not _adds_up(goals, match):
+            logger.warning("Match %s: goals don't match the score %s-%s; retrying next run",
+                           match.match_id, match.home_score, match.away_score)
             skipped += 1
             continue
         with transaction.atomic():

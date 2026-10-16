@@ -154,6 +154,17 @@ class PLStatsClient(_PulseliveClient):
         payload = self._get(f"v1/matches/{match_id}/events")
         return payload if isinstance(payload, dict) else {}
 
+    def get_match_feed(self, match_id: str) -> dict:
+        """The raw Opta match feed behind the momentum chart (~50 KB).
+
+        ``liveData.goal`` lists only goals that stood (VAR-cancelled ones are
+        under ``liveData.VAR``), each with ``type`` (G, PG or OG), ``timeMin``,
+        ``periodId``, ``opScorerId``, ``opAssistPlayerId`` and the score after
+        it (``homeScore``/``awayScore``).
+        """
+        payload = self._get(f"v1/matches/{match_id}/momentum")
+        return payload if isinstance(payload, dict) else {}
+
 class ClassicStatsClient(_PulseliveClient):
     BASE_URL = "https://footballapi.pulselive.com/football/"
 

@@ -106,6 +106,22 @@ coverage (`coverageLevel: 13`), but it is not served. The closest substitutes:
 3. Text commentary: every shot, corner, free kick, offside and card, in order,
    with player ids.
 
+**Goals in order (stored).** `sync_match_goals` stores every Premier League match
+(`v2/matches?competition=8&season={year}&_limit=100`, cursor-paged with `_next`) and,
+for finished ones, its goals from `v1/matches/{id}/events` into `PlMatch`/`MatchGoal`
+(2021/22 onwards; the daily pipeline adds new matches). Things to know about that payload:
+- `goalType` is `Goal`, `Penalty` or `Own`. Own goals are listed under the team that
+  benefited, so each side's goals add up to its score (the sync checks this and retries a
+  match that doesn't).
+- `time` is the match minute. First-half stoppage can read past 45 (e.g. `54` with
+  `period: FirstHalf`), so the period decides which half a goal belongs to; `timestamp`
+  gives the exact order.
+- Python `requests` can't reach pulselive from the local sandbox (curl can); run the sync on
+  Render.
+
+Chart Lab's clutch goals (`etl/services/clutch.py`) values each goal by the league points
+it added, using win probabilities estimated from these matches.
+
 ## Other competitions
 
 The SDP API lists 62 competitions and the classic API 115 (cups, women's, youth,
