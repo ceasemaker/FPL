@@ -238,9 +238,9 @@ export interface BarItem {
 export function BarChart({ items, format = formatValue, compact = false, stacked = false }: { items: BarItem[]; format?: (value: number) => string; compact?: boolean; stacked?: boolean }) {
   if (!items.length) return <p className="aero-empty lab-chart-empty">No players match these filters.</p>;
   const twoLines = stacked && !compact;
-  const w = compact ? 400 : 720, labelW = compact ? 118 : 190, valueW = compact ? 48 : 64, rowH = twoLines ? 40 : 30;
-  const maxLabel = compact ? 15 : twoLines ? 26 : 18;
-  const maxDetail = 34;
+  const w = compact ? 400 : 720, labelW = compact ? 118 : twoLines ? 215 : 190, valueW = compact ? 48 : 64, rowH = twoLines ? 40 : 30;
+  const maxLabel = compact ? 15 : twoLines ? 28 : 18;
+  const maxDetail = 39;
   const h = items.length * rowH + 8;
   const min = Math.min(0, ...items.map((i) => i.value));
   const max = Math.max(0, ...items.map((i) => i.value));
