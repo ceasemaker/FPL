@@ -130,6 +130,30 @@ class PLStatsClient(_PulseliveClient):
         return stats if isinstance(stats, dict) else {}
 
 
+    def iter_season_matches(self, competition: int, season: int) -> Iterator[dict]:
+        """Every match in a season (played or not), with teams and scores."""
+        cursor = None
+        while True:
+            params: dict[str, Any] = {"competition": competition, "season": season, "_limit": 100}
+            if cursor:
+                params["_next"] = cursor
+            page = self._get("v2/matches", **params) or {}
+            yield from page.get("data", [])
+            cursor = (page.get("pagination") or {}).get("_next")
+            if not cursor or not page.get("data"):
+                return
+
+    def get_match_events(self, match_id: str) -> dict:
+        """Goals, cards and subs per side: ``{"homeTeam": {"id", "goals": [...]}, "awayTeam": ...}``.
+
+        Each goal has ``time`` (match minute; first-half stoppage can run past
+        45), ``period``, ``goalType`` (Goal, Penalty or Own), ``playerId``,
+        ``assistPlayerId`` and a ``timestamp``. Own goals are listed under the
+        team that benefited.
+        """
+        payload = self._get(f"v1/matches/{match_id}/events")
+        return payload if isinstance(payload, dict) else {}
+
 class ClassicStatsClient(_PulseliveClient):
     BASE_URL = "https://footballapi.pulselive.com/football/"
 

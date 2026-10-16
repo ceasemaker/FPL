@@ -233,35 +233,47 @@ export interface BarItem {
 }
 
 // `compact` is for phone widths: a narrower canvas so text renders larger,
-// and labels without the detail line.
-export function BarChart({ items, format = formatValue, compact = false }: { items: BarItem[]; format?: (value: number) => string; compact?: boolean }) {
+// and labels without the detail line. `stacked` puts the detail on its own
+// line under the name, for details too long to share a line (club names).
+export function BarChart({ items, format = formatValue, compact = false, stacked = false }: { items: BarItem[]; format?: (value: number) => string; compact?: boolean; stacked?: boolean }) {
   if (!items.length) return <p className="aero-empty lab-chart-empty">No players match these filters.</p>;
-  const w = compact ? 400 : 720, labelW = compact ? 118 : 190, valueW = compact ? 48 : 64, rowH = 30;
-  const maxLabel = compact ? 15 : 18;
+  const twoLines = stacked && !compact;
+  const w = compact ? 400 : 720, labelW = compact ? 118 : 190, valueW = compact ? 48 : 64, rowH = twoLines ? 40 : 30;
+  const maxLabel = compact ? 15 : twoLines ? 26 : 18;
+  const maxDetail = 34;
   const h = items.length * rowH + 8;
   const min = Math.min(0, ...items.map((i) => i.value));
   const max = Math.max(0, ...items.map((i) => i.value));
   const span = max - min || 1;
   const trackW = w - labelW - valueW;
   const X = (v: number) => labelW + ((v - min) / span) * trackW;
+  const clip = (text: string, n: number) => (text.length > n ? `${text.slice(0, n - 1)}…` : text);
 
   return (
     <svg viewBox={`0 0 ${w} ${h}`} className="lab-svg" role="img" aria-label="Bar chart">
       {min < 0 && <line x1={X(0)} x2={X(0)} y1={0} y2={h} stroke={GRID} />}
       {items.map((item, i) => {
         const y = i * rowH + 4;
+        const barY = twoLines ? y + 7 : y + 2;
         const x0 = Math.min(X(0), X(item.value)), bw = Math.max(2, Math.abs(X(item.value) - X(0)));
         const color = item.highlighted ? "#a5ff01" : "#5f7a2e";
         return (
           <g key={item.id}>
-            <text x={0} y={y + 15} fontSize="12" fontWeight="600" fill="#ffffff">
-              {item.label.length > maxLabel ? `${item.label.slice(0, maxLabel - 1)}…` : item.label}
-              {!compact && <tspan fill={AXIS_TEXT} fontWeight="400" fontSize="10.5">{`  ${item.detail}`}</tspan>}
-            </text>
-            <rect x={x0} y={y + 2} width={bw} height={18} rx={4} fill={color}>
-              <title>{`${item.label}: ${format(item.value)}`}</title>
+            {twoLines ? (
+              <>
+                <text x={0} y={y + 13} fontSize="12" fontWeight="600" fill="#ffffff">{clip(item.label, maxLabel)}</text>
+                <text x={0} y={y + 28} fontSize="10.5" fill={AXIS_TEXT}>{clip(item.detail, maxDetail)}</text>
+              </>
+            ) : (
+              <text x={0} y={y + 15} fontSize="12" fontWeight="600" fill="#ffffff">
+                {clip(item.label, maxLabel)}
+                {!compact && <tspan fill={AXIS_TEXT} fontWeight="400" fontSize="10.5">{`  ${item.detail}`}</tspan>}
+              </text>
+            )}
+            <rect x={x0} y={barY} width={bw} height={18} rx={4} fill={color}>
+              <title>{`${item.label} (${item.detail}): ${format(item.value)}`}</title>
             </rect>
-            <text x={Math.max(X(0), X(item.value)) + 6} y={y + 15} fontSize="12" fontWeight="700" fill={item.highlighted ? "#a5ff01" : "#d8d8d8"}>
+            <text x={Math.max(X(0), X(item.value)) + 6} y={barY + 13} fontSize="12" fontWeight="700" fill={item.highlighted ? "#a5ff01" : "#d8d8d8"}>
               {format(item.value)}
             </text>
           </g>

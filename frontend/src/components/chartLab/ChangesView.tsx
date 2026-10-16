@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
+import { useFetch, useNarrow, seasonLabel } from "./hooks";
 import { BarChart, ChangeChart, type BarItem, type ChangeItem } from "./LabCharts";
 
 // Year-on-year squad changes, two ideas from Sincere FC's videos:
@@ -85,37 +86,8 @@ const METRICS: Record<LeapMetric, { label: string; short: string; digits: number
   box90: { label: "Touches in the box per 90", short: "touches in the box per 90", digits: 1 },
 };
 const ROWS = 15;
-const seasonLabel = (s: number) => `${s}/${String((s + 1) % 100).padStart(2, "0")}`;
 const pct = (v: number) => `${Math.round(v * 100)}%`;
 const goals = (v: number) => `${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(2)}`;
-
-// Phone widths get the compact charts (larger text, no detail labels).
-function useNarrow(query = "(max-width: 600px)") {
-  const [narrow, setNarrow] = useState(() => typeof window !== "undefined" && window.matchMedia(query).matches);
-  useEffect(() => {
-    const media = window.matchMedia(query);
-    const onChange = () => setNarrow(media.matches);
-    media.addEventListener("change", onChange);
-    return () => media.removeEventListener("change", onChange);
-  }, [query]);
-  return narrow;
-}
-
-function useFetch<T>(url: string | null) {
-  const [data, setData] = useState<T | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    if (!url) return;
-    let alive = true;
-    setData(null);
-    fetch(url)
-      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() as Promise<T>; })
-      .then((p) => { if (alive) { setData(p); setError(null); } })
-      .catch((e: Error) => { if (alive) setError(e.message); });
-    return () => { alive = false; };
-  }, [url]);
-  return { data, error };
-}
 
 export function useChangesView(active: boolean, config: ChangesConfig, update: (patch: Partial<ChangesConfig>) => void) {
   const seasonQuery = config.season ? `?season=${config.season}` : "";
@@ -260,7 +232,7 @@ export function useChangesView(active: boolean, config: ChangesConfig, update: (
   const chart = error ? (
     <p className="aero-empty lab-chart-empty">Couldn't load the data ({error}).</p>
   ) : !payload ? <div className="lab-skeleton" /> : config.view === "turnover" ? (
-    <BarChart items={barItems} compact={narrow} format={(v) => (config.turnoverBy === "share" ? `${Math.round(v)}%` : Math.round(v).toLocaleString())} />
+    <BarChart stacked items={barItems} compact={narrow} format={(v) => (config.turnoverBy === "share" ? `${Math.round(v)}%` : Math.round(v).toLocaleString())} />
   ) : (
     <ChangeChart items={leapItems} beforeLabel={leap.data!.previousLabel} afterLabel={leap.data!.seasonLabel} digits={METRICS[config.metric].digits} compact={narrow} />
   );

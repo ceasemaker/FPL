@@ -1595,3 +1595,50 @@ class ShadowPick(models.Model):
             models.UniqueConstraint(fields=["season", "gameweek", "strategy"], name="uniq_shadow_pick"),
         ]
         ordering = ["-season", "-gameweek", "strategy"]
+
+
+class PlMatch(models.Model):
+    """A Premier League match from the Premier League's SDP API (Opta ids).
+
+    Kept with ``MatchGoal`` so goals can be valued by the game state they
+    changed (see ``etl/services/clutch.py``).
+    """
+
+    season = models.PositiveSmallIntegerField(help_text="Start year, e.g. 2025 for 2025/26")
+    match_id = models.CharField(max_length=20, unique=True, help_text="Opta match id")
+    matchweek = models.PositiveSmallIntegerField(null=True)
+    kickoff = models.DateTimeField(null=True)
+    home_team_id = models.CharField(max_length=20)
+    away_team_id = models.CharField(max_length=20)
+    home_score = models.SmallIntegerField(null=True)
+    away_score = models.SmallIntegerField(null=True)
+    # True once the match is over and its goals have been stored.
+    goals_synced = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "pl_matches"
+        indexes = [models.Index(fields=["season"])]
+
+    def __str__(self) -> str:
+        return f"{self.season} {self.home_team_id} v {self.away_team_id} ({self.match_id})"
+
+
+class MatchGoal(models.Model):
+    """One goal, credited to the team that benefited (own goals included)."""
+
+    match = models.ForeignKey(PlMatch, on_delete=models.CASCADE, related_name="goals")
+    order = models.PositiveSmallIntegerField(help_text="1 for the match's first goal, and so on")
+    team_id = models.CharField(max_length=20, help_text="Opta id of the team the goal counts for")
+    is_home = models.BooleanField()
+    minute = models.PositiveSmallIntegerField(help_text="Match minute, stoppage time capped at 45 or 90")
+    period = models.CharField(max_length=20, blank=True)
+    goal_type = models.CharField(max_length=20, help_text="Goal, Penalty or Own")
+    player_id = models.CharField(max_length=20, blank=True, help_text="Opta id of the scorer (own goals: the defender)")
+    assist_player_id = models.CharField(max_length=20, blank=True)
+    home_after = models.SmallIntegerField()
+    away_after = models.SmallIntegerField()
+
+    class Meta:
+        db_table = "pl_match_goals"
+        constraints = [models.UniqueConstraint(fields=["match", "order"], name="uniq_match_goal_order")]
+        ordering = ["match_id", "order"]

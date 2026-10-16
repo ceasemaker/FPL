@@ -3382,6 +3382,29 @@ def leap_chart(request):
 
 
 @require_GET
+def holdup_chart(request):
+    """Lay-offs, aerial duels and fouls won per player (Chart Lab hold-up play)."""
+    from etl.services.holdup import build_payload as build_holdup_payload
+    from etl.services.pl_stats_client import COMPETITIONS
+
+    competition = request.GET.get("competition", "premier-league")
+    if competition not in COMPETITIONS:
+        return JsonResponse({"error": f"competition must be one of {sorted(COMPETITIONS)}"}, status=400)
+    season, error = _season_param(request, 2025)
+    return error or JsonResponse(build_holdup_payload(season, competition))
+
+
+@require_GET
+def clutch_chart(request):
+    """League points each player's goals were worth (Chart Lab clutch goals)."""
+    from etl.services.clutch import build_payload as build_clutch_payload
+    from etl.services.squad_changes import current_season
+
+    season, error = _season_param(request, current_season() or 2025)
+    return error or JsonResponse(build_clutch_payload(season))
+
+
+@require_GET
 def stats_explorer(request):
     """Raw season counts per competition plus FPL context for the Stats Explorer."""
     try:

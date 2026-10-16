@@ -10,6 +10,8 @@ import {
 } from "../components/chartLab/LabCharts";
 import { DEFAULT_USAGE, useUsageView, type UsageConfig } from "../components/chartLab/UsageView";
 import { DEFAULT_CHANGES, useChangesView, type ChangesConfig } from "../components/chartLab/ChangesView";
+import { DEFAULT_HOLDUP, useHoldupView, type HoldupConfig } from "../components/chartLab/HoldupView";
+import { DEFAULT_CLUTCH, useClutchView, type ClutchConfig } from "../components/chartLab/ClutchView";
 import { compileFormula, FORMULA_FUNCTIONS, type StatValues } from "../utils/formula";
 import "./ChartLabPage.css";
 
@@ -18,7 +20,7 @@ import "./ChartLabPage.css";
 // version replaces the fixed metric list with free-form formulas over the
 // season's base stats.
 
-type Mode = "scatter" | "bars" | "trend" | "usage" | "changes";
+type Mode = "scatter" | "bars" | "trend" | "usage" | "changes" | "holdup" | "clutch";
 type Position = "ALL" | "GKP" | "DEF" | "MID" | "FWD";
 
 interface Metric { key: string; label: string }
@@ -39,9 +41,15 @@ interface LabConfig {
   cumulative: boolean;
   usage: UsageConfig;
   changes: ChangesConfig;
+  holdup: HoldupConfig;
+  clutch: ClutchConfig;
 }
 
 interface SavedChart { name: string; config: LabConfig }
+
+const MODE_LABELS: Record<Mode, string> = {
+  scatter: "Scatter", bars: "Ranking", trend: "Trend", usage: "Usage", changes: "Changes", holdup: "Hold-up", clutch: "Clutch",
+};
 
 const MAX_SELECTED = 6;
 const SAVED_KEY = "aerofpl_chart_lab_saved";
@@ -60,6 +68,8 @@ const DEFAULT_CONFIG: LabConfig = {
   cumulative: true,
   usage: DEFAULT_USAGE,
   changes: DEFAULT_CHANGES,
+  holdup: DEFAULT_HOLDUP,
+  clutch: DEFAULT_CLUTCH,
 };
 
 const PRESETS: { label: string; formula: string }[] = [
@@ -75,6 +85,18 @@ const PRESETS: { label: string; formula: string }[] = [
 
 // Stats that add up across gameweeks; price and ownership do not.
 const NON_SUMMABLE = new Set(["price", "own"]);
+
+// Fill in defaults for any view a stored or saved chart predates.
+function withDefaults(stored: Partial<LabConfig>): LabConfig {
+  return {
+    ...DEFAULT_CONFIG,
+    ...stored,
+    usage: { ...DEFAULT_USAGE, ...(stored.usage ?? {}) },
+    changes: { ...DEFAULT_CHANGES, ...(stored.changes ?? {}) },
+    holdup: { ...DEFAULT_HOLDUP, ...(stored.holdup ?? {}) },
+    clutch: { ...DEFAULT_CLUTCH, ...(stored.clutch ?? {}) },
+  };
+}
 
 function readStorage<T>(key: string, fallback: T): T {
   try {
@@ -97,8 +119,7 @@ export function ChartLabPage() {
   const [data, setData] = useState<PlayersPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [config, setConfig] = useState<LabConfig>(() => {
-    const stored = readStorage<Partial<LabConfig>>(CURRENT_KEY, {});
-    return { ...DEFAULT_CONFIG, ...stored, usage: { ...DEFAULT_USAGE, ...(stored.usage ?? {}) }, changes: { ...DEFAULT_CHANGES, ...(stored.changes ?? {}) } };
+    return withDefaults(readStorage<Partial<LabConfig>>(CURRENT_KEY, {}));
   });
   const [usageHighlight, setUsageHighlight] = useState<Set<number>>(new Set());
   const [saved, setSaved] = useState<SavedChart[]>(() => readStorage<SavedChart[]>(SAVED_KEY, []));
@@ -111,6 +132,8 @@ export function ChartLabPage() {
   const update = (patch: Partial<LabConfig>) => setConfig((current) => ({ ...current, ...patch }));
   const updateUsage = (patch: Partial<UsageConfig>) => setConfig((current) => ({ ...current, usage: { ...current.usage, ...patch } }));
   const updateChanges = (patch: Partial<ChangesConfig>) => setConfig((current) => ({ ...current, changes: { ...current.changes, ...patch } }));
+  const updateHoldup = (patch: Partial<HoldupConfig>) => setConfig((current) => ({ ...current, holdup: { ...current.holdup, ...patch } }));
+  const updateClutch = (patch: Partial<ClutchConfig>) => setConfig((current) => ({ ...current, clutch: { ...current.clutch, ...patch } }));
   const toggleUsage = (id: number) => setUsageHighlight((current) => {
     const next = new Set(current);
     if (next.has(id)) next.delete(id); else next.add(id);
@@ -120,8 +143,13 @@ export function ChartLabPage() {
   const usageView = useUsageView(isUsage, config.usage, updateUsage, usageHighlight, toggleUsage);
   const isChanges = config.mode === "changes";
   const changesView = useChangesView(isChanges, config.changes, updateChanges);
+  const holdupView = useHoldupView(config.mode === "holdup", config.holdup, updateHoldup);
+  const clutchView = useClutchView(config.mode === "clutch", config.clutch, updateClutch);
   // Modes with their own data and controls instead of the formula builder.
-  const custom = isUsage ? usageView : isChanges ? changesView : null;
+  const custom = isUsage ? usageView : isChanges ? changesView : config.mode === "holdup" ? holdupView
+    : config.mode === "clutch" ? clutchView : null;
+  // The ready-made views lead with a one-paragraph answer built from the data.
+  const takeaway = custom && "takeaway" in custom ? custom.takeaway : null;
 
   useEffect(() => { writeStorage(CURRENT_KEY, config); }, [config]);
 
@@ -342,18 +370,18 @@ export function ChartLabPage() {
         <div>
           <span className="aero-eyebrow">Build your own</span>
           <h1>Chart Lab</h1>
-          <p>Write any formula over this season's stats, like <code>xg * xa</code> or <code>per90(xg) / xa</code>, then plot it as a scatter, a ranking or a gameweek trend. Usage plots how much of the ball a player uses against what he makes of it; Changes shows which clubs lost their defenders and which players made the leap since last season.</p>
+          <p>Write any formula over this season's stats, like <code>xg * xa</code> or <code>per90(xg) / xa</code>, then plot it as a scatter, a ranking or a gameweek trend. Usage plots how much of the ball a player uses against what he makes of it; Changes shows which clubs lost their defenders and which players made the leap; Hold-up and Clutch rank lay-offs and how many points each player's goals were worth.</p>
         </div>
       </div>
 
       <div className="lab-layout">
         <aside className="aero-card lab-controls">
           <div className="lab-mode" role="tablist" aria-label="Chart type">
-            {(["scatter", "bars", "trend", "usage", "changes"] as Mode[]).map((mode) => (
+            {(["scatter", "bars", "trend", "usage", "changes", "holdup", "clutch"] as Mode[]).map((mode) => (
               <button key={mode} role="tab" aria-selected={config.mode === mode}
                 className={`lab-pill ${config.mode === mode ? "active" : ""}`}
                 onClick={() => update({ mode })}>
-                {mode === "scatter" ? "Scatter" : mode === "bars" ? "Ranking" : mode === "trend" ? "Trend" : mode === "usage" ? "Usage" : "Changes"}
+                {MODE_LABELS[mode]}
               </button>
             ))}
           </div>
@@ -464,7 +492,7 @@ export function ChartLabPage() {
               <div className="aero-field">Saved charts</div>
               {saved.map((chart, index) => (
                 <div key={chart.name} className="lab-saved-row">
-                  <button onClick={() => setConfig({ ...DEFAULT_CONFIG, ...chart.config, usage: { ...DEFAULT_USAGE, ...(chart.config.usage ?? {}) }, changes: { ...DEFAULT_CHANGES, ...(chart.config.changes ?? {}) } })} title={chart.name}>{chart.name}</button>
+                  <button onClick={() => setConfig(withDefaults(chart.config))} title={chart.name}>{chart.name}</button>
                   <button aria-label={`Delete ${chart.name}`} onClick={() => deleteSaved(index)}>✕</button>
                 </div>
               ))}
@@ -480,7 +508,7 @@ export function ChartLabPage() {
                 <p>{chartSubtitle}</p>
               </div>
             </div>
-            {isChanges && changesView.takeaway && <p className="lab-takeaway">{changesView.takeaway}</p>}
+            {takeaway && <p className="lab-takeaway">{takeaway}</p>}
             <div ref={chartRef} className="lab-chart">
               {custom ? custom.chart : !data ? <div className="lab-skeleton" /> :
                 config.mode === "scatter" ? (
@@ -505,7 +533,7 @@ export function ChartLabPage() {
             {config.mode === "scatter" && <p className="aero-empty lab-hint">Dashed lines are the medians. Click any dot to highlight that player.</p>}
             {isUsage && <p className="aero-empty lab-hint">{usageView.hint} Click any dot to highlight that player.</p>}
             {isChanges && changesView.details}
-            {isChanges && <p className="aero-empty lab-hint">{changesView.hint}</p>}
+            {custom && !isUsage && <p className="aero-empty lab-hint">{custom.hint}</p>}
           </article>
 
           {!custom && <article className="aero-card lab-reference">

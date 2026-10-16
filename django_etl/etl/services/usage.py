@@ -51,6 +51,12 @@ SDP = {
     "miscontrols": "overruns",
     "touches": "touches",
     "box_touches": "totalTouchesInOppositionBox",
+    # Hold-up play (etl/services/holdup.py).
+    "layoffs_won": "successfulLayoffs",
+    "layoffs_lost": "unsuccessfulLayoffs",
+    "aerials_won": "aerialDuelsWon",
+    "aerials_lost": "aerialDuelsLost",
+    "fouls_won": "totalFoulsWon",
 }
 CLASSIC = {
     "minutes": "mins_played",
@@ -64,6 +70,10 @@ CLASSIC = {
     "miscontrols": "unsuccessful_touch",
     "touches": "touches",
     "box_touches": "touches_in_opp_box",
+    "layoffs_won": "accurate_layoffs",
+    "aerials_won": "aerial_won",
+    "aerials_lost": "aerial_lost",
+    "fouls_won": "was_fouled",
 }
 POSITIONS = {"Goalkeeper": "GKP", "Defender": "DEF", "Midfielder": "MID", "Forward": "FWD"}
 
@@ -82,6 +92,8 @@ def _row(stats: dict, names: dict) -> dict:
     if names is CLASSIC:
         total, contest = _number(stats, "total_contest"), row.get("dribbles_won")
         row["dribbles_lost"] = None if total is None or contest is None else total - contest
+        layoffs, accurate = _number(stats, "total_layoffs"), row.get("layoffs_won")
+        row["layoffs_lost"] = None if layoffs is None or accurate is None else layoffs - accurate
         row["xg"] = row["xa"] = None
     return row
 

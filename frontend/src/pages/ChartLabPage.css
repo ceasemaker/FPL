@@ -29,15 +29,15 @@
   gap: 16px;
 }
 
-/* Five chart types: the three formula charts on the first row, the two
- * ready-made views (Usage, Changes) on the second. */
+/* Seven chart types: the three formula charts on the first row, the four
+ * ready-made views (Usage, Changes, Hold-up, Clutch) on the second. */
 .lab-mode {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 6px;
 }
 
-.lab-mode > .lab-pill { grid-column: span 2; }
+.lab-mode > .lab-pill { grid-column: span 4; }
 .lab-mode > .lab-pill:nth-child(n + 4) { grid-column: span 3; }
 
 .lab-mode.lab-mode-two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
