@@ -92,11 +92,9 @@ app.conf.beat_schedule = {
         'schedule': crontab(minute=10, hour='*/3'),
     },
 
-    # Monday 4:30 AM - Re-run the points forecast backtest (gates the captain card)
-    'backtest-forecast': {
-        'task': 'etl.tasks.backtest_forecast',
-        'schedule': crontab(hour=4, minute=30, day_of_week=1),
-    },
+    # The forecast backtest is no longer scheduled: it needs more memory than
+    # this shared 512 MB instance has. Run it as a one-off Render job
+    # (python manage.py backtest_forecast).
 
     # Every 30 minutes - Warm price predictor cache for frontend charts
     'warm-price-predictor-cache': {

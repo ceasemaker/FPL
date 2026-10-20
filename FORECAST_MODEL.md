@@ -106,7 +106,15 @@ Turnover is the stronger candidate to re-test on a season the model hasn't seen.
 4. Logs shadow picks for the next deadline: the model, FPL `ep_next`, and the priciest attacker. Live picks skip players FPL flags as out, or below a 75% chance.
 5. Scores finished weeks, adding FPL's most-captained player.
 
-`backtest_forecast` re-runs every Monday at 04:30. The optimiser uses these
+**Memory (October 2026).** The web service, the Celery worker and its child processes share one
+512 MB instance. Training the forecast peaked at about 750 MB, and the scheduled backtest needed more,
+so they ran the instance out of memory every day from 16 October. On 19 October Render suspended the service.
+Since then:
+
+- Each pipeline step runs as its own `manage.py` process.
+- Each task is capped at two attempts a day (`claim_attempt`), so a crash can't loop.
+- Training only runs when `FORECAST_IN_WORKER` is set.
+- `backtest_forecast` is no longer scheduled; run it as a one-off Render job. The optimiser uses these
 forecasts when they cover its horizon. Players with no history fall back to FPL
 `ep_next`.
 

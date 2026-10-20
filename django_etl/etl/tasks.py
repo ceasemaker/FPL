@@ -8,7 +8,6 @@ import logging
 import os
 from pathlib import Path
 from celery import shared_task
-from celery import shared_task
 from django.conf import settings
 from django.core.cache import cache
 from django.core.management import call_command
@@ -69,6 +68,59 @@ def run_etl_script(script_name, timeout, *script_args):
             "stdout": "",
             "stderr": str(e)
         }
+
+
+def run_manage(command, *args, timeout=1800):
+    """Run ``python manage.py <command>`` in a child process.
+
+    The web service, the Celery worker and its child share one 512 MB
+    instance. Python doesn't hand freed memory back to the OS, so a heavy step
+    run inside the worker keeps the worker big for the rest of the pipeline,
+    and the next step's child process then runs out of memory (Oct 2026
+    crash loop). A child process returns everything when it exits.
+    """
+    try:
+        result = subprocess.run(
+            ['python', 'manage.py', command, *map(str, args)],
+            capture_output=True, text=True, timeout=timeout, cwd=str(DJANGO_DIR),
+        )
+    except subprocess.TimeoutExpired:
+        return {"status": "error", "output": f"{command} exceeded {timeout} seconds"}
+    output = (result.stdout + result.stderr)[-2000:]
+    if result.returncode != 0:
+        logger.error("❌ %s failed (exit %s): %s", command, result.returncode, output)
+        return {"status": "error", "output": output}
+    return {"status": "success", "output": output}
+
+
+def claim_attempt(key, limit, ttl=20 * 3600):
+    """True if this run may go ahead: at most ``limit`` attempts per key.
+
+    When the instance runs out of memory mid-task, Celery beat (its schedule
+    file lives in /tmp, which a restart wipes) re-sends the task, and Redis
+    re-delivers the unfinished message an hour later. Without a cap, one
+    out-of-memory task restarts the instance again and again until Render
+    suspends the service. The count lives in Redis, which survives restarts.
+    """
+    cache_key = f"task-attempts:{key}"
+    cache.add(cache_key, 0, ttl)
+    try:
+        attempts = cache.incr(cache_key)
+    except ValueError:
+        cache.set(cache_key, 1, ttl)
+        attempts = 1
+    if attempts > limit:
+        logger.warning("Skipping %s: attempt %s of %s already used", key, attempts, limit)
+        return False
+    return True
+
+
+def forecast_in_worker():
+    """Training the forecast peaks well above what the shared instance has free.
+
+    Off until the training fits; see FORECAST_MODEL.md ("Production").
+    """
+    return os.getenv("FORECAST_IN_WORKER", "false").lower() in ("1", "true", "yes")
 
 
 @shared_task(name='etl.tasks.update_fixture_mappings')
@@ -321,15 +373,19 @@ def run_daily_pipeline():
     9. run_forecast (points forecast v2: train, forecast, shadow captain picks)
     10. sync_match_goals (this season's new Premier League goals, for Chart Lab's clutch goals)
     """
+    from django.utils import timezone
+
+    if not claim_attempt(f"daily-pipeline:{timezone.now():%Y-%m-%d}", limit=2):
+        return {"status": "skipped", "reason": "already attempted twice today"}
     logger.info("🚀 Starting Daily ETL Pipeline...")
     results = {}
 
     # Step 1: Run FPL ETL (Core Data)
     try:
         logger.info("Step 1: Running FPL ETL...")
-        out = StringIO()
-        call_command('run_fpl_etl', stdout=out, stderr=out)
-        results['run_fpl_etl'] = "✅ " + out.getvalue()
+        results['run_fpl_etl'] = run_manage('run_fpl_etl')
+        if results['run_fpl_etl']['status'] != 'success':
+            return results
     except Exception as e:
         logger.error(f"❌ Step 1 Failed: {str(e)}")
         results['run_fpl_etl'] = f"Error: {str(e)}"
@@ -369,9 +425,7 @@ def run_daily_pipeline():
     # Step 5: Sync Top 100
     try:
         logger.info("Step 5: Syncing Top 100 managers...")
-        out = StringIO()
-        call_command('sync_top100', stdout=out, stderr=out)
-        results['sync_top100'] = "✅ " + out.getvalue()
+        results['sync_top100'] = run_manage('sync_top100')
     except Exception as e:
         logger.error(f"❌ Step 5 Failed: {str(e)}")
         results['sync_top100'] = f"Error: {str(e)}"
@@ -379,9 +433,7 @@ def run_daily_pipeline():
     # Step 6: Clear Cache
     try:
         logger.info("Step 6: Clearing Cache...")
-        out = StringIO()
-        call_command('clear_cache', stdout=out, stderr=out)
-        results['clear_cache'] = "✅ " + out.getvalue()
+        results['clear_cache'] = run_manage('clear_cache')
     except Exception as e:
         logger.error(f"❌ Step 6 Failed: {str(e)}")
         results['clear_cache'] = f"Error: {str(e)}"
@@ -397,7 +449,7 @@ def run_daily_pipeline():
     # Step 8: Populate predictions for next gameweek
     try:
         logger.info("Step 8: Populating next gameweek predictions...")
-        results['populate_predictions'] = populate_predictions()
+        results['populate_predictions'] = run_manage('train_prediction_model', '--skip-training')
     except Exception as e:
         logger.error(f"❌ Step 8 Failed: {str(e)}")
         results['populate_predictions'] = f"Error: {str(e)}"
@@ -405,7 +457,8 @@ def run_daily_pipeline():
     # Step 9: Points forecast v2 (also scores last week's shadow picks)
     try:
         logger.info("Step 9: Running the points forecast...")
-        results['run_forecast'] = run_forecast_task()
+        results['run_forecast'] = (run_manage('run_forecast') if forecast_in_worker()
+                                   else {"status": "skipped", "reason": "FORECAST_IN_WORKER is off"})
     except Exception as e:
         logger.error(f"❌ Step 9 Failed: {str(e)}")
         results['run_forecast'] = f"Error: {str(e)}"
@@ -413,9 +466,7 @@ def run_daily_pipeline():
     # Step 10: New match goals (only matches not yet stored: ~10 requests a week)
     try:
         logger.info("Step 10: Syncing match goals...")
-        out = StringIO()
-        call_command('sync_match_goals', stdout=out, stderr=out)
-        results['sync_match_goals'] = out.getvalue().strip()
+        results['sync_match_goals'] = run_manage('sync_match_goals')
     except Exception as e:
         logger.error(f"❌ Step 10 Failed: {str(e)}")
         results['sync_match_goals'] = f"Error: {str(e)}"
@@ -430,16 +481,12 @@ def retrain_prediction_model():
     Retrain ML prediction models.
     Runs: Every Tuesday at 4:00 AM (after lineups update)
     """
+    from django.utils import timezone
+
+    if not claim_attempt(f"retrain-prediction-model:{timezone.now():%Y-%m-%d}", limit=1):
+        return {"status": "skipped", "reason": "already attempted today"}
     logger.info("Starting ML model retraining...")
-    try:
-        out = StringIO()
-        call_command('train_prediction_model', stdout=out, stderr=out)
-        output = out.getvalue()
-        logger.info(f"✅ Model retraining completed: {output}")
-        return {"status": "success", "output": output}
-    except Exception as e:
-        logger.error(f"❌ Model retraining failed: {str(e)}")
-        return {"status": "error", "output": str(e)}
+    return run_manage('train_prediction_model', timeout=3600)
 
 
 @shared_task(name='etl.tasks.populate_predictions')
@@ -449,27 +496,15 @@ def populate_predictions():
     Called after daily ETL pipeline.
     """
     logger.info("Populating predictions for next gameweek...")
-    try:
-        out = StringIO()
-        call_command('train_prediction_model', '--skip-training', stdout=out, stderr=out)
-        output = out.getvalue()
-        logger.info(f"✅ Predictions populated: {output}")
-        return {"status": "success", "output": output}
-    except Exception as e:
-        logger.error(f"❌ Prediction population failed: {str(e)}")
-        return {"status": "error", "output": str(e)}
+    return run_manage('train_prediction_model', '--skip-training')
 
 
 @shared_task(name='etl.tasks.run_forecast')
 def run_forecast_task():
     """Train the points forecast, write forecasts, log and score shadow captain picks."""
-    from etl.forecast.service import run_forecast
-
-    try:
-        return {"status": "success", "result": run_forecast()}
-    except Exception as e:
-        logger.exception("Points forecast failed")
-        return {"status": "error", "output": str(e)}
+    if not forecast_in_worker():
+        return {"status": "skipped", "reason": "FORECAST_IN_WORKER is off"}
+    return run_manage('run_forecast')
 
 
 @shared_task(name='etl.tasks.refresh_before_deadline')
@@ -494,6 +529,8 @@ def refresh_before_deadline():
     upcoming = next_deadline(bootstrap.get("events", []))
     if upcoming is None or upcoming[1] - timezone.now() > timedelta(hours=36):
         return {"status": "skipped", "reason": "no deadline within 36 hours"}
+    if not claim_attempt(f"refresh-before-deadline:{timezone.now():%Y-%m-%d-%H}", limit=1, ttl=3 * 3600):
+        return {"status": "skipped", "reason": "already attempted this slot"}
     _sync_athletes(bootstrap.get("elements", []))
     sync_forecast_tables(bootstrap.get("events", []), bootstrap.get("elements", []))
     return run_forecast_task()
@@ -501,11 +538,11 @@ def refresh_before_deadline():
 
 @shared_task(name='etl.tasks.backtest_forecast')
 def backtest_forecast():
-    """Re-run the walk-forward backtest and store the verdict (gates the captain card)."""
-    try:
-        out = StringIO()
-        call_command('backtest_forecast', stdout=out, stderr=out)
-        return {"status": "success", "output": out.getvalue()[-2000:]}
-    except Exception as e:
-        logger.exception("Forecast backtest failed")
-        return {"status": "error", "output": str(e)}
+    """Retired: the backtest needs more memory than the web instance has.
+
+    Kept registered so a queued or re-delivered message is consumed harmlessly
+    instead of crashing the worker. Run it as a one-off Render job:
+    ``cd django_etl && python manage.py backtest_forecast``.
+    """
+    logger.warning("backtest_forecast no longer runs in the worker; run it as a one-off job")
+    return {"status": "skipped", "reason": "run as a one-off job"}
