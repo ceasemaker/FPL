@@ -30,9 +30,47 @@ class CrashLoopGuardTests(TestCase):
         self.assertEqual(third["status"], "skipped")
         commands = [call.args[0] for call in manage.call_args_list]
         self.assertIn("run_fpl_etl", commands)
-        self.assertNotIn("run_forecast", commands, "forecast training stays off unless FORECAST_IN_WORKER is set")
+        self.assertNotIn("run_forecast", commands, "outside a job, forecast training stays off")
 
     def test_backtest_task_no_longer_runs_in_the_worker(self):
         with mock.patch.object(tasks, "run_manage") as manage:
             self.assertEqual(tasks.backtest_forecast()["status"], "skipped")
         manage.assert_not_called()
+
+
+@override_settings(CACHES=LOCMEM)
+class RenderJobTests(TestCase):
+    def setUp(self):
+        cache.clear()
+
+    def test_on_render_heavy_tasks_start_a_job_instead_of_running(self):
+        env = {"RENDER_API_KEY": "test", "RENDER_SERVICE_ID": "srv-test"}
+        with mock.patch.dict("os.environ", env), \
+                mock.patch.object(tasks, "start_render_job", return_value={"status": "started", "job": "job-1"}) as start, \
+                mock.patch.object(tasks, "run_manage") as manage:
+            self.assertEqual(tasks.run_daily_pipeline()["status"], "started")
+            tasks.run_daily_pipeline()
+            self.assertEqual(tasks.run_daily_pipeline()["status"], "skipped", "two jobs a day at most")
+        self.assertEqual([c.args[0] for c in start.call_args_list], ["run_daily_pipeline", "run_daily_pipeline"])
+        manage.assert_not_called()
+
+    def test_inside_a_job_the_steps_run_and_the_forecast_gets_its_own_job(self):
+        env = {"RENDER_API_KEY": "test", "RENDER_SERVICE_ID": "srv-test", tasks.IN_JOB_ENV: "1"}
+        with mock.patch.dict("os.environ", env), \
+                mock.patch.object(tasks, "start_render_job", return_value={"status": "started"}) as start, \
+                mock.patch.object(tasks, "run_manage", return_value={"status": "success", "output": ""}) as manage, \
+                mock.patch.object(tasks, "run_etl_script", return_value={"returncode": 0, "stdout": "", "stderr": ""}):
+            tasks.JOBS["run_daily_pipeline"]()
+        self.assertIn("run_fpl_etl", [c.args[0] for c in manage.call_args_list])
+        self.assertNotIn("run_forecast", [c.args[0] for c in manage.call_args_list])
+        start.assert_called_once_with("run_forecast", tasks.FORECAST_COMMAND)
+
+    def test_on_render_without_a_key_heavy_tasks_skip_instead_of_running_in_the_web_instance(self):
+        with mock.patch.dict("os.environ", {"RENDER": "true"}), \
+                mock.patch.object(tasks, "run_manage") as manage, mock.patch.object(tasks, "run_etl_script") as script:
+            os_env = __import__("os").environ
+            os_env.pop("RENDER_API_KEY", None)
+            self.assertEqual(tasks.run_daily_pipeline()["status"], "skipped")
+            self.assertEqual(tasks.run_forecast_task()["status"], "skipped")
+        manage.assert_not_called()
+        script.assert_not_called()

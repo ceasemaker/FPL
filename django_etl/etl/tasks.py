@@ -115,15 +115,100 @@ def claim_attempt(key, limit, ttl=20 * 3600):
     return True
 
 
-def forecast_in_worker():
-    """Training the forecast peaks well above what the shared instance has free.
+# ---------------------------------------------------------------- Render jobs
+#
+# The website and the Celery worker share one 512 MB instance and use most of
+# it at rest (~400 MB), so heavy scheduled work runs as Render one-off jobs:
+# each gets its own instance for as long as it runs and is billed per second.
+# The worker only starts the job. Locally (no RENDER_API_KEY) tasks run inline.
 
-    Off until the training fits; see FORECAST_MODEL.md ("Production").
+IN_JOB_ENV = "AEROFPL_IN_JOB"
+JOBS = {}  # job name -> the work function a job runs (see manage.py run_job)
+
+
+def in_job():
+    return os.getenv(IN_JOB_ENV) == "1"
+
+
+def render_jobs_available():
+    return bool(os.getenv("RENDER_API_KEY") and os.getenv("RENDER_SERVICE_ID"))
+
+
+def offload_enabled():
+    return render_jobs_available() and not in_job()
+
+
+def on_render_without_jobs():
+    """On Render but unable to start jobs: heavy work must not run in the web instance."""
+    return bool(os.getenv("RENDER")) and not render_jobs_available() and not in_job()
+
+
+NO_JOBS = {"status": "skipped", "reason": "set RENDER_API_KEY on the service so heavy tasks can run as Render jobs"}
+
+
+# Forecast training peaks at ~450 MB on Render (Oct 2026), so it always gets a
+# job of its own rather than running as a child of another job.
+FORECAST_COMMAND = "python manage.py run_forecast"
+
+
+def start_render_job(name, command=None):
+    """Start ``command`` (default ``manage.py run_job <name>``) as a Render one-off job."""
+    import json
+    import urllib.request
+
+    request = urllib.request.Request(
+        f"https://api.render.com/v1/services/{os.environ['RENDER_SERVICE_ID']}/jobs",
+        data=json.dumps({"startCommand": f"cd django_etl && {command or f'python manage.py run_job {name}'}"}).encode(),
+        method="POST",
+        headers={"Authorization": f"Bearer {os.environ['RENDER_API_KEY']}",
+                 "Accept": "application/json", "Content-Type": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            job = json.loads(response.read().decode())
+    except Exception as exc:
+        logger.error("❌ Could not start Render job %s: %s", name, exc)
+        return {"status": "error", "output": f"could not start job: {exc}"}
+    logger.info("Started Render job %s for %s", job.get("id"), name)
+    return {"status": "started", "job": job.get("id")}
+
+
+def offloaded(name, limit=2):
+    """Run the task as a Render job, at most ``limit`` times a day.
+
+    Inside the job the work function runs directly. The attempt cap stops the
+    Oct 2026 failure mode: beat re-sending a task after every restart and Redis
+    re-delivering it an hour later.
     """
-    return os.getenv("FORECAST_IN_WORKER", "false").lower() in ("1", "true", "yes")
+    def decorate(work):
+        JOBS[name] = work
+
+        def task(*args, **kwargs):
+            if in_job():
+                return work(*args, **kwargs)
+            from django.utils import timezone
+
+            if not claim_attempt(f"{name}:{timezone.now():%Y-%m-%d}", limit=limit):
+                return {"status": "skipped", "reason": f"already attempted {limit} times today"}
+            if offload_enabled():
+                return start_render_job(name)
+            if on_render_without_jobs():
+                logger.error("❌ %s skipped: %s", name, NO_JOBS["reason"])
+                return NO_JOBS
+            return work(*args, **kwargs)
+
+        task.__name__, task.__doc__ = work.__name__, work.__doc__
+        return task
+    return decorate
+
+
+def forecast_allowed():
+    """Training the forecast (~750 MB peak) only runs where it has room: in a job."""
+    return in_job() or os.getenv("FORECAST_IN_WORKER", "false").lower() in ("1", "true", "yes")
 
 
 @shared_task(name='etl.tasks.update_fixture_mappings')
+@offloaded('update_fixture_mappings')
 def update_fixture_mappings():
     """
     Update fixture mappings between FPL and SofaSport.
@@ -142,6 +227,7 @@ def update_fixture_mappings():
 
 
 @shared_task(name='etl.tasks.update_lineups')
+@offloaded('update_lineups')
 def update_lineups():
     """
     Update player lineups for recent gameweeks.
@@ -160,6 +246,7 @@ def update_lineups():
 
 
 @shared_task(name='etl.tasks.collect_heatmaps')
+@offloaded('collect_heatmaps')
 def collect_heatmaps():
     """
     Collect player heatmaps for recent matches.
@@ -179,6 +266,7 @@ def collect_heatmaps():
 
 
 @shared_task(name='etl.tasks.update_season_stats')
+@offloaded('update_season_stats')
 def update_season_stats():
     """
     Update player season statistics.
@@ -197,6 +285,7 @@ def update_season_stats():
 
 
 @shared_task(name='etl.tasks.update_radar_attributes')
+@offloaded('update_radar_attributes')
 def update_radar_attributes():
     """
     Update player radar chart attributes.
@@ -315,6 +404,7 @@ def run_manual_update(script_name: str):
 
 
 @shared_task(name='etl.tasks.sync_fixture_odds')
+@offloaded('sync_fixture_odds')
 def sync_fixture_odds(days_ahead=21):
     """
     Fetch and update betting odds for upcoming fixtures.
@@ -342,6 +432,7 @@ def sync_fixture_odds(days_ahead=21):
 
 
 @shared_task(name='etl.tasks.sync_football_data_odds')
+@offloaded('sync_football_data_odds')
 def sync_football_data_odds():
     """One daily CSV request for historical odds calibration/backtesting."""
     logger.info("Starting daily Football-Data historical odds sync...")
@@ -357,6 +448,7 @@ def sync_football_data_odds():
 
 
 @shared_task(name='etl.tasks.run_daily_pipeline')
+@offloaded('run_daily_pipeline')
 def run_daily_pipeline():
     """
     Coordinator task for the Daily FPL ETL Pipeline.
@@ -373,10 +465,6 @@ def run_daily_pipeline():
     9. run_forecast (points forecast v2: train, forecast, shadow captain picks)
     10. sync_match_goals (this season's new Premier League goals, for Chart Lab's clutch goals)
     """
-    from django.utils import timezone
-
-    if not claim_attempt(f"daily-pipeline:{timezone.now():%Y-%m-%d}", limit=2):
-        return {"status": "skipped", "reason": "already attempted twice today"}
     logger.info("🚀 Starting Daily ETL Pipeline...")
     results = {}
 
@@ -396,7 +484,7 @@ def run_daily_pipeline():
     # Step 2: Update SofaSport fixture mappings
     try:
         logger.info("Step 2: Updating fixture mappings...")
-        results['update_fixture_mappings'] = update_fixture_mappings()
+        results['update_fixture_mappings'] = JOBS['update_fixture_mappings']()
     except Exception as e:
         logger.error(f"❌ Step 2 Failed: {str(e)}")
         results['update_fixture_mappings'] = f"Error: {str(e)}"
@@ -404,7 +492,7 @@ def run_daily_pipeline():
     # Step 3: Update lineups and player stats
     try:
         logger.info("Step 3: Updating lineups...")
-        results['update_lineups'] = update_lineups()
+        results['update_lineups'] = JOBS['update_lineups']()
     except Exception as e:
         logger.error(f"❌ Step 3 Failed: {str(e)}")
         results['update_lineups'] = f"Error: {str(e)}"
@@ -416,7 +504,7 @@ def run_daily_pipeline():
     try:
         logger.info("Step 4: Collecting Heatmaps...")
         # Since collect_heatmaps uses subprocess to run a script, we can just call it.
-        start_heatmaps = collect_heatmaps() # Valid in Celery 5+ if same worker
+        start_heatmaps = JOBS['collect_heatmaps']()
         results['collect_heatmaps'] = start_heatmaps
     except Exception as e:
          logger.error(f"❌ Step 4 Failed: {str(e)}")
@@ -441,7 +529,7 @@ def run_daily_pipeline():
     # Step 7: Collect the daily odds snapshot before building projections.
     try:
         logger.info("Step 7: Collecting daily fixture odds...")
-        results['sync_fixture_odds'] = sync_fixture_odds(days_ahead=8)
+        results['sync_fixture_odds'] = JOBS['sync_fixture_odds'](days_ahead=8)
     except Exception as e:
         logger.error(f"❌ Step 7 Failed: {str(e)}")
         results['sync_fixture_odds'] = f"Error: {str(e)}"
@@ -457,8 +545,7 @@ def run_daily_pipeline():
     # Step 9: Points forecast v2 (also scores last week's shadow picks)
     try:
         logger.info("Step 9: Running the points forecast...")
-        results['run_forecast'] = (run_manage('run_forecast') if forecast_in_worker()
-                                   else {"status": "skipped", "reason": "FORECAST_IN_WORKER is off"})
+        results['run_forecast'] = run_forecast_task()
     except Exception as e:
         logger.error(f"❌ Step 9 Failed: {str(e)}")
         results['run_forecast'] = f"Error: {str(e)}"
@@ -476,15 +563,12 @@ def run_daily_pipeline():
 
 
 @shared_task(name='etl.tasks.retrain_prediction_model')
+@offloaded('retrain_prediction_model')
 def retrain_prediction_model():
     """
     Retrain ML prediction models.
     Runs: Every Tuesday at 4:00 AM (after lineups update)
     """
-    from django.utils import timezone
-
-    if not claim_attempt(f"retrain-prediction-model:{timezone.now():%Y-%m-%d}", limit=1):
-        return {"status": "skipped", "reason": "already attempted today"}
     logger.info("Starting ML model retraining...")
     return run_manage('train_prediction_model', timeout=3600)
 
@@ -502,9 +586,13 @@ def populate_predictions():
 @shared_task(name='etl.tasks.run_forecast')
 def run_forecast_task():
     """Train the points forecast, write forecasts, log and score shadow captain picks."""
-    if not forecast_in_worker():
-        return {"status": "skipped", "reason": "FORECAST_IN_WORKER is off"}
-    return run_manage('run_forecast')
+    if render_jobs_available():
+        return start_render_job("run_forecast", FORECAST_COMMAND)
+    if on_render_without_jobs():
+        return NO_JOBS
+    if not forecast_allowed():
+        return {"status": "skipped", "reason": "forecast training needs FORECAST_IN_WORKER or a Render job"}
+    return run_manage('run_forecast', timeout=3600)
 
 
 @shared_task(name='etl.tasks.refresh_before_deadline')
@@ -520,8 +608,7 @@ def refresh_before_deadline():
 
     from django.utils import timezone
 
-    from etl.services.etl_runner import _sync_athletes
-    from etl.services.forecast_sync import next_deadline, sync_forecast_tables
+    from etl.services.forecast_sync import next_deadline
     from etl.services.fpl_client import FPLClient
 
     with FPLClient() as client:
@@ -531,9 +618,14 @@ def refresh_before_deadline():
         return {"status": "skipped", "reason": "no deadline within 36 hours"}
     if not claim_attempt(f"refresh-before-deadline:{timezone.now():%Y-%m-%d-%H}", limit=1, ttl=3 * 3600):
         return {"status": "skipped", "reason": "already attempted this slot"}
-    _sync_athletes(bootstrap.get("elements", []))
-    sync_forecast_tables(bootstrap.get("events", []), bootstrap.get("elements", []))
-    return run_forecast_task()
+    # Team news, the deadline snapshot, then the forecast and shadow picks.
+    if offload_enabled():
+        return start_render_job("deadline_refresh", f"{FORECAST_COMMAND} --sync")
+    if on_render_without_jobs():
+        return NO_JOBS
+    if not forecast_allowed():
+        return {"status": "skipped", "reason": "forecast training needs FORECAST_IN_WORKER or a Render job"}
+    return run_manage('run_forecast', '--sync', timeout=3600)
 
 
 @shared_task(name='etl.tasks.backtest_forecast')
