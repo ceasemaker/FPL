@@ -2,20 +2,51 @@
 from __future__ import annotations
 
 import pandas as pd
+from django.db import connection
 
 from ..models import FixtureHistory, GameweekHistory
 
 PLAYER_COLUMNS = [
     "season", "gameweek", "code", "element", "web_name", "team_code", "position", "start_price",
-    "minutes", "starts", "goals_scored", "assists", "clean_sheets", "goals_conceded", "saves",
+    "minutes", "starts", "saves",
     "bonus", "bps", "expected_goals", "expected_assists", "expected_goals_conceded", "total_points",
 ]
 FIXTURE_COLUMNS = ["season", "gameweek", "team_h_code", "team_a_code", "team_h_score", "team_a_score", "kickoff_time"]
 
 
+def _read_table(queryset, columns: list[str], chunk: int = 20_000) -> pd.DataFrame:
+    """Read rows in chunks straight into typed columns.
+
+    Building a DataFrame from ``values_list`` holds every row as a Python
+    tuple first: ~240 MB of objects for a 26 MB table, which doesn't fit next to
+    the web service on a 512 MB instance. Reading a chunk at a time keeps that
+    to a few MB.
+    """
+    sql, params = queryset.values_list(*columns).query.sql_with_params()
+    parts = []
+    with connection.cursor() as cursor:
+        cursor.execute(sql, params)
+        while True:
+            rows = cursor.fetchmany(chunk)
+            if not rows:
+                break
+            parts.append(pd.DataFrame.from_records(rows, columns=columns))
+            del rows
+    if not parts:
+        return pd.DataFrame(columns=columns)
+    return pd.concat(parts, ignore_index=True)
+
+
 def load_players() -> pd.DataFrame:
-    frame = pd.DataFrame.from_records(GameweekHistory.objects.values_list(*PLAYER_COLUMNS), columns=PLAYER_COLUMNS)
+    frame = _read_table(GameweekHistory.objects.all(), PLAYER_COLUMNS)
     frame["start_price"] = pd.to_numeric(frame["start_price"], errors="coerce").astype(float)
+    for column in ("expected_goals", "expected_assists", "expected_goals_conceded"):
+        frame[column] = frame[column].astype(float)
+    # Smaller types for the identifiers and counts (exact, so features don't
+    # change); names repeat ~38 times per player, so store them once.
+    for column in ("season", "gameweek", "code", "element", "team_code", "position"):
+        frame[column] = frame[column].astype("int32")
+    frame["web_name"] = frame["web_name"].astype("category")
     return frame
 
 

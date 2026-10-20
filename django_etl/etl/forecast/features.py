@@ -42,6 +42,19 @@ def _time(season, gameweek):
     return season * 100 + gameweek
 
 
+# Grouped rolling windows, computed by pandas in one pass rather than one
+# Python call per player (which needed several hundred MB on the full
+# history). Rows must already be sorted within each group.
+def _rolling(values: pd.Series, groups: pd.Series, window: int, how: str) -> pd.Series:
+    rolled = getattr(values.groupby(groups.values, sort=False).rolling(window, min_periods=1), how)()
+    return rolled.reset_index(level=0, drop=True).reindex(values.index)
+
+
+def _rolling_prior(values: pd.Series, groups: pd.Series, window: int) -> pd.Series:
+    """Sum of the previous ``window`` rows in the group, excluding the current one."""
+    return _rolling(values, groups, window, "sum").groupby(groups.values, sort=False).shift(1)
+
+
 def team_weeks(players: pd.DataFrame, fixtures: pd.DataFrame) -> pd.DataFrame:
     """One row per club per gameweek: fixtures, home games, and rolling xG for/against."""
     long = pd.concat([
@@ -70,9 +83,9 @@ def team_weeks(players: pd.DataFrame, fixtures: pd.DataFrame) -> pd.DataFrame:
     weeks["_xgf"] = weeks["xg_for"].fillna(0) * contrib
     weeks["_xga"] = weeks["xg_against"].fillna(0) * contrib
     grouped = weeks.groupby("team_code")
+    fixtures_seen = _rolling_prior(weeks["_fix"], weeks["team_code"], TEAM_WINDOW)
     for name, column in (("roll_xgf", "_xgf"), ("roll_xga", "_xga")):
-        total = grouped[column].transform(lambda s: s.rolling(TEAM_WINDOW, min_periods=1).sum().shift(1))
-        fixtures_seen = grouped["_fix"].transform(lambda s: s.rolling(TEAM_WINDOW, min_periods=1).sum().shift(1))
+        total = _rolling_prior(weeks[column], weeks["team_code"], TEAM_WINDOW)
         weeks[name] = total / fixtures_seen.replace(0, np.nan)
     # Unplayed future weeks carry the latest known strength forward.
     weeks[["roll_xgf", "roll_xga"]] = grouped[["roll_xgf", "roll_xga"]].ffill()
@@ -97,10 +110,10 @@ def _player_state(panel: pd.DataFrame) -> pd.DataFrame:
     state["mins_l1"] = per["minutes"]
 
     def roll(series, window):
-        return series.groupby(q["code"]).transform(lambda s: s.rolling(window, min_periods=1).mean())
+        return _rolling(series, q["code"], window, "mean")
 
     def roll_sum(series, window):
-        return series.groupby(q["code"]).transform(lambda s: s.rolling(window, min_periods=1).sum())
+        return _rolling(series, q["code"], window, "sum")
 
     state["mins_m3"] = roll(per["minutes"], 3)
     state["mins_m6"] = roll(per["minutes"], 6)
@@ -120,7 +133,7 @@ def _player_state(panel: pd.DataFrame) -> pd.DataFrame:
     state["pts90_s"] = cum["total_points"] / minutes_s * 90
     state["min_share_s"] = cum["minutes"] / (90 * cum["n_fix"])
     state["fix_s"] = cum["n_fix"]
-    state["appearances"] = g["minutes"].transform(lambda s: (s > 0).cumsum())
+    state["appearances"] = (q["minutes"] > 0).astype(int).groupby(q["code"].values, sort=False).cumsum()
     state["state_t"] = _time(state["season"], state["gameweek"])
     state["state_season"] = state["season"]
     state["state_gw"] = state["gameweek"]
