@@ -74,3 +74,31 @@ class RenderJobTests(TestCase):
             self.assertEqual(tasks.run_forecast_task()["status"], "skipped")
         manage.assert_not_called()
         script.assert_not_called()
+
+
+@override_settings(CACHES=LOCMEM)
+class SofaSportSwitchTests(TestCase):
+    def setUp(self):
+        cache.clear()
+
+    def test_sofasport_tasks_skip_without_starting_a_job_while_switched_off(self):
+        env = {"RENDER_API_KEY": "test", "RENDER_SERVICE_ID": "srv-test", "SOFASPORT_ENABLED": "false"}
+        with mock.patch.dict("os.environ", env), \
+                mock.patch.object(tasks, "start_render_job") as start, \
+                mock.patch.object(tasks, "run_etl_script") as script:
+            for task in (tasks.update_fixture_mappings, tasks.update_lineups, tasks.collect_heatmaps,
+                         tasks.update_season_stats, tasks.update_radar_attributes, tasks.sync_fixture_odds):
+                self.assertEqual(task()["status"], "skipped")
+        start.assert_not_called()
+        script.assert_not_called()
+
+    def test_pipeline_skips_sofasport_steps_while_switched_off(self):
+        env = {tasks.IN_JOB_ENV: "1", "SOFASPORT_ENABLED": "false"}
+        with mock.patch.dict("os.environ", env), \
+                mock.patch.object(tasks, "run_manage", return_value={"status": "success", "output": ""}), \
+                mock.patch.object(tasks, "run_etl_script") as script, \
+                mock.patch.object(tasks, "start_render_job", return_value={"status": "started"}):
+            results = tasks.JOBS["run_daily_pipeline"]()
+        script.assert_not_called()
+        self.assertEqual(results["update_lineups"]["status"], "skipped")
+        self.assertEqual(results["sync_fixture_odds"]["status"], "skipped")

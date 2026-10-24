@@ -173,17 +173,38 @@ def start_render_job(name, command=None):
     return {"status": "started", "job": job.get("id")}
 
 
-def offloaded(name, limit=2):
+def sofasport_enabled():
+    """SofaSport (RapidAPI) tasks are off until there is a usable API key.
+
+    Set SOFASPORT_ENABLED=true on the service to switch fixture mappings,
+    lineups, heatmaps, season stats, radar attributes and odds back on (odds
+    need the SofaSport fixture mappings).
+    """
+    return os.getenv("SOFASPORT_ENABLED", "false").lower() in ("1", "true", "yes")
+
+
+SOFASPORT_OFF = {"status": "skipped", "reason": "SofaSport is switched off (SOFASPORT_ENABLED)"}
+
+
+def offloaded(name, limit=2, sofasport=False):
     """Run the task as a Render job, at most ``limit`` times a day.
 
     Inside the job the work function runs directly. The attempt cap stops the
     Oct 2026 failure mode: beat re-sending a task after every restart and Redis
-    re-delivering it an hour later.
+    re-delivering it an hour later. ``sofasport`` tasks skip (without starting
+    a job) while SofaSport is switched off.
     """
-    def decorate(work):
+    def decorate(body):
+        def work(*args, **kwargs):
+            if sofasport and not sofasport_enabled():
+                return SOFASPORT_OFF
+            return body(*args, **kwargs)
+
         JOBS[name] = work
 
         def task(*args, **kwargs):
+            if sofasport and not sofasport_enabled():
+                return SOFASPORT_OFF
             if in_job():
                 return work(*args, **kwargs)
             from django.utils import timezone
@@ -197,7 +218,7 @@ def offloaded(name, limit=2):
                 return NO_JOBS
             return work(*args, **kwargs)
 
-        task.__name__, task.__doc__ = work.__name__, work.__doc__
+        task.__name__, task.__doc__ = body.__name__, body.__doc__
         return task
     return decorate
 
@@ -208,7 +229,7 @@ def forecast_allowed():
 
 
 @shared_task(name='etl.tasks.update_fixture_mappings')
-@offloaded('update_fixture_mappings')
+@offloaded('update_fixture_mappings', sofasport=True)
 def update_fixture_mappings():
     """
     Update fixture mappings between FPL and SofaSport.
@@ -227,7 +248,7 @@ def update_fixture_mappings():
 
 
 @shared_task(name='etl.tasks.update_lineups')
-@offloaded('update_lineups')
+@offloaded('update_lineups', sofasport=True)
 def update_lineups():
     """
     Update player lineups for recent gameweeks.
@@ -246,7 +267,7 @@ def update_lineups():
 
 
 @shared_task(name='etl.tasks.collect_heatmaps')
-@offloaded('collect_heatmaps')
+@offloaded('collect_heatmaps', sofasport=True)
 def collect_heatmaps():
     """
     Collect player heatmaps for recent matches.
@@ -266,7 +287,7 @@ def collect_heatmaps():
 
 
 @shared_task(name='etl.tasks.update_season_stats')
-@offloaded('update_season_stats')
+@offloaded('update_season_stats', sofasport=True)
 def update_season_stats():
     """
     Update player season statistics.
@@ -285,7 +306,7 @@ def update_season_stats():
 
 
 @shared_task(name='etl.tasks.update_radar_attributes')
-@offloaded('update_radar_attributes')
+@offloaded('update_radar_attributes', sofasport=True)
 def update_radar_attributes():
     """
     Update player radar chart attributes.
@@ -404,7 +425,7 @@ def run_manual_update(script_name: str):
 
 
 @shared_task(name='etl.tasks.sync_fixture_odds')
-@offloaded('sync_fixture_odds')
+@offloaded('sync_fixture_odds', sofasport=True)
 def sync_fixture_odds(days_ahead=21):
     """
     Fetch and update betting odds for upcoming fixtures.
