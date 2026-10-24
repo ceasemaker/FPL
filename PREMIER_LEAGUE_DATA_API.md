@@ -1,7 +1,9 @@
 # Premier League Data API (pulselive)
 
 Research notes on the stats backend behind premierleague.com, verified by direct
-requests on 14 October 2026. Nothing here is wired into AeroFPL yet.
+requests on 14 October 2026. Since then AeroFPL loads season player and club sheets
+(`sync_season_stats`, `sync_team_season_stats`, `sync_season_teams`) and every match's
+goals (`sync_match_goals`); see the sections below.
 
 > **Terms.** Neither API is public or documented. Both serve premierleague.com,
 > whose terms reserve intellectual-property rights in its data. Treat them as
@@ -85,7 +87,11 @@ detailed stats start was not pinned down.
 
 ## Coordinates and timelines
 
-**No x/y coordinates are available.** Every endpoint the match centre and player
+**No x/y coordinates are available** (re-checked 24 October 2026 on a 2026/27 match: momentum,
+commentary, stats, lineups, timeline, events; guessed `shotmap`, `shots`, `heatmap`,
+`average-positions`, `passes` and `xg` endpoints all return 400). The raw feed's
+`liveData.predictions` is Opta's per-minute **momentum** (each side's chance of scoring in that
+minute), not a win probability. Every endpoint the match centre and player
 pages call was checked, plus the classic API. None carries pitch coordinates for
 shots, passes, touches or any other event. The underlying Opta feed has full
 coverage (`coverageLevel: 13`), but it is not served. The closest substitutes:
