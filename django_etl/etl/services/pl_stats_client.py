@@ -165,6 +165,16 @@ class PLStatsClient(_PulseliveClient):
         payload = self._get(f"v1/matches/{match_id}/momentum")
         return payload if isinstance(payload, dict) else {}
 
+    def get_match_stats(self, match_id: str) -> list[dict]:
+        """~194 team stats per side: ``[{"side": "Home", "stats": {...}}, {...}]`` (camelCase, incl. xG)."""
+        payload = self._get(f"v3/matches/{match_id}/stats")
+        return payload if isinstance(payload, list) else []
+
+    def get_match_lineups(self, match_id: str) -> dict:
+        """``{"home_team": {...}, "away_team": {...}}``: players (Opta ids, captain), formation rows and subs."""
+        payload = self._get(f"v3/matches/{match_id}/lineups")
+        return payload if isinstance(payload, dict) else {}
+
 class ClassicStatsClient(_PulseliveClient):
     BASE_URL = "https://footballapi.pulselive.com/football/"
 
@@ -216,6 +226,35 @@ class ClassicStatsClient(_PulseliveClient):
         payload = self._get(
             f"stats/player/{player_id}", comps=competition, compSeasons=season_id
         ) or {}
+        return {
+            row["name"]: row["value"]
+            for row in payload.get("stats", [])
+            if isinstance(row, dict) and "name" in row
+        }
+
+    def iter_fixtures(self, season_id: int, statuses: str = "C") -> Iterator[dict]:
+        """A season's Premier League fixtures (pulselive ids), finished ones by default."""
+        page = 0
+        while True:
+            payload = self._get("fixtures", comps=1, compSeasons=season_id, statuses=statuses,
+                                page=page, pageSize=100, sort="asc") or {}
+            yield from payload.get("content", [])
+            page += 1
+            if page >= (payload.get("pageInfo") or {}).get("numPages", 0):
+                return
+
+    def get_fixture(self, fixture_id: int) -> dict:
+        """One fixture with ``altIds.opta`` (e.g. ``g2645265``) and ``teamLists``.
+
+        Each team list has ``lineup`` and ``substitutes``; every player carries
+        his pulselive ``id`` and ``altIds.opta`` (e.g. ``p248857``).
+        """
+        payload = self._get(f"fixtures/{fixture_id}", altIds="true")
+        return payload if isinstance(payload, dict) else {}
+
+    def get_player_match_stats(self, player_id: int, fixture_id: int) -> dict:
+        """A player's sheet for one match as {stat name: value} (~80 stats, incl. zone counts)."""
+        payload = self._get(f"stats/player/{player_id}", fixtures=fixture_id) or {}
         return {
             row["name"]: row["value"]
             for row in payload.get("stats", [])

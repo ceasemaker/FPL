@@ -1614,6 +1614,14 @@ class PlMatch(models.Model):
     away_score = models.SmallIntegerField(null=True)
     # True once the match is over and its goals have been stored.
     goals_synced = models.BooleanField(default=False)
+    # Team stats, lineups, cards/subs/VAR and momentum (etl/services/match_details.py).
+    details_synced = models.BooleanField(default=False)
+    # Per-player match sheets from the classic API (pulselive fixture id below).
+    players_synced = models.BooleanField(default=False)
+    classic_id = models.IntegerField(null=True, blank=True)
+    # Opta's per-minute momentum: [[minute, home, away], ...], each side's
+    # chance of scoring in that minute.
+    momentum = models.JSONField(default=list, blank=True)
 
     class Meta:
         db_table = "pl_matches"
@@ -1642,3 +1650,81 @@ class MatchGoal(models.Model):
         db_table = "pl_match_goals"
         constraints = [models.UniqueConstraint(fields=["match", "order"], name="uniq_match_goal_order")]
         ordering = ["match_id", "order"]
+
+
+class MatchTeamStat(models.Model):
+    """One side's stats in one match (SDP ``v3/matches/{id}/stats``: ~194 camelCase keys incl. xG)."""
+
+    match = models.ForeignKey(PlMatch, on_delete=models.CASCADE, related_name="team_stats")
+    team_id = models.CharField(max_length=20)
+    is_home = models.BooleanField()
+    formation = models.CharField(max_length=20, blank=True, help_text="e.g. 4-2-3-1")
+    stats = models.JSONField(default=dict)
+
+    class Meta:
+        db_table = "pl_match_team_stats"
+        constraints = [models.UniqueConstraint(fields=["match", "team_id"], name="uniq_match_team_stat")]
+
+
+class MatchLineupPlayer(models.Model):
+    """A player in a matchday squad, with where he lined up and when he came on or off."""
+
+    match = models.ForeignKey(PlMatch, on_delete=models.CASCADE, related_name="lineups")
+    team_id = models.CharField(max_length=20)
+    player_id = models.CharField(max_length=20, help_text="Opta id (FPL Athlete.code)")
+    name = models.CharField(max_length=120)
+    shirt = models.CharField(max_length=5, blank=True)
+    position = models.CharField(max_length=20, blank=True, help_text="Goalkeeper, Defender, Midfielder, Forward, Substitute")
+    position_side = models.CharField(max_length=20, blank=True, help_text="e.g. Left, Centre/Right")
+    formation_place = models.PositiveSmallIntegerField(null=True, blank=True, help_text="Opta slot 1-11; empty for subs")
+    formation_row = models.PositiveSmallIntegerField(null=True, blank=True, help_text="0 = goalkeeper line, then outwards")
+    formation_col = models.PositiveSmallIntegerField(null=True, blank=True)
+    starter = models.BooleanField(default=False)
+    captain = models.BooleanField(default=False)
+    minute_on = models.PositiveSmallIntegerField(null=True, blank=True)
+    minute_off = models.PositiveSmallIntegerField(null=True, blank=True)
+
+    class Meta:
+        db_table = "pl_match_lineups"
+        constraints = [models.UniqueConstraint(fields=["match", "player_id"], name="uniq_match_lineup_player")]
+        indexes = [models.Index(fields=["player_id"])]
+
+
+class MatchEvent(models.Model):
+    """Cards (with reasons), substitutions and VAR decisions; goals live in ``MatchGoal``."""
+
+    KINDS = [("yellow", "Yellow card"), ("second_yellow", "Second yellow"), ("red", "Red card"),
+             ("sub", "Substitution"), ("var", "VAR decision")]
+
+    match = models.ForeignKey(PlMatch, on_delete=models.CASCADE, related_name="events")
+    team_id = models.CharField(max_length=20)
+    kind = models.CharField(max_length=20, choices=KINDS)
+    minute = models.PositiveSmallIntegerField()
+    period = models.PositiveSmallIntegerField(default=0)
+    player_id = models.CharField(max_length=20, blank=True, help_text="Card: the player; sub: player on")
+    player_name = models.CharField(max_length=120, blank=True)
+    other_player_id = models.CharField(max_length=20, blank=True, help_text="Sub: player off")
+    other_player_name = models.CharField(max_length=120, blank=True)
+    detail = models.CharField(max_length=120, blank=True, help_text="Card reason, sub reason or VAR outcome")
+    timestamp = models.CharField(max_length=40, blank=True)
+
+    class Meta:
+        db_table = "pl_match_events"
+        ordering = ["match_id", "minute", "timestamp"]
+
+
+class PlayerMatchStat(models.Model):
+    """One player's Opta sheet for one match (classic API, snake_case keys, zeros left out)."""
+
+    match = models.ForeignKey(PlMatch, on_delete=models.CASCADE, related_name="player_stats")
+    player_id = models.CharField(max_length=20, help_text="Opta id (FPL Athlete.code)")
+    source_player_id = models.IntegerField(help_text="Pulselive (classic API) player id")
+    team_id = models.CharField(max_length=20)
+    minutes = models.PositiveSmallIntegerField(default=0)
+    started = models.BooleanField(default=False)
+    stats = models.JSONField(default=dict)
+
+    class Meta:
+        db_table = "pl_player_match_stats"
+        constraints = [models.UniqueConstraint(fields=["match", "player_id"], name="uniq_player_match_stat")]
+        indexes = [models.Index(fields=["player_id"]), models.Index(fields=["team_id"])]

@@ -485,6 +485,7 @@ def run_daily_pipeline():
     8. populate_predictions (market-calibrated when odds exist)
     9. run_forecast (points forecast v2: train, forecast, shadow captain picks)
     10. sync_match_goals (this season's new Premier League goals, for Chart Lab's clutch goals)
+    11. sync_match_details (team stats, lineups, events, momentum, player match sheets)
     """
     logger.info("🚀 Starting Daily ETL Pipeline...")
     results = {}
@@ -578,6 +579,15 @@ def run_daily_pipeline():
     except Exception as e:
         logger.error(f"❌ Step 10 Failed: {str(e)}")
         results['sync_match_goals'] = f"Error: {str(e)}"
+
+    # Step 11: Per-match team stats, lineups, events, momentum and player sheets
+    # for matches finished since the last run (~32 requests per match).
+    try:
+        logger.info("Step 11: Syncing match details...")
+        results['sync_match_details'] = run_manage('sync_match_details', timeout=3600)
+    except Exception as e:
+        logger.error(f"❌ Step 11 Failed: {str(e)}")
+        results['sync_match_details'] = f"Error: {str(e)}"
 
     logger.info("🏁 Daily ETL Pipeline Completed")
     return results
