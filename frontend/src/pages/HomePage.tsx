@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useLandingData } from "../hooks/useLandingData";
 import { useBestValuePlayers, useTop100Template } from "../hooks/useTop100Data";
 import { PlayerModal } from "../components/PlayerModal";
-import type { PlayerMover, ValuePlayer } from "../types";
+import type { CaptainRecord, PlayerMover, ValuePlayer } from "../types";
 import "./HomePage.css";
 
 interface Fixture { event:number; opponent:string|null; location:"H"|"A"; difficulty:number|null }
@@ -90,7 +90,7 @@ export function HomePage(){
       {captain
         ? <article className="captain-hero">
             <div className="captain-copy">
-              <span className="eyebrow">★ MODEL CAPTAIN PICK · GW{captain.game_week}</span>
+              <span className="eyebrow">★ MODEL CAPTAIN PICK · GW{captain.game_week}{captain.experimental&&<b className="captain-badge">Experimental</b>}</span>
               <h2>Captain <em>{captain.web_name}</em></h2>
               <div className="captain-metrics">
                 <div><strong>{captain.predicted_points.toFixed(1)}</strong><span>projected points</span></div>
@@ -101,6 +101,10 @@ export function HomePage(){
             {captain.image_url&&<img className="captain-image" src={captain.image_url} alt={captain.web_name}/>}
             <div className="hero-slash"/>
           </article>
+        : null}
+      {captain&&data?.captain_record&&<CaptainRecordCard record={data.captain_record}/>}
+      {captain
+        ? null
         : <article className="captain-hero">
             <div className="captain-copy">
               <span className="eyebrow">▲ CAPTAIN FORECAST · GW{nextGw??"—"}</span>
@@ -215,4 +219,31 @@ function MoverRow({player,onClick}:{player:PlayerMover;onClick:(id:number)=>void
     <div><strong>{player.first_name} {player.second_name}</strong><small>{player.team} · £{((player.now_cost??0)/10).toFixed(1)}m</small></div>
     <b className={rising?"positive":"negative"}>{rising?"▲":"▼"} £{Math.abs(player.value/10).toFixed(1)}m</b>
   </button>;
+}
+
+// The captain pick's track record, in words first: how it did in the backtest
+// against simple rules, and how its live picks have scored this season.
+function CaptainRecordCard({record}:{record:CaptainRecord}){
+  const b=record.backtest;
+  const live=record.live;
+  const signed=(v:number|null)=>v===null?"—":`${v>=0?"+":"−"}${Math.abs(v).toFixed(1)}`;
+  const model=live?.rules.find(r=>r.rule==="model");
+  const fpl=live?.rules.find(r=>r.rule==="ep_next");
+  return <article className="command-card captain-record">
+    <p className="captain-record-lead">
+      {b
+        ? <>Tested on {b.seasons[0]}–{b.seasons[b.seasons.length-1]} ({b.weeks} gameweeks), this model's captain scored <strong>{b.model?.toFixed(1)}</strong> points a week. {b.passed
+            ? "That clearly beats the simple rules below."
+            : "It isn't yet clearly better than every simple rule, so treat it as a second opinion."}</>
+        : <>This pick comes from our points forecast. Its captain backtest hasn't run yet, so treat it as a second opinion.</>}
+      {model&&<> This season its picks have averaged <strong>{model.points.toFixed(1)}</strong> over {model.weeks} gameweek{model.weeks===1?"":"s"}{fpl?<>, against {fpl.points.toFixed(1)} for FPL's own pick</>:null}.</>}
+    </p>
+    {b&&b.versus.length>0&&<ul className="captain-record-list">
+      {b.versus.map(v=><li key={v.rule}>
+        <span>vs {v.label}{v.required?"":" (for reference)"}</span>
+        <b className={v.difference!==null&&v.low!==null&&v.low>0?"positive":v.difference!==null&&v.high!==null&&v.high<0?"negative":""}>{signed(v.difference)}</b>
+      </li>)}
+    </ul>}
+    <Link className="captain-record-link" to="/model-lab">Full record in Model Lab →</Link>
+  </article>;
 }

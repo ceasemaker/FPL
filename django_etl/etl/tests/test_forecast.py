@@ -189,24 +189,34 @@ class ShadowPickTests(TestCase):
         scored = {p.strategy: p.actual_points for p in ShadowPick.objects.all()}
         self.assertEqual(scored, {"model": 13, "ep_next": 0, "premium_form": 0, "most_captained": 0})
 
-    def test_lab_hides_unvalidated_pick_until_the_deadline(self):
+    def test_lab_shows_the_upcoming_pick_with_the_live_record(self):
         log_picks(2026, 7, self.forecast(), timezone.now())
         payload = self.client.get("/api/forecast-lab/").json()
-        self.assertEqual(payload["record"], [])
         self.assertTrue(payload["nextPickLogged"])
-        GameweekSummary.objects.filter(gameweek=7).update(deadline_time=timezone.now() - timedelta(hours=1))
-        payload = self.client.get("/api/forecast-lab/").json()
         self.assertEqual(payload["record"][0]["picks"]["model"]["player"], "P2")
+        self.assertFalse(payload["record"][0]["settled"])
 
-    def test_landing_shows_forecast_captain_only_when_accepted(self):
+    def test_landing_shows_forecast_captain_marked_experimental_until_it_passes(self):
         ForecastPrediction.objects.create(season=2026, gameweek=7, element=2, code=502, predicted_points=7.5,
                                           horizon=1, model_version="v2.0")
-        self.assertIsNone(self.client.get("/api/landing/").json()["captain_recommendation"])
-        ModelEvaluation.objects.create(name="points_forecast", version="v2.0", accepted=True,
-                                       summary={"accepted": {"captain": True}})
-        captain = self.client.get("/api/landing/").json()["captain_recommendation"]
-        self.assertEqual(captain["web_name"], "P2")
-        self.assertEqual(captain["source"], "points_forecast")
+        payload = self.client.get("/api/landing/").json()
+        self.assertEqual(payload["captain_recommendation"]["web_name"], "P2")
+        self.assertTrue(payload["captain_recommendation"]["experimental"])
+        self.assertIsNone(payload["captain_record"]["backtest"])
+
+        summary = {"chosen": "v3", "test_seasons": [2023, 2024, 2025], "weeks": 114, "pass_baselines": ["premium"],
+                   "captain_points_per_week": {"v3": 6.9, "premium": 5.4, "elite": 8.1},
+                   "versus": {"premium": {"mean": 1.5, "low": 0.4, "high": 2.6}, "elite": {"mean": -1.2, "low": -2.0, "high": -0.4}}}
+        ModelEvaluation.objects.create(name="captain", version="v3", accepted=False, summary=summary)
+        payload = self.client.get("/api/landing/").json()
+        backtest = payload["captain_record"]["backtest"]
+        self.assertTrue(payload["captain_recommendation"]["experimental"])
+        self.assertEqual((backtest["model"], backtest["seasons"][0]), (6.9, "2023/24"))
+        self.assertEqual([(r["rule"], r["difference"], r["required"]) for r in backtest["versus"]],
+                         [("premium", 1.5, True), ("elite", -1.2, False)])
+
+        ModelEvaluation.objects.create(name="captain", version="v3", accepted=True, summary=summary)
+        self.assertFalse(self.client.get("/api/landing/").json()["captain_recommendation"]["experimental"])
 
 
 class DeadlineTests(TestCase):

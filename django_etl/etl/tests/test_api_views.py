@@ -158,7 +158,9 @@ class ApiViewTests(TestCase):
         self.assertIsNone(response.json()["captain_recommendation"])
         self.assertEqual(response.json()["captain_status"], "no_projection")
 
-    def test_landing_withholds_captain_until_model_is_validated(self) -> None:
+    def test_landing_ignores_the_old_ml_projection_for_captain(self) -> None:
+        # The retired per-position model's projections never name the captain;
+        # only the points forecast does (with its record, see test_forecast).
         Athlete.objects.filter(id__in=[athlete.id for athlete in self.athletes]).update(status="a")
         AthletePrediction.objects.filter(athlete=self.athletes[2], game_week=2).update(
             predicted_points=Decimal("9.25")
@@ -168,7 +170,7 @@ class ApiViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIsNone(response.json()["captain_recommendation"])
-        self.assertEqual(response.json()["captain_status"], "unvalidated")
+        self.assertEqual(response.json()["captain_status"], "no_projection")
 
     def test_players_list_estimates_expected_clean_sheets(self) -> None:
         keeper = self.athletes[12]  # DEF5, Team 5

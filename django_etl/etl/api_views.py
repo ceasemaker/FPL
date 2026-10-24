@@ -547,6 +547,58 @@ def _forecast_captain(next_gw: int) -> dict | None:
     return None
 
 
+def _captain_record() -> dict:
+    """What the captain card shows next to the pick: its backtest and its live record.
+
+    The pick is shown whether or not the model passed (the user's call, Oct
+    2026); ``experimental`` is true until it beats the simple rules.
+    """
+    from etl.forecast.service import captain_evaluation
+    from etl.models import GameweekSummary, ShadowPick
+
+    record = {"experimental": True, "backtest": None, "live": None}
+    evaluation = captain_evaluation()
+    if evaluation:
+        summary = evaluation.summary
+        chosen = summary.get("chosen", "v2")
+        per_week = summary.get("captain_points_per_week", {})
+        versus = summary.get("versus", {})
+        record["experimental"] = not evaluation.accepted
+        record["backtest"] = {
+            "seasons": [f"{s}/{(s + 1) % 100:02d}" for s in summary.get("test_seasons", [])],
+            "weeks": summary.get("weeks"),
+            "model": per_week.get(chosen),
+            "version": chosen,
+            "passed": evaluation.accepted,
+            "versus": [
+                {"rule": rule, "label": label, "points": per_week.get(rule),
+                 "difference": (versus.get(rule) or {}).get("mean"),
+                 "low": (versus.get(rule) or {}).get("low"), "high": (versus.get(rule) or {}).get("high"),
+                 "required": rule in summary.get("pass_baselines", [])}
+                for rule, label in (("premium", "Priciest attacker"), ("form_scaled", "Form × fixtures"),
+                                    ("regression", "Simple regression"), ("elite", "Top-100 managers"))
+                if per_week.get(rule) is not None
+            ],
+        }
+    season = GameweekSummary.objects.order_by("-season").values_list("season", flat=True).first()
+    if season:
+        totals: dict[str, list[int]] = {}
+        settled_weeks = set(ShadowPick.objects.filter(season=season, strategy="model", actual_points__isnull=False)
+                            .values_list("gameweek", flat=True))
+        for strategy, points in ShadowPick.objects.filter(season=season, gameweek__in=settled_weeks,
+                                                          actual_points__isnull=False).values_list("strategy", "actual_points"):
+            totals.setdefault(strategy, []).append(points)
+        if totals.get("model"):
+            labels = dict(ShadowPick.STRATEGIES)
+            record["live"] = {
+                "season": f"{season}/{(season + 1) % 100:02d}",
+                "weeks": len(totals["model"]),
+                "rules": [{"rule": k, "label": labels.get(k, k), "points": round(sum(v) / len(v), 2), "weeks": len(v)}
+                          for k, v in totals.items()],
+            }
+    return record
+
+
 @require_GET
 def landing_snapshot(request):
     current_gw = (
@@ -573,25 +625,25 @@ def landing_snapshot(request):
         )
         captain_status = "ok" if captain_prediction else "no_projection"
     captain_recommendation = None
+    captain_record = None
     if captain_prediction is None and not settings.CAPTAIN_PICK_ENABLED:
-        # The points forecast's pick is shown only once its walk-forward
-        # backtest has beaten every baseline (etl.forecast.backtest).
-        from etl.forecast.service import captain_accepted
-
-        if captain_accepted():
-            pick = _forecast_captain(next_gw)
-            captain_status = "ok" if pick else "no_projection"
-            if pick:
-                athlete = Athlete.objects.select_related("team").get(id=pick["element"])
-                captain_recommendation = {
-                    "athlete_id": athlete.id,
-                    "web_name": athlete.web_name,
-                    "team_short_name": athlete.team.short_name if athlete.team else None,
-                    "game_week": next_gw,
-                    "predicted_points": round(pick["predicted_points"], 2),
-                    "image_url": _player_image(athlete.photo),
-                    "source": "points_forecast",
-                }
+        # The points forecast's pick, shown with its backtest and live record;
+        # marked experimental until it beats the simple rules (_captain_record).
+        captain_record = _captain_record()
+        pick = _forecast_captain(next_gw)
+        captain_status = "ok" if pick else "no_projection"
+        if pick:
+            athlete = Athlete.objects.select_related("team").get(id=pick["element"])
+            captain_recommendation = {
+                "athlete_id": athlete.id,
+                "web_name": athlete.web_name,
+                "team_short_name": athlete.team.short_name if athlete.team else None,
+                "game_week": next_gw,
+                "predicted_points": round(pick["predicted_points"], 2),
+                "image_url": _player_image(athlete.photo),
+                "source": "points_forecast",
+                "experimental": captain_record["experimental"],
+            }
     if captain_prediction:
         captain_athlete = captain_prediction.athlete
         captain_recommendation = {
@@ -853,6 +905,7 @@ def landing_snapshot(request):
         "current_gameweek": current_gw,
         "captain_recommendation": captain_recommendation,
         "captain_status": captain_status,
+        "captain_record": captain_record,
         "pulse": {
             "value": round(pulse_index, 2),
             "total_points_current": total_points_current,

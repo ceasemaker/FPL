@@ -55,6 +55,19 @@ export interface NewsItem {
   image_url: string | null;
 }
 
+export interface CaptainRecord {
+  experimental: boolean;
+  backtest: {
+    seasons: string[];
+    weeks: number;
+    model: number | null;
+    version: string;
+    passed: boolean;
+    versus: { rule: string; label: string; points: number | null; difference: number | null; low: number | null; high: number | null; required: boolean }[];
+  } | null;
+  live: { season: string; weeks: number; rules: { rule: string; label: string; points: number; weeks: number }[] } | null;
+}
+
 export interface LandingData {
   current_gameweek: number;
   captain_recommendation: {
@@ -64,9 +77,11 @@ export interface LandingData {
     game_week: number;
     predicted_points: number;
     image_url: string | null;
-    source: "stored_model_projection";
+    source: "stored_model_projection" | "points_forecast";
+    experimental?: boolean;
   } | null;
   captain_status: "ok" | "no_projection" | "unvalidated";
+  captain_record?: CaptainRecord | null;
   pulse: PulseResponse;
   movers: Movers;
   transfers: Transfers;

@@ -87,3 +87,51 @@ def load_usage() -> pd.DataFrame:
             })
     return pd.DataFrame(rows, columns=["season", "code", "usage", "pea90", "created90", "create_per_pea",
                                        "box90", "team_possession", "usage_minutes"])
+
+
+# Opta per-match stats summed per FPL gameweek (etl/services/match_details.py).
+# Penalties taken: every ``att_pen_*`` outcome (scored, saved, missed, post).
+OPTA_STATS = {
+    "op_shots": ("total_scoring_att",),
+    "op_box_shots": ("attempts_ibox",),
+    "op_big_chances": ("big_chance_missed", "big_chance_scored"),
+    "op_box_touches": ("touches_in_opp_box",),
+    "op_chances": ("total_att_assist",),
+    "op_big_created": ("big_chance_created",),
+    "op_corners": ("corner_taken",),
+}
+OPTA_COLUMNS = [*OPTA_STATS, "op_pens"]
+
+
+def load_opta_gameweeks() -> pd.DataFrame:
+    """One row per (season, FPL gameweek, player code) with summed Opta match stats.
+
+    Matches are placed in FPL gameweeks through FPL's own fixture list (FPL
+    team codes are Opta team ids), so postponed and rescheduled matches land in
+    the gameweek FPL scored them in.
+    """
+    from ..models import FixtureHistory, PlayerMatchStat
+
+    gameweek = {
+        (season, str(home), str(away)): gw
+        for season, home, away, gw in FixtureHistory.objects.exclude(gameweek=None)
+        .values_list("season", "team_h_code", "team_a_code", "gameweek")
+    }
+    rows = []
+    for season, home, away, code, stats in PlayerMatchStat.objects.values_list(
+            "match__season", "match__home_team_id", "match__away_team_id", "player_id", "stats").iterator(chunk_size=5000):
+        gw = gameweek.get((season, home, away))
+        if gw is None or not str(code).isdigit():
+            continue
+        row = {"season": season, "gameweek": gw, "code": int(code)}
+        for column, keys in OPTA_STATS.items():
+            row[column] = sum(float(stats.get(k, 0)) for k in keys)
+        row["op_pens"] = sum(float(v) for k, v in stats.items() if k.startswith("att_pen_"))
+        rows.append(row)
+    frame = pd.DataFrame(rows, columns=["season", "gameweek", "code", *OPTA_COLUMNS])
+    if frame.empty:
+        return frame
+    frame = frame.groupby(["season", "gameweek", "code"], as_index=False).sum()
+    for column in ("season", "gameweek", "code"):
+        frame[column] = frame[column].astype("int32")
+    return frame

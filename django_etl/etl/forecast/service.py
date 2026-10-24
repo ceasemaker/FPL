@@ -31,8 +31,8 @@ from ..models import (
     ShadowPick,
 )
 from . import VERSION
-from .data import load_fixtures, load_players
-from .features import build_features, future_rows
+from .data import load_fixtures, load_opta_gameweeks, load_players
+from .features import FEATURES, FEATURES_V3, build_features, future_rows
 from .model import dumps, fit, predict, training_rows
 
 logger = logging.getLogger(__name__)
@@ -48,8 +48,28 @@ def latest_evaluation() -> ModelEvaluation | None:
 
 
 def captain_accepted() -> bool:
+    """Whether the captain backtest passed (the newer ``captain`` evaluation wins)."""
+    captain = ModelEvaluation.objects.filter(name="captain").order_by("-created_at").first()
+    if captain:
+        return captain.accepted
     evaluation = latest_evaluation()
     return bool(evaluation and evaluation.summary.get("accepted", {}).get("captain"))
+
+
+CAPTAIN_EVALUATION = "captain"
+
+
+def captain_evaluation() -> ModelEvaluation | None:
+    """The latest captain backtest (``manage.py evaluate_captain``)."""
+    return ModelEvaluation.objects.filter(name=CAPTAIN_EVALUATION).order_by("-created_at").first()
+
+
+def production_features() -> tuple[str, list[str]]:
+    """v3 (with Opta match-sheet features) once the captain backtest chose it, else v2."""
+    evaluation = captain_evaluation()
+    if evaluation and evaluation.summary.get("chosen") == "v3":
+        return "v3.0", FEATURES_V3
+    return VERSION, FEATURES
 
 
 def available_elements() -> set[int]:
@@ -92,13 +112,15 @@ def run_forecast(now: datetime | None = None, log=logger.info) -> dict:
     targets = [gw for gw in range(next_gw, next_gw + HORIZON)
                if ((fixtures["season"] == season) & (fixtures["gameweek"] == gw)).any()]
     future = future_rows(players, season, targets)
-    features = build_features(pd.concat([players, future], ignore_index=True), fixtures)
+    version, feature_list = production_features()
+    opta = load_opta_gameweeks() if feature_list is FEATURES_V3 else None
+    features = build_features(pd.concat([players, future], ignore_index=True), fixtures, opta=opta)
 
     train = training_rows(features)
-    model = fit(train)
+    model = fit(train, feature_list=feature_list)
     last_week = int(train.loc[train["season"] == season, "gameweek"].max()) if (train["season"] == season).any() else 0
     ModelArtifact.objects.create(
-        name=MODEL_NAME, version=VERSION, trained_through_season=season, trained_through_gameweek=last_week,
+        name=MODEL_NAME, version=version, trained_through_season=season, trained_through_gameweek=last_week,
         training_rows=len(train), payload=dumps(model), metadata={"targets": targets},
     )
     stale = ModelArtifact.objects.filter(name=MODEL_NAME).order_by("-created_at").values_list("id", flat=True)[KEEP_ARTIFACTS:]
@@ -112,7 +134,7 @@ def run_forecast(now: datetime | None = None, log=logger.info) -> dict:
         ForecastPrediction.objects.bulk_create([
             ForecastPrediction(
                 season=season, gameweek=int(r.gameweek), element=int(r.element), code=int(r.code),
-                predicted_points=round(float(r.pred), 3), horizon=int(r.gameweek) - next_gw + 1, model_version=VERSION,
+                predicted_points=round(float(r.pred), 3), horizon=int(r.gameweek) - next_gw + 1, model_version=version,
             )
             for r in upcoming.itertuples(index=False)
         ])
@@ -122,7 +144,7 @@ def run_forecast(now: datetime | None = None, log=logger.info) -> dict:
         picks = log_picks(season, next_gw, upcoming[upcoming["gameweek"] == next_gw], now)
     result = {"status": "ok", "season": season, "next_gameweek": next_gw, "trained_rows": len(train),
               "forecasts": len(upcoming), "picks_logged": picks, "settled": settled}
-    log(f"Forecast {VERSION}: {result}")
+    log(f"Forecast {version}: {result}")
     return result
 
 

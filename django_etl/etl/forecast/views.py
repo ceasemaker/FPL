@@ -27,12 +27,8 @@ def forecast_lab(request):
 
     weeks: dict[int, dict] = defaultdict(dict)
     for pick in ShadowPick.objects.filter(season=season).order_by("gameweek"):
-        deadline = deadlines.get(pick.gameweek)
-        # A pick for a week whose deadline hasn't passed stays hidden unless
-        # the model has passed its backtest: until then it's an experiment,
-        # not advice. Once the deadline passes it can't change, so it's shown.
-        if (deadline is None or deadline > now) and not accepted:
-            continue
+        # The upcoming pick is shown too, as on the homepage (marked
+        # experimental there until the captain backtest passes).
         weeks[pick.gameweek][pick.strategy] = {
             "label": STRATEGY_LABELS.get(pick.strategy, pick.strategy),
             "player": pick.web_name,

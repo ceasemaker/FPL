@@ -35,6 +35,19 @@ USAGE_FEATURES = [
 ]
 FEATURES_V21 = FEATURES + USAGE_FEATURES
 
+# v3: per-match Opta stats (shot locations, big chances, touches in the box,
+# chances created, set pieces, penalties), rolled like the xG features.
+OPTA_FEATURES = [
+    "shots90_6", "box_shots90_6", "big_chances90_6", "box_touches90_6", "chances90_6",
+    "big_created90_6", "corners90_6", "pens_12",
+]
+OPTA_RATES = {
+    "shots90_6": "op_shots", "box_shots90_6": "op_box_shots", "big_chances90_6": "op_big_chances",
+    "box_touches90_6": "op_box_touches", "chances90_6": "op_chances", "big_created90_6": "op_big_created",
+    "corners90_6": "op_corners",
+}
+FEATURES_V3 = FEATURES + OPTA_FEATURES
+
 TEAM_WINDOW = 8  # gameweeks of club form (≈ 7–8 matches)
 
 
@@ -124,6 +137,17 @@ def _player_state(panel: pd.DataFrame) -> pd.DataFrame:
     for name, column in (("xg90_6", "expected_goals"), ("xa90_6", "expected_assists"), ("bonus90_6", "bonus"),
                          ("bps90_6", "bps"), ("saves90_6", "saves")):
         state[name] = roll_sum(q[column], 6) / minutes6 * 90
+    if "op_shots" in q.columns:
+        # A week he didn't play counts as zero; a week he played without a
+        # match sheet stays unknown, and the rolling sum skips it.
+        opta = q[[*OPTA_RATES.values(), "op_pens"]].copy()
+        opta[q["minutes"] <= 0] = opta[q["minutes"] <= 0].fillna(0)
+        for name, column in OPTA_RATES.items():
+            state[name] = roll_sum(opta[column], 6) / minutes6 * 90
+        state["pens_12"] = roll_sum(opta["op_pens"], 12)
+    else:
+        for name in OPTA_FEATURES:
+            state[name] = np.nan
 
     season_group = q.groupby(["code", "season"])
     cum = {c: season_group[c].cumsum() for c in ("minutes", "expected_goals", "expected_assists", "total_points", "n_fix")}
@@ -190,13 +214,17 @@ def _usage_context(targets: pd.DataFrame, players: pd.DataFrame, usage: pd.DataF
     return targets.drop(columns=["prev_team_code", "top_code", "top1", "top2"])
 
 
-def build_features(players: pd.DataFrame, fixtures: pd.DataFrame, usage: pd.DataFrame | None = None) -> pd.DataFrame:
+def build_features(players: pd.DataFrame, fixtures: pd.DataFrame, usage: pd.DataFrame | None = None,
+                   opta: pd.DataFrame | None = None) -> pd.DataFrame:
     """Feature rows for every player-week whose club has a fixture.
 
     ``players`` may include future rows (stats NaN) for the weeks to forecast.
-    ``usage`` (from ``data.load_usage``) adds the v2.1 usage features.
+    ``usage`` (from ``data.load_usage``) adds the v2.1 usage features;
+    ``opta`` (from ``data.load_opta_gameweeks``) adds the v3 match-sheet features.
     Returns the features plus ``total_points`` (NaN for future rows).
     """
+    if opta is not None and not opta.empty:
+        players = players.merge(opta, on=["season", "gameweek", "code"], how="left")
     weeks = team_weeks(players, fixtures)
     panel = players.merge(
         weeks[["season", "gameweek", "team_code", "n_fix", "home_n", "roll_xgf", "roll_xga", "o_xgf", "o_xga"]],
@@ -228,7 +256,8 @@ def build_features(players: pd.DataFrame, fixtures: pd.DataFrame, usage: pd.Data
     else:
         for column in USAGE_FEATURES:
             targets[column] = np.nan
-    keep = ["season", "gameweek", "code", "element", "web_name", "team_code", "minutes", "total_points", *FEATURES_V21]
+    keep = ["season", "gameweek", "code", "element", "web_name", "team_code", "minutes", "total_points",
+            *FEATURES_V21, *OPTA_FEATURES]
     out = targets[list(dict.fromkeys(keep))].sort_values(["season", "gameweek", "code"]).reset_index(drop=True)
     return out
 
