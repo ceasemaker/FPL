@@ -95,6 +95,32 @@ walk-forward backtest (results in `squad_changes_eval.json`). Gains are paired b
 Neither changes picks, and both were tested on seasons already used to build the model, so production stays on v2.0.
 Turnover is the stronger candidate to re-test on a season the model hasn't seen. Both measures are in Chart Lab's Changes mode.
 
+### Captain pick v3 (October 2026)
+
+**Data.** Per-match Opta sheets for every Premier League match since 2021/22 are stored in
+`PlayerMatchStat` (`sync_match_details`; see `PREMIER_LEAGUE_DATA_API.md`).
+
+**v3 features.** v2 plus rolling per-90 rates over the last six gameweeks: shots, shots inside the
+box, big chances, touches in the opposition box, chances created, big chances created and corners
+taken. Also penalties taken over the last 12 gameweeks. They are in `OPTA_FEATURES` in `features.py`.
+
+**Captain backtest.**
+- `manage.py evaluate_captain` (in `captain_eval.py`) is a walk-forward over 2023/24–2025/26 with weekly retraining.
+- It compares v2 and v3 captains with:
+  - the priciest attacker;
+  - form;
+  - form × fixtures;
+  - a ridge regression;
+  - the top-100 consensus.
+- **Pass rule (set 24 Oct 2026, before the run):** beat the priciest attacker, form × fixtures and the
+  ridge regression, each with a 95% bootstrap lower bound above zero. The top-100 consensus is
+  reported but isn't a pass condition: it's chosen with hindsight and has team news.
+- Production switches to v3 only if it's at least as accurate as v2 and picks captains at least as well.
+
+**On the site.** The homepage shows the forecast's captain whether or not it passed.
+- It's marked **experimental** until it passes.
+- It's shown next to its backtest result and its live shadow record (the user's decision, 24 Oct 2026).
+
 ## Production
 
 `run_forecast` runs as step 9 of the daily pipeline, and through
