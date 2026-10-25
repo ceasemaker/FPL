@@ -51,7 +51,7 @@ export function TeamPage() {
     let alive = true;
     setError(null);
     fetch(`/api/teams/${teamId}/${season ? `?season=${season}` : ""}`)
-      .then((r) => { if (!r.ok) throw new Error(r.status === 404 ? "We don't have this club." : `HTTP ${r.status}`); return r.json() as Promise<TeamData>; })
+      .then((r) => { if (!r.ok) throw new Error(r.status === 404 ? "We don't have this club." : "Something went wrong loading this club. Try again in a minute."); return r.json() as Promise<TeamData>; })
       .then((d) => { if (alive) setData(d); })
       .catch((e: Error) => { if (alive) setError(e.message); });
     return () => { alive = false; };
@@ -74,7 +74,7 @@ export function TeamPage() {
   }, [data, group, venue, lastN]);
   const withStats = played.filter((m) => m.for && m.against);
 
-  if (error) return <main className="aero-page mp-page tp-page"><p className="mp-crumbs"><Link to="/teams">Teams</Link></p><p className="mp-error" role="alert">{error}</p></main>;
+  if (error) return <main className="aero-page mp-page tp-page"><p className="mp-crumbs"><Link to="/teams">Teams</Link></p><p className="mp-error" role="alert">{error} <Link to="/teams">Back to Teams</Link></p></main>;
   if (!data) return <main className="aero-page mp-page tp-page" aria-busy="true"><div className="mp-skeleton" /><div className="mp-skeleton tall" /></main>;
 
   const me = data.table.find((r) => r.team === data.team.id);
@@ -186,7 +186,7 @@ function summary(d: TeamData, me: TableRow | undefined): string {
     const xg = league.reduce((s, m) => s + (m.for?.expectedGoals ?? 0), 0) / league.length;
     const xga = league.reduce((s, m) => s + (m.against?.expectedGoals ?? 0), 0) / league.length;
     const avg = d.leagueAverages.expectedGoals ?? 0;
-    const desc = (v: number, lowIsGood: boolean) => { const r = v / (avg || 1); const good = lowIsGood ? r < 0.85 : r > 1.15; const bad = lowIsGood ? r > 1.15 : r < 0.85; return good ? "well better than" : bad ? "well worse than" : "close to"; };
+    const desc = (v: number, lowIsGood: boolean) => { const r = v / (avg || 1); const good = lowIsGood ? r < 0.85 : r > 1.15; const bad = lowIsGood ? r > 1.15 : r < 0.85; return good ? "clearly better than" : bad ? "clearly worse than" : "close to"; };
     parts.push(`In the league they create ${xg.toFixed(2)} expected goals a game and allow ${xga.toFixed(2)}; the average team manages ${avg.toFixed(2)}, so their attack is ${desc(xg, false)} average and their defence ${desc(xga, true)} average.`);
   }
   let run = 0;
@@ -210,8 +210,8 @@ function XgStrip({ matches, team }: { matches: TeamMatch[]; team: string }) {
           return (
             <Link key={m.matchId} to={`/matches/${m.matchId}`} className={`tp-xg-col r-${m.res}`}
               title={`${m.home ? "v" : "at"} ${m.opp.name} (${comp.name}) ${m.gf}–${m.ga} · xG ${f.toFixed(2)}–${a.toFixed(2)}`}>
-              <span className="up"><i style={{ height: `${(f / max) * 100}%` }} /></span>
-              <span className="dn"><i style={{ height: `${(a / max) * 100}%` }} /></span>
+              <span className="up"><em>{f.toFixed(1)}</em><i style={{ height: `${(f / max) * 100}%` }} /></span>
+              <span className="dn"><i style={{ height: `${(a / max) * 100}%` }} /><em>{a.toFixed(1)}</em></span>
               <small>{m.opp.short}</small>
               <b>{m.res}</b>
             </Link>

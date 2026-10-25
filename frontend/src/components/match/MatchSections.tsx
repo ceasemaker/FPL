@@ -59,11 +59,10 @@ export function ZonesPanel({ sides, label = "Where the shots came from" }: { sid
     const max = Math.max(L, C, R, out, 1);
     const heat = (n: number) => ({ "--a": ((n / max) * 0.28).toFixed(2) } as React.CSSProperties);
     const cell = (k: string) => {
-      const g = goal(k), s = saved(k);
+      const g = goal(k), s = saved(k), n = g + s;
       return (
-        <div key={k} title={`${g} goal${g === 1 ? "" : "s"}, ${s} saved`}>
-          {g > 0 && <span className="g"><EventIcon kind="goal" size={13} />{g > 1 ? g : ""}</span>}
-          {s > 0 && <span className="s">{s}</span>}
+        <div key={k} title={`${n} on target here: ${g} scored, ${s} saved`}>
+          {n > 0 && <span className={g > 0 ? "n scored" : "n"}>{n}</span>}
         </div>
       );
     };
@@ -86,7 +85,12 @@ export function ZonesPanel({ sides, label = "Where the shots came from" }: { sid
       </div>
     );
   };
-  return <section className="mp-sheet mp-zones" aria-label={label}>{sides.map(zone)}</section>;
+  return (
+    <section className="mp-sheet mp-zones" aria-label={label}>
+      {sides.map(zone)}
+      <p className="mp-zone-key">In the goal: <span className="n">2</span> shots on target to that part of the goal; <span className="n scored">2</span> ringed means at least one went in.</p>
+    </section>
+  );
 }
 
 // ------------------------------------------------------------------ players
@@ -136,7 +140,7 @@ export function MatchPlayers({ data }: { data: MatchData }) {
               <th scope="col">Player</th>
               {cols.map(([k, l]) => (
                 <th key={k} scope="col" aria-sort={k === sort ? "descending" : "none"} className={k === sort ? "sorted" : ""}>
-                  <button type="button" onClick={() => setSort(k)}>{l}</button>
+                  <button type="button" onClick={() => setSort(k)}>{l}{k === sort && <svg width="9" height="9" viewBox="0 0 10 10" aria-hidden="true" style={{ marginLeft: 3 }}><path d="M1.5 3.5 5 7l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>}</button>
                 </th>
               ))}
             </tr>

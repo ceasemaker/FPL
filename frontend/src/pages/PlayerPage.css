@@ -69,3 +69,10 @@
   .pp-crow .p { display: none; }
   .pp-next a { grid-template-columns: 74px 44px 20px minmax(0, 1fr) auto; padding: 10px 12px; gap: 8px; }
 }
+
+.pp-grid > section { min-width: 0; }
+@media (max-width: 720px) {
+  .pp-grid { grid-template-columns: minmax(0, 1fr); }
+  .pp-crow { grid-template-columns: minmax(0, 1fr) 40px 64px; row-gap: 2px; }
+  .pp-crow .p { display: block; grid-column: 1 / -1; }
+}

@@ -21,7 +21,7 @@ export function MatchPage() {
     let alive = true;
     setData(null); setError(null);
     fetch(`/api/matches/${matchId}/`)
-      .then((r) => { if (!r.ok) throw new Error(r.status === 404 ? "We don't have this match." : `HTTP ${r.status}`); return r.json() as Promise<MatchData>; })
+      .then((r) => { if (!r.ok) throw new Error(r.status === 404 ? "We don't have this match." : "Something went wrong loading this match. Try again in a minute."); return r.json() as Promise<MatchData>; })
       .then((d) => { if (alive) setData(d); })
       .catch((e: Error) => { if (alive) setError(e.message); });
     return () => { alive = false; };
@@ -44,8 +44,8 @@ export function MatchPage() {
   if (error) {
     return (
       <main className="aero-page mp-page">
-        <p className="mp-crumbs"><Link to="/fixtures">Matches</Link></p>
-        <p className="mp-error" role="alert">{error}</p>
+        <p className="mp-crumbs"><Link to="/matches">Matches</Link></p>
+        <p className="mp-error" role="alert">{error} <Link to="/matches">Back to Matches</Link></p>
       </main>
     );
   }
@@ -71,7 +71,7 @@ export function MatchPage() {
   return (
     <main className="aero-page mp-page">
       <nav className="mp-crumbs" aria-label="Breadcrumb">
-        <Link to="/fixtures">Matches</Link><span aria-hidden="true">/</span>
+        <Link to="/matches">Matches</Link><span aria-hidden="true">/</span>
         {data.gameweek && <><span>GW{data.gameweek}</span><span aria-hidden="true">/</span></>}
         <span className="long">{data.competition}{data.round ? ` · ${data.round}` : ""}{kickoff ? ` · ${kickoff.toLocaleDateString([], { weekday: "short", day: "numeric", month: "short", year: "numeric" })}` : ""}</span>
       </nav>
@@ -144,7 +144,7 @@ export function MatchFromFixture() {
   }, [fixtureId, navigate]);
   return (
     <main className="aero-page mp-page">
-      {error ? <p className="mp-error" role="alert">{error} <Link to="/fixtures">Back to fixtures</Link></p> : <div className="mp-skeleton" aria-busy="true" />}
+      {error ? <p className="mp-error" role="alert">{error} <Link to="/matches">Back to Matches</Link></p> : <div className="mp-skeleton" aria-busy="true" />}
     </main>
   );
 }

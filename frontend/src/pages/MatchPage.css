@@ -57,11 +57,7 @@
 .mp-bar-a { fill: var(--mp-away); }
 .mp-band .future { opacity: 0.16; }
 .mp-axis { stroke: var(--aero-line-strong); stroke-width: 1; }
-.mp-tick { fill: var(--aero-text-muted); font-size: 10px; }
-.mp-side-label { fill: var(--aero-text-dim); font-size: 11px; font-weight: 700; }
 .mp-cursor { stroke: var(--aero-lime); stroke-width: 2; }
-.mp-cursor-tag rect { fill: var(--aero-lime); }
-.mp-cursor-tag text { fill: var(--aero-bg); font-weight: 800; font-size: 12px; }
 .mp-pin { cursor: pointer; }
 .mp-pin-bg { fill: transparent; }
 .mp-pin:hover .mp-pin-bg { fill: #2a2b2c; }
@@ -247,3 +243,23 @@
 
 .mp-pl a, .mp-fplist a { color: inherit; text-decoration: none; }
 .mp-pl a:hover, .mp-fplist a:hover { color: var(--aero-lime); }
+
+/* Band labels as HTML over the SVG: readable at any width */
+.mp-band-wrap { position: relative; padding-bottom: 22px; }
+.mp-side-label { position: absolute; left: 0; font-size: 0.72rem; font-weight: 800; color: var(--aero-text-dim); pointer-events: none; }
+.mp-cursor-tag { position: absolute; transform: translate(-50%, -50%); background: var(--aero-lime); color: var(--aero-bg); font-size: 0.74rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; pointer-events: none; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mp-ticks { position: absolute; left: 0; right: 0; bottom: 0; height: 18px; }
+.mp-ticks span { position: absolute; transform: translateX(-50%); font-size: 0.72rem; color: var(--aero-text-muted); font-variant-numeric: tabular-nums; }
+.mp-nomom { margin: 0 0 8px; font-size: 0.78rem; color: var(--aero-text-muted); }
+.mp-nomom .mp-badge { margin: 0 6px 0 0; }
+@media (max-width: 720px) { .mp-ticks span:nth-child(1), .mp-ticks span:nth-child(2), .mp-ticks span:nth-child(3), .mp-ticks span:nth-child(5), .mp-ticks span:nth-child(6) { display: none; } }
+
+.mp-goalmouth .n { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 4px; border-radius: 11px; font-variant-numeric: tabular-nums; }
+.mp-goalmouth .n.scored, .mp-zone-key .n.scored { box-shadow: inset 0 0 0 2px var(--aero-lime); color: #fff; }
+.mp-zone-key { grid-column: 1 / -1; display: block; line-height: 2; margin: 4px 0 0; font-size: 0.7rem; color: var(--aero-text-muted); }
+.mp-zone-key .n { display: inline-grid; place-items: center; min-width: 18px; height: 18px; border-radius: 9px; font-size: 0.66rem; font-weight: 700; color: var(--aero-text-dim); }
+.mp-tbl-wrap { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
+@media (min-width: 1051px) { .mp-tbl-wrap { -webkit-mask-image: none; mask-image: none; } }
+/* portrait pitch: which side is which */
+.mp-edge { margin: 6px 0; text-align: center; font-size: 0.72rem; font-weight: 700; color: var(--aero-text-muted); }
+.mp-error a { color: var(--aero-lime); margin-left: 6px; font-weight: 700; }

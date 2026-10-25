@@ -45,6 +45,7 @@ export function MatchPitch({ data, state, slotMap, timeline }: { data: MatchData
         <span><b>{timeline.label(state.index)}</b> · {state.men[data.home.id]} v {state.men[data.away.id]}</span>
         <span>{formation(data.away.id)} <b>{data.away.short}</b></span>
       </div>
+      {portrait && <p className="mp-edge">{data.away.short} defending this end</p>}
       <div className={`mp-pitch${portrait ? " portrait" : ""}`}>
         <svg className="mp-lines" viewBox={portrait ? "0 0 68 105" : "0 0 105 68"} preserveAspectRatio="none" aria-hidden="true">
           {portrait ? (
@@ -81,6 +82,7 @@ export function MatchPitch({ data, state, slotMap, timeline }: { data: MatchData
           );
         })}
       </div>
+      {portrait && <p className="mp-edge">{data.home.short} defending this end</p>}
       <div className="mp-bench">
         {[data.home.id, data.away.id].map((team, side) => (
           <div key={team} className={side ? "away" : "home"}>

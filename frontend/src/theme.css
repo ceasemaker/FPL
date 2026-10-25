@@ -39,7 +39,6 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.6);
   --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.8);
-  --shadow-glow: 0 0 20px rgba(0, 255, 133, 0.15);
 
   /* Background */
   font-family: var(--font-main);
@@ -50,7 +49,7 @@
 /* Command Centre navigation */
 .command-nav{position:fixed;inset:0 auto 0 0;width:196px;height:100vh;z-index:1000;display:flex;flex-direction:column;padding:28px 20px 22px;background:linear-gradient(145deg,#171818,#111212 70%);border-right:1px solid #262728}
 .command-nav ~ .page{width:calc(100% - 196px);margin-left:196px;margin-right:0}
-.command-brand{font-size:1.7rem;font-weight:800;letter-spacing:-.06em;margin:0 16px 42px;color:#fff}.command-brand strong{color:#a5ff01}.command-menu-button{display:none}.command-nav-links{display:flex;flex-direction:column;gap:8px}.command-nav-links a,.command-nav-footer a{display:flex;align-items:center;gap:13px;min-height:48px;padding:0 14px;border-radius:8px;color:#c8c8c8;text-decoration:none;font-size:.86rem;transition:.18s ease}.command-nav-links a:hover,.command-nav-footer a:hover{background:#202121;color:#fff}.command-nav-links a.active{color:#101011;background:linear-gradient(100deg,#b8ff37,#6b951f);box-shadow:0 8px 24px rgba(165,255,1,.13)}.command-nav-links i,.command-nav-footer i{width:22px;font-style:normal;font-size:1.25rem;text-align:center}.command-nav-footer{margin-top:auto;border-top:1px solid #38393a;padding-top:14px}.command-nav-footer p{color:#8f8f8f;font-size:.74rem;line-height:1.35;margin:40px 14px 0}.command-nav-footer p b{display:block;width:20px;height:2px;background:#a5ff01;margin-bottom:10px}
+.command-brand{font-size:1.7rem;font-weight:800;letter-spacing:-.06em;margin:0 16px 42px;color:#fff}.command-brand strong{color:#a5ff01}.command-menu-button{display:none}.command-nav-links{display:flex;flex-direction:column;gap:8px}.command-nav-links a,.command-nav-footer a{display:flex;align-items:center;gap:13px;min-height:48px;padding:0 14px;border-radius:8px;color:#c8c8c8;text-decoration:none;font-size:.86rem;transition:.18s ease}.command-nav-links a:hover,.command-nav-footer a:hover{background:#202121;color:#fff}.command-nav-links a.active{color:#101011;background:#a5ff01;box-shadow:none}.command-nav-links i,.command-nav-footer i{width:22px;font-style:normal;font-size:1.25rem;text-align:center}.command-nav-footer{margin-top:auto;border-top:1px solid #38393a;padding-top:14px}.command-nav-footer p{color:#8f8f8f;font-size:.74rem;line-height:1.35;margin:40px 14px 0}.command-nav-footer p b{display:block;width:20px;height:2px;background:#a5ff01;margin-bottom:10px}
 /* Fixtures lives in the desktop nav footer; this duplicate entry only
    appears inside the collapsible menu on phones, where that footer is
    hidden and the route would otherwise be unreachable. */
@@ -1109,7 +1108,7 @@ textarea:focus {
 .command-nav-group{display:flex;flex-direction:column;gap:6px}
 .command-nav-group.minor{margin-top:14px;padding-top:12px;border-top:1px solid #2a2b2c;gap:2px}
 .command-nav-group.minor a{min-height:38px;font-size:.8rem}
-.command-nav-title{margin:0 14px 6px;font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#7d7e7f}
+.command-nav-title{margin:0 14px 6px;font-size:.72rem;font-weight:700;color:#8f8f8f}
 .command-nav-links{gap:0;overflow-y:auto;scrollbar-width:none}
 .command-brand{margin-bottom:30px}
 @media(max-width:1050px) and (min-width:721px){.command-nav-title{font-size:0;margin:0;height:0}}

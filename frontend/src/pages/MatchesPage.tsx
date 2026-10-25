@@ -18,7 +18,7 @@ interface CalMatch {
 interface Calendar { start: string; days: number; today: string; clubs: Club[]; matches: CalMatch[]; previous: Record<string, string> }
 type Group = "all" | "league" | "europe" | "cup";
 
-const DAYS = 35;
+const DAYS = 21;  // three weeks fit a desktop screen without sideways scrolling
 const DAY_MS = 86_400_000;
 const GROUPS: [Group, string][] = [["all", "Every competition"], ["league", "Premier League"], ["europe", "Europe"], ["cup", "Domestic cups"]];
 
@@ -48,7 +48,7 @@ export function MatchesPage() {
   const [data, setData] = useState<Calendar | null>(null);
   const [error, setError] = useState<string | null>(null);
   const today = dayKey(new Date());
-  const start = params.get("from") ?? addDays(mondayBefore(today), -7);
+  const start = params.get("from") ?? mondayBefore(today);
   const view = (params.get("view") ?? (typeof window !== "undefined" && window.innerWidth < 720 ? "list" : "grid")) as "grid" | "list";
   const group = (params.get("comp") ?? "all") as Group;
   const club = params.get("club") ?? "";
@@ -132,16 +132,16 @@ export function MatchesPage() {
 
       <div className="ms-tools">
         <div className="ms-range" role="group" aria-label="Dates">
-          <button type="button" onClick={() => set({ from: addDays(start, -28) })} aria-label="Four weeks earlier"><Chevron dir="left" /></button>
+          <button type="button" onClick={() => set({ from: addDays(start, -DAYS) })} aria-label="Three weeks earlier"><Chevron dir="left" /></button>
           <button type="button" className="today" onClick={() => set({ from: null })}>Today</button>
-          <button type="button" onClick={() => set({ from: addDays(start, 28) })} aria-label="Four weeks later"><Chevron dir="right" /></button>
+          <button type="button" onClick={() => set({ from: addDays(start, DAYS) })} aria-label="Three weeks later"><Chevron dir="right" /></button>
           <span>{rangeLabel}</span>
         </div>
         <div className="ms-seg" role="group" aria-label="Competitions">
           {GROUPS.map(([k, l]) => <button key={k} type="button" aria-pressed={group === k} onClick={() => set({ comp: k === "all" ? null : k })}>{l}</button>)}
         </div>
         <div className="ms-seg" role="group" aria-label="View">
-          <button type="button" aria-pressed={view === "grid"} onClick={() => set({ view: "grid" })}>Calendar</button>
+          <button type="button" aria-pressed={view === "grid"} onClick={() => set({ view: "grid" })}>Grid</button>
           <button type="button" aria-pressed={view === "list"} onClick={() => set({ view: "list" })}>List</button>
         </div>
       </div>
@@ -149,7 +149,10 @@ export function MatchesPage() {
       {error && <p className="ms-error" role="alert">{error}</p>}
       {!data && !error && <div className="ms-skeleton" aria-busy="true" />}
 
-      {data && view === "grid" && (
+      {data && view === "grid" && !data.matches.some((m) => inView(m) && shown(m)) && (
+        <p className="ms-empty-box">No games between {parseDay(start).toLocaleDateString([], { day: "numeric", month: "long" })} and {parseDay(addDays(start, DAYS - 1)).toLocaleDateString([], { day: "numeric", month: "long" })}{group !== "all" ? " in this competition" : ""}. Use the arrows to move through the season.</p>
+      )}
+      {data && view === "grid" && data.matches.some((m) => inView(m) && shown(m)) && (
         <>
           <div className="ms-legend">
             <span><i className="ms-dot rest" />Two or three days since the club's previous game</span>

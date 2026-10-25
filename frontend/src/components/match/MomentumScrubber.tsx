@@ -59,7 +59,10 @@ export function MomentumScrubber({ data, timeline, cursor, onCursor, hasMomentum
   const extraTime = moments.some((m) => m.period === 3);
   const ticks: [number, string][] = [[0, "0′"], [indexOf(15, 1), "15′"], [indexOf(30, 1), "30′"], [halfIndex, "HT"], [indexOf(60, 2), "60′"], [indexOf(75, 2), "75′"],
     ...(extraTime ? [[indexOf(91, 3), "90′"] as [number, string]] : []), [end - 1, extraTime ? "AET" : "FT"]];
-  const cx = xAt(cursor) + barW / 2, tag = label(cursor), tw = 14 + tag.length * 7;
+  const cx = xAt(cursor) + barW / 2, tag = label(cursor);
+  // Without momentum (cup and European matches) the band is a slim events strip.
+  const H = hasMomentum ? 170 : 96, mid = hasMomentum ? MID : 48, awayPin = H - 24;
+  const pct = (x: number, total: number) => `${(x / total) * 100}%`;
   const score = events.filter((e) => e.kind === "goal" && e.idx <= cursor).reduce<[number, number]>((s, g) => [g.home ?? s[0], g.away ?? s[1]], [0, 0]);
 
   return (
@@ -73,10 +76,16 @@ export function MomentumScrubber({ data, timeline, cursor, onCursor, hasMomentum
           {jumps.map(([text, i]) => <button type="button" key={text} onClick={() => move(i)}>{text}</button>)}
         </div>
       </div>
+      {!hasMomentum && <p className="mp-nomom"><span className="mp-badge">No momentum</span> Opta publishes momentum for Premier League games only; goals, cards and substitutions are below.</p>}
+      <div className="mp-band-wrap">
+      {/* Labels are HTML over the SVG so they stay readable when the band scales down on phones. */}
+      <span className="mp-side-label" style={{ top: pct(mid - 26, H) }}>{data.home.short}</span>
+      <span className="mp-side-label" style={{ top: pct(mid + 8, H) }}>{data.away.short}</span>
+      <span className="mp-cursor-tag" style={{ left: pct(cx, W), top: pct(mid, H) }}>{tag}</span>
       <svg
         ref={svgRef}
         className="mp-band"
-        viewBox={`0 0 ${W} 190`}
+        viewBox={`0 0 ${W} ${H}`}
         role="slider"
         tabIndex={0}
         aria-label="Match minute"
@@ -100,10 +109,7 @@ export function MomentumScrubber({ data, timeline, cursor, onCursor, hasMomentum
           if (ev.key === "End") { move(end - 1); ev.preventDefault(); }
         }}
       >
-        <text className="mp-side-label" x="0" y={MID - 30}>{data.home.short}</text>
-        <text className="mp-side-label" x="0" y={MID + 40}>{data.away.short}</text>
-        <line className="mp-axis" x1={PAD_L} x2={W - PAD_R} y1={MID} y2={MID} />
-        {!hasMomentum && <text className="mp-tick" x={W / 2} y={MID - 8} textAnchor="middle">Opta publishes momentum for Premier League matches only</text>}
+        <line className="mp-axis" x1={PAD_L} x2={W - PAD_R} y1={mid} y2={mid} />
         {hasMomentum && moments.map((m, i) => {
           const x = xAt(i), hh = (m.h / maxM) * AMP, ha = (m.a / maxM) * AMP, future = i > cursor ? " future" : "";
           return (
@@ -113,20 +119,17 @@ export function MomentumScrubber({ data, timeline, cursor, onCursor, hasMomentum
             </g>
           );
         })}
-        {ticks.map(([i, t]) => <text key={t} className="mp-tick" x={xAt(i)} y="186" textAnchor="middle">{t}</text>)}
         {events.map((e, k) => (
-          <g key={k} className="mp-pin" data-pin={e.idx} transform={`translate(${xAt(e.idx) + barW / 2 - 9},${e.team === data.home.id ? 6 : 162})`}>
+          <g key={k} className="mp-pin" data-pin={e.idx} transform={`translate(${xAt(e.idx) + barW / 2 - 9},${e.team === data.home.id ? 6 : awayPin})`}>
             <title>{`${e.minute}′ ${KIND_LABEL[e.kind] ?? e.kind}: ${e.player}`}</title>
             <rect className="mp-pin-bg" width="18" height="18" rx="4" />
             <EventIcon kind={e.kind} size={18} />
           </g>
         ))}
-        <line className="mp-cursor" x1={cx} x2={cx} y1="24" y2="166" />
-        <g className="mp-cursor-tag" transform={`translate(${Math.min(Math.max(cx - tw / 2, 0), W - tw)},${MID - 11})`}>
-          <rect width={tw} height="22" rx="6" />
-          <text x={tw / 2} y="15" textAnchor="middle">{tag}</text>
-        </g>
+        <line className="mp-cursor" x1={cx} x2={cx} y1="24" y2={awayPin} />
       </svg>
+      <div className="mp-ticks" aria-hidden="true">{ticks.map(([i, t]) => <span key={t} style={{ left: pct(xAt(i), W) }}>{t}</span>)}</div>
+      </div>
       <div className="mp-legend">
         {hasMomentum && <><span><i className="mp-swatch home" />{data.home.short} momentum (above the line)</span>
         <span><i className="mp-swatch away" />{data.away.short} momentum (below)</span></>}

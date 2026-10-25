@@ -102,3 +102,10 @@
 .tp-table th[scope="row"] { max-width: 0; width: 100%; }
 .tp-table th[scope="row"] a { max-width: 100%; }
 .tp-table th[scope="row"] span { overflow: hidden; text-overflow: ellipsis; }
+
+.tp-xg-col { grid-template-rows: 84px 70px auto auto; }
+.tp-xg-col .up, .tp-xg-col .dn { flex-direction: column; align-items: center; }
+.tp-xg-col .up { justify-content: flex-end; }
+.tp-xg-col .dn { justify-content: flex-start; }
+.tp-xg-col em { font-style: normal; font-size: 0.62rem; font-weight: 700; color: var(--aero-text-dim); line-height: 1.2; font-variant-numeric: tabular-nums; }
+.tp-log tr.sep td { text-transform: none; letter-spacing: 0; font-size: 0.76rem; }

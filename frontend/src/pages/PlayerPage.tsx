@@ -46,7 +46,7 @@ export function PlayerPage() {
     let alive = true;
     setData(null); setError(null);
     fetch(`/api/players/${playerId}/page/`)
-      .then((r) => { if (!r.ok) throw new Error(r.status === 404 ? "We don't have this player." : `HTTP ${r.status}`); return r.json() as Promise<PlayerData>; })
+      .then((r) => { if (!r.ok) throw new Error(r.status === 404 ? "We don't have this player." : "Something went wrong loading this player. Try again in a minute."); return r.json() as Promise<PlayerData>; })
       .then((d) => { if (alive) { setData(d); setHeatGw(d.heatmaps[0]?.gameweek ?? null); } })
       .catch((e: Error) => { if (alive) setError(e.message); });
     return () => { alive = false; };
@@ -54,7 +54,7 @@ export function PlayerPage() {
 
   useEffect(() => { if (data) document.title = `${data.name} · AeroFPL`; }, [data]);
 
-  if (error) return <main className="aero-page mp-page tp-page pp-page"><p className="mp-crumbs"><Link to="/players">Players</Link></p><p className="mp-error" role="alert">{error}</p></main>;
+  if (error) return <main className="aero-page mp-page tp-page pp-page"><p className="mp-crumbs"><Link to="/players">Players</Link></p><p className="mp-error" role="alert">{error} <Link to="/players">Back to Players</Link></p></main>;
   if (!data) return <main className="aero-page mp-page tp-page pp-page" aria-busy="true"><div className="mp-skeleton" /><div className="mp-skeleton tall" /></main>;
 
   const played = data.log.filter((r) => !r.unused);
