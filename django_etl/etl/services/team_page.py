@@ -62,7 +62,10 @@ def _league_averages(season: int) -> dict:
     """Per-team, per-game averages over the season's league matches."""
     totals: dict[str, float] = defaultdict(float)
     counts: dict[str, int] = defaultdict(int)
-    for stats in MatchTeamStat.objects.filter(match__season=season, match__competition_id=PlMatch.PREMIER_LEAGUE).values_list("stats", flat=True):
+    # Only the keys the page uses, not each match's whole stat sheet.
+    rows = MatchTeamStat.objects.filter(match__season=season, match__competition_id=PlMatch.PREMIER_LEAGUE).values(*[f"stats__{k}" for k in STATS])
+    for row in rows:
+        stats = {k: row[f"stats__{k}"] for k in STATS if row[f"stats__{k}"] is not None}
         for k, v in _stats(stats).items():
             if v is not None:
                 totals[k] += v

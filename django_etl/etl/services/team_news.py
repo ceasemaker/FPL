@@ -55,7 +55,12 @@ def build_payload() -> dict:
 
     stat_season = PlMatch.objects.filter(competition_id=PlMatch.PREMIER_LEAGUE).aggregate(s=Max("season"))["s"]
     by_player: dict[int, dict] = {}
-    for athlete_id, stats in PlayerSeasonStat.objects.filter(season=stat_season, competition_id=PlMatch.PREMIER_LEAGUE, athlete__isnull=False).values_list("athlete_id", "stats"):
+    # Only the set-piece keys from the database, not each player's whole stat sheet.
+    keys = sorted({k for single, summed in SET_PIECES.values() for k in single + summed})
+    lookups = {f"stats__{k}": k for k in keys}
+    for row in PlayerSeasonStat.objects.filter(season=stat_season, competition_id=PlMatch.PREMIER_LEAGUE, athlete__isnull=False).values("athlete_id", *lookups):
+        athlete_id = row["athlete_id"]
+        stats = {k: row[f"stats__{k}"] for k in keys if row[f"stats__{k}"] is not None}
         counts = {name: _count(stats, single, summed) for name, (single, summed) in SET_PIECES.items()}
         prev = by_player.get(athlete_id)
         by_player[athlete_id] = {k: max(v, (prev or {}).get(k, 0)) for k, v in counts.items()}  # SDP and classic rows

@@ -91,10 +91,12 @@ class League:
 
 def _matches():
     """League matches in kick-off order with both sides' xG (None when not loaded)."""
+    # Only the xG key from the database: the full stats blobs (~200 keys each,
+    # five seasons) are far too big to load (that OOM-killed the web instance).
     xg = defaultdict(dict)
-    for match_id, team_id, stats in MatchTeamStat.objects.filter(match__competition_id=PlMatch.PREMIER_LEAGUE).values_list("match_id", "team_id", "stats"):
-        if stats.get("expectedGoals") is not None:
-            xg[match_id][team_id] = float(stats["expectedGoals"])
+    for match_id, team_id, value in MatchTeamStat.objects.filter(match__competition_id=PlMatch.PREMIER_LEAGUE).values_list("match_id", "team_id", "stats__expectedGoals"):
+        if value is not None:
+            xg[match_id][team_id] = float(value)
     rows = []
     for m in PlMatch.objects.filter(competition_id=PlMatch.PREMIER_LEAGUE, home_score__isnull=False, kickoff__isnull=False).order_by("kickoff"):
         pair = xg.get(m.id, {})
@@ -171,7 +173,7 @@ def backtest(save: bool = True) -> dict:
     result["accepted"] = all(c["low"] > 0 for part in ("cleanSheets", "goals") for c in result[part].values())
     if save:
         ModelEvaluation.objects.create(name="fixture_model", version="v1", accepted=result["accepted"], summary=result)
-        cache.delete(CACHE_KEY)
+        publish(rows if result["accepted"] else None, result)
     return result
 
 
@@ -194,14 +196,16 @@ CACHE_KEY = "fixture-model:projections:v1"
 
 def projections() -> dict | None:
     """Projected goals and clean-sheet chance per remaining fixture (FPL fixture id),
-    or None when the latest backtest didn't accept the model."""
-    ev = ModelEvaluation.objects.filter(name="fixture_model").order_by("-created_at").first()
-    if not ev or not ev.accepted:
-        return None
-    cached = cache.get(CACHE_KEY)
-    if cached:
-        return cached
-    league = fit(_matches())
+    or None when the model isn't published. Read-only: the nightly job computes them."""
+    return cache.get(CACHE_KEY)
+
+
+def publish(rows, record: dict) -> None:
+    """Fit on every match so far and cache each remaining fixture's projection (jobs only)."""
+    if rows is None:
+        cache.delete(CACHE_KEY)
+        return
+    league = fit(rows)
     codes = {t.id: str(t.code) for t in Team.objects.exclude(code=None)}
     out = {}
     for f in Fixture.objects.filter(finished=False, team_h__isnull=False, team_a__isnull=False):
@@ -211,6 +215,5 @@ def projections() -> dict | None:
         gh, ga = league.predict(h, a)
         out[str(f.id)] = {"homeGoals": round(gh, 2), "awayGoals": round(ga, 2),
                           "homeCleanSheet": round(math.exp(-ga), 3), "awayCleanSheet": round(math.exp(-gh), 3)}
-    payload = {"fixtures": out, "record": ev.summary}
-    cache.set(CACHE_KEY, payload, 6 * 60 * 60)
-    return payload
+    payload = {"fixtures": out, "record": record}
+    cache.set(CACHE_KEY, payload, 36 * 60 * 60)  # refreshed nightly; lasts a missed night
