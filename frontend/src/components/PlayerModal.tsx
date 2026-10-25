@@ -3,6 +3,7 @@ import { RadarChart } from "./RadarChart";
 import { PlayerHeatmap } from "./PlayerHeatmap";
 import { PlayerGameLog } from "./PlayerGameLog";
 import "./PlayerModal.css";
+import { PriceChangePanel } from "./priceChange/PriceChange";
 
 const TEAM_BADGE_BASE = "https://resources.premierleague.com/premierleague25/badges-alt/";
 
@@ -400,6 +401,7 @@ export function PlayerModal({ playerId, onClose }: PlayerModalProps) {
             <p className="modal-player-full-name">
               {player.first_name} {player.second_name}
             </p>
+            <PriceChangePanel athleteId={player.id} />
             <div className="modal-player-meta">
               <span className="position-badge">
                 {getPositionLabel(player.element_type)}

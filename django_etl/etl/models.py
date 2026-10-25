@@ -253,6 +253,15 @@ class Athlete(TimestampedModel):
     birth_date = models.DateField(null=True, blank=True)
     has_temporary_code = models.BooleanField(default=False)
     opta_code = models.CharField(max_length=50, null=True, blank=True)
+    # FPL's own price-change tracker (bootstrap-static, refreshed every 15
+    # minutes; etl/services/price_changes.py). Percent is progress towards the
+    # next change (+100 rises, -100 falls); projections are FPL's estimates for
+    # the next three price-change runs, each with a likelihood from -5 to +5.
+    price_change_percent = models.FloatField(null=True, blank=True)
+    price_change_projections = models.JSONField(default=list, blank=True)
+    price_change_hourly_rate = models.IntegerField(null=True, blank=True)
+    price_change_locked_until = models.DateTimeField(null=True, blank=True)
+    price_change_calibrating = models.BooleanField(default=False)
     minutes = models.IntegerField(default=0)
     goals_scored = models.IntegerField(default=0)
     assists = models.IntegerField(default=0)

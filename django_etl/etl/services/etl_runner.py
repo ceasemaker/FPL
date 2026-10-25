@@ -1,6 +1,7 @@
 """Orchestrates full data refresh from the FPL API into the database."""
 
 from __future__ import annotations
+from .price_changes import price_change_fields, store_meta
 
 import logging
 import time
@@ -323,6 +324,7 @@ def _sync_athletes(athletes_payload: Sequence[dict]) -> None:
             "birth_date": _parse_date(athlete_data.get("birth_date")),
             "has_temporary_code": athlete_data.get("has_temporary_code", False),
             "opta_code": athlete_data.get("opta_code"),
+            **price_change_fields(athlete_data),
             "minutes": athlete_data.get("minutes", 0),
             "goals_scored": athlete_data.get("goals_scored", 0),
             "assists": athlete_data.get("assists", 0),
@@ -609,6 +611,7 @@ def run_single_pass(client: FPLClient, config: PipelineConfig) -> None:
         elements_payload = elements_payload[: config.player_limit]
         logger.info("Limiting element processing to first %s players", config.player_limit)
     _sync_athletes(elements_payload)
+    store_meta(bootstrap)
     _snapshot_prices(elements_payload)
 
     events = [event.get("id") for event in events_payload if event.get("id")]

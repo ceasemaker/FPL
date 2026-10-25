@@ -3458,6 +3458,14 @@ def clutch_chart(request):
 
 
 @require_GET
+def price_changes(request):
+    """FPL's own price-change tracker for every player, plus the next change times."""
+    from etl.services.price_changes import build_payload as build_price_payload
+
+    return JsonResponse(build_price_payload())
+
+
+@require_GET
 def stats_explorer(request):
     """Raw season counts per competition plus FPL context for the Stats Explorer."""
     try:

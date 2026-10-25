@@ -328,6 +328,18 @@ def update_radar_attributes():
 # Celery Beat Schedule Configuration
 
 
+@shared_task(name='etl.tasks.refresh_price_changes')
+def refresh_price_changes():
+    """FPL's price-change tracker (refreshed by FPL every 15 minutes).
+
+    One bootstrap request and a bulk update of five fields, so it runs in the
+    worker rather than as a Render job.
+    """
+    from etl.services.price_changes import refresh_price_changes as refresh
+
+    return refresh()
+
+
 @shared_task(name='etl.tasks.warm_price_predictor_cache')
 def warm_price_predictor_cache():
     from .api_views import _build_price_change_predictor_payload, _build_price_predictor_history_payload, _price_change_predictor_cache_key, _price_predictor_history_cache_key  # noqa: E402 (lazy: keeps pandas out of worker/beat)

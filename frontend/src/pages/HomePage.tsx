@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useLandingData } from "../hooks/useLandingData";
 import { useBestValuePlayers, useTop100Template } from "../hooks/useTop100Data";
 import { PlayerModal } from "../components/PlayerModal";
+import { PriceChangeBadge } from "../components/priceChange/PriceChange";
 import type { CaptainRecord, PlayerMover, ValuePlayer } from "../types";
 import "./HomePage.css";
 
@@ -151,7 +152,7 @@ export function HomePage(){
           {watchlist.map(p=>{
             const filled=Math.max(0,Math.min(5,Math.round(p.form)));
             return <button className="watch-row" key={p.athlete_id} onClick={()=>setModalPlayerId(p.athlete_id)}>
-              <span className="watch-player">{p.image_url?<img src={p.image_url} alt=""/>:<i>{p.web_name[0]}</i>}<strong>{p.web_name}</strong></span>
+              <span className="watch-player">{p.image_url?<img src={p.image_url} alt=""/>:<i>{p.web_name[0]}</i>}<strong>{p.web_name}</strong><PriceChangeBadge athleteId={p.athlete_id}/></span>
               <span>{p.team_short_name}</span>
               <span>{p.position}</span>
               <span>{p.now_cost_display}</span>

@@ -96,6 +96,12 @@ app.conf.beat_schedule = {
     # this shared 512 MB instance has. Run it as a one-off Render job
     # (python manage.py backtest_forecast).
 
+    # Every 15 minutes - FPL's own price-change tracker (FPL updates it every 15)
+    'refresh-price-changes': {
+        'task': 'etl.tasks.refresh_price_changes',
+        'schedule': crontab(minute='2,17,32,47'),
+    },
+
     # Every 30 minutes - Warm price predictor cache for frontend charts
     'warm-price-predictor-cache': {
         'task': 'etl.tasks.warm_price_predictor_cache',

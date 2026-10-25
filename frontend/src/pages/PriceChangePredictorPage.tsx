@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import "./PriceChangePredictorPage.css";
 import { PlayerModal } from "../components/PlayerModal";
+import { PriceTracker } from "../components/priceChange/PriceTracker";
 
 interface PriceSignalPlayer {
   id: number;
@@ -495,13 +496,15 @@ export function PriceChangePredictorPage() {
         <div>
           <h1>Price Monitor</h1>
           <p>
-            Price changes the FPL API has already applied, kept separate from a
-            transfer-momentum signal that only shows which way the market is leaning.
+            FPL's own price-change tracker: who is close to rising or falling at the
+            next price-change run, then the changes already applied this gameweek.
           </p>
         </div>
       </div>
 
       {error && <p className="aero-error">{error}</p>}
+
+      <PriceTracker onOpen={setModalPlayerId} />
 
       {/* Facts first. */}
       <section className="aero-card predictor-official">

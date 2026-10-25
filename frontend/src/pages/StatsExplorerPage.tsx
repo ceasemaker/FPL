@@ -36,6 +36,7 @@ import {
 } from "../components/statsExplorer/icons";
 import { DEFAULT_STATE, useExplorerState, type ExplorerState } from "../components/statsExplorer/useExplorerState";
 import "./StatsExplorerPage.css";
+import { PriceChangeBadge, PriceChangePanel } from "../components/priceChange/PriceChange";
 
 const SEASON = 2026;
 const MAX_COMPARE = 4;
@@ -752,6 +753,7 @@ function PlayerTable({ rows, columns, state, sortKey, uclTeams, selected, watchl
                     <button className="sx-name" onClick={() => onOpen(p.id)}>
                       <span className="sx-name-line">
                         <strong>{p.name}</strong>
+                        <PriceChangeBadge athleteId={p.id} />
                         {inUcl && <span className="sx-ucl" title="Club plays in the Champions League">UCL</span>}
                         {p.status && p.status !== "a" && (
                           <span className={`sx-status s-${p.status}`} title={p.news || "Availability flag"}>
@@ -1035,6 +1037,7 @@ function PlayerDrawer({ player, data, state, lensKeys, cell, inUcl, watched, sel
               {player.team} · {POSITION_NAMES[player.position].replace(/s$/, "")} · £{(player.fpl.fpl_price ?? 0).toFixed(1)}m · owned by {(player.fpl.fpl_ownership ?? 0).toFixed(1)}%
             </p>
             {player.status && player.status !== "a" && player.news && <p className="sx-news">{player.news}</p>}
+            <PriceChangePanel athleteId={player.id} />
           </div>
           <button ref={closeRef} className="sx-icon-btn" onClick={onClose} aria-label="Close player profile"><CloseIcon /></button>
         </header>

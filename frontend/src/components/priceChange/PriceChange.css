@@ -1,0 +1,87 @@
+/* FPL price-change badge and panel. Colour follows FPL's own likelihood
+ * (lime rising, coral dropping, grey otherwise); arrows and words carry it too. */
+.pc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  vertical-align: 1px;
+  border: 1px solid var(--aero-line-strong, #3a3b3c);
+  color: var(--aero-text-dim, #b7b7b7);
+}
+.pc-badge.pc-rise { color: #101011; background: var(--aero-lime, #a5ff01); border-color: transparent; }
+.pc-badge.pc-drop { color: #fff; background: rgba(255, 76, 94, 0.22); border-color: rgba(255, 76, 94, 0.6); }
+.pc-badge span { font-size: 0.55rem; }
+
+.pc-panel {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--aero-line-strong, #3a3b3c);
+  background: var(--aero-surface, #191919);
+}
+.pc-panel.pc-rise { border-color: rgba(165, 255, 1, 0.45); }
+.pc-panel.pc-drop { border-color: rgba(255, 76, 94, 0.5); }
+.pc-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.pc-panel-head strong { font-size: 0.92rem; color: #fff; }
+.pc-panel.pc-rise .pc-panel-head strong { color: var(--aero-lime, #a5ff01); }
+.pc-panel.pc-drop .pc-panel-head strong { color: var(--aero-negative, #ff4c5e); }
+.pc-source {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--aero-warn, #e2b75b);
+  border: 1px solid rgba(226, 183, 91, 0.6);
+  border-radius: 5px;
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+.pc-panel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(76px, 1fr));
+  gap: 8px;
+  margin: 10px 0 0;
+}
+.pc-panel-grid div { display: flex; flex-direction: column; gap: 2px; }
+.pc-panel-grid dt { font-size: 0.66rem; color: var(--aero-text-muted, #8f8f8f); }
+.pc-panel-grid dd { margin: 0; font-size: 0.9rem; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
+.pc-note { margin: 8px 0 0; font-size: 0.74rem; color: var(--aero-text-dim, #b7b7b7); }
+.pc-countdown { font-variant-numeric: tabular-nums; color: #fff; font-weight: 700; }
+
+/* Tracker table (Price Monitor). */
+.pc-tracker { display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px; }
+.pc-tracker-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.pc-tracker-head h2 { margin: 0; font-size: 1.15rem; letter-spacing: -0.02em; }
+.pc-tracker-head h2 .pc-countdown { color: var(--aero-lime, #a5ff01); margin-left: 4px; }
+.pc-tracker-head p { margin: 4px 0 0; font-size: 0.78rem; color: var(--aero-text-dim, #b7b7b7); }
+.pc-filter { display: flex; gap: 6px; flex-wrap: wrap; }
+.pc-filter button {
+  height: 32px; padding: 0 13px; border-radius: 999px; border: 1px solid var(--aero-line-strong, #3a3b3c);
+  background: transparent; color: var(--aero-text-dim, #b7b7b7); font: inherit; font-size: 0.78rem; font-weight: 600;
+  text-transform: none; letter-spacing: 0; cursor: pointer;
+}
+.pc-filter button.active { background: var(--aero-lime, #a5ff01); border-color: transparent; color: #101011; }
+.pc-table-wrap { overflow-x: auto; }
+.pc-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.pc-table th, .pc-table td { padding: 9px 10px; border-bottom: 1px solid var(--aero-line, #2e2f30); text-align: left; white-space: nowrap; }
+.pc-table thead th { font-size: 0.7rem; font-weight: 600; color: var(--aero-text-muted, #8f8f8f); }
+.pc-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.pc-player { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 0; border: 0; background: none; color: #fff; font: inherit; text-transform: none; letter-spacing: 0; cursor: pointer; text-align: left; }
+.pc-player span { font-size: 0.7rem; color: var(--aero-text-muted, #8f8f8f); font-weight: 400; }
+.pc-player:hover strong { color: var(--aero-lime, #a5ff01); }
+.pc-status { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; border: 1px solid var(--aero-line-strong, #3a3b3c); color: var(--aero-text-dim, #b7b7b7); }
+.pc-status.pc-rise { background: var(--aero-lime, #a5ff01); color: #101011; border-color: transparent; }
+.pc-status.pc-drop { background: rgba(255, 76, 94, 0.22); color: #fff; border-color: rgba(255, 76, 94, 0.6); }
+.pc-locked { margin-left: 6px; font-size: 0.66rem; color: var(--aero-warn, #e2b75b); }
+.pc-trend.t-up { color: var(--aero-lime, #a5ff01); }
+.pc-trend.t-down { color: var(--aero-negative, #ff4c5e); }
+.pc-more { margin-top: 10px; height: 36px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--aero-line-strong, #3a3b3c); background: var(--aero-surface-raised, #1f2020); color: #fff; font: inherit; font-size: 0.8rem; text-transform: none; letter-spacing: 0; cursor: pointer; }
+@media (max-width: 720px) {
+  .pc-tracker-head { flex-direction: column; }
+  .pc-table th, .pc-table td { padding: 10px 8px; }
+}

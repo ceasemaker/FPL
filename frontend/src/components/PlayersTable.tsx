@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Player } from "../hooks/usePlayers";
 import "./PlayersTable.css";
+import { PriceChangeBadge } from "./priceChange/PriceChange";
 
 interface PlayersTableProps {
     players: Player[];
@@ -202,6 +203,7 @@ export function PlayersTable({
                                     <div className="player-cell">
                                         {player.image_url && <img src={player.image_url} alt="" className="player-thumb" />}
                                         <span>{player.web_name}</span>
+                                        <PriceChangeBadge athleteId={player.id} />
                                         {player.status === "i" && <span className="status-indicator injured" title="Injured">🤕</span>}
                                         {player.status === "d" && <span className="status-indicator doubtful" title="Doubtful">⚠️</span>}
                                         {player.status === "u" && <span className="status-indicator unavailable" title="Unavailable">❌</span>}
