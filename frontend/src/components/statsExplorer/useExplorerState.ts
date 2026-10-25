@@ -135,5 +135,7 @@ export function useExplorerState() {
     setParams(next, { replace: true });
   }, [params, setParams, navigate]);
 
-  return { state, update, reset, search: serialise(state).toString(), player, openPlayer, closePlayer };
+  // False while the URL leaves the minimum to the season's own bar (see the explorer payload).
+  const minSet = params.get(KEYS.minMinutes) !== null;
+  return { state, update, reset, search: serialise(state).toString(), player, openPlayer, closePlayer, minSet };
 }

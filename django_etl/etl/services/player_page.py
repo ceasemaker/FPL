@@ -14,13 +14,13 @@ from collections import defaultdict
 from django.core.cache import cache
 from django.db.models import Max, Q
 
-from ..models import Athlete, Fixture, SofasportHeatmap, GameweekHistory, MatchGoal, MatchLineupPlayer, PlayerSeasonStat, PlMatch
+from ..models import AthleteStat, Athlete, Fixture, SofasportHeatmap, GameweekHistory, MatchGoal, MatchLineupPlayer, PlayerSeasonStat, PlMatch
 from .match_page import _round, _teams, went_to_extra_time
+from .sample_size import SMALL_SAMPLE, qualifying_minutes
 
 CACHE_TTL = 15 * 60
 POSITIONS = {1: "GKP", 2: "DEF", 3: "MID", 4: "FWD"}
 POSITION_NAMES = {1: "goalkeepers", 2: "defenders", 3: "midfielders", 4: "forwards"}
-MIN_MINUTES = 450
 
 # Season-stat keys differ between the two Premier League feeds; take the first present.
 SEASON_KEYS = {
@@ -58,9 +58,13 @@ def _first(stats: dict, keys: list[str]) -> float:
     return 0.0
 
 
-def _per90_pool(season: int) -> dict[int, dict[int, dict]]:
+def _min_minutes() -> int:
+    return qualifying_minutes(AthleteStat.objects.aggregate(gw=Max("game_week"))["gw"] or 0)
+
+
+def _per90_pool(season: int, min_minutes: int) -> dict[int, dict[int, dict]]:
     """position -> player code -> per-90 numbers, for players with enough league minutes."""
-    key = f"player-pool:{season}:v1"
+    key = f"player-pool:{season}:{min_minutes}:v2"
     cached = cache.get(key)
     if cached:
         return cached
@@ -77,11 +81,11 @@ def _per90_pool(season: int) -> dict[int, dict[int, dict]]:
     pool: dict[int, dict[int, dict]] = defaultdict(dict)
     for code, row in fpl.items():
         mins = row["minutes"]
-        if mins < MIN_MINUTES:
+        if mins < min_minutes:
             continue
         o = opta.get(str(code), {})
         per = lambda v: v / mins * 90
-        values = {"xg": per(row["xg"]), "xa": per(row["xa"]), "xgi": per(row["xg"] + row["xa"]), "xgc": per(row["xgc"]),
+        values = {"minutes": mins, "xg": per(row["xg"]), "xa": per(row["xa"]), "xgi": per(row["xg"] + row["xa"]), "xgc": per(row["xgc"]),
                   "points": per(row["points"])}
         if o.get("minutes"):
             om = o["minutes"]
@@ -95,7 +99,8 @@ def _per90_pool(season: int) -> dict[int, dict[int, dict]]:
 
 
 def _compare(code: int, position: int, season: int) -> dict:
-    pool = _per90_pool(season).get(position, {})
+    min_minutes = _min_minutes()
+    pool = _per90_pool(season, min_minutes).get(position, {})
     me = pool.get(code)
     rows = []
     for key, label, dp in COMPARE.get(position, []):
@@ -106,12 +111,12 @@ def _compare(code: int, position: int, season: int) -> dict:
         below = sum(1 for v in values if (v > mine if key in LOWER_IS_BETTER else v < mine))
         rows.append({"key": key, "label": label, "value": round(mine, dp), "pct": round(below / (len(values) - 1) * 100) if len(values) > 1 else None,
                      "decimals": dp})
-    return {"rows": rows, "poolSize": len(pool), "positionName": POSITION_NAMES.get(position, "players"), "minMinutes": MIN_MINUTES,
-            "qualified": me is not None}
+    return {"rows": rows, "poolSize": len(pool), "positionName": POSITION_NAMES.get(position, "players"), "minMinutes": min_minutes,
+            "qualified": me is not None, "smallSample": bool(me and me["minutes"] < SMALL_SAMPLE), "smallSampleMinutes": SMALL_SAMPLE}
 
 
 def build_payload(player_id: int) -> dict | None:
-    key = f"player-page:{player_id}:v1"
+    key = f"player-page:{player_id}:v2"
     cached = cache.get(key)
     if cached:
         return cached

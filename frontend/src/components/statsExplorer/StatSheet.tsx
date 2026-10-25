@@ -12,7 +12,6 @@ import { DEFAULT_STATE } from "./useExplorerState";
 // League, Champions League and both, with a percentile bar among players in
 // his position with enough minutes behind each stat.
 
-const MIN_MINUTES = DEFAULT_STATE.minMinutes;
 const GROUP_ORDER: Record<Position, string[]> = {
   GKP: ["Goalkeeping", "Involvement", "Defending", "Creating", "Shooting"],
   DEF: ["Defending", "Involvement", "Creating", "Shooting", "Goalkeeping"],
@@ -51,6 +50,9 @@ export function StatSheet({ playerId }: { playerId: number }) {
   useEffect(() => { let alive = true; loadExplorer().then((d) => { if (alive) setData(d); }); return () => { alive = false; }; }, []);
 
   const player = data?.players.find((p) => p.id === playerId) ?? null;
+  // The season's ranking bar, the same one the explorer table uses.
+  const minMinutes = data?.minMinutes ?? DEFAULT_STATE.minMinutes;
+  const smallSample = data?.smallSample ?? 450;
 
   // Cohorts as in the explorer table: same position, enough minutes behind the stat.
   const cohorts = useMemo(() => {
@@ -59,14 +61,14 @@ export function StatSheet({ playerId }: { playerId: number }) {
     for (const stat of data.catalogue) {
       const list: number[] = [];
       for (const p of data.players) {
-        if (p.position !== player.position || !qualifies(stat, p, "pl", MIN_MINUTES)) continue;
+        if (p.position !== player.position || !qualifies(stat, p, "pl", minMinutes)) continue;
         const v = statValue(stat, p, "pl", norm);
         if (v !== null) list.push(v);
       }
       map.set(stat.key, list.sort((a, b) => a - b));
     }
     return map;
-  }, [data, player, norm]);
+  }, [data, player, norm, minMinutes]);
 
   if (data === undefined) return <div className="sx-sheet-loading" aria-busy="true">Loading the full stat sheet…</div>;
   if (data === null) return <p className="mp-note">The full stat sheet couldn't be loaded. Try again in a minute.</p>;
@@ -88,7 +90,7 @@ export function StatSheet({ playerId }: { playerId: number }) {
   const rows = (stats: Stat[]) => stats.map((s) => {
     const pl = statValue(s, player, "pl", norm);
     const both = statValue(s, player, "all", norm);
-    const qualified = qualifies(s, player, "pl", MIN_MINUTES);
+    const qualified = qualifies(s, player, "pl", minMinutes);
     const cohort = cohorts.get(s.key) ?? [];
     const pct = qualified && pl !== null ? percentile(pl, cohort, s.lowerIsBetter) : null;
     return (
@@ -116,7 +118,7 @@ export function StatSheet({ playerId }: { playerId: number }) {
   return (
     <div className="ss">
       <div className="ss-tools">
-        <p>{plMins.toLocaleString()} Premier League minutes{player.ucl ? ` · ${uclMins.toLocaleString()} Champions League minutes` : ""}. Bars: percentile among {POSITION_NAMES[player.position]} with {MIN_MINUTES}+ league minutes.</p>
+        <p>{plMins.toLocaleString()} Premier League minutes{player.ucl ? ` · ${uclMins.toLocaleString()} Champions League minutes` : ""}. Bars: percentile among {POSITION_NAMES[player.position]} with {minMinutes}+ league minutes (40% of the league minutes so far, at least 270).{plMins < minMinutes ? ` He has ${plMins}, so he isn't ranked yet.` : plMins < smallSample ? ` Small sample: under ${smallSample} minutes, so his per-90 numbers can swing on a game or two.` : ""}</p>
         <div className="tp-seg" role="group" aria-label="Show stats as">
           <button type="button" aria-pressed={norm === "p90"} onClick={() => setNorm("p90")}>Per 90</button>
           <button type="button" aria-pressed={norm === "total"} onClick={() => setNorm("total")}>Season totals</button>

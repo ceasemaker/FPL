@@ -70,6 +70,8 @@ export interface ExplorerPayload {
   season: number;
   seasonLabel: string;
   latestGameweek: number;
+  minMinutes?: number;   // the season's ranking bar (grows with the season)
+  smallSample?: number;  // under this many league minutes: rank shown, flagged
   catalogue: Stat[];
   lenses: Record<string, Lens>;
   teamCatalogue: TeamStatDef[];

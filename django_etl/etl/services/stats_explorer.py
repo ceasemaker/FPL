@@ -19,6 +19,7 @@ from django.db.models import Max
 from ..models import Athlete, AthleteStat, PlayerSeasonStat, TeamSeasonStat
 from . import chart_lab
 from .pl_stats_client import COMPETITIONS
+from .sample_size import SMALL_SAMPLE, qualifying_minutes
 
 CACHE_TTL = 600
 POSITION_LABELS = {1: "GKP", 2: "DEF", 3: "MID", 4: "FWD"}
@@ -174,7 +175,7 @@ def _raw_keys() -> set[str]:
 
 def build_payload(season: int) -> dict:
     latest = AthleteStat.objects.aggregate(gw=Max("game_week"))["gw"] or 0
-    cache_key = f"stats_explorer:{season}:gw{latest}:v3"
+    cache_key = f"stats_explorer:{season}:gw{latest}:v4"
     cached = cache.get(cache_key)
     if cached:
         return cached
@@ -249,6 +250,9 @@ def build_payload(season: int) -> dict:
         "season": season,
         "seasonLabel": f"{season}/{(season + 1) % 100:02d}",
         "latestGameweek": latest,
+        # The ranking bar (see services/sample_size.py): grows with the season.
+        "minMinutes": qualifying_minutes(latest),
+        "smallSample": SMALL_SAMPLE,
         "catalogue": CATALOGUE,
         "lenses": LENSES,
         "teamCatalogue": TEAM_CATALOGUE,

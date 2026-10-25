@@ -74,7 +74,7 @@ interface SavedView { name: string; search: string }
 
 export function StatsExplorerPage() {
   const navigate = useNavigate();
-  const { state, update, reset, search, player: legacyPlayer } = useExplorerState();
+  const { state, update, reset, search, player: legacyPlayer, minSet } = useExplorerState();
   const [data, setData] = useState<ExplorerPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<number[]>([]);
@@ -108,6 +108,12 @@ export function StatsExplorerPage() {
     return () => window.clearTimeout(t);
   }, [toast]);
 
+  // Unless the URL sets one, the minimum is the season's bar from the payload
+  // (40% of league minutes so far, at least 270), shared with the Player page.
+  const minMinutes = minSet ? state.minMinutes : data?.minMinutes ?? state.minMinutes;
+  const smallSample = data?.smallSample ?? 450;
+  const view = useMemo(() => ({ ...state, minMinutes }), [state, minMinutes]);
+
   const statsByKey = useMemo(() => new Map((data?.catalogue ?? []).map((s) => [s.key, s])), [data]);
   const uclTeams = useMemo(() => new Set(data?.uclTeamIds ?? []), [data]);
   const lens = data?.lenses[state.lens] ?? data?.lenses.attacking;
@@ -127,7 +133,7 @@ export function StatsExplorerPage() {
     for (const stat of data.catalogue) {
       const byPos = new Map<Position, number[]>();
       for (const player of data.players) {
-        if (!qualifies(stat, player, state.scope, state.minMinutes)) continue;
+        if (!qualifies(stat, player, state.scope, minMinutes)) continue;
         const value = statValue(stat, player, state.scope, state.norm);
         if (value === null) continue;
         const list = byPos.get(player.position) ?? [];
@@ -138,14 +144,14 @@ export function StatsExplorerPage() {
       map.set(stat.key, byPos);
     }
     return map;
-  }, [data, state.scope, state.norm, state.minMinutes]);
+  }, [data, state.scope, state.norm, minMinutes]);
 
   const cellOf = (stat: Stat, player: ExplorerPlayer): CellInfo => {
-    if (!qualifies(stat, player, state.scope, state.minMinutes)) {
+    if (!qualifies(stat, player, state.scope, minMinutes)) {
       const plMin = Math.round(minutesFor(player, "pl"));
       return {
         value: null, text: "–", pct: null, shade: null,
-        tip: `Only ${plMin} Premier League minutes (minimum ${state.minMinutes})`,
+        tip: `Only ${plMin} Premier League minutes (minimum ${minMinutes})`,
         label: `${stat.label}: not enough Premier League minutes (${plMin})`,
       };
     }
@@ -173,7 +179,7 @@ export function StatsExplorerPage() {
     if (!data) return [];
     const q = state.query.trim().toLowerCase();
     const filtered = data.players.filter((p) => {
-      if (minutesFor(p, state.scope) < state.minMinutes) return false;
+      if (minutesFor(p, state.scope) < minMinutes) return false;
       if (state.position !== "ALL" && p.position !== state.position) return false;
       const inUcl = p.teamId !== null && uclTeams.has(p.teamId);
       if (state.club === "only" && !inUcl) return false;
@@ -204,7 +210,7 @@ export function StatsExplorerPage() {
     state.scope !== DEFAULT_STATE.scope,
     state.club !== DEFAULT_STATE.club,
     state.norm !== DEFAULT_STATE.norm,
-    state.minMinutes !== DEFAULT_STATE.minMinutes,
+    minSet,
     state.maxPrice !== null,
     state.watchOnly,
   ].filter(Boolean).length;
@@ -245,7 +251,7 @@ export function StatsExplorerPage() {
       y: CHART_LAB_FORMULA[y.key][norm],
       formula: CHART_LAB_FORMULA[x.key][norm],
       position: state.position,
-      minMinutes: state.minMinutes,
+      minMinutes: minMinutes,
       selected,
     });
     navigate("/chart-lab");
@@ -321,7 +327,7 @@ export function StatsExplorerPage() {
           </div>
         </div>
         <div className="sx-bar-filters">
-          <Controls state={state} update={update} tab={state.tab} uclRule={data?.uclClubRule} compact />
+          <Controls state={view} update={update} tab={state.tab} uclRule={data?.uclClubRule} compact />
         </div>
       </section>
 
@@ -364,7 +370,8 @@ export function StatsExplorerPage() {
         <PlayerTable
           rows={rows}
           columns={columns}
-          state={state}
+          state={view}
+          smallSample={smallSample}
           sortKey={sortKey}
           uclTeams={uclTeams}
           selected={selected}
@@ -379,7 +386,7 @@ export function StatsExplorerPage() {
       )}
 
       {data && state.tab === "teams" && (
-        <TeamTable teams={data.teams} catalogue={data.teamCatalogue} state={state}
+        <TeamTable teams={data.teams} catalogue={data.teamCatalogue} state={view}
           onSort={(key) => update({ sort: key, dir: state.sort === key && state.dir === "desc" ? "asc" : "desc" })} />
       )}
 
@@ -413,7 +420,7 @@ export function StatsExplorerPage() {
 
       <FilterSheet open={sheetOpen} onClose={() => setSheetOpen(false)} activeFilters={activeFilters} onReset={reset}
         resultLabel={state.tab === "players" ? `Show ${rows.length} player${rows.length === 1 ? "" : "s"}` : "Show clubs"}>
-        <Controls state={state} update={update} tab={state.tab} stacked uclRule={data?.uclClubRule} />
+        <Controls state={view} update={update} tab={state.tab} stacked uclRule={data?.uclClubRule} />
       </FilterSheet>
 
       {toast && <div className="sx-toast" role="status">{toast}</div>}
@@ -508,7 +515,7 @@ function Controls({ state, update, tab, stacked, compact, uclRule }: {
       {tab === "players" && (
         <>
           <label className={`${field} sx-field-narrow`}>
-            <span className="sx-legend">Min minutes</span>
+            <span className="sx-legend" title="Starts at this season's bar: 40% of the league minutes so far, at least 270">Min minutes</span>
             <input className="aero-input" type="number" min={0} step={90} inputMode="numeric" value={state.minMinutes}
               onChange={(e) => update({ minMinutes: Math.max(0, Number(e.target.value) || 0) })} />
           </label>
@@ -622,10 +629,11 @@ function ColumnsMenu({ catalogue, lensKeys, extra, onChange }: {
 
 // --------------------------------------------------------------- tables
 
-function PlayerTable({ rows, columns, state, sortKey, uclTeams, selected, watchlist, cell, onSort, onOpen, onSelect, onWatch, onReset }: {
+function PlayerTable({ rows, columns, state, smallSample, sortKey, uclTeams, selected, watchlist, cell, onSort, onOpen, onSelect, onWatch, onReset }: {
   rows: ExplorerPlayer[];
   columns: Stat[];
   state: ExplorerState;
+  smallSample: number;
   sortKey: string;
   uclTeams: Set<number>;
   selected: number[];
@@ -756,7 +764,7 @@ function PlayerTable({ rows, columns, state, sortKey, uclTeams, selected, watchl
                   </div>
                 </th>
                 <td className="sx-num sx-wide-only">{(p.fpl.fpl_price ?? 0).toFixed(1)}</td>
-                <td className="sx-num sx-dim sx-wide-only">{Math.round(minutesFor(p, state.scope))}</td>
+                <td className="sx-num sx-dim sx-wide-only">{Math.round(minutesFor(p, state.scope))}{minutesFor(p, "pl") < smallSample && <span className="sx-small" title={`Small sample: under ${smallSample} league minutes, so per-90 numbers can swing on a game or two`}>small sample</span>}</td>
                 {columns.map((c, colIndex) => {
                   const info = cell(c, p);
                   return (

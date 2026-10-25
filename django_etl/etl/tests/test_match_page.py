@@ -146,3 +146,10 @@ class PlayerPageTests(TestCase):
 
     def test_unknown_player_is_404(self):
         self.assertEqual(self.client.get("/api/players/12345/page/").status_code, 404)
+
+
+class SampleSizeTests(TestCase):
+    def test_bar_grows_with_the_season_from_a_floor(self):
+        from ..services.sample_size import qualifying_minutes
+        self.assertEqual([qualifying_minutes(gw) for gw in (0, 5, 8, 19, 38)], [270, 270, 290, 680, 1370])
+

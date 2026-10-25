@@ -28,7 +28,7 @@ interface PlayerData {
   byCompetition: { competitionId: number; competition: string; apps: number; starts: number; minutes: number; goals: number; assists: number }[];
   log: LogRow[];
   upcoming: { matchId: string; kickoff: string; competitionId: number; competition: string; home: boolean; opp: { id: string; name: string; short: string }; gameweek: number | null; difficulty: number | null }[];
-  compare: { rows: { key: string; label: string; value: number; pct: number | null; decimals: number }[]; poolSize: number; positionName: string; minMinutes: number; qualified: boolean };
+  compare: { rows: { key: string; label: string; value: number; pct: number | null; decimals: number }[]; poolSize: number; positionName: string; minMinutes: number; qualified: boolean; smallSample: boolean; smallSampleMinutes: number };
   heatmaps: { gameweek: number }[];
 }
 
@@ -121,7 +121,7 @@ export function PlayerPage() {
           </div>
         </section>
         <section>
-          <div className="mp-sec-title"><div><h2>How he compares</h2><p>Per 90 minutes in the league, against {data.compare.positionName} with {data.compare.minMinutes}+ league minutes ({data.compare.poolSize} of them).</p></div></div>
+          <div className="mp-sec-title"><div><h2>How he compares</h2><p>Per 90 minutes in the league, against {data.compare.positionName} with {data.compare.minMinutes}+ league minutes ({data.compare.poolSize} of them; the bar is 40% of the league minutes so far, at least 270).{data.compare.smallSample && <span className="mp-badge" title={`Under ${data.compare.smallSampleMinutes} league minutes: per-90 numbers can swing on a game or two`}>Small sample</span>}</p></div></div>
           <div className="mp-sheet pp-compare">
             {!data.compare.qualified || !data.compare.rows.length ? (
               <p className="mp-note">Not enough league minutes yet to compare fairly (he needs {data.compare.minMinutes}).</p>
@@ -225,7 +225,7 @@ function summary(d: PlayerData): string {
   if (d.compare.qualified && rows.length) {
     const best = [...rows].sort((x, y) => (y.pct ?? 0) - (x.pct ?? 0))[0];
     const worst = [...rows].sort((x, y) => (x.pct ?? 0) - (y.pct ?? 0))[0];
-    if ((best.pct ?? 0) >= 70) text += ` In the league his ${lower(best.label)} per 90 is better than ${best.pct}% of ${d.compare.positionName}`;
+    if ((best.pct ?? 0) >= 70) text += ` In the league${d.compare.smallSample ? " (a small sample so far)" : ""} his ${lower(best.label)} per 90 is better than ${best.pct}% of ${d.compare.positionName}`;
     else text += ` In the league he is around the middle of the ${d.compare.positionName} on most measures`;
     if (worst !== best && (worst.pct ?? 100) <= 30) text += `; his ${lower(worst.label)} is lower than most (better than only ${worst.pct}%).`;
     else text += ".";

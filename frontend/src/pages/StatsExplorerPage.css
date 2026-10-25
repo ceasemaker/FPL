@@ -1405,3 +1405,5 @@ th[aria-sort="descending"] .sx-sort {
   white-space: normal;
 }
 
+/* Under 450 league minutes: ranked, but flagged */
+.sx-small { display: block; font-size: 0.56rem; font-weight: 700; color: var(--aero-warn); white-space: nowrap; cursor: help; }
