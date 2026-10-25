@@ -193,6 +193,31 @@ Opta id). Re-running upserts.
   2025/26 (871) and 2026/27 (623); Championship 2025/26 (503); club sheets for
   all three PL seasons.
 
+### Matches in every competition (25 October 2026)
+
+`sync_match_goals` stores every match a Premier League club plays, not just the
+league: League Cup (2), FA Cup (1), Champions League (5), Europa League (6),
+Conference League (1125), Community Shield (38) and UEFA Super Cup (174),
+back to 2021/22. Cup ties are kept only when a PL club plays, so sync the league
+first (the command does). `sync_match_details` then loads lineups, team stats
+and the timeline.
+
+- **What cups lack.** The events feed gives goals, cards and subs; there is no
+  raw Opta feed, so no momentum, card reasons or VAR, and **no xG** in team
+  stats (treated as unavailable, never 0). Player sheets are league only.
+- **Score-only ties.** Some 2024/25 Champions League and FA Cup matches have
+  only the score (no events, lineups or stats).
+- **Shoot-outs** are `homePenaltyScore`/`awayPenaltyScore` on the match row.
+  The League Cup (before the final) and Community Shield go straight to
+  penalties without extra time.
+- **Crests** for non-PL clubs: `resources.premierleague.com/premierleague/badges/100/t{optaId}.png`
+  (the `premierleague25` SVG set is PL only).
+
+The pages built on this: `/api/matches/<id>/` (Match page),
+`/api/matches/calendar/?start=&days=` (Matches calendar), `/api/teams/` and
+`/api/teams/<optaId>/?season=` (Team page), `/api/players/<fplId>/page/`
+(Player page).
+
 ## What this adds over FPL
 
 FPL already gives xG, xA, xGC, ICT, bonus and the basics per gameweek. These APIs
