@@ -365,6 +365,7 @@ function SquadRow({ player, selling, data, gw, isNew, inXI, captain, active, onS
         {captain && <span className="pl-cap" title="Projected captain">C</span>}
         {flagged && <span className={`pl-status s-${player.status}`} title={player.news || "Flagged"}>{player.chance != null ? `${player.chance}%` : player.status === "i" ? "Injured" : player.status === "s" ? "Suspended" : "Doubt"}</span>}
         {isNew && <span className="pl-new">New</span>}
+        {data.priceForecast?.chances[String(player.id)] != null && <span className="pl-rise" title={`AeroFPL forecast: ${Math.round(data.priceForecast.chances[String(player.id)] * 100)}% chance of a price rise within 7 days. In testing, ${Math.round(data.priceForecast.record.precision * 100)}% of players it flagged did rise.`}>Rise likely this week</span>}
         <small>
           {player.teamShort} · {money(player.price)}{selling !== player.price ? ` · sells for ${money(selling)}` : ""} <PriceChangeBadge athleteId={player.id} />
           {rot && <span className={rot.risky ? "pl-rot risky" : "pl-rot"}> · {rot.text}</span>}
@@ -667,6 +668,13 @@ function planChecks(data: PlannerData, plan: Plan, weeks: WeekSummary[], byId: M
     }
   }
   const next = data.nextGameweek;
+  if (data.priceForecast) {
+    const soon = plan.transfers.filter((t) => t.gw > next && data.priceForecast!.chances[String(t.in)] != null && direction(prices?.byId.get(t.in) ?? null) !== "rise");
+    for (const t of soon) {
+      const p = byId.get(t.in);
+      if (p) out.push({ level: "tip", text: `${p.name} may rise within a week (AeroFPL forecast, right ${Math.round(data.priceForecast.record.precision * 100)}% of the time in testing): buying before GW${t.gw} could save money.` });
+    }
+  }
   for (const t of plan.transfers) {
     const dirIn = direction(prices?.byId.get(t.in) ?? null), dirOut = direction(prices?.byId.get(t.out) ?? null);
     const pin = byId.get(t.in), pout = byId.get(t.out);

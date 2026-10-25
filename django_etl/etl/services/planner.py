@@ -262,7 +262,18 @@ def build_payload(manager_id: int, client: FPLClient | None = None) -> dict:
         "players": player_list(),
         "projections": projections(next_gw),
         "rotation": rotation(next_gw, deadlines),
+        "priceForecast": _price_forecast(),
     }
+
+
+def _price_forecast():
+    """Seven-day rise chances, present only when the backtest accepted the model."""
+    from .price_forecast import current
+
+    try:
+        return current()
+    except Exception:  # a failed fit must never take the planner down
+        return None
 
 
 # ------------------------------------------------------------------ mini-leagues

@@ -20,6 +20,8 @@ export interface PlannerData {
   projections: { points: Record<string, Record<string, number>>; fplOnly: number[]; covers: [number, number];
     record: { version: string; playerWeeks: number; modelError: number; formError: number; seasons: string[] } | null };
   rotation: Record<string, { starts: number; minutes: number; clubGames: number; next14: number }>;
+  // AeroFPL's seven-day price-rise forecast: only sent when its backtest passed.
+  priceForecast: { chances: Record<string, number>; record: { precision: number; flagged: number; testDays: number; rulePrecision: number } } | null;
 }
 
 export interface Transfer { gw: number; out: number; in: number; sell: number; buy: number }

@@ -151,3 +151,20 @@ class PlannerSyncTests(TestCase):
         self.assertEqual(self.client.get("/api/planner/sync/nope/").status_code, 404)
         big = json.dumps({"plans": {"x": "y" * 70000}})
         self.assertEqual(self.client.post("/api/planner/sync/", big, content_type="application/json").status_code, 413)
+
+
+class PriceForecastTests(TestCase):
+    def test_backtest_needs_enough_days_and_records_the_result(self):
+        from ..models import ModelEvaluation, PriceSnapshot
+        from ..services import price_forecast
+        team = Team.objects.create(id=1, code=3, name="Arsenal", short_name="ARS")
+        a = Athlete.objects.create(id=10, code=100, web_name="Saka", team=team, element_type=3, now_cost=100)
+        start = timezone.now() - timedelta(days=10)
+        for d in range(10):
+            PriceSnapshot.objects.create(athlete=a, snapshot_time=start + timedelta(days=d), cost=100 + d // 5,
+                                         transfers_in_total=1000 * d, transfers_out_total=0, selected_by_percent=10, form=5)
+        result = price_forecast.backtest()
+        self.assertFalse(result["accepted"])
+        self.assertIn("need 14", result["reason"])
+        self.assertFalse(ModelEvaluation.objects.get(name="price_forecast").accepted)
+        self.assertIsNone(price_forecast.current())  # never shown without an accepted backtest

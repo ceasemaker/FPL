@@ -227,3 +227,4 @@
   .pl-row > .pl-sell { grid-area: s; }
   .pl-fx-head { display: none; }
 }
+.pl-rise { font-size: 0.6rem; font-weight: 800; padding: 1px 6px; border-radius: 5px; border: 1px solid rgba(165, 255, 1, 0.5); color: var(--aero-lime); cursor: help; }
