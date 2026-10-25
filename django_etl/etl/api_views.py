@@ -3652,6 +3652,18 @@ def team_news(request):
 
 
 @require_GET
+def rate_my_team(request, manager_id):
+    """A squad's projected points over the next gameweeks against the top 100 managers'."""
+    from etl.services.planner import ManagerNotFound
+    from etl.services.rate_team import build_payload as build_rating
+
+    try:
+        return JsonResponse(build_rating(manager_id))
+    except ManagerNotFound:
+        return JsonResponse({"error": "We couldn't find that FPL manager ID."}, status=404)
+
+
+@require_GET
 def match_for_fixture(request, fixture_id):
     """Opta match id for an FPL fixture id, so FPL screens can link to the Match page."""
     from etl.services.match_page import match_for_fixture as resolve

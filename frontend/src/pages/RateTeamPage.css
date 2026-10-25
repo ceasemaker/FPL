@@ -1,0 +1,12 @@
+/* Rate my team: one big honest number, then the reasons. */
+.rt-hero { display: grid; grid-template-columns: auto 1fr; gap: 22px; align-items: center; padding: 18px 20px; margin: 18px 0 4px; }
+.rt-score { display: flex; flex-direction: column; gap: 4px; min-width: 220px; }
+.rt-score b { font-size: clamp(2.6rem, 5vw, 3.6rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: var(--aero-lime); font-variant-numeric: tabular-nums; }
+.rt-score span { font-size: 0.8rem; color: var(--aero-text-dim); }
+.rt-meter { display: block; height: 6px; border-radius: 6px; background: var(--aero-line); overflow: hidden; margin-top: 6px; }
+.rt-meter i { display: block; height: 100%; background: var(--aero-lime); border-radius: 6px; }
+.rt-hero p { margin: 0; font-size: 0.98rem; line-height: 1.6; color: var(--aero-text); max-width: 70ch; }
+.rt-page .pp-next a { grid-template-columns: 44px minmax(0, 1fr) 44px auto; }
+.rt-page .pp-next b { font-variant-numeric: tabular-nums; }
+.rt-plan { display: inline-block; margin-top: 12px; text-decoration: none; }
+@media (max-width: 720px) { .rt-hero { grid-template-columns: 1fr; } }

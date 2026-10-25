@@ -210,3 +210,17 @@ class TeamNewsTests(TestCase):
         self.assertEqual(d["deadline"]["gameweek"], 9)
         self.assertEqual([f["name"] for f in club["flagged"]], ["Saka"])  # "unavailable" (left the club) is left out
         self.assertEqual((club["setPieces"]["penalties"][0]["count"], club["setPieces"]["corners"][0]["count"], club["setPieces"]["freeKicks"][0]["count"]), (2, 15, 4))
+
+
+class RateTeamTests(TestCase):
+    def test_best_xi_respects_formation(self):
+        from ..services.rate_team import best_xi
+        pos = {1: "GKP", 2: "GKP", **{i: "DEF" for i in range(3, 8)}, **{i: "MID" for i in range(8, 13)}, **{i: "FWD" for i in range(13, 16)}}
+        pts = {i: 1.0 for i in range(1, 16)}
+        pts.update({13: 9, 14: 8, 15: 7, 8: 6, 9: 6})  # three strong forwards and two midfielders
+        total, xi, captain = best_xi(list(range(1, 16)), pos, pts)
+        self.assertEqual(len(xi), 11)
+        self.assertEqual(sum(1 for i in xi if pos[i] == "GKP"), 1)
+        self.assertTrue(sum(1 for i in xi if pos[i] == "DEF") >= 3)
+        self.assertEqual(captain, 13)
+        self.assertEqual(total, sum(pts[i] for i in xi) + 9)

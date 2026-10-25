@@ -12,6 +12,7 @@ import {
   PlannerIcon,
   PlayersIcon,
   PriceMonitorIcon,
+  RateIcon,
   StatsExplorerIcon,
   TeamNewsIcon,
   TeamsIcon,
@@ -35,6 +36,7 @@ const groups: { title?: string; links: { to: string; label: string; icon: JSX.El
     title: "My FPL",
     links: [
       { to: "/planner", label: "Transfer planner", icon: <PlannerIcon /> },
+      { to: "/rate-my-team", label: "Rate my team", icon: <RateIcon /> },
       { to: "/team-news", label: "Team news", icon: <TeamNewsIcon /> },
       { to: "/decision-lab", label: "Decision Lab", icon: <DecisionLabIcon /> },
       { to: "/analyze", label: "Analyze Manager", icon: <AnalyzeManagerIcon /> },

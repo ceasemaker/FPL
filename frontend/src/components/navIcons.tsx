@@ -126,6 +126,12 @@ export const DefconIcon = () => (
   </Svg>
 );
 
+export const RateIcon = () => (
+  <Svg>
+    <path d="M10 3.2l2 4.1 4.5.6-3.3 3.1.8 4.5-4-2.2-4 2.2.8-4.5L3.5 7.9 8 7.3z" />
+  </Svg>
+);
+
 export const MenuIcon = () => (
   <Svg>
     <path d="M3.5 6h13M3.5 10h13M3.5 14h13" />
