@@ -137,6 +137,10 @@ export function stateAt(d: MatchData, t: Timeline, slotMap: Record<string, Slot>
 export function summary(d: MatchData, t: Timeline): string | null {
   if (d.status !== "finished" || !d.score) return null;
   const [hs, as] = d.score;
+  if (d.penalties && hs === as) {
+    const [hp, ap] = d.penalties;
+    return `Level at ${hs}–${as}; ${(hp > ap ? d.home : d.away).name} won ${Math.max(hp, ap)}–${Math.min(hp, ap)} on penalties.`;
+  }
   const red = t.events.find((e) => e.kind === "second_yellow" || e.kind === "red");
   const winner = hs > as ? d.home : as > hs ? d.away : null;
   if (red && winner && red.team !== winner.id) {
