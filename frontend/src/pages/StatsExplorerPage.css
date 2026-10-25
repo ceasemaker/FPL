@@ -1093,188 +1093,16 @@ th[aria-sort="descending"] .sx-sort {
 
 /* ---------------------------------------------------------------- drawer */
 
-.sx-drawer-layer {
-  position: fixed;
-  inset: 0;
-  z-index: 1100; /* above the site's fixed nav (1000) */
-}
-
-.sx-drawer-scrim {
-  position: absolute;
-  inset: 0;
-  border: 0;
-  background: rgba(0, 0, 0, 0.45);
-  cursor: default;
-}
-
-.sx-drawer {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  width: min(460px, 100%);
-  border-left: 1px solid var(--aero-line-strong);
-  background: #161717;
-  box-shadow: -18px 0 50px rgba(0, 0, 0, 0.5);
-  animation: sx-slide 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
 @keyframes sx-slide {
   from { transform: translateX(28px); opacity: 0.4; }
-}
-
-.sx-drawer-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 20px 20px 12px;
-}
-
-.sx-drawer-head h2 {
-  margin: 0;
-  font-size: 1.4rem;
-  letter-spacing: -0.02em;
-}
-
-.sx-drawer-head p {
-  margin: 5px 0 0;
-  color: var(--aero-text-dim);
-  font-size: 0.82rem;
 }
 
 .sx-news {
   color: var(--aero-warn) !important;
 }
 
-.sx-drawer-actions {
-  display: flex;
-  gap: 8px;
-  padding: 0 20px 14px;
-}
-
-.sx-minutes {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1px;
-  margin: 0 20px 6px;
-  border: 1px solid var(--aero-line);
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--aero-line);
-}
-
-.sx-minutes div {
-  padding: 10px 12px;
-  background: var(--sx-sheet);
-}
-
-.sx-minutes dt {
-  font-size: 0.7rem;
-  color: var(--aero-text-muted);
-}
-
-.sx-minutes dd {
-  margin: 3px 0 0;
-  font-size: 0.95rem;
-  font-weight: 700;
-}
-
-.sx-drawer-body {
-  flex: 1;
-  overflow: auto;
-  padding: 8px 20px 24px;
-}
-
-.sx-split {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.82rem;
-}
-
-.sx-split caption {
-  padding: 10px 0 8px;
-  color: var(--aero-text-muted);
-  font-size: 0.72rem;
-  text-align: left;
-}
-
-.sx-split th,
-.sx-split td {
-  height: 36px;
-  padding: 0 6px;
-  border-bottom: 1px solid #232424;
-  font-weight: 500;
-  text-align: left;
-}
-
-.sx-split thead th {
-  height: 28px;
-  font-size: 0.7rem;
-  color: var(--aero-text-muted);
-}
-
-.sx-split tbody th {
-  color: var(--aero-text-dim);
-}
-
 .sx-pct {
   width: 70px;
-}
-
-.sx-pctbar {
-  display: block;
-  height: 6px;
-  border-radius: 6px;
-  background: #262727;
-  overflow: hidden;
-}
-
-.sx-pctbar i {
-  display: block;
-  height: 100%;
-  border-radius: 6px;
-  background: #4a4b4b;
-}
-
-.sx-pctbar i { background: rgb(var(--sx-ramp-rgb)); }
-.sx-pctbar i.top { background: var(--sx-top); }
-
-.sx-more {
-  margin-top: 10px;
-  border-top: 1px solid var(--aero-line);
-}
-
-.sx-more summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 42px;
-  font-size: 0.86rem;
-  font-weight: 600;
-  cursor: pointer;
-  list-style: none;
-}
-
-.sx-more summary::-webkit-details-marker {
-  display: none;
-}
-
-.sx-more[open] summary svg {
-  transform: rotate(90deg);
-}
-
-.sx-drawer-foot {
-  display: none;
-}
-
-.sx-foot {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 16px;
 }
 
 /* ----------------------------------------------------------------- sheet */
@@ -1340,7 +1168,6 @@ th[aria-sort="descending"] .sx-sort {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sx-drawer,
   .sx-sheet[open],
   .sx-skel-row {
     animation: none;
@@ -1567,22 +1394,6 @@ th[aria-sort="descending"] .sx-sort {
     flex: 1;
   }
 
-  .sx-drawer {
-    width: 100%;
-    border-left: 0;
-  }
-
-  .sx-drawer-foot {
-    display: flex;
-    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
-    border-top: 1px solid var(--aero-line);
-    background: #161717;
-  }
-
-  .sx-drawer-foot .aero-button {
-    flex: 1;
-  }
-
   .sx-toast {
     bottom: 150px;
     width: calc(100% - 32px);
@@ -1594,5 +1405,3 @@ th[aria-sort="descending"] .sx-sort {
   white-space: normal;
 }
 
-.sx-full-link { display: inline-block; margin-top: 10px; font-size: 0.8rem; font-weight: 700; color: var(--aero-lime); text-decoration: none; }
-.sx-full-link:hover { text-decoration: underline; text-underline-offset: 3px; }

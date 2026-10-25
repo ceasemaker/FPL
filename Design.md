@@ -295,7 +295,7 @@ A graphite neutral ramp under a single high-chroma Spring Bud lime, a light-grey
 ### Hierarchy
 - **Scoreboard** (800, clamp(3rem, 5.4vw, 4.6rem), 0.95, -0.05em, tabular): the Match page score only; a kick-off time drops to clamp(2rem, 3.6vw, 3rem), phones 2.6rem.
 - **Display** (700, clamp(1.8rem, 2.6vw, 2.5rem), 1.05, -0.045em): page titles. Football pages tune within the same range: club name clamp(1.8rem, 3vw, 2.6rem), player name clamp(1.7rem, 2.8vw, 2.5rem), the two match team names clamp(1.5rem, 2.2vw, 2.1rem) and 1rem on phones.
-- **Headline** (700, 1.4rem, -0.02em): drawer and sheet titles.
+- **Headline** (700, 1.4rem, -0.02em): bottom-sheet titles.
 - **Section** (700, 1.3rem, -0.025em): section titles on the football pages, with a muted 0.8rem note line beneath.
 - **Title** (700, 1.1rem, -0.02em): card titles and the momentum band heading (1.05rem).
 - **Summary** (400, 0.98rem, 1.55–1.6): the plain-language paragraph under a header, 68–80ch; the calendar takeaway runs at 1rem.
@@ -324,13 +324,12 @@ Grids collapse to one column at 1050px (team and player pairs) or 720px (match s
 
 ## Elevation & Depth
 
-Hybrid. Data-room sheets are flat and separated by tone and hairlines; content sheets and cards carry one soft ambient shadow; overlays (menus, tray, drawer, toast) lift with deeper, darker shadows. There are no hard offset shadows.
+Hybrid. Data-room sheets are flat and separated by tone and hairlines; content sheets and cards carry one soft ambient shadow; overlays (menus, tray, toast) lift with deeper, darker shadows. There are no hard offset shadows.
 
 ### Shadow Vocabulary
 - **Card ambient** (`box-shadow: 0 14px 38px rgba(0, 0, 0, 0.22)`): `.aero-card`, every `.mp-sheet`, and the calendar grid container.
 - **Menu** (`box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5)`): dropdown panels such as Saved views and Columns.
 - **Tray** (`box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55)`): the floating compare tray.
-- **Drawer** (`box-shadow: -18px 0 50px rgba(0, 0, 0, 0.5)`): the right-side profile drawer.
 - **Segment lift** (`box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4)`): the active option in a heavy tab switch.
 - **Token lift** (`box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4)`): player tokens on the match pitch.
 
@@ -410,11 +409,11 @@ The data-room signature. A sortable table inside a 16px sheet container: sticky 
 ### Compare Tray
 A floating bar fixed to the bottom of the page beside the rail (full width minus 10px on phones), sheet-dark with a 35% lime border, 14px radius and tray shadow. Selected items sit as removable chips with a count and the actions on the right.
 
-### Side Drawer
-A right-side panel up to 460px (full width on phones) over a 45% black scrim, with a strong-hairline left edge and drawer shadow. It slides in 28px over 0.22s with cubic-bezier(0.16, 1, 0.3, 1), suppressed under reduced motion.
+### Player profiles
+There is no side drawer: a player opens on his Player page (`/players/:id`) wherever he is clicked, including from the Stats Explorer, whose full stat sheet now lives there (`components/statsExplorer/StatSheet.tsx`).
 
 ### Bottom Sheet
-On phones, a native `<dialog>` docked to the bottom edge, 18px top corners, max 88vh, 55% black backdrop, rising 24px with the drawer's easing.
+On phones, a native `<dialog>` docked to the bottom edge, 18px top corners, max 88vh, 55% black backdrop, rising 24px with cubic-bezier(0.16, 1, 0.3, 1).
 
 ### Notes and States
 Honest messaging is a component: muted 0.78–0.8rem copy for partial data (or in a bordered graphite panel on data rooms), a dashed-border sheet or button for empty and "earlier games" states, a shimmering skeleton block (1.4s, off under reduced motion) for loading, a coral-tinted 12px panel for errors, and coral or amber news panels for injured or doubtful players.
