@@ -274,8 +274,10 @@ def manager_leagues(manager_id: int, client: FPLClient | None = None) -> list[di
         info = client.get_manager_info(manager_id)
     except Exception as exc:
         raise ManagerNotFound(str(exc)) from exc
-    return [{"id": l["id"], "name": l["name"], "rank": l.get("entry_rank")}
+    # Closest races first: the leagues where the manager ranks highest.
+    rows = [{"id": l["id"], "name": l["name"], "rank": l.get("entry_rank")}
             for l in info.get("leagues", {}).get("classic", []) if l.get("league_type") == "x"]
+    return sorted(rows, key=lambda r: r["rank"] or 10**9)
 
 
 MAX_RIVALS = 20

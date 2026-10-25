@@ -473,9 +473,13 @@ function Suggest({ data, plan, freeSlot, onPlan }: { data: PlannerData; plan: Pl
     if (!freeSlot) return;
     setState("busy");
     try {
-      const horizon = Math.min(5, data.gameweeks.length);
-      const r = await fetch(`/api/optimize-team/?manager_id=${data.managerId}&horizon=${horizon}&free_transfers=${plan.freeTransfers ?? data.freeTransfers}`);
-      if (!r.ok) throw new Error();
+      // Three weeks ahead where the forecast reaches; one week if it can't solve that.
+      let r: Response | null = null;
+      for (const horizon of [3, 1]) {
+        r = await fetch(`/api/optimize-team/?manager_id=${data.managerId}&horizon=${horizon}&free_transfers=${plan.freeTransfers ?? data.freeTransfers}`);
+        if (r.ok) break;
+      }
+      if (!r || !r.ok) throw new Error();
       const body = await r.json() as { gameweeks: { gameweek: number; transfers: { in: { id: number; position: string; now_cost: number }[]; out: { id: number; position: string }[] } }[] };
       const draft: Plan = { name: `Plan ${freeSlot}`, transfers: [] };
       for (const w of body.gameweeks ?? []) {
