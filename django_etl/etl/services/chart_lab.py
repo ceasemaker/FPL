@@ -88,6 +88,10 @@ def _opta_values() -> dict[int, dict[str, float]]:
     season = PlMatch.objects.aggregate(s=Max("season"))["s"]
     if season is None:
         return {}
+    cache_key = f"chart_lab:opta:{season}:v1"
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
     sources = {
         "usage": lambda: usage.build_payload(season, "premier-league"),
         "holdup": lambda: holdup.build_payload(season, "premier-league"),
@@ -106,6 +110,8 @@ def _opta_values() -> dict[int, dict[str, float]]:
             for key, (source, field, _) in OPTA_METRICS.items():
                 if source == name and row.get(field) is not None:
                     out[athlete][key] = _number(row[field])
+    out = dict(out)
+    cache.set(cache_key, out, 60 * 60)  # the three analyses are the slow part of the lab's load
     return out
 
 
