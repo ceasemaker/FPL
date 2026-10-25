@@ -3530,6 +3530,17 @@ def player_page(request, player_id):
 
 
 @require_GET
+def planner(request, manager_id):
+    """Transfer planner: the manager's squad, bank, free transfers, chips, fixtures and players."""
+    from etl.services.planner import ManagerNotFound, build_payload as build_planner_payload
+
+    try:
+        return JsonResponse(build_planner_payload(manager_id))
+    except ManagerNotFound:
+        return JsonResponse({"error": "We couldn't find that FPL manager ID."}, status=404)
+
+
+@require_GET
 def match_for_fixture(request, fixture_id):
     """Opta match id for an FPL fixture id, so FPL screens can link to the Match page."""
     from etl.services.match_page import match_for_fixture as resolve

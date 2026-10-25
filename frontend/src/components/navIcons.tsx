@@ -104,6 +104,14 @@ export const TeamsIcon = () => (
   </Svg>
 );
 
+export const PlannerIcon = () => (
+  <Svg>
+    <rect x="3.5" y="4.5" width="13" height="12" rx="2" />
+    <path d="M3.5 8.5h13M7 3v3M13 3v3" />
+    <path d="M7 12.2h3.5m0 0-1.6-1.5m1.6 1.5-1.6 1.5" />
+  </Svg>
+);
+
 export const MenuIcon = () => (
   <Svg>
     <path d="M3.5 6h13M3.5 10h13M3.5 14h13" />
