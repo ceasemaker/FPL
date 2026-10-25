@@ -434,3 +434,10 @@
   text-transform: none;
   letter-spacing: 0;
 }
+
+/* One lab: a question picker, then the chart form. */
+.lab-question { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; font-size: 0.72rem; font-weight: 700; color: var(--aero-text-muted); }
+.lab-question select { width: 100%; }
+.lab-view-note { margin: 10px 0 0; font-size: 0.74rem; line-height: 1.5; color: var(--aero-text-muted); }
+.lab-stat.season code { color: #7aa7ff; }
+.lab-stat:disabled { opacity: 0.35; cursor: not-allowed; }

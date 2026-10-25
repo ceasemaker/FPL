@@ -23,7 +23,7 @@ import "./ChartLabPage.css";
 type Mode = "scatter" | "bars" | "trend" | "usage" | "changes" | "holdup" | "clutch";
 type Position = "ALL" | "GKP" | "DEF" | "MID" | "FWD";
 
-interface Metric { key: string; label: string }
+interface Metric { key: string; label: string; seasonOnly?: boolean }
 interface LabPlayer { id: number; name: string; full_name: string; team: string | null; position: string; values: StatValues }
 interface PlayersPayload { latest_gameweek: number; metrics: Metric[]; players: LabPlayer[] }
 interface SeriesPayload { series: { id: number; name: string; team: string | null; points: { gameweek: number; values: StatValues }[] }[] }
@@ -82,6 +82,30 @@ const PRESETS: { label: string; formula: string }[] = [
   { label: "Bonus per 90", formula: "per90(bonus)" },
   { label: "Points per 90", formula: "per90(pts)" },
 ];
+
+// Starting points: questions the lab can answer. Builder questions fill in the
+// formulas (and stay editable); analyses open a ready-made view with its own
+// controls. Either way there is one Chart Lab, not a tab per chart.
+interface Question { id: string; label: string; config?: Partial<LabConfig>; view?: Mode }
+const QUESTIONS: { group: string; items: Question[] }[] = [
+  { group: "Build from a question", items: [
+    { id: "chances", label: "Who gets the best chances? (xG and xA per 90)", config: { mode: "scatter", x: "per90(xg)", y: "per90(xa)" } },
+    { id: "usage-create", label: "Who has the ball most, and what do they make of it?", config: { mode: "scatter", x: "usage", y: "per90(created)" } },
+    { id: "box", label: "Who lives in the box? (box touches and shots per 90)", config: { mode: "scatter", x: "per90(btouch)", y: "per90(shots)" } },
+    { id: "clutch-rank", label: "Whose goals won the most league points?", config: { mode: "bars", formula: "clutch" } },
+    { id: "layoff-rank", label: "Best at holding it up: lay-offs per 90", config: { mode: "bars", formula: "per90(layoff)" } },
+    { id: "value", label: "Most points per £m", config: { mode: "bars", formula: "pts / price" } },
+    { id: "finishing", label: "Who is scoring above their xG?", config: { mode: "bars", formula: "g - xg" } },
+    { id: "form", label: "How has each player's season built up? (points, gameweek by gameweek)", config: { mode: "trend", formula: "pts", cumulative: true } },
+  ] },
+  { group: "Ready-made analyses", items: [
+    { id: "usage", label: "Usage: how much of the ball each player uses", view: "usage" },
+    { id: "changes", label: "Changes: which clubs lost their defenders, who made the leap", view: "changes" },
+    { id: "holdup", label: "Hold-up play: lay-offs, aerials and fouls won", view: "holdup" },
+    { id: "clutch", label: "Clutch goals: what each goal was worth in points", view: "clutch" },
+  ] },
+];
+const FORMS: [Mode, string][] = [["scatter", "Scatter"], ["bars", "Ranking"], ["trend", "Trend"]];
 
 // Stats that add up across gameweeks; price and ownership do not.
 const NON_SUMMABLE = new Set(["price", "own"]);
@@ -368,23 +392,38 @@ export function ChartLabPage() {
     <main className="aero-page chart-lab-page">
       <div className="aero-header">
         <div>
-          <span className="aero-eyebrow">Build your own</span>
           <h1>Chart Lab</h1>
-          <p>Write any formula over this season's stats, like <code>xg * xa</code> or <code>per90(xg) / xa</code>, then plot it as a scatter, a ranking or a gameweek trend. Usage plots how much of the ball a player uses against what he makes of it; Changes shows which clubs lost their defenders and which players made the leap; Hold-up and Clutch rank lay-offs and how many points each player's goals were worth.</p>
+          <p>Start from a question, or write any formula over this season's stats (like <code>xg * xa</code> or <code>per90(btouch)</code>) and plot it as a scatter, a ranking or a gameweek trend. Usage, lay-offs and the points each player's goals won are stats here too.</p>
         </div>
       </div>
 
       <div className="lab-layout">
         <aside className="aero-card lab-controls">
-          <div className="lab-mode" role="tablist" aria-label="Chart type">
-            {(["scatter", "bars", "trend", "usage", "changes", "holdup", "clutch"] as Mode[]).map((mode) => (
-              <button key={mode} role="tab" aria-selected={config.mode === mode}
+          <label className="lab-question">
+            <span>Start from a question</span>
+            <select className="aero-select" value="" onChange={(e) => {
+              const q = QUESTIONS.flatMap((g) => g.items).find((item) => item.id === e.target.value);
+              if (q?.view) update({ mode: q.view });
+              else if (q?.config) update(q.config);
+            }}>
+              <option value="">{custom ? `Showing: ${MODE_LABELS[config.mode]}` : "Choose one, or build your own below"}</option>
+              {QUESTIONS.map((g) => (
+                <optgroup key={g.group} label={g.group}>
+                  {g.items.map((q) => <option key={q.id} value={q.id}>{q.label}</option>)}
+                </optgroup>
+              ))}
+            </select>
+          </label>
+          <div className="lab-mode" role="group" aria-label="Chart form">
+            {FORMS.map(([mode, label]) => (
+              <button key={mode} type="button" aria-pressed={config.mode === mode}
                 className={`lab-pill ${config.mode === mode ? "active" : ""}`}
                 onClick={() => update({ mode })}>
-                {MODE_LABELS[mode]}
+                {label}
               </button>
             ))}
           </div>
+          {custom && <p className="lab-view-note">This is a ready-made analysis with its own controls. Pick Scatter, Ranking or Trend to go back to your own formulas; its numbers (usage, lay-offs, clutch) are also stats you can use there.</p>}
 
           {custom ? custom.controls : (<>
           {config.mode === "scatter" ? (
@@ -545,12 +584,13 @@ export function ChartLabPage() {
             </div>
             <div className="lab-stat-grid">
               {data?.metrics.map((metric) => (
-                <button key={metric.key} className="lab-stat" onClick={() => insertVariable(metric.key)}>
+                <button key={metric.key} className={`lab-stat${metric.seasonOnly ? " season" : ""}`} onClick={() => insertVariable(metric.key)}
+                  disabled={metric.seasonOnly && config.mode === "trend"} title={metric.seasonOnly ? "A season total from the Premier League's feeds: works in scatter and ranking charts, not trends." : undefined}>
                   <code>{metric.key}</code><span>{metric.label}</span>
                 </button>
               ))}
             </div>
-            <p className="aero-empty lab-hint">xCS is an estimate (FPL does not publish it): the clean-sheet chance in each 60+ minute appearance, from expected goals conceded. Ownership is season-level only, so it is blank in trends.</p>
+            <p className="aero-empty lab-hint">xCS is an estimate (FPL does not publish it): the clean-sheet chance in each 60+ minute appearance, from expected goals conceded. Ownership is season-level only, so it is blank in trends. Stats marked "(season)" come from the Premier League's own feeds (Opta) and have no gameweek breakdown, so they work in scatter and ranking charts only.</p>
           </article>}
         </section>
       </div>

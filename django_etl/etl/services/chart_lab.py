@@ -53,10 +53,60 @@ EXTRA_METRICS: dict[str, str] = {
 }
 
 
+# Season totals from the Premier League's own feeds (Opta), via the usage,
+# hold-up and clutch analyses: (source, field, label). These have no
+# gameweek breakdown, so they work in scatter and ranking charts, not trends.
+OPTA_METRICS = {
+    "usage": ("usage", "usage", "Usage rate, % of team possessions used (season)"),
+    "touches": ("usage", "touches", "Touches (season)"),
+    "btouch": ("usage", "box_touches", "Touches in the opposition box (season)"),
+    "shots": ("usage", "shots", "Shots (season)"),
+    "created": ("usage", "created", "Chances created (season)"),
+    "lost": ("usage", "lost", "Possession lost (season)"),
+    "drib": ("usage", "dribbles_won", "Dribbles completed (season)"),
+    "layoff": ("holdup", "layoffs_won", "Successful lay-offs (season)"),
+    "aerial": ("holdup", "aerials_won", "Aerial duels won (season)"),
+    "fouled": ("holdup", "fouls_won", "Fouls won (season)"),
+    "clutch": ("clutch", "pointsWon", "League points his goals were worth (season)"),
+    "clutchnp": ("clutch", "pointsWonNoPens", "League points his non-penalty goals were worth (season)"),
+    "decisive": ("clutch", "decisive", "Goals that changed the result (season)"),
+}
+
+
 def metric_catalog() -> list[dict]:
     catalog = [{"key": key, "label": label} for key, (_, label) in SUMMED_METRICS.items()]
     catalog += [{"key": key, "label": label} for key, label in EXTRA_METRICS.items()]
+    catalog += [{"key": key, "label": label, "seasonOnly": True} for key, (_, _, label) in OPTA_METRICS.items()]
     return catalog
+
+
+def _opta_values() -> dict[int, dict[str, float]]:
+    """FPL id -> the Opta season totals above. Missing analyses are skipped."""
+    from ..models import PlMatch
+    from . import clutch, holdup, usage
+
+    season = PlMatch.objects.aggregate(s=Max("season"))["s"]
+    if season is None:
+        return {}
+    sources = {
+        "usage": lambda: usage.build_payload(season, "premier-league"),
+        "holdup": lambda: holdup.build_payload(season, "premier-league"),
+        "clutch": lambda: clutch.build_payload(season),
+    }
+    out: dict[int, dict[str, float]] = defaultdict(dict)
+    for name, load in sources.items():
+        try:
+            players = load().get("players") or []
+        except Exception:  # an analysis failing must not take the lab down
+            continue
+        for row in players:
+            athlete = row.get("athleteId")
+            if not athlete:
+                continue
+            for key, (source, field, _) in OPTA_METRICS.items():
+                if source == name and row.get(field) is not None:
+                    out[athlete][key] = _number(row[field])
+    return out
 
 
 def _fixtures_per_team_gameweek() -> dict[tuple[int, int], int]:
@@ -108,7 +158,7 @@ def _latest_gameweek() -> int:
 def build_player_totals() -> dict:
     """Season totals of every chartable stat for every listed player."""
     latest = _latest_gameweek()
-    cache_key = f"chart_lab:totals:gw{latest}:v1"
+    cache_key = f"chart_lab:totals:gw{latest}:v3"
     cached = cache.get(cache_key)
     if cached:
         return cached
@@ -130,6 +180,7 @@ def build_player_totals() -> dict:
         for key, (field, _) in SUMMED_METRICS.items():
             bucket[key] += float(row[field] or 0)
     xcs = expected_clean_sheets(totals)
+    opta = _opta_values()
 
     players = []
     for athlete in athletes:
@@ -137,6 +188,11 @@ def build_player_totals() -> dict:
         values["xcs"] = _number(xcs.get(athlete.id, 0.0))
         values["price"] = _number((athlete.now_cost or 0) / 10)
         values["own"] = _number(athlete.selected_by_percent)
+        # Opta season totals. A player missing from the usage or hold-up feeds has
+        # no value (left off the chart); missing from clutch means no goals, so 0.
+        mine = opta.get(athlete.id, {})
+        for key, (source, _, _) in OPTA_METRICS.items():
+            values[key] = mine.get(key, 0.0 if source == "clutch" else None)
         players.append({
             "id": athlete.id,
             "name": athlete.web_name,
