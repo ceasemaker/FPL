@@ -11,6 +11,8 @@ import { FixturesPage } from "./pages/FixturesPage";
 const PriceMonitorPage = lazy(() => import("./pages/PriceChangePredictorPage").then((m) => ({ default: m.PriceChangePredictorPage })));
 const StatsExplorerPage = lazy(() => import("./pages/StatsExplorerPage").then((m) => ({ default: m.StatsExplorerPage })));
 const ChartLabPage = lazy(() => import("./pages/ChartLabPage").then((m) => ({ default: m.ChartLabPage })));
+const MatchPage = lazy(() => import("./pages/MatchPage").then((m) => ({ default: m.MatchPage })));
+const MatchFromFixture = lazy(() => import("./pages/MatchPage").then((m) => ({ default: m.MatchFromFixture })));
 const ModelLabPage = lazy(() => import("./pages/ModelLabPage").then((m) => ({ default: m.ModelLabPage })));
 const DecisionDashboardPage = lazy(() => import("./pages/DecisionDashboardPage").then((m) => ({ default: m.DecisionDashboardPage })));
 
@@ -41,6 +43,8 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/players" element={<PlayersPage />} />
           <Route path="/fixtures" element={<FixturesPage />} />
+          <Route path="/matches/fixture/:fixtureId" element={<MatchFromFixture />} />
+          <Route path="/matches/:matchId" element={<MatchPage />} />
           <Route path="/compare" element={<ComparePage />} />
           <Route path="/analyze" element={<AnalyzeManagerPage />} />
           <Route path="/decision-lab" element={<DecisionDashboardPage />} />

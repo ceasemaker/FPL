@@ -1066,6 +1066,7 @@ def fixtures_ticker(request):
                 "event": fixture.event,
                 "opponent": fixture.team_a.short_name if fixture.team_a else None,
                 "location": "H",
+                "fixture_id": fixture.id,
                 "difficulty": fixture.team_h_difficulty,
                 **(market or {"win_probability": None, "odds_difficulty": None}),
             })
@@ -1075,6 +1076,7 @@ def fixtures_ticker(request):
                 "event": fixture.event,
                 "opponent": fixture.team_h.short_name if fixture.team_h else None,
                 "location": "A",
+                "fixture_id": fixture.id,
                 "difficulty": fixture.team_a_difficulty,
                 **(market or {"win_probability": None, "odds_difficulty": None}),
             })
@@ -3463,6 +3465,28 @@ def price_changes(request):
     from etl.services.price_changes import build_payload as build_price_payload
 
     return JsonResponse(build_price_payload())
+
+
+@require_GET
+def match_page(request, match_id):
+    """One match for the Match page: timeline, momentum, lineups, stats, players, context."""
+    from etl.services.match_page import build_payload as build_match_payload
+
+    payload = build_match_payload(match_id)
+    if payload is None:
+        return JsonResponse({"error": "match not found"}, status=404)
+    return JsonResponse(payload)
+
+
+@require_GET
+def match_for_fixture(request, fixture_id):
+    """Opta match id for an FPL fixture id, so FPL screens can link to the Match page."""
+    from etl.services.match_page import match_for_fixture as resolve
+
+    match_id = resolve(fixture_id)
+    if match_id is None:
+        return JsonResponse({"error": "no match for that fixture"}, status=404)
+    return JsonResponse({"matchId": match_id})
 
 
 @require_GET
