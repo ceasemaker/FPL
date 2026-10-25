@@ -227,7 +227,7 @@
   .mp-scrub { padding: 12px; }
   .mp-jumps { width: 100%; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
   .mp-jumps button { flex: none; }
-  .mp-at, .mp-full, .mp-ctx { grid-template-columns: 1fr; }
+  .mp-at, .mp-full, .mp-ctx, .mp-ctx.two { grid-template-columns: 1fr; }
   .mp-ctx .mp-sheet:last-child { grid-column: auto; }
   .mp-zones { gap: 12px; padding: 14px; }
   .mp-crow { grid-template-columns: 56px 1fr 56px; }
