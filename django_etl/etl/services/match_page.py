@@ -112,13 +112,20 @@ def _odds(match: PlMatch) -> dict | None:
     }
 
 
+def went_to_extra_time(result_type: str, competition_id: int) -> bool:
+    """The League Cup (before the final) and the Community Shield go straight to penalties."""
+    if result_type == "AfterExtraTime":
+        return True
+    return result_type == "PenaltyShootout" and competition_id not in (2, 38)
+
+
 def _players_from_lineups(match: PlMatch, lineups: list[dict], goals: list[dict]) -> list[dict]:
     """Minutes, goals and assists for matches without Opta player sheets (cups, Europe).
 
     Minutes come from who started and when players came on or off; 90 is used
     for the full match, so extra time is not counted.
     """
-    full = 120 if any(g["minute"] > 90 for g in goals) or match.result_type not in ("", "NormalResult") else 90
+    full = 120 if any(g["minute"] > 90 for g in goals) or went_to_extra_time(match.result_type, match.competition_id) else 90
     rows = []
     for p in lineups:
         on = 0 if p["starter"] else p["minute_on"]

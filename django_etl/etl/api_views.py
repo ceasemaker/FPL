@@ -3494,6 +3494,31 @@ def match_calendar(request):
 
 
 @require_GET
+def team_page(request, team_id):
+    """One club's season for the Team page: every match with team stats, table, squad."""
+    from etl.services.team_page import build_payload as build_team_payload
+
+    season = request.GET.get("season")
+    payload = build_team_payload(team_id, int(season) if season and season.isdigit() else None)
+    if payload is None:
+        return JsonResponse({"error": "team not found"}, status=404)
+    return JsonResponse(payload)
+
+
+@require_GET
+def team_list(request):
+    """The current Premier League clubs, for the Teams index."""
+    from etl.services.team_page import club_list, league_table
+    from etl.models import PlMatch
+
+    season = PlMatch.objects.aggregate(s=Max("season"))["s"]
+    positions = {r["team"]: r for r in league_table(season)} if season else {}
+    clubs = [{**c, **({k: positions[c["id"]][k] for k in ("pos", "p", "w", "d", "l", "gd", "pts")} if c["id"] in positions else {})}
+             for c in club_list()]
+    return JsonResponse({"season": season, "clubs": sorted(clubs, key=lambda c: c.get("pos") or 99)})
+
+
+@require_GET
 def match_for_fixture(request, fixture_id):
     """Opta match id for an FPL fixture id, so FPL screens can link to the Match page."""
     from etl.services.match_page import match_for_fixture as resolve

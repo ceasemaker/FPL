@@ -81,3 +81,40 @@ class MatchCalendarTests(TestCase):
 
     def test_bad_start_is_400(self):
         self.assertEqual(self.client.get("/api/matches/calendar/?start=soon").status_code, 400)
+
+
+class TeamPageTests(TestCase):
+    def setUp(self):
+        from datetime import datetime, timezone as tz
+        from ..models import Team
+        cache.clear()
+        Team.objects.create(id=1, code=14, name="Liverpool", short_name="LIV")
+        Team.objects.create(id=2, code=43, name="Man City", short_name="MCI")
+        when = lambda d: datetime(2026, 10, d, 19, 0, tzinfo=tz.utc)
+        league = PlMatch.objects.create(season=2026, match_id="1", home_team_id="14", away_team_id="43", kickoff=when(1), home_score=2, away_score=0)
+        MatchTeamStat.objects.create(match=league, team_id="14", is_home=True, stats={"expectedGoals": 1.5, "totalScoringAtt": 12})
+        MatchTeamStat.objects.create(match=league, team_id="43", is_home=False, stats={"expectedGoals": 0.5, "totalScoringAtt": 6})
+        cup = PlMatch.objects.create(season=2026, match_id="2", competition_id=5, competition_name="UEFA Champions League",
+                                     home_team_id="999", away_team_id="14", home_team_name="Inter", kickoff=when(4), home_score=1, away_score=1,
+                                     result_type="PenaltyShootout", home_penalties=3, away_penalties=4)
+        MatchTeamStat.objects.create(match=cup, team_id="14", is_home=False, stats={"totalScoringAtt": 9})
+        MatchLineupPlayer.objects.create(match=cup, team_id="14", player_id="5", name="Mo Salah", starter=True)
+        MatchGoal.objects.create(match=cup, order=1, team_id="14", is_home=False, minute=11, period="FirstHalf",
+                                 goal_type="Goal", player_id="5", home_after=0, away_after=1)
+
+    def test_season_in_every_competition(self):
+        d = self.client.get("/api/teams/14/").json()
+        self.assertEqual((d["team"]["name"], d["position"], d["seasons"]), ("Liverpool", 1, [2026]))
+        league, cup = d["matches"]
+        self.assertEqual((league["res"], league["gf"], league["for"]["expectedGoals"], league["against"]["totalScoringAtt"]), ("W", 2, 1.5, 6))
+        self.assertEqual((cup["res"], cup["opp"]["name"], cup["home"]), ("W", "Inter", False))  # won on penalties
+        self.assertIsNone(cup["for"]["expectedGoals"])  # no xG outside the league, not zero
+        salah = next(p for p in d["squad"] if p["optaId"] == "5")
+        self.assertEqual((salah["apps"], salah["minutes"], salah["goals"]), (1, 120, 1))
+
+    def test_index_in_table_order(self):
+        clubs = self.client.get("/api/teams/").json()["clubs"]
+        self.assertEqual([(c["short"], c["pos"]) for c in clubs], [("LIV", 1), ("MCI", 2)])
+
+    def test_unknown_team_is_404(self):
+        self.assertEqual(self.client.get("/api/teams/777/").status_code, 404)

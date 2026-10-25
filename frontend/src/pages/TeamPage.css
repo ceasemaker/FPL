@@ -1,0 +1,104 @@
+/* Team page: the Match page's world (sheets, hairlines, the light-above /
+ * grey-below convention for "us" and "them"), applied to a season. */
+
+.tp-page { --tp-europe: #7aa7ff; --tp-cup: #c59bff; }
+
+.tp-head { display: grid; grid-template-columns: auto 1fr auto; gap: 20px; align-items: center; margin: 18px 0 8px; }
+.tp-crest { width: 76px; height: 76px; }
+.tp-title h1 { margin: 0; font-size: clamp(1.8rem, 3vw, 2.6rem); letter-spacing: -0.04em; line-height: 1.05; }
+.tp-title p { margin: 6px 0 0; font-size: 0.84rem; color: var(--aero-text-dim); }
+.tp-form { display: flex; gap: 5px; margin-top: 10px; }
+.tp-form .chip { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 38px; height: 36px; border-radius: 8px; border: 1px solid var(--aero-line-strong); background: var(--aero-surface); color: var(--aero-text-dim); font-size: 0.72rem; font-weight: 800; text-decoration: none; line-height: 1.1; }
+.tp-form .chip small { font-size: 0.52rem; font-weight: 700; color: var(--aero-text-muted); }
+.tp-form .chip.W { border-color: rgba(165, 255, 1, 0.6); color: var(--aero-lime); }
+.tp-form .chip.L { border-color: rgba(255, 76, 94, 0.6); color: var(--aero-negative); }
+.tp-form .chip:hover { border-color: #fff; }
+.tp-season { display: flex; flex-direction: column; gap: 4px; font-size: 0.7rem; color: var(--aero-text-muted); align-self: start; }
+.tp-season select { min-width: 120px; }
+
+.tp-summary { max-width: 80ch; margin: 14px 0 0; font-size: 0.98rem; line-height: 1.6; color: var(--aero-text); }
+
+.tp-filters { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; margin: 22px 0 0; }
+.tp-seg { display: flex; gap: 2px; padding: 3px; border: 1px solid var(--aero-line-strong); border-radius: 10px; background: var(--aero-surface); max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.tp-seg button { border: 0; background: none; color: var(--aero-text-dim); padding: 6px 12px; border-radius: 7px; font-size: 0.78rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.tp-seg button:hover { color: #fff; }
+.tp-seg button[aria-pressed="true"] { background: var(--aero-lime); color: var(--aero-bg); }
+.tp-count { flex-basis: 100%; margin: 4px 0 0; font-size: 0.8rem; color: var(--aero-text-muted); font-variant-numeric: tabular-nums; }
+.tp-page button:focus-visible, .tp-page a:focus-visible, .tp-page select:focus-visible { outline: 2px solid var(--aero-lime); outline-offset: 2px; }
+
+/* game-by-game xG: ours rises from the line, theirs hangs below it */
+.tp-xg { padding: 16px 18px 12px; }
+.tp-xg-bars { display: flex; gap: 3px; overflow-x: auto; padding-bottom: 4px; scrollbar-color: var(--aero-line-strong) transparent; }
+.tp-xg-col { flex: 1 0 22px; max-width: 46px; display: grid; grid-template-rows: 70px 56px auto auto; text-decoration: none; border-radius: 6px; padding: 2px 0; }
+.tp-xg-col:hover { background: var(--aero-surface-hover); }
+.tp-xg-col .up, .tp-xg-col .dn { display: flex; justify-content: center; }
+.tp-xg-col .up { align-items: flex-end; border-bottom: 1px solid var(--aero-line-strong); }
+.tp-xg-col .dn { align-items: flex-start; }
+.tp-xg-col i { display: block; width: 62%; min-height: 1px; }
+.tp-xg-col .up i { background: var(--mp-home); border-radius: 3px 3px 0 0; }
+.tp-xg-col .dn i { background: var(--mp-away); border-radius: 0 0 3px 3px; opacity: 0.75; }
+.tp-xg-col small { font-size: 0.5rem; font-weight: 700; color: var(--aero-text-muted); text-align: center; margin-top: 3px; }
+.tp-xg-col b { font-size: 0.62rem; text-align: center; color: var(--aero-text-dim); }
+.tp-xg-col.r-W b { color: var(--aero-lime); }
+.tp-xg-col.r-L b { color: var(--aero-negative); }
+.tp-xg-key { display: flex; gap: 18px; margin-top: 10px; font-size: 0.7rem; color: var(--aero-text-muted); }
+.tp-xg-key span { display: inline-flex; align-items: center; gap: 6px; }
+.tp-xg-key i { width: 10px; height: 10px; border-radius: 2px; }
+.tp-xg-key i.for { background: var(--mp-home); }
+.tp-xg-key i.ag { background: var(--mp-away); }
+.tp-avg { font-size: 0.62rem; color: var(--aero-text-muted); font-variant-numeric: tabular-nums; }
+
+/* tables */
+.tp-log, .tp-squad, .tp-table { overflow-x: auto; padding: 4px 0; }
+.tp-page table { width: 100%; border-collapse: collapse; font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+.tp-page thead th { text-align: left; font-size: 0.66rem; font-weight: 700; color: var(--aero-text-muted); padding: 10px 12px 8px; white-space: nowrap; }
+.tp-page tbody td, .tp-page tbody th { padding: 8px 12px; border-top: 1px solid var(--aero-line); white-space: nowrap; text-align: left; font-weight: 500; }
+.tp-page .n { text-align: right; }
+.tp-page tbody a { color: #fff; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
+.tp-page tbody a:hover span, .tp-page tbody a:hover { color: var(--aero-lime); }
+.tp-page tbody img { width: 18px; height: 18px; }
+.tp-log .d { color: var(--aero-text-muted); }
+.tp-log .res { font-weight: 800; }
+.tp-log .res.r-W { color: var(--aero-lime); }
+.tp-log .res.r-L { color: var(--aero-negative); }
+.tp-log .res small { font-weight: 500; color: var(--aero-text-muted); }
+.tp-log .f { color: var(--aero-text-muted); font-size: 0.72rem; }
+.tp-log tr.sep td { font-size: 0.68rem; font-weight: 800; color: var(--aero-text-dim); text-transform: uppercase; letter-spacing: 0.06em; padding-top: 14px; }
+.tp-tag { font-size: 0.6rem; font-weight: 800; padding: 2px 5px; border-radius: 4px; border: 1px solid var(--aero-line-strong); color: var(--aero-text-dim); }
+.tp-tag.c-europe { color: var(--tp-europe); border-color: rgba(122, 167, 255, 0.5); }
+.tp-tag.c-cup { color: var(--tp-cup); border-color: rgba(197, 155, 255, 0.5); }
+
+.tp-two { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 18px; }
+.tp-squad thead button { border: 0; background: none; color: inherit; font: inherit; cursor: pointer; padding: 0; }
+.tp-squad thead button[aria-pressed="true"] { color: var(--aero-lime); }
+.tp-squad th small { margin-left: 6px; font-size: 0.6rem; color: var(--aero-text-muted); font-weight: 600; }
+.tp-squad th em { margin-left: 6px; font-style: normal; font-weight: 800; color: var(--aero-warn); cursor: help; }
+.tp-squad tr.out { opacity: 0.6; }
+.tp-squad td small { color: var(--aero-text-muted); }
+.tp-squad .mp-note { padding: 0 12px 8px; }
+.tp-table tr.me { background: var(--aero-lime-wash); }
+.tp-table tr.me th a span { color: var(--aero-lime); }
+.tp-table .b { font-weight: 800; }
+
+/* /teams index */
+.tp-index-head h1 { margin: 6px 0 0; font-size: clamp(1.8rem, 2.6vw, 2.4rem); letter-spacing: -0.04em; }
+.tp-index-head p { margin: 6px 0 20px; color: var(--aero-text-dim); font-size: 0.92rem; }
+.tp-index { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.tp-club { display: grid; grid-template-columns: 22px 34px 1fr; grid-template-rows: auto auto; column-gap: 10px; align-items: center; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--aero-line-strong); background: linear-gradient(145deg, #1b1c1c, #151616); color: #fff; text-decoration: none; transition: border-color 0.15s ease-out; }
+.tp-club:hover { border-color: var(--aero-text-muted); }
+.tp-club .pos { grid-row: span 2; font-size: 0.8rem; font-weight: 800; color: var(--aero-text-muted); font-variant-numeric: tabular-nums; }
+.tp-club img { grid-row: span 2; width: 34px; height: 34px; }
+.tp-club .nm { font-weight: 800; font-size: 0.92rem; }
+.tp-club .rec { font-size: 0.72rem; color: var(--aero-text-muted); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 1050px) { .tp-two { grid-template-columns: 1fr; } }
+@media (max-width: 720px) {
+  .tp-head { grid-template-columns: auto 1fr; gap: 14px; }
+  .tp-crest { width: 54px; height: 54px; }
+  .tp-season { grid-column: span 2; flex-direction: row; align-items: center; gap: 8px; }
+  .tp-log .f, .tp-log th.f { display: none; }
+}
+.tp-table tbody td, .tp-table tbody th, .tp-table thead th { padding-left: 8px; padding-right: 8px; }
+.tp-table th[scope="row"] { max-width: 0; width: 100%; }
+.tp-table th[scope="row"] a { max-width: 100%; }
+.tp-table th[scope="row"] span { overflow: hidden; text-overflow: ellipsis; }

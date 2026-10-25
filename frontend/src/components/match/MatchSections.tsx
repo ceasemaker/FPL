@@ -24,10 +24,12 @@ export function TeamCompare({ data }: { data: MatchData }) {
     ["Corners won", v(H, "wonCorners"), v(A, "wonCorners")],
     ["Tackles + interceptions", v(H, "totalTackle") + v(H, "interception"), v(A, "totalTackle") + v(A, "interception")],
   ];
+  // Cup and European feeds have no xG: leave those rows out rather than show 0.
+  const noXg = S[H]?.expectedGoals == null && S[A]?.expectedGoals == null;
   return (
     <section className="mp-sheet mp-compare" aria-label="Team stats">
       <div className="mp-compare-head"><span>{data.home.short}</span><span>{data.away.short}</span></div>
-      {rows.map(([label, h, a, dp = 0, suf = ""]) => {
+      {rows.filter(([label]) => !(noXg && label.startsWith("xG") || noXg && label.startsWith("Expected"))).map(([label, h, a, dp = 0, suf = ""]) => {
         const fmt = (x: number) => (dp ? x.toFixed(dp) : Math.round(x)) + suf;
         const total = h + a || 1;
         return (
@@ -43,11 +45,16 @@ export function TeamCompare({ data }: { data: MatchData }) {
 }
 
 export function ShotZones({ data }: { data: MatchData }) {
-  const zone = (team: string, name: string) => {
-    const st = data.teamStats[team] ?? {};
+  const side = (id: string, name: string) => ({ name, stats: data.teamStats[id] ?? {}, goals: data.goals.filter((g) => g.team === id && g.type !== "Own").length });
+  return <ZonesPanel sides={[side(data.home.id, data.home.name), side(data.away.id, data.away.name)]} />;
+}
+
+// Shot zones for any two sides: one match, or totals over many (Team page).
+export interface ZoneSide { name: string; stats: Record<string, unknown>; goals: number; note?: string }
+export function ZonesPanel({ sides, label = "Where the shots came from" }: { sides: ZoneSide[]; label?: string }) {
+  const zone = ({ name, stats: st, goals, note }: ZoneSide) => {
     const goal = (k: string) => num(st[`attGoal${k}`]), saved = (k: string) => num(st[`attSv${k}`]);
     const onTarget = num(st.ontargetScoringAtt);
-    const goals = data.goals.filter((g) => g.team === team && g.type !== "Own").length;
     const L = num(st.attBxLeft), C = num(st.attBxCentre), R = num(st.attBxRight), inBox = num(st.attemptsIbox), out = num(st.attemptsObox);
     const max = Math.max(L, C, R, out, 1);
     const heat = (n: number) => ({ "--a": ((n / max) * 0.28).toFixed(2) } as React.CSSProperties);
@@ -62,9 +69,9 @@ export function ShotZones({ data }: { data: MatchData }) {
     };
     const unplaced = inBox - L - C - R;
     return (
-      <div key={team}>
+      <div key={name}>
         <h3>{name}</h3>
-        <p>{onTarget} on target: {goals} scored, {Math.max(0, onTarget - goals)} saved</p>
+        <p>{note ?? `${onTarget} on target: ${goals} scored, ${Math.max(0, onTarget - goals)} saved`}</p>
         <div className="mp-goalmouth" aria-label="Where shots on target went">{["HighLeft", "HighCentre", "HighRight", "LowLeft", "LowCentre", "LowRight"].map(cell)}</div>
         <div className="mp-goalline" />
         <div className="mp-box" aria-label="Where shots were taken from">
@@ -79,12 +86,7 @@ export function ShotZones({ data }: { data: MatchData }) {
       </div>
     );
   };
-  return (
-    <section className="mp-sheet mp-zones" aria-label="Where the shots came from">
-      {zone(data.home.id, data.home.name)}
-      {zone(data.away.id, data.away.name)}
-    </section>
-  );
+  return <section className="mp-sheet mp-zones" aria-label={label}>{sides.map(zone)}</section>;
 }
 
 // ------------------------------------------------------------------ players

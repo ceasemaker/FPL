@@ -12,6 +12,8 @@ const PriceMonitorPage = lazy(() => import("./pages/PriceChangePredictorPage").t
 const StatsExplorerPage = lazy(() => import("./pages/StatsExplorerPage").then((m) => ({ default: m.StatsExplorerPage })));
 const ChartLabPage = lazy(() => import("./pages/ChartLabPage").then((m) => ({ default: m.ChartLabPage })));
 const MatchesPage = lazy(() => import("./pages/MatchesPage").then((m) => ({ default: m.MatchesPage })));
+const TeamPage = lazy(() => import("./pages/TeamPage").then((m) => ({ default: m.TeamPage })));
+const TeamsPage = lazy(() => import("./pages/TeamPage").then((m) => ({ default: m.TeamsPage })));
 const MatchPage = lazy(() => import("./pages/MatchPage").then((m) => ({ default: m.MatchPage })));
 const MatchFromFixture = lazy(() => import("./pages/MatchPage").then((m) => ({ default: m.MatchFromFixture })));
 const ModelLabPage = lazy(() => import("./pages/ModelLabPage").then((m) => ({ default: m.ModelLabPage })));
@@ -45,6 +47,8 @@ export default function App() {
           <Route path="/players" element={<PlayersPage />} />
           <Route path="/fixtures" element={<FixturesPage />} />
           <Route path="/matches" element={<MatchesPage />} />
+          <Route path="/teams" element={<TeamsPage />} />
+          <Route path="/teams/:teamId" element={<TeamPage />} />
           <Route path="/matches/fixture/:fixtureId" element={<MatchFromFixture />} />
           <Route path="/matches/:matchId" element={<MatchPage />} />
           <Route path="/compare" element={<ComparePage />} />
