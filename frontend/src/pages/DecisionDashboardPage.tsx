@@ -1,3 +1,4 @@
+import { track } from "@amplitude/unified";
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { SquadOptimizer } from "./OptimizeTeamPage";
@@ -302,6 +303,7 @@ export function DecisionDashboardPage() {
     localStorage.setItem("fpl_manager_id", nextManagerId);
     localStorage.setItem("optimizer_manager_id", nextManagerId);
     setManagerId(nextManagerId);
+    track("Manager Team Loaded");
     const params = new URLSearchParams(searchParams);
     params.set("manager_id", nextManagerId);
     setSearchParams(params, { replace: true });

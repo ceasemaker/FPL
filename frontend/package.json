@@ -10,6 +10,7 @@
     "test": "node --test --experimental-strip-types src/utils/formula.test.ts src/components/statsExplorer/explorerModel.test.ts"
   },
   "dependencies": {
+    "@amplitude/unified": "^1.1.43",
     "animejs": "^3.2.2",
     "clsx": "^2.1.1",
     "html2canvas": "^1.4.1",
