@@ -1,0 +1,15 @@
+<!doctype html><html><head><meta charset="utf-8"><title>AeroFPL icon options</title>
+<style>body{margin:0;background:#1d1e1f;color:#ddd;font:14px Inter,system-ui,sans-serif;padding:24px}h2{font-size:14px;margin:0 0 10px;color:#fff}
+.row{display:flex;gap:28px;align-items:flex-end;margin-bottom:28px;padding:18px;border-radius:14px;background:#151616;border:1px solid #333}
+.tab{display:flex;align-items:center;gap:8px;background:#2b2c2e;border-radius:9px 9px 0 0;padding:8px 14px;color:#e8e8e8;font-size:12.5px}
+.tab.light{background:#f1f3f4;color:#222}small{display:block;color:#8f8f8f;margin-top:6px}</style></head><body>
+<script>
+for (const [f, name] of [["a-ball.svg","A · ball as the crossbar"],["b-rise.svg","B · rising arrow (ranks going up)"],["c-wing.svg","C · A with a lime wing"]]) {
+  document.write(`<div class="row"><div><h2>${name}</h2>
+  <div style="display:flex;gap:10px"><div class="tab"><img src="${f}" width="16" height="16">Chelsea 0–2 Tottenham · AeroFPL</div>
+  <div class="tab light"><img src="${f}" width="16" height="16">AeroFPL</div></div><small>Browser tab, 16px, dark and light</small></div>
+  <div><img src="${f}" width="32" height="32"><small>32px</small></div>
+  <div><img src="${f}" width="64" height="64"><small>64px</small></div>
+  <div><img src="${f}" width="120" height="120" style="border-radius:26px"><small>Home-screen icon</small></div></div>`);
+}
+</script></body></html>

@@ -152,6 +152,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 FRONTEND_DIST = Path(os.getenv("FRONTEND_DIST", BASE_DIR.parent / "frontend" / "dist"))
 WHITENOISE_ROOT = FRONTEND_DIST if FRONTEND_DIST.is_dir() else None
 WHITENOISE_INDEX_FILE = True
+WHITENOISE_MIMETYPES = {".webmanifest": "application/manifest+json"}
 # Local runserver: pick up fresh frontend builds without a restart.
 WHITENOISE_AUTOREFRESH = os.getenv("WHITENOISE_AUTOREFRESH", "").lower() == "true"
 
