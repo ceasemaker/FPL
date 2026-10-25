@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useLandingData } from "../hooks/useLandingData";
 import { useBestValuePlayers, useTop100Template } from "../hooks/useTop100Data";
 import { PlayerModal } from "../components/PlayerModal";
+import { compById } from "../components/match/competitions";
+import { Crest } from "../components/match/icons";
 import { PriceChangeBadge } from "../components/priceChange/PriceChange";
 import type { CaptainRecord, PlayerMover, ValuePlayer } from "../types";
 import "./HomePage.css";
@@ -134,15 +136,7 @@ export function HomePage(){
             </div>;
           })}</div>
         </article>
-        <article className="command-card fixtures-brief">
-          <CardTitle title="Next Fixtures" action="View all" href="/fixtures"/>
-          <div className="fixture-list">{(easiest?.fixtures.slice(0,3)??[]).map(f=>
-            <div className="fixture-row" key={f.event}>
-              <span className="club-chip">{easiest?.team_short_name}</span>
-              <div><strong>{f.opponent}</strong><small>GW{f.event} · {f.location==="H"?"Home":"Away"}</small></div>
-              <span className={`fdr-label fdr-${f.difficulty}`}>FDR {f.difficulty}</span>
-            </div>)}</div>
-        </article>
+        <ComingUp/>
       </div>
 
       <article className="command-card watch-card">
@@ -248,3 +242,31 @@ function CaptainRecordCard({record}:{record:CaptainRecord}){
     <Link className="captain-record-link" to="/model-lab">Full record in Model Lab →</Link>
   </article>;
 }
+
+// The next games for the Premier League clubs in every competition, each
+// opening its Match page; the full calendar is one click away.
+interface UpNext { matchId: string; kickoff: string; competitionId: number; competition: string; home: { id: string; short: string }; away: { id: string; short: string }; status: string }
+function ComingUp() {
+  const [rows, setRows] = useState<UpNext[] | null>(null);
+  useEffect(() => {
+    const today = new Date().toLocaleDateString("en-CA");
+    fetch(`/api/matches/calendar/?start=${today}&days=10`).then((r) => (r.ok ? r.json() : null))
+      .then((d) => setRows(d ? (d.matches as UpNext[]).filter((m) => m.status === "upcoming" && new Date(m.kickoff) > new Date()).slice(0, 5) : []))
+      .catch(() => setRows([]));
+  }, []);
+  return <article className="command-card fixtures-brief">
+    <CardTitle title="Coming up" subtitle="Every competition" action="Calendar" href="/matches"/>
+    <div className="fixture-list">
+      {rows === null && <p className="card-empty">Loading the next games…</p>}
+      {rows?.length === 0 && <p className="card-empty">No games in the next ten days.</p>}
+      {rows?.map((m) => {
+        const comp = compById(m.competitionId, m.competition);
+        return <Link className="fixture-row upnext-row" key={m.matchId} to={`/matches/${m.matchId}`}>
+          <span className={`club-chip upnext-tag c-${comp.group}`}>{comp.tag}</span>
+          <div><strong><Crest team={m.home.id}/>{m.home.short} v {m.away.short}<Crest team={m.away.id}/></strong><small>{new Date(m.kickoff).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</small></div>
+        </Link>;
+      })}
+    </div>
+  </article>;
+}
+

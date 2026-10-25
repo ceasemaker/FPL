@@ -72,3 +72,16 @@
 .captain-record-list b.negative{color:#ff4c5e}
 .captain-record-link{align-self:flex-start;font-size:.74rem;color:#a5ff01;text-decoration:none}
 .captain-record-link:hover{text-decoration:underline}
+
+/* Coming up: next games in every competition */
+.upnext-row { text-decoration: none; color: inherit; }
+.upnext-row:hover strong { color: #a5ff01; }
+.upnext-row strong { display: inline-flex; align-items: center; gap: 6px; }
+.upnext-row strong img { width: 18px; height: 18px; }
+.upnext-tag { min-width: 44px; text-align: center; font-size: .66rem; }
+.upnext-tag.c-europe { color: #7aa7ff; }
+.upnext-tag.c-cup { color: #c59bff; }
+.upnext-row { grid-template-columns: auto minmax(0, 1fr) !important; gap: 10px; }
+.upnext-row .upnext-tag { width: auto; height: auto; min-width: 0; padding: 3px 6px; border-radius: 5px; font-size: .6rem; font-weight: 800; }
+.upnext-row strong { white-space: nowrap; font-size: .82rem; }
+.upnext-row small { white-space: nowrap; }
