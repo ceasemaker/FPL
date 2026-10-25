@@ -4,35 +4,53 @@ import {
   AnalyzeManagerIcon,
   ChartLabIcon,
   DecisionLabIcon,
-  FixturesIcon,
+  MatchesIcon,
   MenuIcon,
   ModelLabIcon,
   OverviewIcon,
   PlayersIcon,
   PriceMonitorIcon,
   StatsExplorerIcon,
+  TeamsIcon,
 } from "./navIcons";
 
-// Compare is reached from Players, and the optimiser now lives inside
-// Decision Lab, so neither needs a top-level entry.
-const links = [
-  { to: "/", label: "Overview", icon: <OverviewIcon /> },
-  { to: "/decision-lab", label: "Decision Lab", icon: <DecisionLabIcon /> },
-  { to: "/players", label: "Players", icon: <PlayersIcon /> },
-  { to: "/stats", label: "Stats Explorer", icon: <StatsExplorerIcon /> },
-  { to: "/chart-lab", label: "Chart Lab", icon: <ChartLabIcon /> },
-  { to: "/model-lab", label: "Model Lab", icon: <ModelLabIcon /> },
-  { to: "/fixtures", label: "Fixtures", icon: <FixturesIcon /> },
-  { to: "/price-monitor", label: "Price Monitor", icon: <PriceMonitorIcon /> },
-  { to: "/analyze", label: "Analyze Manager", icon: <AnalyzeManagerIcon /> },
+// Five sections for the game itself (Home, Matches, Teams, Players, Chart
+// Lab), then the tools for your own FPL team, then the raw-data rooms.
+// "match" lists other paths that belong to a section (the fixture planner
+// lives under Matches; compare under Players).
+const groups: { title?: string; links: { to: string; label: string; icon: JSX.Element; match?: string[] }[] }[] = [
+  {
+    links: [
+      { to: "/", label: "Home", icon: <OverviewIcon /> },
+      { to: "/matches", label: "Matches", icon: <MatchesIcon />, match: ["/fixtures"] },
+      { to: "/teams", label: "Teams", icon: <TeamsIcon /> },
+      { to: "/players", label: "Players", icon: <PlayersIcon />, match: ["/compare"] },
+      { to: "/chart-lab", label: "Chart Lab", icon: <ChartLabIcon /> },
+    ],
+  },
+  {
+    title: "My FPL",
+    links: [
+      { to: "/decision-lab", label: "Decision Lab", icon: <DecisionLabIcon /> },
+      { to: "/analyze", label: "Analyze Manager", icon: <AnalyzeManagerIcon /> },
+      { to: "/price-monitor", label: "Price Monitor", icon: <PriceMonitorIcon /> },
+    ],
+  },
+  {
+    title: "Data rooms",
+    links: [
+      { to: "/stats", label: "Stats Explorer", icon: <StatsExplorerIcon /> },
+      { to: "/model-lab", label: "Model Lab", icon: <ModelLabIcon /> },
+    ],
+  },
 ];
 
 export function Navigation() {
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
-  const isActive = (to: string) =>
-    to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
+  const isActive = (to: string, match: string[] = []) =>
+    to === "/" ? location.pathname === "/" : [to, ...match].some((p) => location.pathname === p || location.pathname.startsWith(`${p}/`));
 
   return (
     <nav className="command-nav" aria-label="Primary navigation">
@@ -46,16 +64,22 @@ export function Navigation() {
         <MenuIcon />
       </button>
       <div className={`command-nav-links ${open ? "open" : ""}`}>
-        {links.map((link) => (
-          <Link
-            key={link.to}
-            to={link.to}
-            className={isActive(link.to) ? "active" : ""}
-            onClick={() => setOpen(false)}
-          >
-            <i aria-hidden="true">{link.icon}</i>
-            <span>{link.label}</span>
-          </Link>
+        {groups.map((group, g) => (
+          <div className={`command-nav-group${group.title ? " minor" : ""}`} key={g} role="group" aria-label={group.title ?? "Sections"}>
+            {group.title && <p className="command-nav-title">{group.title}</p>}
+            {group.links.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className={isActive(link.to, link.match) ? "active" : ""}
+                aria-current={isActive(link.to, link.match) ? "page" : undefined}
+                onClick={() => setOpen(false)}
+              >
+                <i aria-hidden="true">{link.icon}</i>
+                <span>{link.label}</span>
+              </Link>
+            ))}
+          </div>
         ))}
       </div>
       <div className="command-nav-footer">

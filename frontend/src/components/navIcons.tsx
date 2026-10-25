@@ -89,6 +89,21 @@ export const AnalyzeManagerIcon = () => (
   </Svg>
 );
 
+export const MatchesIcon = () => (
+  <Svg>
+    <circle cx="10" cy="10" r="6.5" />
+    <path d="M10 6.2l2.6 1.9-1 3.1H8.4l-1-3.1z" />
+    <path d="M10 3.5v2.7M16.2 8.1l-3.6 0M14 15.2l-2.4-4M6 15.2l2.4-4M3.8 8.1l3.6 0" />
+  </Svg>
+);
+
+export const TeamsIcon = () => (
+  <Svg>
+    <path d="M10 3l5.5 2v4.6c0 3.4-2.3 5.9-5.5 7.4-3.2-1.5-5.5-4-5.5-7.4V5z" />
+    <path d="M10 6.5v7" />
+  </Svg>
+);
+
 export const MenuIcon = () => (
   <Svg>
     <path d="M3.5 6h13M3.5 10h13M3.5 14h13" />

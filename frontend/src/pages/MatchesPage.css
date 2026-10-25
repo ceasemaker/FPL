@@ -11,7 +11,7 @@
 .ms-head h1 { margin: 0; font-size: clamp(1.8rem, 2.6vw, 2.4rem); letter-spacing: -0.04em; }
 .ms-head p { margin: 6px 0 0; color: var(--aero-text-dim); font-size: 0.92rem; max-width: 62ch; }
 .ms-switch { display: flex; gap: 2px; padding: 3px; border: 1px solid var(--aero-line-strong); border-radius: 10px; background: var(--aero-surface); position: static; width: auto; height: auto; }
-.ms-switch > * { padding: 7px 14px; border-radius: 7px; font-size: 0.8rem; font-weight: 700; color: var(--aero-text-dim); text-decoration: none; }
+.ms-switch > * { white-space: nowrap; padding: 7px 14px; border-radius: 7px; font-size: 0.8rem; font-weight: 700; color: var(--aero-text-dim); text-decoration: none; }
 .ms-switch [aria-current] { background: var(--aero-surface-raised); color: #fff; }
 .ms-switch a:hover { color: #fff; }
 

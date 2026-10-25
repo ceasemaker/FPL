@@ -1104,3 +1104,13 @@ textarea:focus {
   box-shadow: var(--shadow-md);
 }
 
+
+/* Navigation groups: the five sections, then My FPL and the data rooms (smaller). */
+.command-nav-group{display:flex;flex-direction:column;gap:6px}
+.command-nav-group.minor{margin-top:14px;padding-top:12px;border-top:1px solid #2a2b2c;gap:2px}
+.command-nav-group.minor a{min-height:38px;font-size:.8rem}
+.command-nav-title{margin:0 14px 6px;font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#7d7e7f}
+.command-nav-links{gap:0;overflow-y:auto;scrollbar-width:none}
+.command-brand{margin-bottom:30px}
+@media(max-width:1050px) and (min-width:721px){.command-nav-title{font-size:0;margin:0;height:0}}
+@media(max-width:720px){.command-nav-links{max-height:calc(100vh - 64px)}.command-nav-group.minor{margin-top:8px;padding-top:8px}}
