@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { compTag } from "./competitions";
 import { Crest, EventIcon } from "./icons";
 import type { MatchData, Timeline } from "./matchModel";
 
@@ -91,13 +92,6 @@ export function ShotZones({ data }: { data: MatchData }) {
 // Numeric column value by key (the row type mixes strings and numbers).
 const val = (p: object, k: string) => (p as Record<string, unknown>)[k] as number | null | undefined;
 
-// Short competition tags for form chips and meetings.
-const COMP_TAG: Record<string, string> = {
-  "Premier League": "PL", "League Cup": "EFL", "English League Cup": "EFL", "FA Cup": "FAC", "English FA Cup": "FAC",
-  "UEFA Champions League": "UCL", "Champions League": "UCL", "UEFA Europa League": "UEL", "Europa League": "UEL",
-  "UEFA Conference League": "UECL", "Conference League": "UECL", "English Community Shield": "CS", "UEFA Super Cup": "USC",
-};
-export const compTag = (name: string) => COMP_TAG[name] ?? name.split(" ").map((w) => w[0]).join("").slice(0, 4).toUpperCase();
 
 const COLS: [string, string][] = [
   ["fpl", "FPL pts"], ["minutes", "Mins"], ["goals", "Goals"], ["assists", "Assists"], ["shots", "Shots"], ["boxShots", "In box"],

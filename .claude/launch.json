@@ -1,0 +1,35 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "django-api",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "cd django_etl && WHITENOISE_AUTOREFRESH=true python3 manage.py runserver 8000"
+      ],
+      "port": 8000
+    },
+    {
+      "name": "vite",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "cd frontend && ./node_modules/.bin/vite --port 5173"
+      ],
+      "port": 5173
+    },
+    {
+      "name": "mockups",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4400",
+        "--directory",
+        ".impeccable/mocks"
+      ],
+      "port": 4400
+    }
+  ]
+}

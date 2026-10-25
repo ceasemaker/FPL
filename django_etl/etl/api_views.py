@@ -3479,6 +3479,21 @@ def match_page(request, match_id):
 
 
 @require_GET
+def match_calendar(request):
+    """Every competition's matches for the Premier League clubs, over a window of days."""
+    from datetime import date, timedelta
+
+    from etl.services.match_calendar import build_calendar
+
+    try:
+        start = date.fromisoformat(request.GET["start"]) if request.GET.get("start") else timezone.localdate() - timedelta(days=7)
+        days = int(request.GET.get("days", "35"))
+    except ValueError:
+        return JsonResponse({"error": "start must be YYYY-MM-DD and days a number"}, status=400)
+    return JsonResponse(build_calendar(start, days))
+
+
+@require_GET
 def match_for_fixture(request, fixture_id):
     """Opta match id for an FPL fixture id, so FPL screens can link to the Match page."""
     from etl.services.match_page import match_for_fixture as resolve

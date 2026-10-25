@@ -56,3 +56,28 @@ class MatchPageApiTests(TestCase):
         self.assertIsNone(d["form"]["home"])  # only its games against PL clubs are stored
         self.assertEqual(d["form"]["away"][0]["matchId"], "1")
         self.assertEqual([(p["name"], p["minutes"], p["goals"], p["shots"]) for p in d["players"]], [("Mo Salah", 80, 1, None)])
+
+
+class MatchCalendarTests(TestCase):
+    def setUp(self):
+        from datetime import datetime, timezone as tz
+        from ..models import Team
+        cache.clear()
+        Team.objects.create(id=1, code=14, name="Liverpool", short_name="LIV")
+        Team.objects.create(id=2, code=43, name="Man City", short_name="MCI")
+        when = lambda d: datetime(2026, 10, d, 19, 0, tzinfo=tz.utc)
+        PlMatch.objects.create(season=2026, match_id="1", home_team_id="14", away_team_id="43", kickoff=when(1), home_score=1, away_score=0)
+        PlMatch.objects.create(season=2026, match_id="2", competition_id=5, competition_name="UEFA Champions League", round_name="Round",
+                               matchweek=2, home_team_id="999", away_team_id="14", home_team_name="Inter", home_team_short="INT", kickoff=when(4))
+        PlMatch.objects.create(season=2026, match_id="3", competition_id=5, home_team_id="998", away_team_id="997", kickoff=when(4))
+
+    def test_window_holds_every_competition_for_league_clubs(self):
+        d = self.client.get("/api/matches/calendar/?start=2026-10-02&days=7").json()
+        self.assertEqual([c["short"] for c in d["clubs"]], ["LIV", "MCI"])
+        self.assertEqual([m["matchId"] for m in d["matches"]], ["2"])
+        m = d["matches"][0]
+        self.assertEqual((m["round"], m["home"]["name"], m["status"]), ("Matchday 2", "Inter", "upcoming"))
+        self.assertTrue(d["previous"]["14"].startswith("2026-10-01"))
+
+    def test_bad_start_is_400(self):
+        self.assertEqual(self.client.get("/api/matches/calendar/?start=soon").status_code, 400)
