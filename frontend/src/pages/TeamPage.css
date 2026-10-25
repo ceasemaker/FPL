@@ -1,7 +1,7 @@
 /* Team page: the Match page's world (sheets, hairlines, the light-above /
  * grey-below convention for "us" and "them"), applied to a season. */
 
-.tp-page { --tp-europe: #7aa7ff; --tp-cup: #c59bff; }
+.tp-page { --tp-europe: var(--aero-europe); --tp-cup: var(--aero-cup); }
 
 .tp-head { display: grid; grid-template-columns: auto 1fr auto; gap: 20px; align-items: center; margin: 18px 0 8px; }
 .tp-crest { width: 76px; height: 76px; }

@@ -3,7 +3,7 @@
  * light bar above the line, away the grey bar below (position, not colour, says
  * which side). */
 
-.mp-page { --mp-home: #e8e8e8; --mp-away: #8f8f8f; }
+.mp-page { --mp-home: var(--aero-us); --mp-away: var(--aero-them); }
 .mp-page > * { max-width: 1340px; }
 .mp-page button { text-transform: none; letter-spacing: 0; font-family: inherit; }
 .mp-page ::selection { background: var(--aero-lime); color: var(--aero-bg); }

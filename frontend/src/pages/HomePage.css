@@ -79,8 +79,8 @@
 .upnext-row strong { display: inline-flex; align-items: center; gap: 6px; }
 .upnext-row strong img { width: 18px; height: 18px; }
 .upnext-tag { min-width: 44px; text-align: center; font-size: .66rem; }
-.upnext-tag.c-europe { color: #7aa7ff; }
-.upnext-tag.c-cup { color: #c59bff; }
+.upnext-tag.c-europe { color: var(--aero-europe); }
+.upnext-tag.c-cup { color: var(--aero-cup); }
 .upnext-row { grid-template-columns: auto minmax(0, 1fr) !important; gap: 10px; }
 .upnext-row .upnext-tag { width: auto; height: auto; min-width: 0; padding: 3px 6px; border-radius: 5px; font-size: .6rem; font-weight: 800; }
 .upnext-row strong { white-space: nowrap; font-size: .82rem; }

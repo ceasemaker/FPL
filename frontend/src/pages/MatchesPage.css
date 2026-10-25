@@ -2,7 +2,7 @@
  * sheets, hairlines, lime only for "today" and the active control. Competition
  * groups are told apart by a tint and always by their written tag. */
 
-.ms-page { --ms-europe: #7aa7ff; --ms-cup: #c59bff; --ms-col: 46px; }
+.ms-page { --ms-europe: var(--aero-europe); --ms-cup: var(--aero-cup); --ms-col: 46px; }
 .ms-page > * { max-width: 1340px; }
 .ms-page button { text-transform: none; letter-spacing: 0; font-family: inherit; }
 .ms-page ::selection { background: var(--aero-lime); color: var(--aero-bg); }
@@ -37,7 +37,7 @@
 .ms-dot.rest { background: var(--aero-warn); }
 
 /* ---------- grid */
-.ms-grid-wrap { overflow-x: auto; border: 1px solid var(--aero-line-strong); border-radius: 16px; background: linear-gradient(145deg, #1b1c1c, #151616); box-shadow: 0 14px 38px rgba(0, 0, 0, 0.22); scrollbar-color: var(--aero-line-strong) transparent; }
+.ms-grid-wrap { overflow-x: auto; border: 1px solid var(--aero-line-strong); border-radius: 16px; background: linear-gradient(145deg, #1b1c1c, #151616); scrollbar-color: var(--aero-line-strong) transparent; }
 .ms-grid { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; }
 .ms-grid th, .ms-grid td { padding: 0; }
 .ms-grid thead th { position: sticky; top: 0; z-index: 2; background: #181919; height: 58px; width: var(--ms-col); min-width: var(--ms-col); vertical-align: bottom; padding-bottom: 8px; border-bottom: 1px solid var(--aero-line-strong); font-weight: 600; }

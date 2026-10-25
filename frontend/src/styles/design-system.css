@@ -26,6 +26,11 @@
   --aero-positive: #a5ff01;
   --aero-negative: #ff4c5e;
   --aero-warn: #e2b75b;
+  /* Football pages: "us" light above the line, "them" grey below; competition group tints (always with a written tag). */
+  --aero-us: #e8e8e8;
+  --aero-them: #8f8f8f;
+  --aero-europe: #7aa7ff;
+  --aero-cup: #c59bff;
 
   /* Text */
   --aero-text: #ffffff;
