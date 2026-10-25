@@ -14,6 +14,7 @@ const ChartLabPage = lazy(() => import("./pages/ChartLabPage").then((m) => ({ de
 const MatchesPage = lazy(() => import("./pages/MatchesPage").then((m) => ({ default: m.MatchesPage })));
 const TeamPage = lazy(() => import("./pages/TeamPage").then((m) => ({ default: m.TeamPage })));
 const TeamsPage = lazy(() => import("./pages/TeamPage").then((m) => ({ default: m.TeamsPage })));
+const PlayerPage = lazy(() => import("./pages/PlayerPage").then((m) => ({ default: m.PlayerPage })));
 const MatchPage = lazy(() => import("./pages/MatchPage").then((m) => ({ default: m.MatchPage })));
 const MatchFromFixture = lazy(() => import("./pages/MatchPage").then((m) => ({ default: m.MatchFromFixture })));
 const ModelLabPage = lazy(() => import("./pages/ModelLabPage").then((m) => ({ default: m.ModelLabPage })));
@@ -45,6 +46,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/players" element={<PlayersPage />} />
+          <Route path="/players/:playerId" element={<PlayerPage />} />
           <Route path="/fixtures" element={<FixturesPage />} />
           <Route path="/matches" element={<MatchesPage />} />
           <Route path="/teams" element={<TeamsPage />} />

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   CHART_LAB_FORMULA,
   POSITION_NAMES,
@@ -1038,6 +1038,7 @@ function PlayerDrawer({ player, data, state, lensKeys, cell, inUcl, watched, sel
             </p>
             {player.status && player.status !== "a" && player.news && <p className="sx-news">{player.news}</p>}
             <PriceChangePanel athleteId={player.id} />
+            <Link className="sx-full-link" to={`/players/${player.id}`}>Open the full player page</Link>
           </div>
           <button ref={closeRef} className="sx-icon-btn" onClick={onClose} aria-label="Close player profile"><CloseIcon /></button>
         </header>

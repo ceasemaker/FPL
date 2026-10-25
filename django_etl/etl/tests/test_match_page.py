@@ -118,3 +118,31 @@ class TeamPageTests(TestCase):
 
     def test_unknown_team_is_404(self):
         self.assertEqual(self.client.get("/api/teams/777/").status_code, 404)
+
+
+class PlayerPageTests(TestCase):
+    def setUp(self):
+        from datetime import datetime, timezone as tz
+        from ..models import Athlete, Team
+        cache.clear()
+        team = Team.objects.create(id=1, code=14, name="Liverpool", short_name="LIV")
+        self.athlete = Athlete.objects.create(id=99, code=5, first_name="Mo", second_name="Salah", web_name="Salah", team=team,
+                                              element_type=3, now_cost=130, total_points=50, selected_by_percent=40, status="a")
+        when = lambda d: datetime(2026, 10, d, 19, 0, tzinfo=tz.utc)
+        cup = PlMatch.objects.create(season=2026, match_id="2", competition_id=5, competition_name="UEFA Champions League",
+                                     home_team_id="999", away_team_id="14", home_team_name="Inter", kickoff=when(4), home_score=0, away_score=2)
+        MatchLineupPlayer.objects.create(match=cup, team_id="14", player_id="5", name="Mo Salah", starter=True, minute_off=75)
+        MatchGoal.objects.create(match=cup, order=1, team_id="14", is_home=False, minute=11, period="FirstHalf", goal_type="Goal",
+                                 player_id="5", home_after=0, away_after=1)
+        PlMatch.objects.create(season=2026, match_id="3", home_team_id="14", away_team_id="43", kickoff=when(9))
+
+    def test_player_season_in_every_competition(self):
+        d = self.client.get("/api/players/99/page/").json()
+        self.assertEqual((d["name"], d["position"], d["price"], d["team"]["name"]), ("Mo Salah", "MID", 13.0, "Liverpool"))
+        self.assertEqual([(r["competition"], r["minutes"], r["goals"], r["res"]) for r in d["log"]], [("UEFA Champions League", 75, 1, "W")])
+        self.assertEqual(d["byCompetition"][0]["apps"], 1)
+        self.assertEqual([u["matchId"] for u in d["upcoming"]], ["3"])
+        self.assertFalse(d["compare"]["qualified"])
+
+    def test_unknown_player_is_404(self):
+        self.assertEqual(self.client.get("/api/players/12345/page/").status_code, 404)

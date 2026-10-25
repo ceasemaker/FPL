@@ -1593,3 +1593,6 @@ th[aria-sort="descending"] .sx-sort {
 .sx-control-row.stacked .sx-window {
   white-space: normal;
 }
+
+.sx-full-link { display: inline-block; margin-top: 10px; font-size: 0.8rem; font-weight: 700; color: var(--aero-lime); text-decoration: none; }
+.sx-full-link:hover { text-decoration: underline; text-underline-offset: 3px; }

@@ -3519,6 +3519,17 @@ def team_list(request):
 
 
 @require_GET
+def player_page(request, player_id):
+    """One player for the Player page: FPL, every match in every competition, comparisons."""
+    from etl.services.player_page import build_payload as build_player_payload
+
+    payload = build_player_payload(player_id)
+    if payload is None:
+        return JsonResponse({"error": "player not found"}, status=404)
+    return JsonResponse(payload)
+
+
+@require_GET
 def match_for_fixture(request, fixture_id):
     """Opta match id for an FPL fixture id, so FPL screens can link to the Match page."""
     from etl.services.match_page import match_for_fixture as resolve
