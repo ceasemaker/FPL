@@ -10,20 +10,22 @@ export interface LineupPlayer {
   formation_place: number | null; formation_row: number | null; formation_col: number | null;
   starter: boolean; captain: boolean; minute_on: number | null; minute_off: number | null;
 }
+// Cup and European rows carry only minutes, goals and assists (the rest null).
 export interface PlayerRow {
   id: string; name: string; team: string; position: string; minutes: number; started: boolean; fpl: number | null;
-  goals: number; assists: number; shots: number; boxShots: number; bigChances: number; chances: number;
-  boxTouches: number; passes: number; accuratePasses: number; defence: number; saves: number;
+  goals: number; assists: number; shots: number | null; boxShots: number | null; bigChances: number | null; chances: number | null;
+  boxTouches: number | null; passes: number | null; accuratePasses: number | null; defence: number | null; saves: number | null;
 }
-export interface FormRow { matchId: string; opp: string; home: boolean; gf: number; ga: number; res: "W" | "D" | "L"; date: string | null }
+export interface FormRow { matchId: string; opp: string; home: boolean; gf: number; ga: number; res: "W" | "D" | "L"; date: string | null; competition: string; league: boolean }
 export interface MatchData {
   matchId: string; season: number; gameweek: number | null; kickoff: string | null; status: "finished" | "upcoming";
+  competition: string; competitionId: number; round: string; penalties: [number, number] | null;
   home: TeamRef; away: TeamRef; score: [number, number] | null;
   goals: Goal[]; events: MatchEventRow[]; momentum: [number, number, number, number][];
   lineups: LineupPlayer[]; teamStats: Record<string, Record<string, number | string | null>>; players: PlayerRow[];
   fplDouble: string[]; detailsAvailable: boolean; playersAvailable: boolean;
   form: { home: FormRow[]; away: FormRow[] };
-  h2h: { matchId: string; date: string | null; home: string; away: string; hs: number; as: number }[];
+  h2h: { matchId: string; date: string | null; home: string; away: string; hs: number; as: number; competition: string }[];
   odds: { fixtureId: number; home?: number; draw?: number | null; away?: number | null; chances?: number[] | null; updated?: string | null } | null;
 }
 
@@ -43,12 +45,19 @@ export interface Timeline {
 export function buildTimeline(d: MatchData): Timeline {
   let moments: Moment[] = d.momentum.map(([period, minute, h, a]) => ({ period, minute, h, a }));
   if (!moments.length) {
-    // No momentum feed: a plain 90-minute axis so the timeline still works.
-    moments = Array.from({ length: 94 }, (_, k) => (k < 47 ? { period: 1, minute: k + 1, h: 0, a: 0 } : { period: 2, minute: k - 1, h: 0, a: 0 }));
+    // No momentum feed (cup and European matches): a plain axis so the
+    // timeline still works, with extra time when the match went to it.
+    const extra = d.goals.some((g) => g.minute > 90) || d.events.some((e) => e.period >= 3 || e.minute > 95);
+    moments = [
+      ...Array.from({ length: 45 }, (_, k) => ({ period: 1, minute: k + 1, h: 0, a: 0 })),
+      ...Array.from({ length: 45 }, (_, k) => ({ period: 2, minute: k + 46, h: 0, a: 0 })),
+      ...(extra ? Array.from({ length: 30 }, (_, k) => ({ period: 3, minute: k + 91, h: 0, a: 0 })) : []),
+    ];
   }
   const halfIndex = Math.max(1, moments.findIndex((m) => m.period === 2));
   const indexOf = (minute: number, period?: number) => {
-    const p = period ?? (minute > 45 ? 2 : 1);
+    let p = period ?? (minute > 90 ? 3 : minute > 45 ? 2 : 1);
+    if (p >= 3) p = moments.some((m) => m.period === 3) ? 3 : 2;
     const k = moments.findIndex((m) => m.period === p && m.minute >= minute);
     return k < 0 ? (p === 1 ? halfIndex - 1 : moments.length - 1) : k;
   };

@@ -28,6 +28,20 @@ from .pl_stats_client import COMPETITIONS, ClassicStatsClient, PLStatsClient
 logger = logging.getLogger(__name__)
 
 CARD_KINDS = {"YC": "yellow", "Y2C": "second_yellow", "RC": "red"}
+PERIODS = {"FirstHalf": 1, "SecondHalf": 2, "ExtraFirstHalf": 3, "ExtraSecondHalf": 4}
+
+
+def _card_kind(text: str) -> str:
+    """Events-feed card types ("Yellow", "Red", "YellowRed", "SecondYellow")."""
+    t = (text or "").lower().replace(" ", "")
+    if "second" in t or ("yellow" in t and "red" in t):
+        return "second_yellow"
+    return "red" if "red" in t else "yellow"
+
+
+def _events_minute(item: dict) -> int:
+    from .match_goals import _minute
+    return _minute(item)
 
 
 def _int(value, default=None):
@@ -63,7 +77,12 @@ def parse_team_stats(stats: list[dict], lineups: dict, match: PlMatch) -> list[d
     return rows
 
 
-def parse_lineups(lineups: dict, feed: dict, match: PlMatch) -> list[dict]:
+def parse_lineups(lineups: dict, feed: dict, match: PlMatch, events: dict | None = None) -> list[dict]:
+    """Squads with formation slots and minutes on/off.
+
+    On/off minutes come from the raw Opta feed (Premier League) or, for cup and
+    European matches that have no feed, from the events feed.
+    """
     live = feed.get("liveData") or {}
     slots = {}
     for team in live.get("lineUp") or []:
@@ -76,6 +95,14 @@ def parse_lineups(lineups: dict, feed: dict, match: PlMatch) -> list[dict]:
     for card in live.get("card") or []:
         if card.get("type") in ("Y2C", "RC"):
             off.setdefault(str(card.get("opPlayerId")), _int(card.get("timeMin")))
+    for side in ("homeTeam", "awayTeam"):
+        team = (events or {}).get(side) or {}
+        for sub in team.get("subs") or []:
+            on.setdefault(str(sub.get("playerOnId")), _events_minute(sub))
+            off.setdefault(str(sub.get("playerOffId")), _events_minute(sub))
+        for card in team.get("cards") or []:
+            if _card_kind(card.get("type")) != "yellow":
+                off.setdefault(str(card.get("playerId")), _events_minute(card))
 
     rows = []
     for side, team_id in (("home", match.home_team_id), ("away", match.away_team_id)):
@@ -147,6 +174,28 @@ def parse_events(feed: dict) -> list[dict]:
     return sorted(rows, key=lambda r: (r["period"], r["minute"], r["timestamp"]))
 
 
+def parse_events_feed(events: dict, match: PlMatch, names: dict[str, str]) -> list[dict]:
+    """Cards and substitutions from the events feed (cup and European matches).
+
+    This feed has no card reasons and no VAR decisions; those come only with
+    the raw Opta feed the Premier League publishes for its own matches.
+    """
+    rows = []
+    for side, team_id in (("homeTeam", match.home_team_id), ("awayTeam", match.away_team_id)):
+        team = events.get(side) or {}
+        for card in team.get("cards") or []:
+            pid = str(card.get("playerId") or "")
+            rows.append({"team_id": team_id, "kind": _card_kind(card.get("type")), "minute": _events_minute(card),
+                         "period": PERIODS.get(card.get("period"), 0), "player_id": pid, "player_name": names.get(pid, ""),
+                         "detail": "", "timestamp": card.get("timestamp") or ""})
+        for sub in team.get("subs") or []:
+            on, out = str(sub.get("playerOnId") or ""), str(sub.get("playerOffId") or "")
+            rows.append({"team_id": team_id, "kind": "sub", "minute": _events_minute(sub), "period": PERIODS.get(sub.get("period"), 0),
+                         "player_id": on, "player_name": names.get(on, ""), "other_player_id": out,
+                         "other_player_name": names.get(out, ""), "detail": "", "timestamp": sub.get("timestamp") or ""})
+    return sorted(rows, key=lambda r: (r["period"], r["minute"], r["timestamp"]))
+
+
 def parse_momentum(feed: dict) -> list[list]:
     """[[period, minute, home, away], ...] in match order."""
     points = []
@@ -169,18 +218,24 @@ def compact_sheet(sheet: dict) -> dict:
 def sync_details(match: PlMatch, client: PLStatsClient) -> bool:
     stats = client.get_match_stats(match.match_id)
     lineups = client.get_match_lineups(match.match_id)
-    feed = client.get_match_feed(match.match_id)
-    if not stats or not lineups or not feed:
+    league = match.competition_id == PlMatch.PREMIER_LEAGUE
+    # The raw Opta feed (momentum, card reasons, VAR) exists for league matches only.
+    feed = client.get_match_feed(match.match_id) if league else {}
+    events = None if league else client.get_match_events(match.match_id)
+    if not stats or not lineups or (league and not feed) or (not league and not events):
         logger.warning("Match %s: detail feeds incomplete; retrying next run", match.match_id)
         return False
+    lineup_rows = parse_lineups(lineups, feed, match, events)
+    names = {r["player_id"]: r["name"] for r in lineup_rows}
+    event_rows = parse_events(feed) if league else parse_events_feed(events, match, names)
     with transaction.atomic():
         match.team_stats.all().delete()
         match.lineups.all().delete()
         match.events.all().delete()
         MatchTeamStat.objects.bulk_create([MatchTeamStat(match=match, **r) for r in parse_team_stats(stats, lineups, match)])
-        MatchLineupPlayer.objects.bulk_create([MatchLineupPlayer(match=match, **r) for r in parse_lineups(lineups, feed, match)])
-        MatchEvent.objects.bulk_create([MatchEvent(match=match, **r) for r in parse_events(feed)])
-        match.momentum = parse_momentum(feed)
+        MatchLineupPlayer.objects.bulk_create([MatchLineupPlayer(match=match, **r) for r in lineup_rows])
+        MatchEvent.objects.bulk_create([MatchEvent(match=match, **r) for r in event_rows])
+        match.momentum = parse_momentum(feed) if league else []
         match.details_synced = True
         match.save(update_fields=["momentum", "details_synced"])
     return True
@@ -239,6 +294,7 @@ def _parallel(items, work, workers: int):
 
 
 def sync_season_details(season: int, workers: int = 3, delay: float = 0.4, refresh: bool = False, log=logger.info) -> dict:
+    """Details for every stored finished match of the season, in every competition."""
     matches = PlMatch.objects.filter(season=season, home_score__isnull=False)
     if not refresh:
         matches = matches.filter(details_synced=False)
@@ -256,8 +312,12 @@ def sync_season_details(season: int, workers: int = 3, delay: float = 0.4, refre
 
 
 def sync_season_players(season: int, workers: int = 3, delay: float = 0.4, refresh: bool = False, log=logger.info) -> dict:
-    """Player sheets for every finished match whose details are stored."""
-    pending = PlMatch.objects.filter(season=season, details_synced=True)
+    """Player sheets for every finished league match whose details are stored.
+
+    The classic API's per-player sheets are wired up for the Premier League
+    only; cup and European minutes come from the lineups instead.
+    """
+    pending = PlMatch.objects.filter(season=season, details_synced=True, competition_id=PlMatch.PREMIER_LEAGUE)
     if not refresh:
         pending = pending.filter(players_synced=False)
     by_classic = {m.classic_id: m for m in pending if m.classic_id}
@@ -272,7 +332,7 @@ def sync_season_players(season: int, workers: int = 3, delay: float = 0.4, refre
         log(f"{season}: no classic season id")
         return {"stored": 0, "tried": 0}
     # Fixtures we already know, plus any finished fixture not yet mapped to a match.
-    known = {m.classic_id for m in PlMatch.objects.filter(season=season, classic_id__isnull=False)}
+    known = {m.classic_id for m in PlMatch.objects.filter(season=season, classic_id__isnull=False, competition_id=PlMatch.PREMIER_LEAGUE)}
     targets = [fid for fid in (int(f["id"]) for f in lister.iter_fixtures(season_id)) if fid in by_classic or fid not in known]
     clients = {}
 

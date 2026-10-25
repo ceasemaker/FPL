@@ -1607,13 +1607,27 @@ class ShadowPick(models.Model):
 
 
 class PlMatch(models.Model):
-    """A Premier League match from the Premier League's SDP API (Opta ids).
+    """A match from the Premier League's SDP API (Opta ids).
 
-    Kept with ``MatchGoal`` so goals can be valued by the game state they
-    changed (see ``etl/services/clutch.py``).
+    Premier League matches (competition 8), plus every cup and European match
+    a Premier League club plays (FA Cup, League Cup, Champions League, Europa
+    League, Conference League, Community Shield, Super Cup). Opponents outside
+    the Premier League have no club row, so team names are stored here.
+    Anything that means "a league match" filters ``competition_id=8``.
     """
 
+    PREMIER_LEAGUE = 8
     season = models.PositiveSmallIntegerField(help_text="Start year, e.g. 2025 for 2025/26")
+    competition_id = models.PositiveIntegerField(default=8, help_text="Opta competition id: 8 Premier League, 2 League Cup, 1 FA Cup, 5 UCL, 6 UEL, 1125 UECL")
+    competition_name = models.CharField(max_length=80, blank=True)
+    round_name = models.CharField(max_length=60, blank=True, help_text="e.g. 'Round of 16'; matchweek for leagues")
+    home_team_name = models.CharField(max_length=80, blank=True)
+    away_team_name = models.CharField(max_length=80, blank=True)
+    home_team_short = models.CharField(max_length=10, blank=True)
+    away_team_short = models.CharField(max_length=10, blank=True)
+    result_type = models.CharField(max_length=30, blank=True, help_text="NormalResult, or how a cup tie was decided")
+    home_penalties = models.SmallIntegerField(null=True, blank=True, help_text="Shoot-out score, when there was one")
+    away_penalties = models.SmallIntegerField(null=True, blank=True)
     match_id = models.CharField(max_length=20, unique=True, help_text="Opta match id")
     matchweek = models.PositiveSmallIntegerField(null=True)
     kickoff = models.DateTimeField(null=True)
@@ -1634,7 +1648,7 @@ class PlMatch(models.Model):
 
     class Meta:
         db_table = "pl_matches"
-        indexes = [models.Index(fields=["season"])]
+        indexes = [models.Index(fields=["season"]), models.Index(fields=["competition_id", "season"])]
 
     def __str__(self) -> str:
         return f"{self.season} {self.home_team_id} v {self.away_team_id} ({self.match_id})"

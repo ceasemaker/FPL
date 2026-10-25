@@ -37,9 +37,16 @@ def _teams() -> dict[str, dict]:
     return teams
 
 
-def _team(teams: dict, team_id: str) -> dict:
-    t = teams.get(str(team_id), {"name": str(team_id), "short": str(team_id)[:3]})
+def _team(teams: dict, team_id: str, name: str = "", short: str = "") -> dict:
+    """A club by Opta id; cup and European opponents fall back to the names stored on the match."""
+    t = teams.get(str(team_id)) or {"name": name or str(team_id), "short": short or (name or str(team_id))[:3].upper()}
     return {"id": str(team_id), "name": t["name"], "short": t["short"]}
+
+
+def _side(teams: dict, match: PlMatch, home: bool) -> dict:
+    return _team(teams, match.home_team_id if home else match.away_team_id,
+                 match.home_team_name if home else match.away_team_name,
+                 match.home_team_short if home else match.away_team_short)
 
 
 def _form(team_id: str, before, teams: dict, n: int = 5) -> list[dict]:
@@ -51,17 +58,21 @@ def _form(team_id: str, before, teams: dict, n: int = 5) -> list[dict]:
     for r in rows:
         home = r.home_team_id == team_id
         gf, ga = (r.home_score, r.away_score) if home else (r.away_score, r.home_score)
-        opp = r.away_team_id if home else r.home_team_id
-        out.append({"matchId": r.match_id, "opp": _team(teams, opp)["short"], "home": home, "gf": gf, "ga": ga,
-                    "res": "W" if gf > ga else "D" if gf == ga else "L", "date": r.kickoff.date().isoformat() if r.kickoff else None})
+        res = "W" if gf > ga else "D" if gf == ga else "L"
+        if gf == ga and r.home_penalties is not None and r.away_penalties is not None:
+            pf, pa = (r.home_penalties, r.away_penalties) if home else (r.away_penalties, r.home_penalties)
+            res = "W" if pf > pa else "L"  # a tie settled on penalties
+        out.append({"matchId": r.match_id, "opp": _side(teams, r, not home)["short"], "home": home, "gf": gf, "ga": ga,
+                    "res": res, "date": r.kickoff.date().isoformat() if r.kickoff else None,
+                    "competition": r.competition_name or "Premier League", "league": r.competition_id == PlMatch.PREMIER_LEAGUE})
     return out
 
 
 def _h2h(match: PlMatch, teams: dict, n: int = 6) -> list[dict]:
     pair = Q(home_team_id=match.home_team_id, away_team_id=match.away_team_id) | Q(home_team_id=match.away_team_id, away_team_id=match.home_team_id)
     return [{"matchId": r.match_id, "date": r.kickoff.date().isoformat() if r.kickoff else None,
-             "home": _team(teams, r.home_team_id)["short"], "away": _team(teams, r.away_team_id)["short"],
-             "hs": r.home_score, "as": r.away_score}
+             "home": _side(teams, r, True)["short"], "away": _side(teams, r, False)["short"],
+             "hs": r.home_score, "as": r.away_score, "competition": r.competition_name or "Premier League"}
             for r in (PlMatch.objects.filter(pair, home_score__isnull=False).exclude(pk=match.pk)
                       .filter(**({"kickoff__lt": match.kickoff} if match.kickoff else {})).order_by("-kickoff")[:n])]
 
@@ -86,8 +97,31 @@ def _odds(match: PlMatch) -> dict | None:
     }
 
 
+def _players_from_lineups(match: PlMatch, lineups: list[dict], goals: list[dict]) -> list[dict]:
+    """Minutes, goals and assists for matches without Opta player sheets (cups, Europe).
+
+    Minutes come from who started and when players came on or off; 90 is used
+    for the full match, so extra time is not counted.
+    """
+    full = 120 if any(g["minute"] > 90 for g in goals) or match.result_type not in ("", "NormalResult") else 90
+    rows = []
+    for p in lineups:
+        on = 0 if p["starter"] else p["minute_on"]
+        if on is None:
+            continue
+        off = p["minute_off"] if p["minute_off"] is not None else full
+        name = p["name"]
+        rows.append({
+            "id": p["player_id"], "name": name, "team": p["team_id"], "position": POSITIONS.get(p["position"], ""),
+            "minutes": max(0, off - on), "started": p["starter"], "fpl": None,
+            "goals": sum(1 for g in goals if g["scorer"] == name), "assists": sum(1 for g in goals if g["assist"] == name),
+            **{k: None for k in ("shots", "boxShots", "bigChances", "chances", "boxTouches", "passes", "accuratePasses", "defence", "saves")},
+        })
+    return rows
+
+
 def build_payload(match_id: str) -> dict | None:
-    key = f"match-page:{match_id}:v1"
+    key = f"match-page:{match_id}:v2"
     cached = cache.get(key)
     if cached:
         return cached
@@ -96,9 +130,11 @@ def build_payload(match_id: str) -> dict | None:
         return None
     teams = _teams()
     finished = match.home_score is not None
-    gameweek = (FixtureHistory.objects.filter(season=match.season, team_h_code=int(match.home_team_id),
-                                              team_a_code=int(match.away_team_id)).values_list("gameweek", flat=True).first()
-                or match.matchweek)
+    league = match.competition_id == PlMatch.PREMIER_LEAGUE
+    # FPL gameweeks and points belong to league matches only.
+    gameweek = ((FixtureHistory.objects.filter(season=match.season, team_h_code=int(match.home_team_id),
+                                               team_a_code=int(match.away_team_id)).values_list("gameweek", flat=True).first()
+                 or match.matchweek) if league else None)
     lineups = list(match.lineups.values(
         "team_id", "player_id", "name", "shirt", "position", "position_side", "formation_place",
         "formation_row", "formation_col", "starter", "captain", "minute_on", "minute_off"))
@@ -137,14 +173,21 @@ def build_payload(match_id: str) -> dict | None:
             "defence": s.get("total_tackle", 0) + s.get("interception", 0), "saves": s.get("saves", 0),
         })
 
+    if not players and not league and finished:
+        players = _players_from_lineups(match, lineups, goals)
+
     payload = {
         "matchId": match.match_id,
         "season": match.season,
         "gameweek": gameweek,
         "kickoff": match.kickoff.isoformat() if match.kickoff else None,
         "status": "finished" if finished else "upcoming",
-        "home": _team(teams, match.home_team_id),
-        "away": _team(teams, match.away_team_id),
+        "competition": match.competition_name or "Premier League",
+        "competitionId": match.competition_id,
+        "round": match.round_name if not league else "",
+        "penalties": [match.home_penalties, match.away_penalties] if match.home_penalties is not None else None,
+        "home": _side(teams, match, True),
+        "away": _side(teams, match, False),
         "score": [match.home_score, match.away_score] if finished else None,
         "goals": goals,
         "events": events,
@@ -157,7 +200,7 @@ def build_payload(match_id: str) -> dict | None:
         "playersAvailable": match.players_synced,
         "form": {"home": _form(match.home_team_id, match.kickoff, teams), "away": _form(match.away_team_id, match.kickoff, teams)},
         "h2h": _h2h(match, teams),
-        "odds": None if finished else _odds(match),
+        "odds": None if finished or not league else _odds(match),
     }
     cache.set(key, payload, CACHE_TTL if not finished else CACHE_TTL * 8)
     return payload
@@ -168,5 +211,6 @@ def match_for_fixture(fixture_id: int) -> str | None:
     fixture = Fixture.objects.select_related("team_h", "team_a").filter(id=fixture_id).first()
     if fixture is None or not fixture.team_h or not fixture.team_a:
         return None
-    match = PlMatch.objects.filter(home_team_id=str(fixture.team_h.code), away_team_id=str(fixture.team_a.code)).order_by("-season").first()
+    match = (PlMatch.objects.filter(competition_id=PlMatch.PREMIER_LEAGUE, home_team_id=str(fixture.team_h.code),
+                                    away_team_id=str(fixture.team_a.code)).order_by("-season").first())
     return match.match_id if match else None

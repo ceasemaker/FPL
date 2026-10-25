@@ -56,7 +56,9 @@ export function MomentumScrubber({ data, timeline, cursor, onCursor, hasMomentum
 
   const red = events.find((e) => e.kind === "second_yellow" || e.kind === "red");
   const jumps: [string, number][] = [["Kick-off", 0], ["Half-time", halfIndex - 1], ...(red ? [[`Red card ${red.minute}′`, red.idx] as [string, number]] : []), ["Full time", end - 1]];
-  const ticks: [number, string][] = [[0, "0′"], [indexOf(15, 1), "15′"], [indexOf(30, 1), "30′"], [halfIndex, "HT"], [indexOf(60, 2), "60′"], [indexOf(75, 2), "75′"], [end - 1, "FT"]];
+  const extraTime = moments.some((m) => m.period === 3);
+  const ticks: [number, string][] = [[0, "0′"], [indexOf(15, 1), "15′"], [indexOf(30, 1), "30′"], [halfIndex, "HT"], [indexOf(60, 2), "60′"], [indexOf(75, 2), "75′"],
+    ...(extraTime ? [[indexOf(91, 3), "90′"] as [number, string]] : []), [end - 1, extraTime ? "AET" : "FT"]];
   const cx = xAt(cursor) + barW / 2, tag = label(cursor), tw = 14 + tag.length * 7;
   const score = events.filter((e) => e.kind === "goal" && e.idx <= cursor).reduce<[number, number]>((s, g) => [g.home ?? s[0], g.away ?? s[1]], [0, 0]);
 
@@ -101,7 +103,8 @@ export function MomentumScrubber({ data, timeline, cursor, onCursor, hasMomentum
         <text className="mp-side-label" x="0" y={MID - 30}>{data.home.short}</text>
         <text className="mp-side-label" x="0" y={MID + 40}>{data.away.short}</text>
         <line className="mp-axis" x1={PAD_L} x2={W - PAD_R} y1={MID} y2={MID} />
-        {moments.map((m, i) => {
+        {!hasMomentum && <text className="mp-tick" x={W / 2} y={MID - 8} textAnchor="middle">Opta publishes momentum for Premier League matches only</text>}
+        {hasMomentum && moments.map((m, i) => {
           const x = xAt(i), hh = (m.h / maxM) * AMP, ha = (m.a / maxM) * AMP, future = i > cursor ? " future" : "";
           return (
             <g key={i}>
@@ -125,8 +128,9 @@ export function MomentumScrubber({ data, timeline, cursor, onCursor, hasMomentum
         </g>
       </svg>
       <div className="mp-legend">
-        <span><i className="mp-swatch home" />{data.home.short} momentum (above the line)</span>
-        <span><i className="mp-swatch away" />{data.away.short} momentum (below)</span>
+        {hasMomentum && <><span><i className="mp-swatch home" />{data.home.short} momentum (above the line)</span>
+        <span><i className="mp-swatch away" />{data.away.short} momentum (below)</span></>}
+        {!hasMomentum && <span>{data.home.short} events above the line, {data.away.short} below</span>}
         <span><EventIcon kind="goal" size={13} />Goal</span>
         <span><EventIcon kind="yellow" size={13} />Yellow</span>
         <span><EventIcon kind="second_yellow" size={13} />Second yellow</span>

@@ -3,7 +3,9 @@ from __future__ import annotations
 from django.test import TestCase
 
 from ..models import PlMatch
-from ..services.match_details import compact_sheet, parse_events, parse_lineups, parse_momentum, parse_team_stats
+from ..services.match_details import (
+    _card_kind, compact_sheet, parse_events, parse_events_feed, parse_lineups, parse_momentum, parse_team_stats,
+)
 
 LINEUPS = {
     "home_team": {"teamId": "14", "formation": {"formation": "4-3-3", "lineup": [["1"], ["2", "3"]], "subs": ["9"]},
@@ -60,3 +62,72 @@ class MatchDetailParsingTests(TestCase):
 
     def test_sheets_drop_zeros(self):
         self.assertEqual(compact_sheet({"touches": 31.0, "winning_goal": 0.0, "goals": 0}), {"touches": 31.0})
+
+
+EVENTS = {
+    "homeTeam": {"cards": [{"playerId": "3", "type": "Yellow", "period": "FirstHalf", "time": "30", "timestamp": "T1"},
+                           {"playerId": "3", "type": "YellowRed", "period": "ExtraFirstHalf", "time": "98", "timestamp": "T3"}],
+                 "subs": [{"playerOnId": "9", "playerOffId": "2", "period": "SecondHalf", "time": "70", "timestamp": "T2"}]},
+    "awayTeam": {"cards": [], "subs": []},
+}
+
+
+class CupMatchParsingTests(TestCase):
+    """Cup and European matches: no raw Opta feed, so cards and subs come from the events feed."""
+
+    def setUp(self):
+        self.match = PlMatch(season=2026, match_id="2", home_team_id="14", away_team_id="43", competition_id=5)
+
+    def test_card_kinds(self):
+        self.assertEqual([_card_kind(t) for t in ("Yellow", "YellowRed", "SecondYellow", "Red", "")],
+                         ["yellow", "second_yellow", "second_yellow", "red", "yellow"])
+
+    def test_cards_and_subs_with_extra_time(self):
+        names = {"2": "Bo Back", "3": "Cy Red", "9": "Dimi"}
+        rows = parse_events_feed(EVENTS, self.match, names)
+        self.assertEqual([(r["kind"], r["period"], r["minute"]) for r in rows],
+                         [("yellow", 1, 30), ("sub", 2, 70), ("second_yellow", 3, 98)])
+        self.assertEqual((rows[1]["player_name"], rows[1]["other_player_name"]), ("Dimi", "Bo Back"))
+        self.assertEqual(rows[0]["detail"], "")  # no card reasons outside the league feed
+
+    def test_lineup_minutes_from_events_feed(self):
+        rows = {r["player_id"]: r for r in parse_lineups(LINEUPS, {}, self.match, EVENTS)}
+        self.assertEqual((rows["9"]["minute_on"], rows["2"]["minute_off"], rows["3"]["minute_off"]), (70, 70, 98))
+        self.assertIsNone(rows["1"]["minute_off"])
+
+
+class FakeClient:
+    def __init__(self, rows):
+        self.rows = rows
+
+    def iter_season_matches(self, competition, season):
+        return iter(self.rows.get(competition, []))
+
+    def get_match_events(self, match_id):
+        return {"homeTeam": {"goals": []}, "awayTeam": {"goals": []}}
+
+
+def row(match_id, home, away, period="PreMatch", **extra):
+    return {"matchId": match_id, "period": period, "kickoff": "2026-10-01 20:00:00",
+            "homeTeam": {"id": home, "name": f"Club {home}", "abbr": f"C{home}", "score": 0},
+            "awayTeam": {"id": away, "name": f"Club {away}", "abbr": f"C{away}", "score": 0}, **extra}
+
+
+class CompetitionSyncTests(TestCase):
+    def test_cup_ties_kept_only_for_premier_league_clubs(self):
+        from ..services.match_goals import sync_season
+        client = FakeClient({8: [row("10", "14", "43")],
+                             5: [row("20", "14", "999", round="League Phase"), row("21", "998", "999"),
+                                 row("22", "999", "14", period="FullTime", resultType="PenaltyShootout",
+                                     homePenaltyScore=2, awayPenaltyScore=4)]})
+        logs = []
+        sync_season(2026, client, log=logs.append, competition=5)
+        self.assertFalse(PlMatch.objects.exists())  # the league must be synced first
+        sync_season(2026, client, log=logs.append)
+        sync_season(2026, client, log=logs.append, competition=5)
+        cup = PlMatch.objects.get(match_id="20")
+        self.assertEqual((cup.competition_id, cup.competition_name, cup.round_name, cup.away_team_name),
+                         (5, "Champions League", "League Phase", "Club 999"))
+        self.assertFalse(PlMatch.objects.filter(match_id="21").exists())
+        shootout = PlMatch.objects.get(match_id="22")
+        self.assertEqual((shootout.home_penalties, shootout.away_penalties, shootout.goals_synced), (2, 4, True))

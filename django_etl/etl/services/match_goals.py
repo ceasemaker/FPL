@@ -41,7 +41,9 @@ def _minute(goal: dict) -> int:
         return max(1, min(minute, 45))
     if goal.get("period") == "SecondHalf":
         return max(46, min(minute, 90))
-    return max(1, min(minute, 90))
+    if goal.get("period") in ("ExtraFirstHalf", "ExtraSecondHalf", "ExtraTime"):
+        return max(91, min(minute, 120))
+    return max(1, min(minute, 120))
 
 
 def goals_from_events(events: dict) -> list[dict]:
@@ -50,6 +52,8 @@ def goals_from_events(events: dict) -> list[dict]:
     for side in ("homeTeam", "awayTeam"):
         team = events.get(side) or {}
         for goal in team.get("goals") or []:
+            if "shoot" in str(goal.get("period", "")).lower() or "penalt" in str(goal.get("period", "")).lower():
+                continue  # shoot-out kicks are not goals in the score
             goals.append({**goal, "_home": side == "homeTeam", "_team": str(team.get("id", ""))})
     # Timestamps order goals exactly; the minute is the fallback.
     goals.sort(key=lambda g: (g.get("timestamp") or "", _minute(g)))
@@ -106,28 +110,73 @@ def _adds_up(goals: list[dict], match: PlMatch) -> bool:
     return home == match.home_score and len(goals) - home == match.away_score
 
 
-def sync_season(season: int, client: PLStatsClient | None = None, refresh: bool = False, log=logger.info) -> dict:
+# Opta competition ids for everything a Premier League club can play.
+COMPETITIONS = {
+    8: "Premier League", 2: "League Cup", 1: "FA Cup", 5: "Champions League", 6: "Europa League",
+    1125: "Conference League", 38: "Community Shield", 174: "UEFA Super Cup",
+}
+CUP_COMPETITIONS = [c for c in COMPETITIONS if c != PREMIER_LEAGUE]
+
+
+def premier_league_clubs(season: int) -> set[str]:
+    """Opta ids of the season's Premier League clubs (to keep only their cup ties)."""
+    clubs = set(PlMatch.objects.filter(season=season, competition_id=PREMIER_LEAGUE)
+                .values_list("home_team_id", flat=True))
+    return {c for c in clubs if c}
+
+
+def _penalties(row: dict, side: str):
+    """Shoot-out score ("homePenaltyScore") for ties settled on penalties."""
+    value = row.get(f"{side}PenaltyScore")
+    return int(value) if isinstance(value, (int, float)) else None
+
+
+def sync_season(season: int, client: PLStatsClient | None = None, refresh: bool = False, log=logger.info,
+                competition: int = PREMIER_LEAGUE) -> dict:
+    """Store a competition's matches and goals for one season.
+
+    For cups and European competitions only matches involving a Premier League
+    club are kept (sync the league first, so its clubs are known).
+    """
     client = client or PLStatsClient()
-    stored = skipped = 0
-    for row in client.iter_season_matches(PREMIER_LEAGUE, season):
+    stored = skipped = kept = 0
+    clubs = premier_league_clubs(season) if competition != PREMIER_LEAGUE else None
+    if clubs is not None and not clubs:
+        log(f"{season}: no Premier League clubs stored yet; sync the league first")
+        return {"stored": 0, "skipped": 0, "complete": 0}
+    for row in client.iter_season_matches(competition, season):
         home, away = row.get("homeTeam") or {}, row.get("awayTeam") or {}
+        home_id, away_id = str(home.get("id", "")), str(away.get("id", ""))
+        if clubs is not None and home_id not in clubs and away_id not in clubs:
+            continue
+        kept += 1
         finished = row.get("period") == "FullTime"
         match, _ = PlMatch.objects.update_or_create(
             match_id=str(row["matchId"]),
             defaults={
                 "season": season,
+                "competition_id": competition,
+                "competition_name": row.get("competition") or COMPETITIONS.get(competition, ""),
+                "round_name": str(row.get("round") or row.get("matchWeek") or ""),
                 "matchweek": row.get("matchWeek"),
                 "kickoff": _kickoff(row.get("kickoff")),
-                "home_team_id": str(home.get("id", "")),
-                "away_team_id": str(away.get("id", "")),
+                "home_team_id": home_id,
+                "away_team_id": away_id,
+                "home_team_name": home.get("name") or "",
+                "away_team_name": away.get("name") or "",
+                "home_team_short": home.get("abbr") or "",
+                "away_team_short": away.get("abbr") or "",
+                "result_type": row.get("resultType") or "",
                 "home_score": home.get("score") if finished else None,
                 "away_score": away.get("score") if finished else None,
+                "home_penalties": _penalties(row, "home") if finished else None,
+                "away_penalties": _penalties(row, "away") if finished else None,
             },
         )
         if not finished or (match.goals_synced and not refresh):
             continue
         goals = goals_from_events(client.get_match_events(match.match_id))
-        if not _adds_up(goals, match):
+        if not _adds_up(goals, match) and competition == PREMIER_LEAGUE:
             goals = goals_from_feed(client.get_match_feed(match.match_id), match.home_team_id, match.away_team_id)
         if not _adds_up(goals, match):
             logger.warning("Match %s: goals don't match the score %s-%s; retrying next run",
@@ -140,6 +189,8 @@ def sync_season(season: int, client: PLStatsClient | None = None, refresh: bool 
             match.goals_synced = True
             match.save(update_fields=["goals_synced"])
         stored += 1
-    total = PlMatch.objects.filter(season=season, goals_synced=True).count()
-    log(f"{season}/{(season + 1) % 100:02d}: stored {stored} matches ({skipped} skipped); {total} complete")
+    total = PlMatch.objects.filter(season=season, competition_id=competition, goals_synced=True).count()
+    name = COMPETITIONS.get(competition, competition)
+    log(f"{season}/{(season + 1) % 100:02d} {name}: stored {stored} matches ({skipped} skipped); {total} complete"
+        + (f"; {kept} involve Premier League clubs" if clubs is not None else ""))
     return {"stored": stored, "skipped": skipped, "complete": total}

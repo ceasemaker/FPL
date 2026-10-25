@@ -236,3 +236,9 @@
   .mp-tok { transition: none; }
   .mp-skeleton { animation: none; }
 }
+
+/* Cup and European games in form and meetings carry a small competition tag. */
+.mp-form-row .chip { position: relative; }
+.mp-form-row .chip em { position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%); font-style: normal; font-size: 0.48rem; font-weight: 800; padding: 0 3px; border-radius: 3px; background: var(--aero-surface-raised); color: var(--aero-text-dim); border: 1px solid var(--aero-line-strong); }
+.mp-form-row .chips { row-gap: 10px; }
+.mp-h2h .comp { font-style: normal; font-size: 0.6rem; font-weight: 700; color: var(--aero-text-muted); margin-left: 6px; }

@@ -91,22 +91,36 @@ export function ShotZones({ data }: { data: MatchData }) {
 // Numeric column value by key (the row type mixes strings and numbers).
 const val = (p: object, k: string) => (p as Record<string, unknown>)[k] as number | null | undefined;
 
+// Short competition tags for form chips and meetings.
+const COMP_TAG: Record<string, string> = {
+  "Premier League": "PL", "League Cup": "EFL", "English League Cup": "EFL", "FA Cup": "FAC", "English FA Cup": "FAC",
+  "UEFA Champions League": "UCL", "Champions League": "UCL", "UEFA Europa League": "UEL", "Europa League": "UEL",
+  "UEFA Conference League": "UECL", "Conference League": "UECL", "English Community Shield": "CS", "UEFA Super Cup": "USC",
+};
+export const compTag = (name: string) => COMP_TAG[name] ?? name.split(" ").map((w) => w[0]).join("").slice(0, 4).toUpperCase();
+
 const COLS: [string, string][] = [
   ["fpl", "FPL pts"], ["minutes", "Mins"], ["goals", "Goals"], ["assists", "Assists"], ["shots", "Shots"], ["boxShots", "In box"],
   ["bigChances", "Big chances"], ["chances", "Chances created"], ["boxTouches", "Box touches"], ["defence", "Tackles + int"],
   ["passPct", "Pass %"], ["passes", "Passes"],
 ];
 
+// Cup and European matches have no Opta player sheets yet: minutes come from
+// the lineups, plus goals and assists.
+const LINEUP_COLS: [string, string][] = [["minutes", "Mins"], ["goals", "Goals"], ["assists", "Assists"]];
+
 export function MatchPlayers({ data }: { data: MatchData }) {
+  const sheets = data.players.some((p) => p.shots != null);
+  const cols = sheets ? COLS : LINEUP_COLS;
   const [team, setTeam] = useState<string>("all");
-  const [sort, setSort] = useState("fpl");
+  const [sort, setSort] = useState(sheets ? "fpl" : "minutes");
   const onMinute = useMemo(() => Object.fromEntries(data.lineups.map((p) => [p.player_id, p.minute_on])), [data]);
   const rows = useMemo(() => data.players
-    .map((p) => ({ ...p, passPct: p.passes ? Math.round((p.accuratePasses / p.passes) * 100) : null }))
+    .map((p) => ({ ...p, passPct: p.passes ? Math.round(((p.accuratePasses ?? 0) / p.passes) * 100) : null }))
     .filter((p) => team === "all" || p.team === team)
     .sort((a, b) => (val(b, sort) ?? -1) - (val(a, sort) ?? -1) || (b.fpl ?? 0) - (a.fpl ?? 0)), [data, team, sort]);
   const best = Math.max(...rows.map((p) => p.fpl ?? 0));
-  const top = Object.fromEntries(COLS.map(([k]) => [k, Math.max(...rows.map((p) => val(p, k) ?? 0))]));
+  const top = Object.fromEntries(cols.map(([k]) => [k, Math.max(...rows.map((p) => val(p, k) ?? 0))]));
   const short = (t: string) => (t === data.home.id ? data.home.short : data.away.short);
 
   if (!data.players.length) return <p className="mp-note">Player match sheets for this match aren't loaded yet.</p>;
@@ -117,13 +131,14 @@ export function MatchPlayers({ data }: { data: MatchData }) {
           <button key={k} type="button" aria-pressed={team === k} onClick={() => setTeam(k)}>{l}</button>
         ))}
       </div>
+      {!sheets && <p className="mp-note">Opta player sheets are loaded for Premier League matches; here minutes come from the lineups (who started, who came on or off when).</p>}
       {data.fplDouble.length > 0 && <p className="mp-note">FPL points for {data.fplDouble.map(short).join(" and ")} players cover both of their matches in this double gameweek.</p>}
       <div className="mp-tbl-wrap">
         <table className="mp-table">
           <thead>
             <tr>
               <th scope="col">Player</th>
-              {COLS.map(([k, l]) => (
+              {cols.map(([k, l]) => (
                 <th key={k} scope="col" aria-sort={k === sort ? "descending" : "none"} className={k === sort ? "sorted" : ""}>
                   <button type="button" onClick={() => setSort(k)}>{l}</button>
                 </th>
@@ -134,7 +149,7 @@ export function MatchPlayers({ data }: { data: MatchData }) {
             {rows.map((p) => (
               <tr key={p.id}>
                 <th scope="row"><span className="mp-pl"><img src={crestUrl(p.team)} alt={short(p.team)} />{p.name} <small>{p.position}</small></span></th>
-                {COLS.map(([k]) => {
+                {cols.map(([k]) => {
                   const x = val(p, k) ?? null;
                   const shown = x == null ? "–" : k === "passPct" ? `${x}%` : x;
                   const cls = k === "fpl" ? `fpl${x === best && best > 0 ? " best" : ""}` : x && x === top[k] && k !== "minutes" && k !== "passes" ? "top" : "";
@@ -157,11 +172,12 @@ export function MatchContext({ data }: { data: MatchData }) {
       <img src={crestUrl(team)} alt="" /><span className="code">{short}</span>
       <div className="chips">
         {list.slice().reverse().map((f) => (
-          <Link key={f.matchId} to={`/matches/${f.matchId}`} className={`chip ${f.res}`} title={`${f.home ? "v" : "at"} ${f.opp} ${f.gf}–${f.ga}`}>
-            {f.res}<br />{f.gf}-{f.ga}
+          <Link key={f.matchId} to={`/matches/${f.matchId}`} className={`chip ${f.res}${f.league ? "" : " cup"}`}
+            title={`${f.competition}: ${f.home ? "v" : "at"} ${f.opp} ${f.gf}–${f.ga}`}>
+            {f.res}<br />{f.gf}-{f.ga}{!f.league && <em>{compTag(f.competition)}</em>}
           </Link>
         ))}
-        {list.length === 0 && <span className="mp-note">No earlier league games stored.</span>}
+        {list.length === 0 && <span className="mp-note">No earlier games stored.</span>}
       </div>
     </div>
   );
@@ -169,7 +185,7 @@ export function MatchContext({ data }: { data: MatchData }) {
   const short = (t: string) => (t === data.home.id ? data.home.short : data.away.short);
   return (
     <div className="mp-ctx">
-      <section className="mp-sheet"><h3>Last five league games</h3><div className="mp-form">{formRow(data.home.id, data.home.short, data.form.home)}{formRow(data.away.id, data.away.short, data.form.away)}</div></section>
+      <section className="mp-sheet"><h3>Last five games</h3><div className="mp-form">{formRow(data.home.id, data.home.short, data.form.home)}{formRow(data.away.id, data.away.short, data.form.away)}</div></section>
       <section className="mp-sheet">
         <h3>Last meetings</h3>
         {data.h2h.length === 0 ? <p className="mp-note">No earlier meetings stored (we hold matches from 2021/22).</p> : (
@@ -177,7 +193,7 @@ export function MatchContext({ data }: { data: MatchData }) {
             {data.h2h.map((h) => (
               <li key={h.matchId}><Link to={`/matches/${h.matchId}`}>
                 <span className="d">{h.date ? new Date(h.date).toLocaleDateString([], { day: "numeric", month: "short", year: "2-digit" }) : ""}</span>
-                <span className="r">{h.home}</span><span className="s">{h.hs}–{h.as}</span><span>{h.away}</span>
+                <span className="r">{h.home}</span><span className="s">{h.hs}–{h.as}</span><span>{h.away}{h.competition !== "Premier League" && <em className="comp">{compTag(h.competition)}</em>}</span>
               </Link></li>
             ))}
           </ul>

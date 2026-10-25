@@ -73,7 +73,7 @@ export function MatchPage() {
       <nav className="mp-crumbs" aria-label="Breadcrumb">
         <Link to="/fixtures">Matches</Link><span aria-hidden="true">/</span>
         {data.gameweek && <><span>GW{data.gameweek}</span><span aria-hidden="true">/</span></>}
-        <span className="long">Premier League{kickoff ? ` · ${kickoff.toLocaleDateString([], { weekday: "short", day: "numeric", month: "short", year: "numeric" })}` : ""}</span>
+        <span className="long">{data.competition}{data.round ? ` · ${data.round}` : ""}{kickoff ? ` · ${kickoff.toLocaleDateString([], { weekday: "short", day: "numeric", month: "short", year: "numeric" })}` : ""}</span>
       </nav>
 
       <header className="mp-head">
@@ -83,7 +83,7 @@ export function MatchPage() {
         </div>
         <div className="mp-score">
           {finished && data.score
-            ? <><strong aria-label={`${data.home.name} ${data.score[0]}, ${data.away.name} ${data.score[1]}`}>{data.score[0]}–{data.score[1]}</strong><span>Full time</span></>
+            ? <><strong aria-label={`${data.home.name} ${data.score[0]}, ${data.away.name} ${data.score[1]}`}>{data.score[0]}–{data.score[1]}</strong><span>{data.penalties ? `${data.penalties[0]}–${data.penalties[1]} on penalties` : "Full time"}</span></>
             : <><strong className="ko">{kickoff ? kickoff.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "TBC"}</strong><span>{kickoff ? kickoff.toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" }) : "Kick-off"}</span></>}
         </div>
         <div className="mp-side away">
@@ -113,7 +113,7 @@ export function MatchPage() {
             <ShotZones data={data} />
           </div>
 
-          <div className="mp-sec-title"><div><h2>Every player</h2><p>Opta match sheets and FPL points. Sorted by FPL points; choose a column to sort.</p></div></div>
+          <div className="mp-sec-title"><div><h2>Every player</h2><p>{data.competitionId === 8 ? "Opta match sheets and FPL points. Sorted by FPL points; choose a column to sort." : "Who played and for how long, with goals and assists."}</p></div></div>
           <MatchPlayers data={data} />
         </>
       ) : finished ? (
@@ -122,9 +122,9 @@ export function MatchPage() {
         <UpcomingTimelineNote data={data} timeline={timeline} />
       )}
 
-      <div className="mp-sec-title"><div><h2>{finished ? "Going into the match" : "Before kick-off"}</h2><p>{finished ? "Form, the last meetings, and who scored FPL points here." : "Form, the last meetings, and what the bookmakers expect."}</p></div></div>
+      <div className="mp-sec-title"><div><h2>{finished ? "Going into the match" : "Before kick-off"}</h2><p>{finished ? (data.competitionId === 8 ? "Form in every competition, the last meetings, and who scored FPL points here." : "Form in every competition and the last meetings.") : "Form in every competition, the last meetings, and what the bookmakers expect."}</p></div></div>
       <MatchContext data={data} />
-      <p className="mp-foot">Match data from the Premier League's stats feeds (Opta) and FPL. Momentum is Opta's per-minute chance of each side scoring; team and player stats are full-match totals.</p>
+      <p className="mp-foot">Match data from the Premier League's stats feeds (Opta){data.competitionId === 8 ? " and FPL" : ""}. Momentum is Opta's per-minute chance of each side scoring, published for Premier League matches only; team and player stats are full-match totals.</p>
     </main>
   );
 }

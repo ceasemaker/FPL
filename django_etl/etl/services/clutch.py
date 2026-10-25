@@ -47,7 +47,7 @@ def _clip(diff: int) -> int:
 
 def _match_goals() -> dict[int, list[tuple]]:
     goals: dict[int, list[tuple]] = defaultdict(list)
-    for row in MatchGoal.objects.filter(match__goals_synced=True).order_by("match_id", "order").values_list(
+    for row in MatchGoal.objects.filter(match__goals_synced=True, match__competition_id=8).order_by("match_id", "order").values_list(
             "match_id", "minute", "is_home"):
         goals[row[0]].append((row[1], row[2]))
     return goals
@@ -55,14 +55,14 @@ def _match_goals() -> dict[int, list[tuple]]:
 
 def win_probability_table() -> dict:
     """P(home win, draw, away win) by minute bucket and home goal difference."""
-    key = f"clutch-winprob:{PlMatch.objects.filter(goals_synced=True).count()}:v1"
+    key = f"clutch-winprob:{PlMatch.objects.filter(goals_synced=True, competition_id=8).count()}:v1"
     cached = cache.get(key)
     if cached:
         return cached
     counts = np.zeros((90 // BUCKET + 1, 2 * MAX_DIFF + 1, 3))
     goals = _match_goals()
     matches = 0
-    for match_id, home, away in PlMatch.objects.filter(goals_synced=True).values_list("id", "home_score", "away_score"):
+    for match_id, home, away in PlMatch.objects.filter(goals_synced=True, competition_id=8).values_list("id", "home_score", "away_score"):
         result = 0 if home > away else 1 if home == away else 2
         events = goals.get(match_id, [])
         diff, index = 0, 0
@@ -98,7 +98,7 @@ def expected_points(probs, minute: int, home_diff: int, home: bool) -> float:
 def goal_values(season: int, probs) -> list[dict]:
     """Every goal of the season with the points it was worth to the scoring team."""
     out = []
-    goals = MatchGoal.objects.filter(match__season=season, match__goals_synced=True).order_by("match_id", "order")
+    goals = MatchGoal.objects.filter(match__season=season, match__goals_synced=True, match__competition_id=8).order_by("match_id", "order")
     for g in goals.values("match_id", "team_id", "is_home", "minute", "goal_type", "player_id",
                           "assist_player_id", "home_after", "away_after"):
         after = g["home_after"] - g["away_after"]
@@ -214,7 +214,8 @@ def clutch_persistence(seasons: list[int], probs, min_goals: int = 5) -> dict | 
 
 
 def build_payload(season: int) -> dict:
-    synced = PlMatch.objects.filter(goals_synced=True)
+    # League matches only: cup ties have extra time, shoot-outs and mismatched sides.
+    synced = PlMatch.objects.filter(goals_synced=True, competition_id=8)
     key = f"clutch:{season}:{synced.count()}:v1"
     cached = cache.get(key)
     if cached:

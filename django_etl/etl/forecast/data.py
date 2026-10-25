@@ -118,7 +118,7 @@ def load_opta_gameweeks() -> pd.DataFrame:
         .values_list("season", "team_h_code", "team_a_code", "gameweek")
     }
     rows = []
-    for season, home, away, code, stats in PlayerMatchStat.objects.values_list(
+    for season, home, away, code, stats in PlayerMatchStat.objects.filter(match__competition_id=8).values_list(
             "match__season", "match__home_team_id", "match__away_team_id", "player_id", "stats").iterator(chunk_size=5000):
         gw = gameweek.get((season, home, away))
         if gw is None or not str(code).isdigit():
