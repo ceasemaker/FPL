@@ -41,3 +41,18 @@ class MatchPageApiTests(TestCase):
 
     def test_unknown_match_is_404(self):
         self.assertEqual(self.client.get("/api/matches/999/").status_code, 404)
+
+    def test_cup_match_against_a_club_outside_the_league(self):
+        cup = PlMatch.objects.create(season=2026, match_id="3", competition_id=5, competition_name="UEFA Champions League",
+                                     round_name="Round", matchweek=4, home_team_id="2000", away_team_id="14",
+                                     home_team_name="Club Brugge", home_team_short="CLB", home_score=2, away_score=3,
+                                     goals_synced=True, details_synced=True)
+        MatchLineupPlayer.objects.create(match=cup, team_id="14", player_id="5", name="Mo Salah", starter=True, minute_off=80)
+        MatchGoal.objects.create(match=cup, order=1, team_id="14", is_home=False, minute=11, period="FirstHalf",
+                                 goal_type="Goal", player_id="5", home_after=0, away_after=1)
+        d = self.client.get("/api/matches/3/").json()
+        self.assertEqual((d["competition"], d["round"], d["gameweek"], d["home"]["name"]),
+                         ("UEFA Champions League", "Matchday 4", None, "Club Brugge"))
+        self.assertIsNone(d["form"]["home"])  # only its games against PL clubs are stored
+        self.assertEqual(d["form"]["away"][0]["matchId"], "1")
+        self.assertEqual([(p["name"], p["minutes"], p["goals"], p["shots"]) for p in d["players"]], [("Mo Salah", 80, 1, None)])

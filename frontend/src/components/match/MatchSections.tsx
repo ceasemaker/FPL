@@ -167,17 +167,18 @@ export function MatchPlayers({ data }: { data: MatchData }) {
 // ------------------------------------------------------------------ context
 
 export function MatchContext({ data }: { data: MatchData }) {
-  const formRow = (team: string, short: string, list: MatchData["form"]["home"]) => (
+  const formRow = (team: string, short: string, name: string, list: MatchData["form"]["home"]) => (
     <div className="mp-form-row">
       <img src={crestUrl(team)} alt="" /><span className="code">{short}</span>
       <div className="chips">
-        {list.slice().reverse().map((f) => (
+        {list === null && <span className="mp-note">We store {name}'s games against Premier League clubs only.</span>}
+        {list?.slice().reverse().map((f) => (
           <Link key={f.matchId} to={`/matches/${f.matchId}`} className={`chip ${f.res}${f.league ? "" : " cup"}`}
             title={`${f.competition}: ${f.home ? "v" : "at"} ${f.opp} ${f.gf}–${f.ga}`}>
             {f.res}<br />{f.gf}-{f.ga}{!f.league && <em>{compTag(f.competition)}</em>}
           </Link>
         ))}
-        {list.length === 0 && <span className="mp-note">No earlier games stored.</span>}
+        {list?.length === 0 && <span className="mp-note">No earlier games stored.</span>}
       </div>
     </div>
   );
@@ -185,7 +186,7 @@ export function MatchContext({ data }: { data: MatchData }) {
   const short = (t: string) => (t === data.home.id ? data.home.short : data.away.short);
   return (
     <div className="mp-ctx">
-      <section className="mp-sheet"><h3>Last five games</h3><div className="mp-form">{formRow(data.home.id, data.home.short, data.form.home)}{formRow(data.away.id, data.away.short, data.form.away)}</div></section>
+      <section className="mp-sheet"><h3>Last five games</h3><div className="mp-form">{formRow(data.home.id, data.home.short, data.home.name, data.form.home)}{formRow(data.away.id, data.away.short, data.away.name, data.form.away)}</div></section>
       <section className="mp-sheet">
         <h3>Last meetings</h3>
         {data.h2h.length === 0 ? <p className="mp-note">No earlier meetings stored (we hold matches from 2021/22).</p> : (

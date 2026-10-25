@@ -15,6 +15,8 @@ from ..models import (
     Fixture, FixtureHistory, FixtureOdds, GameweekHistory, MatchGoal, PlMatch, Team, TeamSeasonStat,
 )
 
+from .match_goals import premier_league_clubs
+
 CACHE_TTL = 15 * 60
 TEAM_STATS = [
     "expectedGoals", "expectedGoalsOnTarget", "possessionPercentage", "totalScoringAtt", "ontargetScoringAtt",
@@ -47,6 +49,19 @@ def _side(teams: dict, match: PlMatch, home: bool) -> dict:
     return _team(teams, match.home_team_id if home else match.away_team_id,
                  match.home_team_name if home else match.away_team_name,
                  match.home_team_short if home else match.away_team_short)
+
+
+EUROPE = {5, 6, 1125}
+
+
+def _round(match: PlMatch) -> str:
+    """A readable round: the feed's own name ("Semi-Finals"), else "Matchday 3" in
+    Europe; the feed's bare "Round" says nothing, so it is dropped."""
+    name = (match.round_name or "").strip()
+    if name and not name.isdigit() and name.lower() != "round":
+        return name
+    day = name if name.isdigit() else match.matchweek
+    return f"Matchday {day}" if day and match.competition_id in EUROPE else ""
 
 
 def _form(team_id: str, before, teams: dict, n: int = 5) -> list[dict]:
@@ -121,7 +136,7 @@ def _players_from_lineups(match: PlMatch, lineups: list[dict], goals: list[dict]
 
 
 def build_payload(match_id: str) -> dict | None:
-    key = f"match-page:{match_id}:v2"
+    key = f"match-page:{match_id}:v3"
     cached = cache.get(key)
     if cached:
         return cached
@@ -129,6 +144,7 @@ def build_payload(match_id: str) -> dict | None:
     if match is None:
         return None
     teams = _teams()
+    clubs = premier_league_clubs(match.season)
     finished = match.home_score is not None
     league = match.competition_id == PlMatch.PREMIER_LEAGUE
     # FPL gameweeks and points belong to league matches only.
@@ -184,7 +200,7 @@ def build_payload(match_id: str) -> dict | None:
         "status": "finished" if finished else "upcoming",
         "competition": match.competition_name or "Premier League",
         "competitionId": match.competition_id,
-        "round": match.round_name if not league else "",
+        "round": _round(match) if not league else "",
         "penalties": [match.home_penalties, match.away_penalties] if match.home_penalties is not None else None,
         "home": _side(teams, match, True),
         "away": _side(teams, match, False),
@@ -198,7 +214,10 @@ def build_payload(match_id: str) -> dict | None:
         "fplDouble": sorted(double),
         "detailsAvailable": match.details_synced,
         "playersAvailable": match.players_synced,
-        "form": {"home": _form(match.home_team_id, match.kickoff, teams), "away": _form(match.away_team_id, match.kickoff, teams)},
+        # Only Premier League clubs' games are all stored; a cup opponent's form
+        # would be its games against PL clubs alone, so it is left out (None).
+        "form": {side: _form(team_id, match.kickoff, teams) if league or team_id in clubs else None
+                 for side, team_id in (("home", match.home_team_id), ("away", match.away_team_id))},
         "h2h": _h2h(match, teams),
         "odds": None if finished or not league else _odds(match),
     }

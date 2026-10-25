@@ -24,7 +24,7 @@ export interface MatchData {
   goals: Goal[]; events: MatchEventRow[]; momentum: [number, number, number, number][];
   lineups: LineupPlayer[]; teamStats: Record<string, Record<string, number | string | null>>; players: PlayerRow[];
   fplDouble: string[]; detailsAvailable: boolean; playersAvailable: boolean;
-  form: { home: FormRow[]; away: FormRow[] };
+  form: { home: FormRow[] | null; away: FormRow[] | null };  // null: a club outside the Premier League
   h2h: { matchId: string; date: string | null; home: string; away: string; hs: number; as: number; competition: string }[];
   odds: { fixtureId: number; home?: number; draw?: number | null; away?: number | null; chances?: number[] | null; updated?: string | null } | null;
 }

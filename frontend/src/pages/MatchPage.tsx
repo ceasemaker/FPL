@@ -117,7 +117,9 @@ export function MatchPage() {
           <MatchPlayers data={data} />
         </>
       ) : finished ? (
-        <p className="mp-note">The detailed timeline and stats for this match haven't been loaded yet.</p>
+        <p className="mp-note">{data.competitionId === 8
+          ? "The detailed timeline and stats for this match haven't been loaded yet."
+          : "The Premier League's feeds have only the score for this match: no timeline, lineups or stats."}</p>
       ) : (
         <UpcomingTimelineNote data={data} timeline={timeline} />
       )}
