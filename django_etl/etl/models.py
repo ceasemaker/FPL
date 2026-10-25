@@ -393,6 +393,15 @@ class AthleteStat(TimestampedModel):
     mng_underdog_draw = models.IntegerField(default=0)
     mng_clean_sheets = models.IntegerField(default=0)
     mng_goals_scored = models.IntegerField(default=0)
+    # FPL's defensive contributions (2025/26 rule): clearances, blocks,
+    # interceptions and tackles (+ recoveries for midfielders and forwards).
+    defensive_contribution = models.IntegerField(default=0)
+    clearances_blocks_interceptions = models.IntegerField(default=0)
+    tackles = models.IntegerField(default=0)
+    recoveries = models.IntegerField(default=0)
+    dc_points = models.IntegerField(default=0, help_text="FPL points awarded for defensive contributions this gameweek")
+    dc_hits = models.SmallIntegerField(default=0, help_text="Matches this gameweek in which the threshold was reached")
+    matches_played = models.SmallIntegerField(default=0, help_text="Matches this gameweek with minutes")
     total_points = models.IntegerField(default=0)
     in_dreamteam = models.BooleanField(default=False)
     # As-of-deadline context from element-summary `history`. Nullable so a

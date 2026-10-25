@@ -1003,11 +1003,22 @@ def fixtures_by_gameweek(request):
     })
 
 
+def _model_cells(cell, home: bool) -> dict:
+    """A side's clean-sheet chance and projected goals from the fixture model."""
+    if not cell:
+        return {"clean_sheet": None, "goals_for": None, "goals_against": None}
+    return {
+        "clean_sheet": cell["homeCleanSheet" if home else "awayCleanSheet"],
+        "goals_for": cell["homeGoals" if home else "awayGoals"],
+        "goals_against": cell["awayGoals" if home else "homeGoals"],
+    }
+
+
 @require_GET
 def fixtures_ticker(request):
     """Return official FDR and available market-implied fixture difficulty."""
     try:
-        horizon = max(3, min(int(request.GET.get("horizon", 5)), 10))
+        horizon = max(1, min(int(request.GET.get("horizon", 5)), 38))  # up to the rest of the season (fixture runs)
     except (TypeError, ValueError):
         horizon = 5
 
@@ -1015,7 +1026,17 @@ def fixtures_ticker(request):
         AthleteStat.objects.aggregate(max_gw=Max("game_week"))["max_gw"] or 1
     )
     start_gw = current_gw + 1
-    end_gw = start_gw + horizon - 1
+    # ?start= steps the window through the season (never before the next gameweek).
+    try:
+        start_gw = max(start_gw, min(int(request.GET.get("start", start_gw)), 38))
+    except (TypeError, ValueError):
+        pass
+    end_gw = min(38, start_gw + horizon - 1)
+
+    from etl.services.fixture_model import projections as fixture_projections
+
+    model = fixture_projections() or {}
+    model_fixtures = model.get("fixtures", {})
 
     fixtures_qs = (
         Fixture.objects.filter(event__gte=start_gw, event__lte=end_gw)
@@ -1070,6 +1091,7 @@ def fixtures_ticker(request):
                 "fixture_id": fixture.id,
                 "difficulty": fixture.team_h_difficulty,
                 **(market or {"win_probability": None, "odds_difficulty": None}),
+                **_model_cells(model_fixtures.get(str(fixture.id)), home=True),
             })
         if fixture.team_a_id in team_rows:
             market = market_lookup.get((fixture.team_a.short_name, fixture.event)) if fixture.team_a else None
@@ -1080,6 +1102,7 @@ def fixtures_ticker(request):
                 "fixture_id": fixture.id,
                 "difficulty": fixture.team_a_difficulty,
                 **(market or {"win_probability": None, "odds_difficulty": None}),
+                **_model_cells(model_fixtures.get(str(fixture.id)), home=False),
             })
 
     response_rows = []
@@ -1103,13 +1126,18 @@ def fixtures_ticker(request):
             "probability_win_all": round(probability_win_all, 4) if probability_win_all is not None else None,
             "probability_at_least_one": round(probability_at_least_one, 4) if probability_at_least_one is not None else None,
             "market_fixture_count": len(market_probabilities),
+            # Fixture model totals over the window (blank weeks add nothing; doubles add twice).
+            "expected_clean_sheets": round(sum(f["clean_sheet"] for f in fixtures if f.get("clean_sheet") is not None), 3) if model_fixtures else None,
+            "expected_goals_for": round(sum(f["goals_for"] for f in fixtures if f.get("goals_for") is not None), 2) if model_fixtures else None,
+            "expected_goals_against": round(sum(f["goals_against"] for f in fixtures if f.get("goals_against") is not None), 2) if model_fixtures else None,
         })
 
     return JsonResponse({
+        "model": {"available": bool(model_fixtures), "record": model.get("record")},
         "current_gameweek": current_gw,
         "start_gameweek": start_gw,
         "end_gameweek": end_gw,
-        "horizon": horizon,
+        "horizon": end_gw - start_gw + 1,
         "market": {
             "available": bool(market_lookup),
             "snapshot_date": market_snapshot_date,
@@ -3605,6 +3633,22 @@ def planner_sync(request, code=None):
             return JsonResponse({"error": "No plans under that code."}, status=404)
         return JsonResponse({"code": row.code, "managerId": row.manager_id, "plans": row.data, "updatedAt": row.updated_at.isoformat()})
     return JsonResponse({"error": "Method not allowed."}, status=405)
+
+
+@require_GET
+def defcon(request):
+    """Defensive-contribution hit rates for every outfield player this season."""
+    from etl.services.defcon import build_payload as build_defcon_payload
+
+    return JsonResponse(build_defcon_payload())
+
+
+@require_GET
+def team_news(request):
+    """Injuries and bans, set-piece takers by club, and the next deadline."""
+    from etl.services.team_news import build_payload as build_team_news_payload
+
+    return JsonResponse(build_team_news_payload())
 
 
 @require_GET

@@ -1,0 +1,35 @@
+/* DEFCON and Team news: Team page tables, lime for the reliable. */
+.dc-label { display: inline-flex; align-items: center; gap: 8px; font-size: 0.74rem; color: var(--aero-text-muted); }
+.dc-label select { min-width: 120px; }
+.dc-table thead button { border: 0; background: none; color: inherit; font: inherit; cursor: pointer; padding: 0; }
+.dc-table thead button[aria-pressed="true"] { color: var(--aero-lime); }
+.dc-table th small, .dc-table td small { margin-left: 6px; font-size: 0.66rem; color: var(--aero-text-muted); font-weight: 500; }
+.dc-rate { display: inline-block; vertical-align: middle; width: 70px; height: 6px; border-radius: 6px; background: var(--aero-line); overflow: hidden; margin-right: 8px; }
+.dc-rate i { display: block; height: 100%; border-radius: 6px; background: var(--aero-us); }
+.dc-rate i.top { background: var(--aero-lime); }
+.dc-dots { display: inline-flex; gap: 3px; }
+.dc-dots i { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--aero-line-strong); }
+.dc-dots i.hit { background: var(--aero-lime); border-color: var(--aero-lime); }
+
+.tn-deadline { display: inline-flex; align-items: center; gap: 10px; margin: 0 0 16px; padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(165, 255, 1, 0.4); background: var(--aero-lime-wash); font-size: 0.86rem; }
+.tn-deadline b { color: var(--aero-lime); font-variant-numeric: tabular-nums; }
+.tn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.tn-club { padding: 12px 14px; }
+.tn-club h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 0.95rem; }
+.tn-club h2 img { width: 22px; height: 22px; }
+.tn-club h2 a { color: #fff; text-decoration: none; }
+.tn-club h2 a:hover { color: var(--aero-lime); }
+.tn-club h3 { margin: 10px 0 4px; font-size: 0.68rem; font-weight: 700; color: var(--aero-text-muted); }
+.tn-club ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.tn-club li { font-size: 0.8rem; line-height: 1.4; }
+.tn-club li a { color: #fff; font-weight: 700; text-decoration: none; }
+.tn-club li a:hover { color: var(--aero-lime); }
+.tn-club .st { margin-left: 6px; font-size: 0.6rem; font-weight: 800; padding: 1px 6px; border-radius: 5px; border: 1px solid rgba(226, 183, 91, 0.6); color: var(--aero-warn); }
+.tn-club .st.s-i, .tn-club .st.s-s { border-color: rgba(255, 76, 94, 0.6); color: var(--aero-negative); }
+.tn-club .nw { display: block; font-size: 0.72rem; color: var(--aero-text-muted); }
+.tn-sp { display: grid; grid-template-columns: 74px 1fr; gap: 3px 8px; font-size: 0.76rem; }
+.tn-sp dt { color: var(--aero-text-muted); }
+.tn-sp dd { margin: 0; color: var(--aero-text-dim); }
+.tn-sp dd b { color: #fff; font-weight: 700; }
+.tn-tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0 0 14px; }
+.tn-tools input { min-width: 220px; }

@@ -505,6 +505,27 @@ def _sync_gameweek_context_for_elements(element_ids: Iterable[int]) -> None:
         sync_gameweek_context(summary.athlete, summary.history, valid_fixtures)
 
 
+def defcon_fields(element: dict) -> dict:
+    """Defensive-contribution totals for a gameweek, and per-match hits from FPL's explain block."""
+    stats = element.get("stats", {})
+    hits = played = points = 0
+    for fixture in element.get("explain", []):
+        by_id = {s.get("identifier"): s for s in fixture.get("stats", [])}
+        if (by_id.get("minutes") or {}).get("value", 0):
+            played += 1
+        dc = by_id.get("defensive_contribution") or {}
+        if dc.get("points", 0) > 0:
+            hits += 1
+            points += dc["points"]
+    return {
+        "defensive_contribution": stats.get("defensive_contribution", 0) or 0,
+        "clearances_blocks_interceptions": stats.get("clearances_blocks_interceptions", 0) or 0,
+        "tackles": stats.get("tackles", 0) or 0,
+        "recoveries": stats.get("recoveries", 0) or 0,
+        "dc_points": points, "dc_hits": hits, "matches_played": played,
+    }
+
+
 def _sync_event_live(event_id: int, payload: dict) -> None:
     elements = payload.get("elements", [])
     for element in elements:
@@ -548,6 +569,7 @@ def _sync_event_live(event_id: int, payload: dict) -> None:
             "mng_goals_scored": stats.get("mng_goals_scored", 0),
             "total_points": stats.get("total_points", 0),
             "in_dreamteam": stats.get("in_dreamteam", False),
+            **defcon_fields(element),
         }
         AthleteStat.objects.update_or_create(
             athlete=athlete,

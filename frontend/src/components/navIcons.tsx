@@ -112,6 +112,20 @@ export const PlannerIcon = () => (
   </Svg>
 );
 
+export const TeamNewsIcon = () => (
+  <Svg>
+    <rect x="3.5" y="4" width="13" height="12.5" rx="2" />
+    <path d="M6.5 7.5h7M6.5 10.5h7M6.5 13.5h4" />
+  </Svg>
+);
+
+export const DefconIcon = () => (
+  <Svg>
+    <path d="M10 3l6 2.2v4.3c0 3.6-2.4 6.2-6 7.5-3.6-1.3-6-3.9-6-7.5V5.2z" />
+    <path d="M7.2 10.2l2 2 3.8-4" />
+  </Svg>
+);
+
 export const MenuIcon = () => (
   <Svg>
     <path d="M3.5 6h13M3.5 10h13M3.5 14h13" />

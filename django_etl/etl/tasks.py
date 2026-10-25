@@ -149,7 +149,7 @@ NO_JOBS = {"status": "skipped", "reason": "set RENDER_API_KEY on the service so 
 # Forecast training peaks at ~450 MB on Render (Oct 2026), so it always gets a
 # job of its own rather than running as a child of another job.
 # The seven-day price forecast backtests and publishes in the same job, as its own process.
-FORECAST_COMMAND = "python manage.py run_forecast; python manage.py backtest_price_forecast"
+FORECAST_COMMAND = "python manage.py run_forecast; python manage.py backtest_price_forecast; python manage.py backtest_fixture_model"
 
 
 def start_render_job(name, command=None):

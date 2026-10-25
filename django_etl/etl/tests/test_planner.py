@@ -168,3 +168,45 @@ class PriceForecastTests(TestCase):
         self.assertIn("need 14", result["reason"])
         self.assertFalse(ModelEvaluation.objects.get(name="price_forecast").accepted)
         self.assertIsNone(price_forecast.current())  # never shown without an accepted backtest
+
+
+class DefconTests(TestCase):
+    def test_fields_from_fpl_explain_and_hit_rates(self):
+        from ..models import AthleteStat
+        from ..services import defcon
+        from ..services.etl_runner import defcon_fields
+        element = {"stats": {"defensive_contribution": 14, "clearances_blocks_interceptions": 11, "tackles": 3, "recoveries": 3},
+                   "explain": [{"fixture": 1, "stats": [{"identifier": "minutes", "value": 90, "points": 2},
+                                                         {"identifier": "defensive_contribution", "value": 14, "points": 2}]}]}
+        self.assertEqual(defcon_fields(element), {"defensive_contribution": 14, "clearances_blocks_interceptions": 11, "tackles": 3,
+                                                  "recoveries": 3, "dc_points": 2, "dc_hits": 1, "matches_played": 1})
+        cache.clear()
+        team = Team.objects.create(id=1, code=3, name="Arsenal", short_name="ARS")
+        a = Athlete.objects.create(id=4, code=104, web_name="Gabriel", team=team, element_type=2, now_cost=70)
+        for gw, (dc, hit) in enumerate([(14, 1), (8, 0), (11, 1), (12, 1)], start=1):
+            AthleteStat.objects.create(athlete=a, game_week=gw, minutes=90, defensive_contribution=dc, dc_hits=hit,
+                                       dc_points=2 * hit, matches_played=1)
+        p = defcon.build_payload()["players"][0]
+        self.assertEqual((p["position"], p["threshold"], p["matches"], p["hits"], p["hitRate"], p["perMatch"], p["points"]),
+                         ("DEF", 10, 4, 3, 0.75, 11.2, 6))
+
+
+class TeamNewsTests(TestCase):
+    def test_flags_set_pieces_and_deadline(self):
+        from ..models import PlayerSeasonStat, PlMatch
+        from ..services import team_news
+        cache.clear()
+        GameweekSummary.objects.create(season=2026, gameweek=9, deadline_time=timezone.now() + timedelta(days=2))
+        team = Team.objects.create(id=1, code=3, name="Arsenal", short_name="ARS")
+        saka = Athlete.objects.create(id=12, code=223340, web_name="Saka", team=team, element_type=3, status="d", chance_of_playing_next_round=75, news="Knock")
+        Athlete.objects.create(id=13, code=204480, web_name="Rice", team=team, element_type=3, status="u", news="Left the club")
+        PlMatch.objects.create(season=2026, match_id="1", home_team_id="3", away_team_id="8")
+        PlayerSeasonStat.objects.create(source="sdp", competition_id=8, season=2026, opta_player_id="223340", athlete=saka, name="Saka",
+                                        stats={"penaltiesTaken": 2, "cornersTakenInclShortCorners": 15})
+        PlayerSeasonStat.objects.create(source="classic", competition_id=8, season=2026, opta_player_id="223340", athlete=saka, name="Saka",
+                                        stats={"att_freekick_total": 1, "freekick_cross": 3})
+        d = team_news.build_payload()
+        club = d["clubs"][0]
+        self.assertEqual(d["deadline"]["gameweek"], 9)
+        self.assertEqual([f["name"] for f in club["flagged"]], ["Saka"])  # "unavailable" (left the club) is left out
+        self.assertEqual((club["setPieces"]["penalties"][0]["count"], club["setPieces"]["corners"][0]["count"], club["setPieces"]["freeKicks"][0]["count"]), (2, 15, 4))

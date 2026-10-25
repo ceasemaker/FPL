@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   AnalyzeManagerIcon,
   ChartLabIcon,
+  DefconIcon,
   DecisionLabIcon,
   MatchesIcon,
   MenuIcon,
@@ -12,6 +13,7 @@ import {
   PlayersIcon,
   PriceMonitorIcon,
   StatsExplorerIcon,
+  TeamNewsIcon,
   TeamsIcon,
 } from "./navIcons";
 
@@ -33,6 +35,7 @@ const groups: { title?: string; links: { to: string; label: string; icon: JSX.El
     title: "My FPL",
     links: [
       { to: "/planner", label: "Transfer planner", icon: <PlannerIcon /> },
+      { to: "/team-news", label: "Team news", icon: <TeamNewsIcon /> },
       { to: "/decision-lab", label: "Decision Lab", icon: <DecisionLabIcon /> },
       { to: "/analyze", label: "Analyze Manager", icon: <AnalyzeManagerIcon /> },
       { to: "/price-monitor", label: "Price Monitor", icon: <PriceMonitorIcon /> },
@@ -42,6 +45,7 @@ const groups: { title?: string; links: { to: string; label: string; icon: JSX.El
     title: "Data rooms",
     links: [
       { to: "/stats", label: "Stats Explorer", icon: <StatsExplorerIcon /> },
+      { to: "/defcon", label: "DEFCON", icon: <DefconIcon /> },
       { to: "/model-lab", label: "Model Lab", icon: <ModelLabIcon /> },
     ],
   },
