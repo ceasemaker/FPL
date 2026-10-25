@@ -70,3 +70,84 @@ class PlannerPayloadTests(TestCase):
     def test_unknown_manager(self):
         with self.assertRaises(planner.ManagerNotFound):
             planner.build_payload(404, FakeFPL())
+
+
+class PlannerExtrasTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        from datetime import datetime, timezone as tz
+        from ..models import ForecastPrediction, MatchLineupPlayer, ModelEvaluation, PlMatch
+        now = timezone.now()
+        GameweekSummary.objects.create(season=2026, gameweek=2, deadline_time=now - timedelta(days=3))
+        GameweekSummary.objects.create(season=2026, gameweek=3, deadline_time=now + timedelta(days=3))
+        ars = Team.objects.create(id=1, code=3, name="Arsenal", short_name="ARS")
+        Athlete.objects.create(id=10, code=100, web_name="Saka", team=ars, element_type=3, now_cost=100, ep_next=5)
+        Athlete.objects.create(id=11, code=101, web_name="Nwaneri", team=ars, element_type=3, now_cost=50, ep_next=2)
+        ForecastPrediction.objects.create(season=2026, gameweek=3, element=10, code=100, predicted_points=6.4, model_version="v3")
+        ModelEvaluation.objects.create(name="points_forecast", version="v3", summary={"accuracy": {"player_weeks": 100, "model_mae": 1.4, "form_mae": 1.5}})
+        for i in range(6):
+            m = PlMatch.objects.create(season=2026, match_id=str(i), home_team_id="3", away_team_id="99", home_score=1, away_score=0,
+                                       kickoff=now - timedelta(days=30 - i * 4), details_synced=True)
+            MatchLineupPlayer.objects.create(match=m, team_id="3", player_id="100", name="Saka", starter=i != 5, minute_off=80 if i == 4 else None)
+        PlMatch.objects.create(season=2026, match_id="up", competition_id=5, home_team_id="3", away_team_id="98", kickoff=now + timedelta(days=5))
+
+    def test_projections_carry_the_record_and_fpl_fallback(self):
+        d = planner.projections(3)
+        self.assertEqual(d["points"]["10"], {"3": 6.4})
+        self.assertEqual((d["points"]["11"], d["fplOnly"]), ({"3": 2.0}, [11]))  # no forecast: FPL's expected points
+        self.assertEqual((d["record"]["modelError"], d["record"]["formError"]), (1.4, 1.5))
+
+    def test_rotation_counts_the_last_five_and_upcoming_games(self):
+        r = planner.rotation(3, {})["10"]
+        self.assertEqual((r["starts"], r["clubGames"], r["next14"]), (4, 5, 1))  # benched in the latest game
+        self.assertEqual(r["minutes"], 80 + 90 * 3)
+
+
+class FakeLeagueFPL(FakeFPL):
+    def get_manager_info(self, manager_id):
+        return {**super().get_manager_info(manager_id), "leagues": {"classic": [
+            {"id": 7, "name": "Office", "league_type": "x", "entry_rank": 2}, {"id": 314, "name": "Overall", "league_type": "s"}]}}
+
+    def get_league_standings(self, league_id, page=1):
+        return {"league": {"name": "Office"}, "standings": {"results": [
+            {"entry": 1, "player_name": "Ann", "entry_name": "Ann's XI", "rank": 2, "total": 500, "event_total": 50},
+            {"entry": 2, "player_name": "Bo", "entry_name": "Bo FC", "rank": 1, "total": 520, "event_total": 60}]}}
+
+    def get_manager_picks(self, manager_id, event):
+        if manager_id == 2:
+            return {"picks": [{"element": 12, "is_captain": True}, {"element": 10}]}
+        return super().get_manager_picks(manager_id, event)
+
+
+class PlannerLeagueTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        now = timezone.now()
+        GameweekSummary.objects.create(season=2026, gameweek=3, deadline_time=now + timedelta(days=3))
+        ars = Team.objects.create(id=1, code=3, name="Arsenal", short_name="ARS")
+        for i, n in ((10, "Raya"), (11, "Palmer"), (12, "Haaland")):
+            Athlete.objects.create(id=i, code=100 + i, web_name=n, team=ars, element_type=3, now_cost=60)
+
+    def test_only_invitational_leagues(self):
+        self.assertEqual(planner.manager_leagues(1, FakeLeagueFPL()), [{"id": 7, "name": "Office", "rank": 2}])
+
+    def test_rival_differentials_and_captains(self):
+        d = planner.league_view(7, 1, FakeLeagueFPL())
+        self.assertEqual(d["rivals"], 1)
+        self.assertEqual([(r["name"], r["share"]) for r in d["theyHave"]], [("Haaland", 100)])
+        self.assertEqual([r["name"] for r in d["onlyYou"]], ["Palmer"])  # Raya is shared with the rival
+        self.assertEqual(d["captains"][0]["name"], "Haaland")
+
+
+class PlannerSyncTests(TestCase):
+    def test_create_read_replace(self):
+        import json
+        made = self.client.post("/api/planner/sync/", json.dumps({"managerId": 5, "plans": {"active": "A"}}), content_type="application/json").json()
+        code = made["code"]
+        self.assertEqual(len(code), 10)
+        self.assertEqual(self.client.get(f"/api/planner/sync/{code}/").json()["plans"], {"active": "A"})
+        self.client.put(f"/api/planner/sync/{code}/", json.dumps({"plans": {"active": "B"}}), content_type="application/json")
+        self.assertEqual(self.client.get(f"/api/planner/sync/{code.upper()}/").json()["plans"], {"active": "B"})
+        self.assertEqual(self.client.get("/api/planner/sync/nope/").status_code, 404)
+        big = json.dumps({"plans": {"x": "y" * 70000}})
+        self.assertEqual(self.client.post("/api/planner/sync/", big, content_type="application/json").status_code, 413)

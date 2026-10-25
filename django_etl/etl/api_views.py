@@ -18,6 +18,7 @@ from django.db.models import Count, F, Max, OuterRef, Prefetch, Q, Subquery, Sum
 from django.db.models.functions import Coalesce
 from django.http import FileResponse, JsonResponse, HttpResponse
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 
 from .models import Athlete, AthletePrediction, AthleteStat, Fixture, FixtureOdds, PriceSnapshot, RawEndpointSnapshot, Team, SofasportHeatmap
@@ -3538,6 +3539,72 @@ def planner(request, manager_id):
         return JsonResponse(build_planner_payload(manager_id))
     except ManagerNotFound:
         return JsonResponse({"error": "We couldn't find that FPL manager ID."}, status=404)
+
+
+@require_GET
+def planner_leagues(request, manager_id):
+    """The manager's invitational mini-leagues."""
+    from etl.services.planner import ManagerNotFound, manager_leagues
+
+    try:
+        return JsonResponse({"leagues": manager_leagues(manager_id)})
+    except ManagerNotFound:
+        return JsonResponse({"error": "We couldn't find that FPL manager ID."}, status=404)
+
+
+@require_GET
+def planner_league(request, league_id):
+    """A mini-league: the top managers' squads and captains against yours."""
+    from etl.services.planner import ManagerNotFound, league_view
+
+    manager = request.GET.get("manager", "")
+    if not manager.isdigit():
+        return JsonResponse({"error": "manager must be an FPL manager ID."}, status=400)
+    try:
+        return JsonResponse(league_view(league_id, int(manager)))
+    except ManagerNotFound:
+        return JsonResponse({"error": "We couldn't find that FPL manager ID."}, status=404)
+    except Exception:  # FPL down or the league is private to us
+        return JsonResponse({"error": "That league couldn't be loaded from FPL. Try again in a minute."}, status=502)
+
+
+@csrf_exempt
+def planner_sync(request, code=None):
+    """Plans under a sync code. POST creates a code, GET reads, PUT replaces.
+
+    No account and no cookies: the code is the only key, and the plans hold no
+    personal data (player ids and gameweeks), so CSRF protection adds nothing.
+    """
+    import json as _json
+
+    from etl.models import PlannerSync
+    from etl.services.planner import MAX_SYNC_BYTES, new_sync_code
+
+    if request.method in ("POST", "PUT"):
+        if len(request.body) > MAX_SYNC_BYTES:
+            return JsonResponse({"error": "Those plans are too large to sync."}, status=413)
+        try:
+            body = _json.loads(request.body or b"{}")
+        except ValueError:
+            return JsonResponse({"error": "Send the plans as JSON."}, status=400)
+        manager = body.get("managerId")
+        if request.method == "POST" and code is None:
+            row = PlannerSync.objects.create(code=new_sync_code(), manager_id=manager if isinstance(manager, int) else None, data=body.get("plans", {}))
+            return JsonResponse({"code": row.code, "updatedAt": row.updated_at.isoformat()}, status=201)
+        row = PlannerSync.objects.filter(code=code).first() if code else None
+        if row is None:
+            return JsonResponse({"error": "No plans under that code."}, status=404)
+        row.data = body.get("plans", {})
+        if isinstance(manager, int):
+            row.manager_id = manager
+        row.save(update_fields=["data", "manager_id", "updated_at"])
+        return JsonResponse({"code": row.code, "updatedAt": row.updated_at.isoformat()})
+    if request.method == "GET" and code:
+        row = PlannerSync.objects.filter(code=code.strip().lower()).first()
+        if row is None:
+            return JsonResponse({"error": "No plans under that code."}, status=404)
+        return JsonResponse({"code": row.code, "managerId": row.manager_id, "plans": row.data, "updatedAt": row.updated_at.isoformat()})
+    return JsonResponse({"error": "Method not allowed."}, status=405)
 
 
 @require_GET

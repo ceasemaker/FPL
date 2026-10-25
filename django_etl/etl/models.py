@@ -1751,3 +1751,21 @@ class PlayerMatchStat(models.Model):
         db_table = "pl_player_match_stats"
         constraints = [models.UniqueConstraint(fields=["match", "player_id"], name="uniq_player_match_stat")]
         indexes = [models.Index(fields=["player_id"]), models.Index(fields=["team_id"])]
+
+
+class PlannerSync(models.Model):
+    """Transfer plans kept under a random sync code, so they open on another device.
+
+    No account: whoever has the code can read and replace the plans (they hold
+    nothing private, only player ids and gameweeks).
+    """
+
+    code = models.CharField(max_length=16, unique=True)
+    manager_id = models.PositiveIntegerField(null=True)
+    data = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "planner_syncs"
+

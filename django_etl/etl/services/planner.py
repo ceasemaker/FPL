@@ -21,7 +21,12 @@ from django.core.cache import cache
 from django.db.models import Max, Q
 from django.utils import timezone
 
-from ..models import Athlete, Fixture, GameweekSummary, PlMatch, Team
+import secrets
+from datetime import timedelta
+
+from ..models import (
+    Athlete, Fixture, ForecastPrediction, GameweekSummary, MatchLineupPlayer, ModelEvaluation, PlannerSync, PlMatch, Team,
+)
 from .fpl_client import FPLClient
 from .match_goals import COMPETITIONS
 
@@ -177,6 +182,75 @@ def manager_squad(manager_id: int, client: FPLClient | None = None) -> dict:
     return payload
 
 
+def projections(next_gw: int) -> dict:
+    """Forecast points per player and gameweek, with the forecast's published record.
+
+    The AeroFPL points forecast (etl.forecast) where it has the player; FPL's own
+    expected points for the next gameweek otherwise, labelled as such.
+    """
+    key = f"planner:projections:{next_gw}:v1"
+    cached = cache.get(key)
+    if cached:
+        return cached
+    last = next_gw + HORIZON - 1
+    season = ForecastPrediction.objects.order_by("-season").values_list("season", flat=True).first()
+    points: dict[str, dict[str, float]] = defaultdict(dict)
+    if season is not None:
+        for el, gw, pts in ForecastPrediction.objects.filter(season=season, gameweek__gte=next_gw, gameweek__lte=last).values_list("element", "gameweek", "predicted_points"):
+            points[str(el)][str(gw)] = round(float(pts), 2)
+    fpl_only = []
+    for a_id, ep in Athlete.objects.filter(removed=False, ep_next__isnull=False).values_list("id", "ep_next"):
+        if str(a_id) not in points:
+            points[str(a_id)][str(next_gw)] = round(float(ep), 2)
+            fpl_only.append(a_id)
+    record = None
+    ev = ModelEvaluation.objects.filter(name="points_forecast").order_by("-created_at").first()
+    if ev and ev.summary.get("accuracy"):
+        acc = ev.summary["accuracy"]
+        record = {"version": ev.version, "playerWeeks": acc.get("player_weeks"), "modelError": acc.get("model_mae"),
+                  "formError": acc.get("form_mae"), "seasons": ev.summary.get("test_seasons", [])}
+    payload = {"points": dict(points), "fplOnly": fpl_only, "record": record, "covers": [next_gw, last]}
+    cache.set(key, payload, 30 * 60)
+    return payload
+
+
+def rotation(next_gw: int, deadlines: dict) -> dict:
+    """Per player: starts and minutes in his club's last five games (every
+    competition), and how many games his club plays in the next 14 days."""
+    key = f"planner:rotation:{next_gw}:v1"
+    cached = cache.get(key)
+    if cached:
+        return cached
+    codes = {str(c) for c in Team.objects.exclude(code=None).values_list("code", flat=True)}
+    now = timezone.now()
+    last5: dict[str, list[int]] = {}
+    for club in codes:
+        last5[club] = list(PlMatch.objects.filter(Q(home_team_id=club) | Q(away_team_id=club), home_score__isnull=False, details_synced=True)
+                           .order_by("-kickoff").values_list("id", flat=True)[:5])
+    match_ids = {m for ids in last5.values() for m in ids}
+    full = {m: 120 if rt not in ("", "NormalResult") and c not in (2, 38) else 90
+            for m, rt, c in PlMatch.objects.filter(id__in=match_ids).values_list("id", "result_type", "competition_id")}
+    by_player: dict[str, dict] = defaultdict(lambda: {"starts": 0, "minutes": 0, "games": 0})
+    for row in MatchLineupPlayer.objects.filter(match_id__in=match_ids).values("match_id", "team_id", "player_id", "starter", "minute_on", "minute_off"):
+        if row["match_id"] not in last5.get(row["team_id"], []):
+            continue
+        r = by_player[row["player_id"]]
+        on = 0 if row["starter"] else row["minute_on"]
+        r["starts"] += int(row["starter"])
+        if on is not None:
+            r["minutes"] += max(0, (row["minute_off"] if row["minute_off"] is not None else full.get(row["match_id"], 90)) - on)
+    upcoming = {club: PlMatch.objects.filter(Q(home_team_id=club) | Q(away_team_id=club), kickoff__gte=now, kickoff__lt=now + timedelta(days=14)).count()
+                for club in codes}
+    out = {}
+    for a_id, code, team_code in Athlete.objects.filter(removed=False).values_list("id", "code", "team__code"):
+        club = str(team_code) if team_code else ""
+        r = by_player.get(str(code))
+        out[str(a_id)] = {"starts": r["starts"] if r else 0, "minutes": r["minutes"] if r else 0,
+                          "clubGames": len(last5.get(club, [])), "next14": upcoming.get(club, 0)}
+    cache.set(key, out, 30 * 60)
+    return out
+
+
 def build_payload(manager_id: int, client: FPLClient | None = None) -> dict:
     squad = manager_squad(manager_id, client)
     next_gw, deadlines = _gameweeks()
@@ -186,4 +260,85 @@ def build_payload(manager_id: int, client: FPLClient | None = None) -> dict:
                       for g in range(next_gw, next_gw + HORIZON)],
         "fixtures": team_fixtures(next_gw, deadlines),
         "players": player_list(),
+        "projections": projections(next_gw),
+        "rotation": rotation(next_gw, deadlines),
     }
+
+
+# ------------------------------------------------------------------ mini-leagues
+
+def manager_leagues(manager_id: int, client: FPLClient | None = None) -> list[dict]:
+    """The manager's invitational classic leagues (not the big public ones)."""
+    client = client or FPLClient()
+    try:
+        info = client.get_manager_info(manager_id)
+    except Exception as exc:
+        raise ManagerNotFound(str(exc)) from exc
+    return [{"id": l["id"], "name": l["name"], "rank": l.get("entry_rank")}
+            for l in info.get("leagues", {}).get("classic", []) if l.get("league_type") == "x"]
+
+
+MAX_RIVALS = 20
+
+
+def league_view(league_id: int, manager_id: int, client: FPLClient | None = None) -> dict:
+    """Top of a mini-league with each manager's current squad and captain, and
+    how the manager's squad differs from theirs."""
+    key = f"planner:league:{league_id}:v1"
+    cached = cache.get(key)
+    client = client or FPLClient()
+    if not cached:
+        next_gw, _ = _gameweeks()
+        current = max(1, next_gw - 1)
+        standings = client.get_league_standings(str(league_id))
+        entries = standings.get("standings", {}).get("results", [])[:MAX_RIVALS]
+        rows = []
+        for e in entries:
+            try:
+                picks = client.get_manager_picks(e["entry"], current)
+            except Exception:
+                picks = {"picks": []}
+            rows.append({"entry": e["entry"], "manager": e.get("player_name", ""), "team": e.get("entry_name", ""),
+                         "rank": e.get("rank"), "total": e.get("total"), "gw": e.get("event_total"),
+                         "picks": [p["element"] for p in picks.get("picks", [])],
+                         "captain": next((p["element"] for p in picks.get("picks", []) if p.get("is_captain")), None)})
+        cached = {"league": {"id": league_id, "name": standings.get("league", {}).get("name", "")}, "gameweek": current, "managers": rows}
+        cache.set(key, cached, 10 * 60)
+    mine = next((m for m in cached["managers"] if m["entry"] == manager_id), None)
+    if mine is None:
+        mine_picks = [p["id"] for p in manager_squad(manager_id, client)["squad"]]
+    else:
+        mine_picks = mine["picks"]
+    rivals = [m for m in cached["managers"] if m["entry"] != manager_id]
+    owned = defaultdict(int)
+    captains = defaultdict(int)
+    for m in rivals:
+        for p in m["picks"]:
+            owned[p] += 1
+        if m["captain"]:
+            captains[m["captain"]] += 1
+    n = len(rivals) or 1
+    names = {a.id: (a.web_name, a.team.short_name if a.team else "") for a in Athlete.objects.filter(id__in=set(owned) | set(mine_picks) | set(captains)).select_related("team")}
+    row = lambda pid, extra: {"id": pid, "name": names.get(pid, ("?", ""))[0], "team": names.get(pid, ("", ""))[1], **extra}
+    return {
+        **cached,
+        "rivals": len(rivals),
+        "theyHave": sorted([row(p, {"owners": c, "share": round(c / n * 100)}) for p, c in owned.items() if p not in mine_picks],
+                           key=lambda r: -r["owners"])[:12],
+        "onlyYou": sorted([row(p, {"owners": owned.get(p, 0), "share": round(owned.get(p, 0) / n * 100)}) for p in mine_picks if owned.get(p, 0) / n < 0.25],
+                          key=lambda r: r["owners"]),
+        "captains": sorted([row(p, {"owners": c, "share": round(c / n * 100)}) for p, c in captains.items()], key=lambda r: -r["owners"])[:6],
+    }
+
+
+# ------------------------------------------------------------------ sync
+
+SYNC_ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789"  # no look-alikes (0/o, 1/l/i)
+MAX_SYNC_BYTES = 64 * 1024
+
+
+def new_sync_code() -> str:
+    while True:
+        code = "".join(secrets.choice(SYNC_ALPHABET) for _ in range(10))
+        if not PlannerSync.objects.filter(code=code).exists():
+            return code
