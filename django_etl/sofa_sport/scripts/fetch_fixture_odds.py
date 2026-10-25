@@ -189,26 +189,47 @@ def _normalize_team_name(name: str | None) -> str:
     return re.sub(r"[^a-z0-9]", "", normalized)
 
 
+def _team_names() -> dict[int, set[str]]:
+    """FPL team id -> every normalized name we know it by.
+
+    FPL renumbers its team ids each season, so names (not ids) are the stable
+    link: FPL's own name and short name, plus the club's full name from the
+    Premier League's season sheets ("Manchester United", "Brighton and Hove
+    Albion"), keyed by the club code, which is the Opta team id.
+    """
+    from etl.models import TeamSeasonStat
+
+    full = {}
+    for opta_id, name in TeamSeasonStat.objects.filter(competition_id=8).order_by("season").values_list("opta_team_id", "name"):
+        full[str(opta_id)] = name
+    names = {}
+    for team in Team.objects.only("id", "name", "short_name", "code"):
+        names[team.id] = {n for n in (
+            _normalize_team_name(team.name),
+            _normalize_team_name(team.short_name),
+            _normalize_team_name(full.get(str(team.code))),
+        ) if n}
+    return names
+
+
 def _team_id_from_sofascore(sofa_id: int | None, sofa_name: str | None) -> int | None:
+    target = _normalize_team_name(sofa_name)
+    names = _team_names()
+    if target:
+        for team_id, known in names.items():
+            if target in known:
+                return team_id
+    # Last resort: the saved Sofa-id mapping, but only while its club name
+    # still matches (its FPL ids go stale when FPL renumbers teams).
     if sofa_id is not None:
         try:
             mapping = json.loads(TEAM_MAPPING_PATH.read_text(encoding="utf-8"))
-            mapped = (mapping.get(str(sofa_id)) or {}).get("fpl_id")
-            if mapped and Team.objects.filter(id=mapped).exists():
+            entry = mapping.get(str(sofa_id)) or {}
+            mapped = entry.get("fpl_id")
+            if mapped and _normalize_team_name(entry.get("fpl_name")) in names.get(int(mapped), set()):
                 return int(mapped)
         except (OSError, ValueError, TypeError):
             pass
-
-    target = _normalize_team_name(sofa_name)
-    if not target:
-        return None
-    for team in Team.objects.only("id", "name", "short_name"):
-        candidates = {
-            _normalize_team_name(team.name),
-            _normalize_team_name(team.short_name),
-        }
-        if target in candidates:
-            return team.id
     return None
 
 
