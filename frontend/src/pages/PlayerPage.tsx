@@ -4,6 +4,8 @@ import { compById } from "../components/match/competitions";
 import { Crest } from "../components/match/icons";
 import { PlayerHeatmap } from "../components/PlayerHeatmap";
 import { PriceChangePanel } from "../components/priceChange/PriceChange";
+import { CompareIcon, StarIcon } from "../components/statsExplorer/icons";
+import { StatSheet, useWatch } from "../components/statsExplorer/StatSheet";
 import "./MatchPage.css";
 import "./TeamPage.css";
 import "./PlayerPage.css";
@@ -88,7 +90,10 @@ export function PlayerPage() {
             <div><dt>Points a game</dt><dd>{data.fpl.ppg.toFixed(1)}</dd></div>
           </dl>
         </div>
-        <div className="pp-price"><PriceChangePanel athleteId={data.id} /></div>
+        <div className="pp-price">
+          <PriceChangePanel athleteId={data.id} />
+          <PlayerActions id={data.id} />
+        </div>
       </header>
       {out && <p className={`pp-news${data.status === "d" ? " doubt" : ""}`} role="status">{data.news}{data.chance != null ? ` (${data.chance}% chance of playing next round)` : ""}</p>}
 
@@ -189,6 +194,9 @@ export function PlayerPage() {
         </section>
       </div>
 
+      <div className="mp-sec-title"><div><h2>Full stat sheet</h2><p>Every Opta season stat, the same numbers as the Stats Explorer: Premier League, Champions League and both together.</p></div></div>
+      <StatSheet playerId={data.id} />
+
       {data.heatmaps.length > 0 && heatGw != null && (
         <>
           <div className="mp-sec-title"><div><h2>Where he played</h2><p>SofaScore heatmap for one league game. Collected while SofaScore heatmaps were switched on.</p></div></div>
@@ -224,3 +232,16 @@ function summary(d: PlayerData): string {
   }
   return text;
 }
+
+// Watch (the Stats Explorer's watchlist) and compare (opens the explorer with
+// him already picked for its comparison).
+function PlayerActions({ id }: { id: number }) {
+  const [watched, toggle] = useWatch(id);
+  return (
+    <div className="pp-actions">
+      <button type="button" className={`pp-act${watched ? " on" : ""}`} aria-pressed={watched} onClick={toggle}><StarIcon filled={watched} size={15} />{watched ? "Watching" : "Watch"}</button>
+      <Link className="pp-act" to={`/stats?compare=${id}`}><CompareIcon size={15} />Compare in Stats Explorer</Link>
+    </div>
+  );
+}
+

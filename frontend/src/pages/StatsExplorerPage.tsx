@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   CHART_LAB_FORMULA,
   POSITION_NAMES,
-  TOP_PERCENTILE,
   formatStat,
   isNormalised,
   minutesFor,
@@ -27,7 +26,6 @@ import {
   CloseIcon,
   ColumnsIcon,
   CompareIcon,
-  InfoIcon,
   LinkIcon,
   SearchIcon,
   SlidersIcon,
@@ -35,8 +33,9 @@ import {
   StarIcon,
 } from "../components/statsExplorer/icons";
 import { DEFAULT_STATE, useExplorerState, type ExplorerState } from "../components/statsExplorer/useExplorerState";
+import { loadExplorer } from "../components/statsExplorer/StatSheet";
 import "./StatsExplorerPage.css";
-import { PriceChangeBadge, PriceChangePanel } from "../components/priceChange/PriceChange";
+import { PriceChangeBadge } from "../components/priceChange/PriceChange";
 
 const SEASON = 2026;
 const MAX_COMPARE = 4;
@@ -75,7 +74,7 @@ interface SavedView { name: string; search: string }
 
 export function StatsExplorerPage() {
   const navigate = useNavigate();
-  const { state, update, reset, search, player: drawerId, openPlayer, closePlayer } = useExplorerState();
+  const { state, update, reset, search, player: legacyPlayer } = useExplorerState();
   const [data, setData] = useState<ExplorerPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<number[]>([]);
@@ -85,15 +84,21 @@ export function StatsExplorerPage() {
   const [menu, setMenu] = useState<"columns" | "views" | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
+  // Players open on their own page now (the old side drawer lives there as
+  // the full stat sheet); old ?player= links go straight to it.
+  useEffect(() => { if (legacyPlayer) navigate(`/players/${legacyPlayer}`, { replace: true }); }, [legacyPlayer, navigate]);
+
   useEffect(() => {
     let alive = true;
-    fetch(`/api/stats-explorer/?season=${SEASON}`)
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json() as Promise<ExplorerPayload>;
-      })
-      .then((payload) => alive && setData(payload))
-      .catch((err) => alive && setError(err instanceof Error ? err.message : String(err)));
+    loadExplorer(SEASON)  // shared with the Player page's stat sheet
+      .then((payload) => {
+        if (!alive) return;
+        if (!payload) { setError("The Stats Explorer couldn't be loaded. Try again in a minute."); return; }
+        setData(payload);
+        // "Compare in Stats Explorer" on a Player page arrives with ?compare=<id>.
+        const pick = Number(new URLSearchParams(window.location.search).get("compare"));
+        if (pick && payload.players.some((pl) => pl.id === pick)) setSelected([pick]);
+      });
     return () => { alive = false; };
   }, []);
 
@@ -246,7 +251,6 @@ export function StatsExplorerPage() {
     navigate("/chart-lab");
   };
 
-  const drawerPlayer = data?.players.find((p) => p.id === drawerId) ?? null;
   const lensEntries = Object.entries(data?.lenses ?? {});
 
   return (
@@ -367,7 +371,7 @@ export function StatsExplorerPage() {
           watchlist={watchlist}
           cell={cellOf}
           onSort={(key) => update({ sort: key, dir: sortKey === key && state.dir === "desc" ? "asc" : "desc" })}
-          onOpen={openPlayer}
+          onOpen={(id) => navigate(`/players/${id}`)}
           onSelect={toggleSelect}
           onWatch={toggleWatch}
           onReset={reset}
@@ -405,23 +409,6 @@ export function StatsExplorerPage() {
             </button>
           </div>
         </div>
-      )}
-
-      {drawerPlayer && data && (
-        <PlayerDrawer
-          player={drawerPlayer}
-          data={data}
-          state={state}
-          lensKeys={columns.map((c) => c.key)}
-          cell={cellOf}
-          inUcl={drawerPlayer.teamId !== null && uclTeams.has(drawerPlayer.teamId)}
-          watched={watchlist.includes(drawerPlayer.id)}
-          selected={selected.includes(drawerPlayer.id)}
-          canSelect={selected.length < MAX_COMPARE}
-          onWatch={() => toggleWatch(drawerPlayer.id)}
-          onSelect={() => toggleSelect(drawerPlayer.id)}
-          onClose={closePlayer}
-        />
       )}
 
       <FilterSheet open={sheetOpen} onClose={() => setSheetOpen(false)} activeFilters={activeFilters} onReset={reset}
@@ -931,160 +918,7 @@ function SkeletonTable() {
   );
 }
 
-// ----------------------------------------------------------- drawer, sheet
-
-function PlayerDrawer({ player, data, state, lensKeys, cell, inUcl, watched, selected, canSelect, onWatch, onSelect, onClose }: {
-  player: ExplorerPlayer;
-  data: ExplorerPayload;
-  state: ExplorerState;
-  lensKeys: string[];
-  cell: (stat: Stat, player: ExplorerPlayer) => CellInfo;
-  inUcl: boolean;
-  watched: boolean;
-  selected: boolean;
-  canSelect: boolean;
-  onWatch: () => void;
-  onSelect: () => void;
-  onClose: () => void;
-}) {
-  const closeRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLElement>(null);
-  const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
-  useEffect(() => {
-    const opener = document.activeElement as HTMLElement | null;
-    closeRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { onCloseRef.current(); return; }
-      if (e.key !== "Tab") return;
-      // Keep focus inside the profile while it is open (it is modal).
-      const panel = panelRef.current;
-      if (!panel) return;
-      const focusables = [...panel.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), summary, [href], input, select, [tabindex]:not([tabindex="-1"])',
-      )].filter((el) => el.offsetParent !== null);
-      if (!focusables.length) return;
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-      if (e.shiftKey && (document.activeElement === first || !panel.contains(document.activeElement))) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && (document.activeElement === last || !panel.contains(document.activeElement))) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      opener?.focus?.(); // return focus to the row that opened the profile
-    };
-  }, [player.id]);
-
-  const plMins = player.pl.mins_played ?? 0;
-  const uclMins = player.ucl?.mins_played ?? 0;
-  const lensStats = lensKeys.map((k) => data.catalogue.find((s) => s.key === k)).filter((s): s is Stat => Boolean(s));
-  const otherGroups = new Map<string, Stat[]>();
-  for (const s of data.catalogue) {
-    if (lensKeys.includes(s.key) || s.kind === "fpl") continue;
-    otherGroups.set(s.group, [...(otherGroups.get(s.group) ?? []), s]);
-  }
-
-  const uclOnly = (stat: Stat): number | null => {
-    if (!player.ucl || stat.plOnly || stat.kind === "fpl") return null;
-    const shadow: ExplorerPlayer = { ...player, pl: player.ucl, ucl: null };
-    return statValue(stat, shadow, "pl", state.norm);
-  };
-
-  const StatRows = ({ stats }: { stats: Stat[] }) => (
-    <>
-      {stats.map((s) => {
-        const pl = statValue(s, player, "pl", state.norm);
-        const ucl = uclOnly(s);
-        const combined = statValue(s, player, "all", state.norm);
-        const pct = cell(s, player).pct;
-        return (
-          <tr key={s.key}>
-            <th scope="row" title={s.help}>
-              {s.label}
-              {s.plOnly && s.source === "Opta" && <span className="sx-badge">PL only</span>}
-              {s.source === "Estimate" && <span className="sx-badge">Estimate</span>}
-            </th>
-            <td className="sx-num">{formatStat(s, pl, state.norm)}</td>
-            <td className="sx-num sx-dim">{player.ucl ? formatStat(s, ucl, state.norm) : "–"}</td>
-            <td className="sx-num">{player.ucl && !s.plOnly ? formatStat(s, combined, state.norm) : "–"}</td>
-            <td className="sx-pct">
-              {pct !== null && (
-                <span className="sx-pctbar" role="img" aria-label={`${ordinal(pct)} percentile among ${POSITION_NAMES[player.position]}`}>
-                  <i style={{ width: `${Math.max(3, pct)}%` }} className={pct >= TOP_PERCENTILE ? "top" : ""} />
-                </span>
-              )}
-            </td>
-          </tr>
-        );
-      })}
-    </>
-  );
-
-  return (
-    <div className="sx-drawer-layer">
-      <button className="sx-drawer-scrim" aria-label="Close player profile" onClick={onClose} tabIndex={-1} />
-      <aside ref={panelRef} className="sx-drawer" role="dialog" aria-modal="true" aria-labelledby="sx-drawer-title">
-        <header className="sx-drawer-head">
-          <div>
-            <h2 id="sx-drawer-title">{player.name}</h2>
-            <p>
-              {player.team} · {POSITION_NAMES[player.position].replace(/s$/, "")} · £{(player.fpl.fpl_price ?? 0).toFixed(1)}m · owned by {(player.fpl.fpl_ownership ?? 0).toFixed(1)}%
-            </p>
-            {player.status && player.status !== "a" && player.news && <p className="sx-news">{player.news}</p>}
-            <PriceChangePanel athleteId={player.id} />
-            <Link className="sx-full-link" to={`/players/${player.id}`}>Open the full player page</Link>
-          </div>
-          <button ref={closeRef} className="sx-icon-btn" onClick={onClose} aria-label="Close player profile"><CloseIcon /></button>
-        </header>
-        <div className="sx-drawer-actions">
-          <button className={`sx-btn${watched ? " on" : ""}`} aria-pressed={watched} onClick={onWatch}>
-            <StarIcon filled={watched} /> {watched ? "Watching" : "Watch"}
-          </button>
-          <button className={`sx-btn${selected ? " on" : ""}`} aria-pressed={selected} onClick={onSelect} disabled={!selected && !canSelect}>
-            <CompareIcon /> {selected ? "Selected to compare" : "Select to compare"}
-          </button>
-        </div>
-        <dl className="sx-minutes">
-          <div><dt>Premier League</dt><dd>{Math.round(plMins)} min</dd></div>
-          <div><dt>Champions League</dt><dd>{player.ucl ? `${Math.round(uclMins)} min` : inUcl ? "No minutes yet" : "Club not in it"}</dd></div>
-        </dl>
-        <div className="sx-drawer-body">
-          <table className="sx-split">
-            <caption>
-              {data.lenses[state.lens]?.label ?? "Lens"} · {state.norm === "p90" ? "per 90" : "totals"} · bar = percentile among {POSITION_NAMES[player.position]}
-            </caption>
-            <thead>
-              <tr><th scope="col">Stat</th><th scope="col" className="sx-num">PL</th><th scope="col" className="sx-num">UCL</th><th scope="col" className="sx-num">Both</th><th scope="col"><span className="sr-only">Percentile</span></th></tr>
-            </thead>
-            <tbody><StatRows stats={lensStats.filter((s) => s.kind !== "fpl")} /></tbody>
-          </table>
-          {[...otherGroups.entries()].map(([group, stats]) => (
-            <details key={group} className="sx-more">
-              <summary>
-                <span>{group} <span className="sx-dim">· {stats.length} more</span></span>
-                <ChevronIcon size={14} />
-              </summary>
-              <table className="sx-split">
-                <thead className="sr-only"><tr><th>Stat</th><th>PL</th><th>UCL</th><th>Both</th><th>Percentile</th></tr></thead>
-                <tbody><StatRows stats={stats} /></tbody>
-              </table>
-            </details>
-          ))}
-          <p className="sx-muted sx-foot"><InfoIcon size={14} /> UCL has no xG feed, so xG-family stats are Premier League only.</p>
-        </div>
-        <div className="sx-drawer-foot">
-          <button className="aero-button" onClick={onClose}>Close</button>
-        </div>
-      </aside>
-    </div>
-  );
-}
+// ----------------------------------------------------------- filter sheet
 
 function FilterSheet({ open, onClose, activeFilters, onReset, resultLabel, children }: {
   open: boolean; onClose: () => void; activeFilters: number; onReset: () => void; resultLabel: string; children: React.ReactNode;
