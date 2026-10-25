@@ -12,7 +12,7 @@ from django.core.cache import cache
 from django.db.models import Count, Q
 
 from ..models import (
-    Fixture, FixtureHistory, FixtureOdds, GameweekHistory, MatchGoal, PlMatch, Team, TeamSeasonStat,
+    Athlete, Fixture, FixtureHistory, FixtureOdds, GameweekHistory, MatchGoal, PlMatch, Team, TeamSeasonStat,
 )
 
 from .match_goals import premier_league_clubs
@@ -134,7 +134,7 @@ def _players_from_lineups(match: PlMatch, lineups: list[dict], goals: list[dict]
         off = p["minute_off"] if p["minute_off"] is not None else full
         name = p["name"]
         rows.append({
-            "id": p["player_id"], "name": name, "team": p["team_id"], "position": POSITIONS.get(p["position"], ""),
+            "id": p["player_id"], "fplId": p.get("fplId"), "name": name, "team": p["team_id"], "position": POSITIONS.get(p["position"], ""),
             "minutes": max(0, off - on), "started": p["starter"], "fpl": None,
             "goals": sum(1 for g in goals if g["scorer"] == name), "assists": sum(1 for g in goals if g["assist"] == name),
             **{k: None for k in ("shots", "boxShots", "bigChances", "chances", "boxTouches", "passes", "accuratePasses", "defence", "saves")},
@@ -143,7 +143,7 @@ def _players_from_lineups(match: PlMatch, lineups: list[dict], goals: list[dict]
 
 
 def build_payload(match_id: str) -> dict | None:
-    key = f"match-page:{match_id}:v3"
+    key = f"match-page:{match_id}:v4"
     cached = cache.get(key)
     if cached:
         return cached
@@ -162,6 +162,10 @@ def build_payload(match_id: str) -> dict | None:
         "team_id", "player_id", "name", "shirt", "position", "position_side", "formation_place",
         "formation_row", "formation_col", "starter", "captain", "minute_on", "minute_off"))
     names = {p["player_id"]: p["name"] for p in lineups}
+    # FPL ids (Athlete.code is the Opta id) so names link to Player pages.
+    fpl_ids = {str(c): i for c, i in Athlete.objects.filter(code__in=[int(x) for x in names if x.isdigit()]).values_list("code", "id")}
+    for p in lineups:
+        p["fplId"] = fpl_ids.get(p["player_id"])
     goals = [{"minute": g.minute, "period": 1 if g.period == "FirstHalf" else 2, "team": g.team_id,
               "scorer": names.get(g.player_id, g.player_id) if g.goal_type != "Own" else f"{names.get(g.player_id, 'Own goal')} (own goal)",
               "assist": names.get(g.assist_player_id) if g.assist_player_id else None, "type": g.goal_type,
@@ -186,7 +190,7 @@ def build_payload(match_id: str) -> dict | None:
     for ps in match.player_stats.all():
         s = ps.stats
         players.append({
-            "id": ps.player_id, "name": names.get(ps.player_id, ps.player_id), "team": ps.team_id,
+            "id": ps.player_id, "fplId": fpl_ids.get(ps.player_id), "name": names.get(ps.player_id, ps.player_id), "team": ps.team_id,
             "position": POSITIONS.get(positions.get(ps.player_id, ""), ""), "minutes": ps.minutes, "started": ps.started,
             "fpl": fpl.get(ps.player_id), "goals": s.get("goals", 0), "assists": s.get("goal_assist", 0),
             "shots": s.get("total_scoring_att", 0), "boxShots": s.get("attempts_ibox", 0),

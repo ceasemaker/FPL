@@ -144,7 +144,7 @@ export function MatchPlayers({ data }: { data: MatchData }) {
           <tbody>
             {rows.map((p) => (
               <tr key={p.id}>
-                <th scope="row"><span className="mp-pl"><Crest team={p.team} alt={short(p.team)} />{p.name} <small>{p.position}</small></span></th>
+                <th scope="row"><span className="mp-pl"><Crest team={p.team} alt={short(p.team)} />{p.fplId ? <Link to={`/players/${p.fplId}`}>{p.name}</Link> : p.name} <small>{p.position}</small></span></th>
                 {cols.map(([k]) => {
                   const x = val(p, k) ?? null;
                   const shown = x == null ? "–" : k === "passPct" ? `${x}%` : x;
@@ -200,7 +200,7 @@ export function MatchContext({ data }: { data: MatchData }) {
         <section className="mp-sheet">
           <h3>FPL points from this match</h3>
           {pts.length === 0 ? <p className="mp-note">No FPL points stored for this match.</p> : (
-            <ul className="mp-fplist">{pts.map((p) => <li key={p.id}><span>{p.name}<small>{short(p.team)}</small></span><b>{p.fpl}</b></li>)}</ul>
+            <ul className="mp-fplist">{pts.map((p) => <li key={p.id}><span>{p.fplId ? <Link to={`/players/${p.fplId}`}>{p.name}</Link> : p.name}<small>{short(p.team)}</small></span><b>{p.fpl}</b></li>)}</ul>
           )}
         </section>
       )) : (

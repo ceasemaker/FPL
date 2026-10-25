@@ -21,11 +21,20 @@ export function PriceChangeBadge({ athleteId, showHold = false }: { athleteId: n
   if (!change || change.progress === null) return null;
   const dir = direction(change);
   if (dir === "hold" && !showHold) return null;
-  const arrow = dir === "rise" ? "▲" : dir === "drop" ? "▼" : "•";
   return (
     <span className={`pc-badge pc-${dir}`} title={describe(change)} aria-label={describe(change)}>
-      <span aria-hidden="true">{arrow}</span>{pct(change.progress)}
+      <TrendArrow dir={dir} />{pct(change.progress)}
     </span>
+  );
+}
+
+// Drawn arrow (not a glyph) so it sits on the text's baseline at any size.
+export function TrendArrow({ dir }: { dir: "rise" | "drop" | "hold" }) {
+  return (
+    <svg width="9" height="9" viewBox="0 0 10 10" aria-hidden="true" focusable="false" style={{ display: "inline-block", marginRight: 3, verticalAlign: "0.05em" }}>
+      {dir === "hold" ? <circle cx="5" cy="5" r="2" fill="currentColor" />
+        : <path d={dir === "rise" ? "M5 1.5 9 8.5H1z" : "M5 8.5 9 1.5H1z"} fill="currentColor" />}
+    </svg>
   );
 }
 

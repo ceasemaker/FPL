@@ -8,11 +8,11 @@ export interface MatchEventRow { minute: number; period: number; team_id: string
 export interface LineupPlayer {
   team_id: string; player_id: string; name: string; shirt: string; position: string; position_side: string;
   formation_place: number | null; formation_row: number | null; formation_col: number | null;
-  starter: boolean; captain: boolean; minute_on: number | null; minute_off: number | null;
+  starter: boolean; captain: boolean; minute_on: number | null; minute_off: number | null; fplId?: number | null;
 }
 // Cup and European rows carry only minutes, goals and assists (the rest null).
 export interface PlayerRow {
-  id: string; name: string; team: string; position: string; minutes: number; started: boolean; fpl: number | null;
+  id: string; fplId?: number | null; name: string; team: string; position: string; minutes: number; started: boolean; fpl: number | null;
   goals: number; assists: number; shots: number | null; boxShots: number | null; bigChances: number | null; chances: number | null;
   boxTouches: number | null; passes: number | null; accuratePasses: number | null; defence: number | null; saves: number | null;
 }

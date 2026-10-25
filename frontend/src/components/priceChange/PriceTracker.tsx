@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { direction, usePriceChanges, type PriceChange } from "../../hooks/usePriceChanges";
-import { Countdown } from "./PriceChange";
+import { Countdown, TrendArrow } from "./PriceChange";
 import "./PriceChange.css";
 
 type Filter = "all" | "rise" | "drop";
@@ -52,7 +52,7 @@ export function PriceTracker({ onOpen }: { onOpen?: (id: number) => void }) {
                     <td><span className={`pc-status pc-${dir}`}>{p.label}</span>{p.lockedUntil && <span className="pc-locked" title={`Locked until ${new Date(p.lockedUntil).toLocaleString()}`}>Locked</span>}</td>
                     <td className="num">{pct(p.progress)}</td>
                     <td className="num">{pct(p.predicted)}</td>
-                    <td className={`pc-trend t-${p.trend}`}>{p.trend === "up" ? "▲ Rising" : p.trend === "down" ? "▼ Falling" : "Flat"}</td>
+                    <td className={`pc-trend t-${p.trend}`}>{p.trend === "up" ? <><TrendArrow dir="rise" />Rising</> : p.trend === "down" ? <><TrendArrow dir="drop" />Falling</> : "Flat"}</td>
                     <td className="num">£{p.price.toFixed(1)}m</td>
                   </tr>
                 );
