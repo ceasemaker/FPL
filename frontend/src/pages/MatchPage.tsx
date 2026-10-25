@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { crestUrl, EventIcon } from "../components/match/icons";
+import { Crest, EventIcon } from "../components/match/icons";
 import { buildTimeline, findPlayer, slots, stateAt, summary, type MatchData } from "../components/match/matchModel";
 import { MomentumScrubber } from "../components/match/MomentumScrubber";
 import { MatchPitch, NowPanel } from "../components/match/MatchPitch";
@@ -78,7 +78,7 @@ export function MatchPage() {
 
       <header className="mp-head">
         <div className="mp-side home">
-          <img className="mp-crest" src={crestUrl(data.home.id)} alt="" />
+          <Crest className="mp-crest" team={data.home.id} />
           <div><h1>{data.home.name}</h1>{finished && scorerList(data.home.id)}</div>
         </div>
         <div className="mp-score">
@@ -87,7 +87,7 @@ export function MatchPage() {
             : <><strong className="ko">{kickoff ? kickoff.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "TBC"}</strong><span>{kickoff ? kickoff.toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" }) : "Kick-off"}</span></>}
         </div>
         <div className="mp-side away">
-          <img className="mp-crest" src={crestUrl(data.away.id)} alt="" />
+          <Crest className="mp-crest" team={data.away.id} />
           <div><h1>{data.away.name}</h1>{finished && scorerList(data.away.id)}</div>
         </div>
       </header>

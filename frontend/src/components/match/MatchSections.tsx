@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { crestUrl, EventIcon } from "./icons";
+import { Crest, EventIcon } from "./icons";
 import type { MatchData, Timeline } from "./matchModel";
 
 const num = (v: unknown) => (typeof v === "number" ? v : Number(v) || 0);
@@ -148,7 +148,7 @@ export function MatchPlayers({ data }: { data: MatchData }) {
           <tbody>
             {rows.map((p) => (
               <tr key={p.id}>
-                <th scope="row"><span className="mp-pl"><img src={crestUrl(p.team)} alt={short(p.team)} />{p.name} <small>{p.position}</small></span></th>
+                <th scope="row"><span className="mp-pl"><Crest team={p.team} alt={short(p.team)} />{p.name} <small>{p.position}</small></span></th>
                 {cols.map(([k]) => {
                   const x = val(p, k) ?? null;
                   const shown = x == null ? "–" : k === "passPct" ? `${x}%` : x;
@@ -169,7 +169,7 @@ export function MatchPlayers({ data }: { data: MatchData }) {
 export function MatchContext({ data }: { data: MatchData }) {
   const formRow = (team: string, short: string, name: string, list: MatchData["form"]["home"]) => (
     <div className="mp-form-row">
-      <img src={crestUrl(team)} alt="" /><span className="code">{short}</span>
+      <Crest team={team} /><span className="code">{short}</span>
       <div className="chips">
         {list === null && <span className="mp-note">We store {name}'s games against Premier League clubs only.</span>}
         {list?.slice().reverse().map((f) => (
@@ -185,7 +185,7 @@ export function MatchContext({ data }: { data: MatchData }) {
   const pts = data.players.filter((p) => p.fpl != null).sort((a, b) => (b.fpl ?? 0) - (a.fpl ?? 0)).slice(0, 6);
   const short = (t: string) => (t === data.home.id ? data.home.short : data.away.short);
   return (
-    <div className="mp-ctx">
+    <div className={`mp-ctx${data.status === "finished" && data.competitionId !== 8 ? " two" : ""}`}>
       <section className="mp-sheet"><h3>Last five games</h3><div className="mp-form">{formRow(data.home.id, data.home.short, data.home.name, data.form.home)}{formRow(data.away.id, data.away.short, data.away.name, data.form.away)}</div></section>
       <section className="mp-sheet">
         <h3>Last meetings</h3>
@@ -200,14 +200,14 @@ export function MatchContext({ data }: { data: MatchData }) {
           </ul>
         )}
       </section>
-      {data.status === "finished" ? (
+      {data.status === "finished" ? (data.competitionId === 8 && (
         <section className="mp-sheet">
           <h3>FPL points from this match</h3>
           {pts.length === 0 ? <p className="mp-note">No FPL points stored for this match.</p> : (
             <ul className="mp-fplist">{pts.map((p) => <li key={p.id}><span>{p.name}<small>{short(p.team)}</small></span><b>{p.fpl}</b></li>)}</ul>
           )}
         </section>
-      ) : (
+      )) : (
         <OddsCard data={data} />
       )}
     </div>

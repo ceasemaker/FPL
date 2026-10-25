@@ -1,3 +1,4 @@
+import type { SyntheticEvent } from "react";
 import type { Kind } from "./matchModel";
 
 // Match event icons on the 20px grid: drawn, not glyphs. Card colours are the
@@ -47,3 +48,14 @@ export function EventIcon({ kind, size = 16 }: { kind: Kind | "play" | "pause"; 
 }
 
 export const crestUrl = (teamId: string) => `https://resources.premierleague.com/premierleague25/badges/${teamId}.svg`;
+
+// The SVG set covers Premier League clubs only; cup and European opponents
+// fall back to the older PNG set, and the image hides if that has none either.
+export function Crest({ team, className, alt = "" }: { team: string; className?: string; alt?: string }) {
+  const onError = (e: SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    if (!img.dataset.fallback) { img.dataset.fallback = "1"; img.src = `https://resources.premierleague.com/premierleague/badges/100/t${team}.png`; }
+    else img.style.visibility = "hidden";
+  };
+  return <img className={className} src={crestUrl(team)} alt={alt} onError={onError} />;
+}
