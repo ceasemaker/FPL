@@ -220,19 +220,8 @@ function MoverRow({player,onClick}:{player:PlayerMover;onClick:(id:number)=>void
 // against simple rules, and how its live picks have scored this season.
 function CaptainRecordCard({record}:{record:CaptainRecord}){
   const b=record.backtest;
-  const live=record.live;
   const signed=(v:number|null)=>v===null?"—":`${v>=0?"+":"−"}${Math.abs(v).toFixed(1)}`;
-  const model=live?.rules.find(r=>r.rule==="model");
-  const fpl=live?.rules.find(r=>r.rule==="ep_next");
   return <article className="command-card captain-record">
-    <p className="captain-record-lead">
-      {b
-        ? <>Tested on {b.seasons[0]}–{b.seasons[b.seasons.length-1]} ({b.weeks} gameweeks), this model's captain scored <strong>{b.model?.toFixed(1)}</strong> points a week. {b.passed
-            ? "That clearly beats the simple rules below."
-            : "It isn't yet clearly better than every simple rule, so treat it as a second opinion."}</>
-        : <>This pick comes from our points forecast. Its captain backtest hasn't run yet, so treat it as a second opinion.</>}
-      {model&&<> This season its picks have averaged <strong>{model.points.toFixed(1)}</strong> over {model.weeks} gameweek{model.weeks===1?"":"s"}{fpl?<>, against {fpl.points.toFixed(1)} for FPL's own pick</>:null}.</>}
-    </p>
     {b&&b.versus.length>0&&<ul className="captain-record-list">
       {b.versus.map(v=><li key={v.rule}>
         <span>vs {v.label}{v.required?"":" (for reference)"}</span>
