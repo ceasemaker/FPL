@@ -98,6 +98,11 @@ Multiple origins separated by commas.
 | Variable | Default | What it does |
 |---|---|---|
 | `SOFASPORT_ENABLED` | `false` | Switches the SofaSport tasks on or off together: fixture mappings, lineups, heatmaps, season stats, radar attributes and fixture odds (odds need the SofaSport fixture mappings). Off since October 2026 while there's no usable API key. Set it to `true` once there is one. |
+| `SOFASCORE_ODDS_ENABLED` | `false` | Switches the fixture-odds sync on by itself, without the rest of SofaSport. |
+| `SOFASPORT_API_HOST` | `sofasport.p.rapidapi.com` | Set it to `sofascore.p.rapidapi.com` for the API Dojo "Sofascore" API on RapidAPI. The odds sync then uses `tournaments/get-next-matches` and `matches/get-all-odds` (source `apidojo`). |
+| `SOFASPORT_API_KEY` | (none) | The RapidAPI key (`x-rapidapi-key`). |
+| `SOFASCORE_MAX_CALLS_PER_MONTH` | `450` | Hard monthly cap on odds calls, below the free plan's 500. Every call is logged before it is sent. |
+| `SOFASCORE_ODDS_WINDOW_DAYS` | `3` | With the budgeted source, only matches this close to kick-off get odds, at most once a day each (about 150 calls a month). |
 | `RENDER_API_KEY` | (none) | Lets the Celery worker start heavy scheduled tasks as Render one-off jobs. On Render without it, those tasks skip. |
 | `FORECAST_IN_WORKER` | `false` | Local only: train the forecast inside the worker instead of in a job. |
 

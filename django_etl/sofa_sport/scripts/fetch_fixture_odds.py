@@ -54,7 +54,14 @@ SOFASPORT_API_HOST = os.getenv("SOFASPORT_API_HOST", "sofasport.p.rapidapi.com")
 SOFASCORE_PUBLIC_BASE_URL = os.getenv(
     "SOFASCORE_PUBLIC_BASE_URL", "https://api.sofascore.com/api/v1"
 ).rstrip("/")
-SOFASCORE_ODDS_SOURCE = os.getenv("SOFASCORE_ODDS_SOURCE", "public").lower()
+# public: SofaScore's own site API (key-free, often blocked).
+# apidojo: the "Sofascore" API by API Dojo on RapidAPI (sofascore.p.rapidapi.com),
+#          free plan 500 requests a month, so it is budgeted (see below).
+# rapidapi: the older SofaSport API (sofasport.p.rapidapi.com).
+SOFASCORE_ODDS_SOURCE = os.getenv(
+    "SOFASCORE_ODDS_SOURCE",
+    "apidojo" if SOFASPORT_API_HOST == "sofascore.p.rapidapi.com" else "public",
+).lower()
 SOFASCORE_TOURNAMENT_ID = int(os.getenv("SOFASCORE_TOURNAMENT_ID", "17"))
 SOFASCORE_SEASON_ID = int(os.getenv("SOFASCORE_SEASON_ID", "96668"))
 
@@ -79,6 +86,11 @@ PUBLIC_API_HEADERS = {
 # keeps us below the ceiling despite clock/scheduler jitter.
 RATE_LIMIT_DELAY = max(12.0, float(os.getenv("SOFASCORE_RATE_LIMIT_DELAY", "12.5")))
 MAX_CALLS_PER_DAY = max(1, int(os.getenv("SOFASCORE_MAX_CALLS_PER_DAY", "40")))
+# Hard monthly ceiling under the RapidAPI plan's 500, counted from the call log.
+MAX_CALLS_PER_MONTH = max(1, int(os.getenv("SOFASCORE_MAX_CALLS_PER_MONTH", "450")))
+# With a paid-per-call source, only matches this close to kick-off get odds
+# (once a day each), which keeps a season inside the monthly budget.
+BUDGETED_WINDOW_DAYS = max(1, int(os.getenv("SOFASCORE_ODDS_WINDOW_DAYS", "3")))
 CALL_AUDIT_ENDPOINT = "sofascore_public_odds_call"
 RUN_AUDIT_ENDPOINT = "sofascore_public_odds_daily_run"
 TEAM_MAPPING_PATH = Path(__file__).resolve().parent.parent / "mappings" / "team_mapping.json"
@@ -105,6 +117,14 @@ class PublicRequestThrottle:
         self.exhausted = False
 
     @property
+    def calls_this_month(self) -> int:
+        start = timezone.localdate().replace(day=1).isoformat()
+        return RawEndpointSnapshot.objects.filter(
+            endpoint=CALL_AUDIT_ENDPOINT,
+            identifier__gte=start,
+        ).count()
+
+    @property
     def calls_today(self) -> int:
         return RawEndpointSnapshot.objects.filter(
             endpoint=CALL_AUDIT_ENDPOINT,
@@ -115,7 +135,12 @@ class PublicRequestThrottle:
         if self.calls_today >= self.max_calls:
             self.exhausted = True
             raise DailyCallLimitReached(
-                f"daily public odds call cap ({self.max_calls}) reached"
+                f"daily odds call cap ({self.max_calls}) reached"
+            )
+        if self.calls_this_month >= MAX_CALLS_PER_MONTH:
+            self.exhausted = True
+            raise DailyCallLimitReached(
+                f"monthly odds call cap ({MAX_CALLS_PER_MONTH}) reached"
             )
 
         latest = (
@@ -189,14 +214,20 @@ def _team_id_from_sofascore(sofa_id: int | None, sofa_name: str | None) -> int |
 
 def fetch_public_upcoming_events(throttle: PublicRequestThrottle) -> list[dict]:
     """One schedule request, sharing the same persistent budget as odds calls."""
-    url = (
-        f"{SOFASCORE_PUBLIC_BASE_URL}/unique-tournament/{SOFASCORE_TOURNAMENT_ID}"
-        f"/season/{SOFASCORE_SEASON_ID}/events/next/0"
-    )
+    if SOFASCORE_ODDS_SOURCE == "apidojo":
+        url = f"https://{SOFASPORT_API_HOST}/tournaments/get-next-matches"
+        params = {"tournamentId": SOFASCORE_TOURNAMENT_ID, "seasonId": SOFASCORE_SEASON_ID, "pageIndex": 0}
+        headers = API_HEADERS
+    else:
+        url = (
+            f"{SOFASCORE_PUBLIC_BASE_URL}/unique-tournament/{SOFASCORE_TOURNAMENT_ID}"
+            f"/season/{SOFASCORE_SEASON_ID}/events/next/0"
+        )
+        params, headers = None, PUBLIC_API_HEADERS
     audit = None
     try:
         audit = throttle.before_request("premier-league-schedule", url)
-        response = requests.get(url, headers=PUBLIC_API_HEADERS, timeout=20)
+        response = requests.get(url, headers=headers, params=params, timeout=20)
         throttle.finish_request(audit, status_code=response.status_code)
         if response.status_code == 403:
             throttle.blocked = True
@@ -325,6 +356,10 @@ def fetch_odds_from_api(
         url = f"{SOFASCORE_PUBLIC_BASE_URL}/event/{event_id}/1/odds"
         headers = PUBLIC_API_HEADERS
         params = None
+    elif source == "apidojo":
+        url = f"https://{SOFASPORT_API_HOST}/matches/get-all-odds"
+        headers = API_HEADERS
+        params = {"matchId": str(event_id)}
     elif source == "rapidapi":
         url = f"https://{SOFASPORT_API_HOST}/v1/events/odds/all"
         headers = API_HEADERS
@@ -334,13 +369,13 @@ def fetch_odds_from_api(
             "odds_format": "decimal",
         }
     else:
-        logger.error("Unknown SOFASCORE_ODDS_SOURCE=%r (use public or rapidapi)", source)
+        logger.error("Unknown SOFASCORE_ODDS_SOURCE=%r (use public, apidojo or rapidapi)", source)
         return None
 
     for attempt in range(3):
         audit = None
         try:
-            if source == "public" and throttle is not None:
+            if source in ("public", "apidojo") and throttle is not None:
                 audit = throttle.before_request(event_id, url)
             response = requests.get(url, headers=headers, params=params, timeout=20)
             if audit is not None:
@@ -353,6 +388,13 @@ def fetch_odds_from_api(
                     "stopping without retries",
                     event_id,
                 )
+                return None
+            if source == "apidojo" and response.status_code in (401, 403, 429):
+                # Bad key, no subscription, or the plan's quota: retrying only
+                # spends more of the month.
+                if throttle is not None:
+                    throttle.blocked = True
+                logger.error("Sofascore (RapidAPI) refused odds for event %s (HTTP %s)", event_id, response.status_code)
                 return None
             if response.status_code == 429 or response.status_code >= 500:
                 if attempt == 2:
@@ -573,6 +615,12 @@ def daily_status(run_date: str | None = None) -> dict:
             identifier=run_date,
         ).count(),
         "max_calls_per_day": MAX_CALLS_PER_DAY,
+        "source": SOFASCORE_ODDS_SOURCE,
+        "calls_this_month": RawEndpointSnapshot.objects.filter(
+            endpoint=CALL_AUDIT_ENDPOINT,
+            identifier__gte=timezone.localdate().replace(day=1).isoformat(),
+        ).count(),
+        "max_calls_per_month": MAX_CALLS_PER_MONTH,
         "minimum_seconds_between_calls": RATE_LIMIT_DELAY,
         "latest_run": latest_run.payload if latest_run is not None else None,
     }
@@ -605,8 +653,14 @@ def sync_upcoming_fixtures_odds(days_ahead: int = 21, *, force: bool = False) ->
             "calls_today": calls_today,
         }
 
+    budgeted = SOFASCORE_ODDS_SOURCE == "apidojo"
+    if budgeted:
+        days_ahead = min(days_ahead, BUDGETED_WINDOW_DAYS)
     cutoff = now + timedelta(days=days_ahead)
-    throttle = PublicRequestThrottle(run_date=run_date) if SOFASCORE_ODDS_SOURCE == "public" else None
+    throttle = (
+        PublicRequestThrottle(run_date=run_date, min_interval=12.0)
+        if SOFASCORE_ODDS_SOURCE in ("public", "apidojo") else None
+    )
     calls_before = throttle.calls_today if throttle is not None else 0
     mapping_stats = {"schedule_calls": 0, "mappings_created": 0, "unmapped": 0}
     if throttle is not None:
@@ -716,7 +770,7 @@ def sync_upcoming_fixtures_odds(days_ahead: int = 21, *, force: bool = False) ->
         else:
             failed_count += 1
         
-        if SOFASCORE_ODDS_SOURCE != "public":
+        if SOFASCORE_ODDS_SOURCE not in ("public", "apidojo"):
             time.sleep(RATE_LIMIT_DELAY)
 
     calls_today = throttle.calls_today if throttle is not None else 0

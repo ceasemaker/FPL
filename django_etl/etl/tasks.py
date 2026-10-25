@@ -186,7 +186,15 @@ def sofasport_enabled():
 SOFASPORT_OFF = {"status": "skipped", "reason": "SofaSport is switched off (SOFASPORT_ENABLED)"}
 
 
-def offloaded(name, limit=2, sofasport=False):
+def odds_enabled():
+    """Odds have their own switch: on a 500-a-month plan they are the only SofaScore spend."""
+    return os.getenv("SOFASCORE_ODDS_ENABLED", "false").lower() in ("1", "true", "yes")
+
+
+ODDS_OFF = {"status": "skipped", "reason": "Odds are switched off (SOFASCORE_ODDS_ENABLED)"}
+
+
+def offloaded(name, limit=2, sofasport=False, odds=False):
     """Run the task as a Render job, at most ``limit`` times a day.
 
     Inside the job the work function runs directly. The attempt cap stops the
@@ -194,17 +202,23 @@ def offloaded(name, limit=2, sofasport=False):
     re-delivering it an hour later. ``sofasport`` tasks skip (without starting
     a job) while SofaSport is switched off.
     """
+    def switched_off():
+        if sofasport and not sofasport_enabled():
+            return SOFASPORT_OFF
+        if odds and not odds_enabled():
+            return ODDS_OFF
+        return None
+
     def decorate(body):
         def work(*args, **kwargs):
-            if sofasport and not sofasport_enabled():
-                return SOFASPORT_OFF
-            return body(*args, **kwargs)
+            return switched_off() or body(*args, **kwargs)
 
         JOBS[name] = work
 
         def task(*args, **kwargs):
-            if sofasport and not sofasport_enabled():
-                return SOFASPORT_OFF
+            off = switched_off()
+            if off:
+                return off
             if in_job():
                 return work(*args, **kwargs)
             from django.utils import timezone
@@ -437,7 +451,7 @@ def run_manual_update(script_name: str):
 
 
 @shared_task(name='etl.tasks.sync_fixture_odds')
-@offloaded('sync_fixture_odds', sofasport=True)
+@offloaded('sync_fixture_odds', odds=True)
 def sync_fixture_odds(days_ahead=21):
     """
     Fetch and update betting odds for upcoming fixtures.

@@ -142,3 +142,42 @@ class FixtureOddsParserTests(SimpleTestCase):
         self.assertEqual(events, [{"id": 7}])
         throttle.before_request.assert_called_once()
         throttle.finish_request.assert_called_once_with(audit, status_code=200)
+
+
+class ApiDojoOddsTests(SimpleTestCase):
+    """The RapidAPI "Sofascore" API by API Dojo (free plan: 500 requests a month)."""
+
+    @patch.object(odds.requests, "get")
+    def test_apidojo_fetch_uses_match_odds_endpoint_and_the_budget(self, get: Mock) -> None:
+        response = Mock(status_code=200)
+        response.json.return_value = {"markets": []}
+        response.raise_for_status.return_value = None
+        get.return_value = response
+        throttle = Mock()
+        throttle.before_request.return_value = Mock(payload={"status": "started"})
+
+        self.assertEqual(odds.fetch_odds_from_api(8897222, source="apidojo", throttle=throttle), {"markets": []})
+
+        args, kwargs = get.call_args
+        self.assertTrue(args[0].endswith("/matches/get-all-odds"))
+        self.assertEqual(kwargs["params"], {"matchId": "8897222"})
+        throttle.before_request.assert_called_once()
+
+    @patch.object(odds.requests, "get")
+    def test_apidojo_quota_or_key_errors_stop_without_retrying(self, get: Mock) -> None:
+        for status in (401, 403, 429):
+            get.reset_mock()
+            get.return_value = Mock(status_code=status)
+            throttle = Mock()
+            throttle.before_request.return_value = Mock(payload={"status": "started"})
+            self.assertIsNone(odds.fetch_odds_from_api(1, source="apidojo", throttle=throttle))
+            self.assertEqual(get.call_count, 1, f"HTTP {status} must not be retried")
+            self.assertTrue(throttle.blocked)
+
+    def test_monthly_cap_stops_before_the_request(self) -> None:
+        throttle = odds.PublicRequestThrottle(run_date="2026-10-25")
+        with patch.object(odds.PublicRequestThrottle, "calls_today", new=0), \
+                patch.object(odds.PublicRequestThrottle, "calls_this_month", new=odds.MAX_CALLS_PER_MONTH):
+            with self.assertRaises(odds.DailyCallLimitReached):
+                throttle.before_request(1, "https://example.test")
+        self.assertTrue(throttle.exhausted)

@@ -87,13 +87,13 @@ class SofaSportSwitchTests(TestCase):
                 mock.patch.object(tasks, "start_render_job") as start, \
                 mock.patch.object(tasks, "run_etl_script") as script:
             for task in (tasks.update_fixture_mappings, tasks.update_lineups, tasks.collect_heatmaps,
-                         tasks.update_season_stats, tasks.update_radar_attributes, tasks.sync_fixture_odds):
+                         tasks.update_season_stats, tasks.update_radar_attributes):
                 self.assertEqual(task()["status"], "skipped")
         start.assert_not_called()
         script.assert_not_called()
 
     def test_pipeline_skips_sofasport_steps_while_switched_off(self):
-        env = {tasks.IN_JOB_ENV: "1", "SOFASPORT_ENABLED": "false"}
+        env = {tasks.IN_JOB_ENV: "1", "SOFASPORT_ENABLED": "false", "SOFASCORE_ODDS_ENABLED": "false"}
         with mock.patch.dict("os.environ", env), \
                 mock.patch.object(tasks, "run_manage", return_value={"status": "success", "output": ""}), \
                 mock.patch.object(tasks, "run_etl_script") as script, \
@@ -102,3 +102,20 @@ class SofaSportSwitchTests(TestCase):
         script.assert_not_called()
         self.assertEqual(results["update_lineups"]["status"], "skipped")
         self.assertEqual(results["sync_fixture_odds"]["status"], "skipped")
+
+
+@override_settings(CACHES=LOCMEM)
+class OddsSwitchTests(TestCase):
+    def setUp(self):
+        cache.clear()
+
+    def test_odds_have_their_own_switch(self):
+        env = {"RENDER_API_KEY": "test", "RENDER_SERVICE_ID": "srv-test", "SOFASPORT_ENABLED": "false"}
+        with mock.patch.dict("os.environ", {**env, "SOFASCORE_ODDS_ENABLED": "false"}), \
+                mock.patch.object(tasks, "start_render_job") as start:
+            self.assertEqual(tasks.sync_fixture_odds()["status"], "skipped")
+        start.assert_not_called()
+        with mock.patch.dict("os.environ", {**env, "SOFASCORE_ODDS_ENABLED": "true"}), \
+                mock.patch.object(tasks, "start_render_job", return_value={"status": "started"}) as start:
+            self.assertEqual(tasks.sync_fixture_odds()["status"], "started", "odds run even with the rest of SofaSport off")
+        start.assert_called_once_with("sync_fixture_odds")
