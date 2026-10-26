@@ -188,21 +188,21 @@ export function SquadOptimizer({ defaultManagerId = "" }: { defaultManagerId?: s
         // memory mid-solve; say so instead of surfacing a JSON parse error.
         throw new Error(
           response.ok
-            ? "The optimizer returned an unexpected response. Please try again."
-            : `The optimizer service is unavailable (HTTP ${response.status}). It may have restarted — try again in a moment, or shorten the horizon.`
+            ? "The optimiser returned an unexpected response. Please try again."
+            : `The optimiser service is unavailable (HTTP ${response.status}). It may have restarted — try again in a moment, or shorten the horizon.`
         );
       }
 
       if (!response.ok) {
         const payload = await response.json();
-        throw new Error(payload?.error || "Failed to optimize team.");
+        throw new Error(payload?.error || "Failed to optimise team.");
       }
 
       const data = (await response.json()) as MILPResult;
       setResult(data);
       setActiveGWTab(0);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to optimize team.");
+      setError(err instanceof Error ? err.message : "Failed to optimise team.");
     } finally {
       setLoading(false);
     }

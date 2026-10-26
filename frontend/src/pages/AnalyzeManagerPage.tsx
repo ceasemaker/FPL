@@ -53,7 +53,7 @@ export function AnalyzeManagerPage() {
     <main className="aero-page analyze-page">
       <div className="aero-header">
         <div>
-          <h1>Analyze Manager</h1>
+          <h1>Analyse Manager</h1>
           <p>
             Look up any FPL manager to review their season history, squad and
             gameweek performance.
@@ -75,7 +75,7 @@ export function AnalyzeManagerPage() {
           />
         </label>
         <button className="aero-button primary" onClick={handleAnalyze} disabled={!managerId.trim()}>
-          Analyze
+          Analyse
         </button>
         <p className="analyze-hint">
           Your ID is the number in your FPL profile URL:

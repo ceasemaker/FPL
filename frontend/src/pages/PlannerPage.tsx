@@ -507,12 +507,12 @@ function Suggest({ data, plan, freeSlot, onPlan }: { data: PlannerData; plan: Pl
   };
   return (
     <div className="pl-suggest">
-      <dt>Optimizer</dt>
+      <dt>Optimiser</dt>
       <dd>
         <button type="button" className="pl-ghost-btn" onClick={run} disabled={!freeSlot || state === "busy"} title={freeSlot ? `Loads into Plan ${freeSlot}` : "Clear a plan first: suggestions go into a free plan"}>
           {state === "busy" ? "Working it out…" : "Suggest transfers"}
         </button>
-        {state === "error" && <small className="neg">The optimizer couldn't finish. Try again.</small>}
+        {state === "error" && <small className="neg">The optimiser couldn't finish. Try again.</small>}
         {state === "none" && <small>It suggests no transfers: rolling your free transfer is best.</small>}
       </dd>
     </div>

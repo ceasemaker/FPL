@@ -47,14 +47,14 @@ class AcceptedForecastSummaryTests(SimpleTestCase):
         self.assertFalse(summary["accepted_for_optimizer"])
         self.assertFalse(summary["accepted_for_transfer_horizon"])
         self.assertEqual(summary["evidence"]["mae_gain_vs_odds_ridge"], 0.036)
-        self.assertIn("optimizer remains unchanged", summary["caveat"])
+        self.assertIn("optimiser remains unchanged", summary["caveat"])
 
     def test_research_summary_keeps_optimizer_as_prototype(self):
         summary = _research_summary({"authority_gate": {
             "mae_gain": 0.036,
             "top5_points_weekly_diff": -0.22,
         }}, [])
-        optimizer = next(layer for layer in summary["layers"] if layer["name"] == "Transfer optimizer")
+        optimizer = next(layer for layer in summary["layers"] if layer["name"] == "Transfer optimiser")
         self.assertEqual(optimizer["status"], "prototype")
         self.assertEqual(summary["evidence"]["top5_difference"], -0.22)
 

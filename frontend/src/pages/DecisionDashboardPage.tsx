@@ -539,7 +539,7 @@ export function DecisionDashboardPage() {
         <div className="decision-error">
           <strong>We could not load Decision Lab for manager {managerId}.</strong>
           <span>{error}</span>
-          <a href="/analyze">Open Analyse Manager</a>
+          <a href="/analyse">Open Analyse Manager</a>
         </div>
       </main>
     );
@@ -615,7 +615,7 @@ export function DecisionDashboardPage() {
         <section className="decision-callout" aria-label="Forecast audit">
           <div>
             <span className="decision-label">
-              Forecast audit{data.accepted_forecast.accepted_for_optimizer ? " · optimizer approved" : " · optimizer not approved"}
+              Forecast audit{data.accepted_forecast.accepted_for_optimizer ? " · optimiser approved" : " · optimiser not approved"}
             </span>
             <strong>{data.accepted_forecast.model}</strong>
             <p>{data.accepted_forecast.caveat}</p>

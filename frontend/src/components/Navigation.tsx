@@ -39,7 +39,7 @@ const groups: { title?: string; links: { to: string; label: string; icon: JSX.El
       { to: "/watchlist", label: "Watchlist", icon: <WatchlistIcon /> },
       { to: "/rate-my-team", label: "Rate my team", icon: <RateIcon /> },
       { to: "/decision-lab", label: "Decision Lab", icon: <DecisionLabIcon /> },
-      { to: "/analyze", label: "Analyze Manager", icon: <AnalyzeManagerIcon /> },
+      { to: "/analyse", label: "Analyse Manager", icon: <AnalyzeManagerIcon /> },
       { to: "/price-monitor", label: "Price Monitor", icon: <PriceMonitorIcon /> },
     ],
   },

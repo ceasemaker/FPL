@@ -58,7 +58,8 @@ export default function App() {
           <Route path="/matches/fixture/:fixtureId" element={<MatchFromFixture />} />
           <Route path="/matches/:matchId" element={<MatchPage />} />
           <Route path="/compare" element={<ComparePage />} />
-          <Route path="/analyze" element={<AnalyzeManagerPage />} />
+          <Route path="/analyse" element={<AnalyzeManagerPage />} />
+          <Route path="/analyze" element={<Navigate to="/analyse" replace />} />
           <Route path="/planner" element={<PlannerPage />} />
           <Route path="/watchlist" element={<WatchlistPage />} />
           <Route path="/team-news" element={<Navigate to="/players?status=flagged" replace />} />

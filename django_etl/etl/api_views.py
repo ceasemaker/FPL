@@ -1903,7 +1903,7 @@ def optimize_team(request):
         from .fpl_solver import FPLSolver
     except ImportError:
         return JsonResponse(
-            {"error": "The optimizer dependency is not installed. Install requirements and retry."},
+            {"error": "The optimiser dependency is not installed. Install requirements and retry."},
             status=503,
         )
 

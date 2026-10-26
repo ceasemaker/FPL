@@ -81,7 +81,7 @@ def _accepted_forecast_summary(stacked: dict[str, Any] | None) -> dict[str, Any]
         "caveat": (
             "Mean-forecast accuracy improves on the 2025/26 evaluation season, "
             "but top-five superiority is unproven and the corrected three-week "
-            "bootstrap does not support promotion. The optimizer remains unchanged."
+            "bootstrap does not support promotion. The optimiser remains unchanged."
         ),
     }
 
@@ -113,7 +113,7 @@ def _research_summary(
             {"name": "Mean player xP", "status": "working", "detail": "Stacked mean accuracy improves under a week-cluster bootstrap."},
             {"name": "Top-player ranking", "status": "research", "detail": "Weekly top-five superiority is not established."},
             {"name": "Three-week decisions", "status": "research", "detail": "Utility is promising, but the corrected correlation interval crosses zero."},
-            {"name": "Transfer optimizer", "status": "prototype", "detail": "Restricted point-estimate search; not approved as decision authority."},
+            {"name": "Transfer optimiser", "status": "prototype", "detail": "Restricted point-estimate search; not approved as decision authority."},
         ],
         "pipeline": [
             {"label": "Market", "detail": "Remove bookmaker margin"},

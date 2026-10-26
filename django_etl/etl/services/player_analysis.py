@@ -393,7 +393,7 @@ def build_player_analysis(
             "gameweeks": selected_gameweeks,
             "player_count": len(catalogue["players"]),
             "data_policy": "Saved pre-deadline snapshot; no network request on page load.",
-            "authority": "Decision support. The optimizer is not approved as an autonomous authority.",
+            "authority": "Decision support. The optimiser is not approved as an autonomous authority.",
         },
         "players": player_results,
         "top_players": [{
@@ -503,7 +503,7 @@ Clean-sheet probability is $e^{{-\\lambda_{{opp}}}}$ and is multiplied by the pr
 \\end{{itemize}}
 
 \\section*{{Verdict}}
-This report is generated from the same saved inputs and scoring implementation as the website. It is a decision aid, not permission for the optimizer to make an automatic transfer.
+This report is generated from the same saved inputs and scoring implementation as the website. It is a decision aid, not permission for the optimiser to make an automatic transfer.
 \\end{{document}}
 """
 
