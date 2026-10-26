@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Player } from "../hooks/usePlayers";
 import "./PlayersTable.css";
 import { availability, SET_PIECE_LABEL, splitNews } from "./availability";
+import { direction, usePriceChanges } from "../hooks/usePriceChanges";
 import { PriceChangeBadge } from "./priceChange/PriceChange";
 import { WatchStar } from "./WatchStar";
 
@@ -29,7 +30,8 @@ export type SortField =
     | "clean_sheets"
     | "expected_clean_sheets"
     | "selected_by_percent"
-    | "best_value";
+    | "best_value"
+    | "price_change";
 
 export interface SortConfig {
     field: SortField;
@@ -72,6 +74,13 @@ export function PlayersTable({
     defaultSort = { field: "total_points", direction: "desc" }
 }: PlayersTableProps) {
     const [sortConfig, setSortConfig] = useState<SortConfig>(defaultSort);
+    const prices = usePriceChanges();
+    // FPL's progress towards the next price change, only where FPL rates a
+    // rise or drop likely (the same rule the badge uses); 0 otherwise.
+    const priceProgress = (id: number) => {
+        const change = prices?.byId.get(id) ?? null;
+        return change && change.progress !== null && direction(change) !== "hold" ? change.progress : 0;
+    };
 
     const handleSort = (field: SortField) => {
         setSortConfig((prev) => ({
@@ -146,6 +155,10 @@ export function PlayersTable({
                 valA = calculateBestValue(a);
                 valB = calculateBestValue(b);
                 break;
+            case "price_change":
+                valA = priceProgress(a.id);
+                valB = priceProgress(b.id);
+                break;
         }
 
         if (valA < valB) return direction === "asc" ? -1 : 1;
@@ -168,6 +181,12 @@ export function PlayersTable({
                         <th className="text" onClick={() => handleSort("team")}>Team <SortIcon field="team" /></th>
                         <th className="text" onClick={() => handleSort("element_type")}>Pos <SortIcon field="element_type" /></th>
                         <th onClick={() => handleSort("now_cost")}>Cost <SortIcon field="now_cost" /></th>
+                        <th
+                            onClick={() => handleSort("price_change")}
+                            title="FPL's own tracker: how far each player is towards the next price change, shown when FPL rates a rise or drop likely."
+                        >
+                            Price change <SortIcon field="price_change" />
+                        </th>
                         <th onClick={() => handleSort("selected_by_percent")}>Owned <SortIcon field="selected_by_percent" /></th>
                         <th onClick={() => handleSort("total_points")}>Pts <SortIcon field="total_points" /></th>
                         <th onClick={() => handleSort("form")}>Form <SortIcon field="form" /></th>
@@ -210,7 +229,7 @@ export function PlayersTable({
                                     <div className="player-cell">
                                         {player.image_url && <img src={player.image_url} alt="" className="player-thumb" />}
                                         <div className="pc-text">
-                                            <span className="pc-name">{player.web_name}<PriceChangeBadge athleteId={player.id} /></span>
+                                            <span className="pc-name">{player.web_name}</span>
                                             <PlayerNotes player={player} />
                                         </div>
                                         <WatchStar id={player.id} name={player.web_name} size={14} />
@@ -219,6 +238,9 @@ export function PlayersTable({
                                 <td className="text">{player.team}</td>
                                 <td className="text">{getPositionLabel(player.element_type)}</td>
                                 <td>£{(player.now_cost / 10).toFixed(1)}m</td>
+                                <td className="td-price-change">
+                                    {priceProgress(player.id) !== 0 ? <PriceChangeBadge athleteId={player.id} /> : <span className="pc-none" aria-label="No likely change">–</span>}
+                                </td>
                                 <td>{player.selected_by_percent != null ? `${player.selected_by_percent.toFixed(1)}%` : "-"}</td>
                                 <td className="fw-bold">{player.total_points}</td>
                                 <td>{player.form?.toFixed(1)}</td>

@@ -3,9 +3,10 @@ import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Crest } from "../components/match/icons";
 import {
-  bestXI, CHIP_NAMES, chipOptions, gamesIn, HIT, MAX_PER_CLUB, money, projected, squadAt, summarise,
-  type ChipKey, type Plan, type PlannerData, type PlannerPlayer, type Transfer, type WeekSummary,
+  bestLineup, CHIP_NAMES, chipOptions, gamesIn, HIT, lineupAt, MAX_PER_CLUB, money, projected, sheetPoints, squadAt, summarise,
+  type ChipKey, type Lineup, type Plan, type PlannerData, type PlannerPlayer, type Transfer, type WeekSummary,
 } from "../components/planner/planModel";
+import { PlannerPitch } from "../components/planner/PlannerPitch";
 import { PriceChangeBadge } from "../components/priceChange/PriceChange";
 import { WatchStar } from "../components/WatchStar";
 import { direction, usePriceChanges, type PriceChangeData } from "../hooks/usePriceChanges";
@@ -26,6 +27,7 @@ const PLAN_NAMES = ["A", "B", "C"];
 const ORDER: Record<string, number> = { GKP: 0, DEF: 1, MID: 2, FWD: 3 };
 const POS_WORD: Record<string, string> = { GKP: "Goalkeepers", DEF: "Defenders", MID: "Midfielders", FWD: "Forwards" };
 const storeKey = (id: number) => `aerofpl_planner_v1_${id}`;
+const VIEW_KEY = "aerofpl_planner_view";
 interface Stored { active: string; plans: Record<string, Plan> }
 
 const safeGet = (k: string) => { try { return localStorage.getItem(k); } catch { return null; } };
@@ -52,6 +54,7 @@ export function PlannerPage() {
   const [selling, setSelling] = useState<number | null>(null);
   const [syncCode, setSyncCode] = useState<string | null>(safeGet(SYNC_KEY));
   const [panel, setPanel] = useState<"sync" | null>(null);
+  const [view, setView] = useState<"pitch" | "list">(safeGet(VIEW_KEY) === "list" ? "list" : "pitch");
   const prices = usePriceChanges();
 
   useEffect(() => { document.title = "Transfer planner · AeroFPL"; }, []);
@@ -138,6 +141,12 @@ export function PlannerPage() {
     }
     savePlan({ ...plan, transfers: plan.transfers.filter((x) => !drop.has(x)) });
   };
+  // A team sheet set here applies to this gameweek and carries forward, like FPL.
+  const setSheet = (sheet: Lineup) => {
+    if (!plan || gw == null) return;
+    savePlan({ ...plan, lineups: { ...(plan.lineups ?? {}), [String(gw)]: { xi: sheet.xi, bench: sheet.bench, captain: sheet.captain, vice: sheet.vice } } });
+    track("Lineup Changed");
+  };
   const setChip = (week: number, chip: ChipKey | "") => {
     if (!plan) return;
     const chips = { ...(plan.chips ?? {}) };
@@ -164,13 +173,17 @@ export function PlannerPage() {
     .sort((a, b) => ORDER[a.p!.position] - ORDER[b.p!.position] || b.p!.price - a.p!.price);
   const totalHits = weeks.reduce((s, w) => s + w.cost, 0);
   const checks = planChecks(data, plan, weeks, byId, prices, gw);
+  // Projected points follow the team sheet you pick; the best projected XI is shown alongside.
   const xiByWeek = new Map(weeks.map((w) => {
     const ids = squadAt(data, plan, w.gw).map((h) => h.id);
-    const best = bestXI(data, ids, byId, w.gw);
-    const total = best.points + best.captainPts * (w.chip === "3xc" ? 2 : 1) + (w.chip === "bboost" ? best.benchPts : 0) - w.cost;
-    return [w.gw, { ...best, total }];
+    const sheet = lineupAt(data, plan, w.gw, byId);
+    const mine = sheetPoints(data, sheet, w.gw, w.chip);
+    const best = sheetPoints(data, bestLineup(data, ids, byId, w.gw), w.gw, w.chip);
+    const available = ids.some((id) => projected(data, id, w.gw) != null);
+    return [w.gw, { sheet, available, mine, best, total: mine.total - w.cost }];
   }));
   const thisXI = xiByWeek.get(gw);
+  const newIds = new Set(plan.transfers.filter((t) => t.gw <= gw).map((t) => t.in));
   const record = data.projections.record;
 
   return (
@@ -232,22 +245,31 @@ export function PlannerPage() {
       <div className="pl-grid">
         <section className="mp-sheet pl-squad" aria-label={`Squad for gameweek ${gw}`}>
           <div className="pl-squad-head">
-            <h2>Your squad for GW{gw}</h2>
-            <span className="pl-fx-head">{data.gameweeks.map((g) => <b key={g.gameweek} className={g.gameweek === gw ? "on" : ""}>GW{g.gameweek}</b>)}</span>
+            <h2>Your team for GW{gw}</h2>
+            <div className="aero-segmented" role="group" aria-label="Show the squad as">
+              {(["pitch", "list"] as const).map((v) => (
+                <button key={v} type="button" aria-pressed={view === v} onClick={() => { setView(v); safeSet(VIEW_KEY, v); }}>{v === "pitch" ? "Pitch" : "List"}</button>
+              ))}
+            </div>
           </div>
-          {(["GKP", "DEF", "MID", "FWD"] as const).map((pos) => (
+          {view === "pitch" && thisXI && (
+            <PlannerPitch data={data} gw={gw} sheet={thisXI.sheet} byId={byId} chip={week?.chip} newIds={newIds}
+              selling={selling} onChange={setSheet} onSell={(id) => setSelling(selling === id ? null : id)} />
+          )}
+          {view === "list" && <span className="pl-fx-head pl-fx-head-list">{data.gameweeks.map((g) => <b key={g.gameweek} className={g.gameweek === gw ? "on" : ""}>GW{g.gameweek}</b>)}</span>}
+          {view === "list" && (["GKP", "DEF", "MID", "FWD"] as const).map((pos) => (
             <div key={pos} className="pl-pos">
               <h3>{POS_WORD[pos]}</h3>
               {squad.filter((h) => h.p!.position === pos).map((h) => (
                 <SquadRow key={h.id} player={h.p!} selling={h.selling} data={data} gw={gw}
                   isNew={plan.transfers.some((t) => t.in === h.id && t.gw <= gw)}
-                  inXI={thisXI?.xi.includes(h.id) ?? true} captain={thisXI?.captain === h.id}
+                  inXI={thisXI?.sheet.xi.includes(h.id) ?? true} captain={thisXI?.sheet.captain === h.id}
                   active={selling === h.id} onSell={() => setSelling(selling === h.id ? null : h.id)} />
               ))}
             </div>
           ))}
           {record && (
-            <p className="pl-record">Projected points come from the AeroFPL forecast. Tested on {record.playerWeeks.toLocaleString()} player-weeks across {record.seasons.join(", ")}, it was off by {record.modelError.toFixed(2)} points a week on average, against {record.formError.toFixed(2)} for a guess from form alone. It is a guide, not a promise.{data.projections.fplOnly.length ? " Players it has no history for show FPL's own expected points for the next gameweek only." : ""} Faded rows are the projected bench.</p>
+            <p className="pl-record">Projected points come from the AeroFPL forecast. Tested on {record.playerWeeks.toLocaleString()} player-weeks across {record.seasons.join(", ")}, it was off by {record.modelError.toFixed(2)} points a week on average, against {record.formError.toFixed(2)} for a guess from form alone. It is a guide, not a promise.{data.projections.fplOnly.length ? " Players it has no history for show FPL's own expected points for the next gameweek only." : ""}{view === "list" ? " Faded rows are your bench." : " Tap a player to substitute, sell or give the armband."}</p>
           )}
         </section>
 
@@ -286,7 +308,17 @@ export function PlannerPage() {
                     <div><dt>Hits</dt><dd className={week.cost ? "neg" : ""}>{week.cost ? `−${week.cost} pts (${week.hits} × ${HIT})` : "None"}</dd></div>
                     <div><dt>Bank after</dt><dd className={week.overBudget ? "neg" : ""}>{money(week.bankAfter)}</dd></div>
                     <div><dt>Projected points</dt><dd>{thisXI.available ? thisXI.total.toFixed(1) : "Not yet"}</dd></div>
-                    <div className="sub"><dt>Best XI {thisXI.points.toFixed(1)} · captain {byId.get(thisXI.captain ?? 0)?.name ?? "–"} +{(thisXI.captainPts * (week.chip === "3xc" ? 2 : 1)).toFixed(1)}{week.chip === "bboost" ? ` · bench +${thisXI.benchPts.toFixed(1)}` : ""}{week.cost ? ` · hits −${week.cost}` : ""}</dt></div>
+                    {thisXI.available && (
+                      <div className="sub">
+                        <dt>Your XI {thisXI.mine.xi.toFixed(1)}, captain {byId.get(thisXI.sheet.captain ?? 0)?.name ?? "–"} +{thisXI.mine.captain.toFixed(1)}{week.chip === "bboost" ? `, bench +${thisXI.mine.bench.toFixed(1)}` : ""}{week.cost ? `, hits −${week.cost}` : ""}</dt>
+                      </div>
+                    )}
+                    {thisXI.available && thisXI.best.total > thisXI.mine.total + 0.05 && (
+                      <div className="sub pl-best">
+                        <dt>The best projected team scores {thisXI.best.total.toFixed(1)} before hits.</dt>
+                        <dd><button type="button" className="pl-x" onClick={() => setSheet(bestLineup(data, squadAt(data, plan, gw).map((h) => h.id), byId, gw))}>Use it</button></dd>
+                      </div>
+                    )}
                   </dl>
                 )}
               </section>
@@ -474,18 +506,21 @@ function CompareTable({ data, gw, players, onPick, budget, outId, onClear }: {
 
 // Optimizer suggestions, loaded into a free plan so they never overwrite yours.
 function Suggest({ data, plan, freeSlot, onPlan }: { data: PlannerData; plan: Plan; freeSlot?: string; onPlan: (name: string, p: Plan) => void }) {
-  const [state, setState] = useState<"idle" | "busy" | "error" | "none">("idle");
+  const [state, setState] = useState<"idle" | "busy" | "error" | "busy-server" | "none">("idle");
   const run = async () => {
     if (!freeSlot) return;
     setState("busy");
     try {
-      // Three weeks ahead where the forecast reaches; one week if it can't solve that.
+      // Three weeks ahead where the forecast reaches; one week only if three has
+      // no legal answer (a 400). A 5xx means the server ran short, so a second
+      // solve straight away would only make that worse.
       let r: Response | null = null;
       for (const horizon of [3, 1]) {
         r = await fetch(`/api/optimize-team/?manager_id=${data.managerId}&horizon=${horizon}&free_transfers=${plan.freeTransfers ?? data.freeTransfers}`);
-        if (r.ok) break;
+        if (r.ok || r.status !== 400) break;
       }
-      if (!r || !r.ok) throw new Error();
+      if (!r || r.status >= 500) { setState("busy-server"); return; }
+      if (!r.ok) { setState("error"); return; }
       const body = await r.json() as { gameweeks: { gameweek: number; transfers: { in: { id: number; position: string; now_cost: number }[]; out: { id: number; position: string }[] } }[] };
       const draft: Plan = { name: `Plan ${freeSlot}`, transfers: [] };
       for (const w of body.gameweeks ?? []) {
@@ -504,7 +539,7 @@ function Suggest({ data, plan, freeSlot, onPlan }: { data: PlannerData; plan: Pl
       track("Optimizer Plan Loaded");
       setState("idle");
     } catch {
-      setState("error");
+      setState("busy-server");
     }
   };
   return (
@@ -514,7 +549,8 @@ function Suggest({ data, plan, freeSlot, onPlan }: { data: PlannerData; plan: Pl
         <button type="button" className="aero-button primary pl-ghost-btn" onClick={run} disabled={!freeSlot || state === "busy"} title={freeSlot ? `Loads into Plan ${freeSlot}` : "Clear a plan first: suggestions go into a free plan"}>
           {state === "busy" ? "Working it out…" : "Suggest transfers"}
         </button>
-        {state === "error" && <small className="neg">The optimiser couldn't finish. Try again.</small>}
+        {state === "error" && <small className="neg">The optimiser couldn't find a legal plan for this squad.</small>}
+        {state === "busy-server" && <small className="neg">The optimiser couldn't finish on the server just now. Try again in a minute.</small>}
         {state === "none" && <small>It suggests no transfers: rolling your free transfer is best.</small>}
       </dd>
     </div>
@@ -674,8 +710,8 @@ function planChecks(data: PlannerData, plan: Plan, weeks: WeekSummary[], byId: M
     else if (blank.length) out.push({ level: "tip", text: `GW${w.gw}: ${names(blank)} ${blank.length === 1 ? "has" : "have"} no league game.` });
     if (double.length >= 3 && !w.chip) out.push({ level: "tip", text: `GW${w.gw}: ${double.length} of your players play twice (${names(double)}). A Bench Boost or Triple Captain week?` });
     if (w.chip === "bboost") {
-      const best = bestXI(data, ids, byId, w.gw);
-      const weak = best.bench.map((id) => byId.get(id)).filter((p) => p && (p.status !== "a" || gamesIn(data, p.team, w.gw) === 0));
+      const sheet = lineupAt(data, plan, w.gw, byId);
+      const weak = sheet.bench.map((id) => byId.get(id)).filter((p) => p && (p.status !== "a" || gamesIn(data, p.team, w.gw) === 0));
       if (weak.length) out.push({ level: "warn", text: `GW${w.gw} Bench Boost: ${names(weak)} on your bench may not play.` });
     }
   }
@@ -698,7 +734,7 @@ function planChecks(data: PlannerData, plan: Plan, weeks: WeekSummary[], byId: M
     if (!p) continue;
     if (p.status !== "a") out.push({ level: "warn", text: `${p.name}: ${p.news || "flagged by FPL"}.` });
     const rot = rotationNote(data, p.id);
-    if (rot?.risky && p.status === "a" && bestXI(data, squadAt(data, plan, gw).map((x) => x.id), byId, gw).xi.includes(p.id)) out.push({ level: "warn", text: `${p.name} ${rot.text}: a rotation risk.` });
+    if (rot?.risky && p.status === "a" && lineupAt(data, plan, gw, byId).xi.includes(p.id)) out.push({ level: "warn", text: `${p.name} ${rot.text}: a rotation risk.` });
     if (direction(prices?.byId.get(p.id) ?? null) === "drop" && !plan.transfers.some((t) => t.out === p.id)) out.push({ level: "tip", text: `${p.name} (in your GW${gw} squad) is likely to drop in price.` });
   }
   return out;

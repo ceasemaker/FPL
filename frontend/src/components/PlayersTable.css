@@ -133,6 +133,23 @@
     font-weight: 600;
 }
 
+/* Price change: its own right-aligned column, quiet text, a dash when FPL
+ * rates no change likely, so every row lines up. */
+.players-table .td-price-change .pc-badge {
+    display: inline-flex;
+    justify-content: space-between;
+    min-width: 76px;
+    margin-left: 0;
+    padding: 0;
+    vertical-align: baseline;
+    font-size: var(--fs-body);
+    font-weight: 500;
+}
+
+.players-table .pc-none {
+    color: var(--aero-text-muted);
+}
+
 .td-value {
     font-weight: 500;
 }

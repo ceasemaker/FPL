@@ -145,6 +145,7 @@ class FPLSolver:
         self.initial_bank = 0.0
         self.initial_selling_prices = {}
         self.prob = None
+        self.proven_optimal = False
         self.variables = {}
 
         logger.debug("Initialized FPL solver with %d GW horizon", planning_horizon)
@@ -1051,12 +1052,18 @@ class FPLSolver:
         status = pulp.LpStatus[self.prob.status]
         logger.debug("Solver status: %s", status)
 
-        if self.prob.status == pulp.LpStatusOptimal:
-            logger.debug("Optimal objective value: %.2f", pulp.value(self.prob.objective))
+        # When the time limit stops CBC on a legal plan it hasn't proved best,
+        # keep that plan rather than failing: it is the best squad found.
+        sol_status = getattr(self.prob, "sol_status", None)
+        self.proven_optimal = sol_status == pulp.LpSolutionOptimal or (
+            sol_status is None and self.prob.status == pulp.LpStatusOptimal
+        )
+        feasible = self.proven_optimal or sol_status == pulp.LpSolutionIntegerFeasible
+        if feasible:
+            logger.debug("Objective value: %.2f (proven best: %s)", pulp.value(self.prob.objective), self.proven_optimal)
             return True
-        else:
-            logger.warning("No optimal solution found")
-            return False
+        logger.warning("No feasible solution found")
+        return False
 
     def extract_solution(self) -> Dict:
         """
@@ -1066,8 +1073,8 @@ class FPLSolver:
             Dictionary with objective_value, start_gw, squads, lineups, captains,
             transfers, chips (including 'triple_captain' when applicable).
         """
-        if self.prob.status != pulp.LpStatusOptimal:
-            raise ValueError("Model must be solved optimally before extracting solution")
+        if not getattr(self, "proven_optimal", False) and getattr(self.prob, "sol_status", None) != pulp.LpSolutionIntegerFeasible:
+            raise ValueError("Model must be solved to a feasible solution before extracting it")
 
         logger.debug("Extracting solution")
 

@@ -26,7 +26,13 @@ export interface PlannerData {
 
 export interface Transfer { gw: number; out: number; in: number; sell: number; buy: number }
 export type ChipKey = "wildcard" | "freehit" | "bboost" | "3xc";
-export interface Plan { name: string; transfers: Transfer[]; bank?: number; freeTransfers?: number; chips?: Record<string, ChipKey> }
+/** A gameweek's team sheet: starting XI (FPL order), bench in substitution order (goalkeeper first), armbands. */
+export interface Lineup { xi: number[]; bench: number[]; captain: number | null; vice: number | null }
+export interface Plan {
+  name: string; transfers: Transfer[]; bank?: number; freeTransfers?: number; chips?: Record<string, ChipKey>;
+  /** Team sheets the manager set, by gameweek. Later weeks carry the latest one forward, like FPL. */
+  lineups?: Record<string, Lineup>;
+}
 export const CHIP_NAMES: Record<ChipKey, string> = { wildcard: "Wildcard", freehit: "Free Hit", bboost: "Bench Boost", "3xc": "Triple Captain" };
 const chipAt = (plan: Plan, gw: number) => plan.chips?.[String(gw)];
 
@@ -116,3 +122,108 @@ export function bestXI(data: PlannerData, ids: number[], byId: Map<number, Plann
 /** League games per club in a gameweek: 0 is a blank, 2 a double. */
 export const gamesIn = (data: PlannerData, team: string, gw: number) => data.fixtures[team]?.[String(gw)]?.fixtures.length ?? 0;
 
+
+// ------------------------------------------------------------------ lineups
+
+const LIMITS: Record<string, [number, number]> = { GKP: [1, 1], DEF: [3, 5], MID: [2, 5], FWD: [1, 3] };
+
+/** True when an XI is a legal FPL formation (1 GK, 3–5 DEF, 2–5 MID, 1–3 FWD). */
+export function legalXI(xi: number[], byId: Map<number, PlannerPlayer>): boolean {
+  if (xi.length !== 11) return false;
+  const count = (pos: string) => xi.filter((id) => byId.get(id)?.position === pos).length;
+  return Object.entries(LIMITS).every(([pos, [lo, hi]]) => count(pos) >= lo && count(pos) <= hi);
+}
+
+/** FPL's own team sheet for the coming gameweek: shirts 1–11 start, 12–15 are the bench in order. */
+function fplLineup(data: PlannerData): Lineup {
+  const picks = [...data.squad].sort((a, b) => a.slot - b.slot);
+  return {
+    xi: picks.filter((p) => p.slot <= 11).map((p) => p.id),
+    bench: picks.filter((p) => p.slot > 11).map((p) => p.id),
+    captain: picks.find((p) => p.captain)?.id ?? null,
+    vice: picks.find((p) => p.vice)?.id ?? null,
+  };
+}
+
+/** Put players who joined the squad into the places of those who left, same position, so the sheet keeps its shape. */
+function fitToSquad(sheet: Lineup, squad: number[], byId: Map<number, PlannerPlayer>): Lineup {
+  const inSquad = new Set(squad);
+  const listed = new Set([...sheet.xi, ...sheet.bench]);
+  const arrivals = squad.filter((id) => !listed.has(id));
+  const swap = (id: number) => {
+    if (inSquad.has(id)) return id;
+    const pos = byId.get(id)?.position;
+    const i = arrivals.findIndex((a) => byId.get(a)?.position === pos);
+    return i >= 0 ? arrivals.splice(i, 1)[0] : id;
+  };
+  const xi = sheet.xi.map(swap);
+  const bench = sheet.bench.map(swap);
+  const keep = (id: number | null) => (id != null && xi.includes(id) ? id : null);
+  return { xi, bench, captain: keep(sheet.captain), vice: keep(sheet.vice) };
+}
+
+/** Highest projected starters fill a missing captain or vice. */
+function armbands(data: PlannerData, sheet: Lineup, gw: number): Lineup {
+  const ranked = [...sheet.xi].sort((a, b) => (projected(data, b, gw) ?? 0) - (projected(data, a, gw) ?? 0));
+  const captain = sheet.captain ?? ranked[0] ?? null;
+  const vice = sheet.vice != null && sheet.vice !== captain ? sheet.vice : ranked.find((id) => id !== captain) ?? null;
+  return { ...sheet, captain, vice };
+}
+
+/** The best projected XI as a team sheet (bench: goalkeeper first, then by projected points). */
+export function bestLineup(data: PlannerData, ids: number[], byId: Map<number, PlannerPlayer>, gw: number): Lineup {
+  const best = bestXI(data, ids, byId, gw);
+  const order = (id: number) => ["GKP", "DEF", "MID", "FWD"].indexOf(byId.get(id)?.position ?? "");
+  const xi = [...best.xi].sort((a, b) => order(a) - order(b));
+  const bench = [...best.bench].sort((a, b) => (byId.get(a)?.position === "GKP" ? -1 : byId.get(b)?.position === "GKP" ? 1 : 0));
+  return armbands(data, { xi, bench, captain: best.captain, vice: null }, gw);
+}
+
+/**
+ * The team sheet for gameweek ``gw``: the latest sheet the manager set at or before it
+ * (FPL's picks if none), refitted to that week's squad. ``custom`` says whether the
+ * manager set this exact week. Falls back to the best projected XI if it can't be made legal.
+ */
+export function lineupAt(data: PlannerData, plan: Plan, gw: number, byId: Map<number, PlannerPlayer>): Lineup & { custom: boolean } {
+  const squad = squadAt(data, plan, gw).map((h) => h.id);
+  const setWeeks = Object.keys(plan.lineups ?? {}).map(Number).filter((w) => w <= gw).sort((a, b) => b - a);
+  const source = setWeeks.length ? plan.lineups![String(setWeeks[0])] : fplLineup(data);
+  const sheet = fitToSquad(source, squad, byId);
+  const complete = sheet.xi.length + sheet.bench.length === squad.length && [...sheet.xi, ...sheet.bench].every((id) => squad.includes(id));
+  const legal = complete && legalXI(sheet.xi, byId) && byId.get(sheet.bench[0])?.position === "GKP";
+  const result = legal ? armbands(data, sheet, gw) : bestLineup(data, squad, byId, gw);
+  return { ...result, custom: setWeeks[0] === gw && legal };
+}
+
+/** Projected points for a team sheet: the XI, the captain again (twice more on Triple Captain), the bench on Bench Boost. */
+export function sheetPoints(data: PlannerData, sheet: Lineup, gw: number, chip?: ChipKey) {
+  const pts = (id: number) => projected(data, id, gw) ?? 0;
+  const xi = sheet.xi.reduce((s, id) => s + pts(id), 0);
+  const captain = sheet.captain != null ? pts(sheet.captain) * (chip === "3xc" ? 2 : 1) : 0;
+  const bench = chip === "bboost" ? sheet.bench.reduce((s, id) => s + pts(id), 0) : 0;
+  return { xi, captain, bench, total: xi + captain + bench };
+}
+
+/**
+ * Swap two players on a team sheet, FPL's way: a starter and a sub trade places,
+ * two subs reorder the bench. Returns null when the result isn't a legal team.
+ */
+export function swapPlayers(sheet: Lineup, a: number, b: number, byId: Map<number, PlannerPlayer>): Lineup | null {
+  if (a === b) return null;
+  const isGK = (id: number) => byId.get(id)?.position === "GKP";
+  const xi = [...sheet.xi], bench = [...sheet.bench];
+  const ia = xi.indexOf(a), ib = xi.indexOf(b), ba = bench.indexOf(a), bb = bench.indexOf(b);
+  if (ia >= 0 && ib >= 0) return null; // two starters: nothing changes on FPL's sheet
+  if (ba >= 0 && bb >= 0) {
+    if (isGK(a) || isGK(b)) return null; // the bench goalkeeper keeps the first bench place
+    [bench[ba], bench[bb]] = [bench[bb], bench[ba]];
+    return { ...sheet, bench };
+  }
+  const starter = ia >= 0 ? a : b, sub = ia >= 0 ? b : a;
+  if (isGK(starter) !== isGK(sub)) return null;
+  xi[xi.indexOf(starter)] = sub;
+  bench[bench.indexOf(sub)] = starter;
+  if (!legalXI(xi, byId)) return null;
+  const keep = (id: number | null) => (id === starter ? sub : id);
+  return { xi, bench, captain: keep(sheet.captain), vice: keep(sheet.vice) };
+}

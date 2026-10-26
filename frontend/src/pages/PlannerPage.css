@@ -277,3 +277,13 @@
   .pl-league-tools select { width: 100%; min-width: 0; }
   .pl-league-table td, .pl-league-table tbody th, .pl-league-table thead th { padding-right: 12px; }
 }
+
+/* Squad header: the title and the Pitch / List switch. */
+.pl-squad-head .aero-segmented button { min-width: 64px; }
+.pl-squad-head { align-items: center; padding-bottom: 12px; }
+/* List view: the six-week fixture header sits over the fixture column. */
+.pl-fx-head-list { display: grid; justify-content: end; padding: 0 96px 0 20px; font-size: var(--fs-caption); color: var(--aero-text-muted); }
+.pl-tally .pl-best { align-items: center; gap: 12px; }
+.pl-tally .pl-best dt { color: var(--aero-text-dim); }
+.pl-tally .pl-best .pl-x { white-space: nowrap; }
+@media (max-width: 734px) { .pl-fx-head-list { display: none; } }

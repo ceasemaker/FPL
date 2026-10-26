@@ -16,7 +16,7 @@
   color: var(--aero-text-dim);
 }
 .pc-badge.pc-rise { color: var(--aero-lime); background: none; border-color: transparent; }
-.pc-badge.pc-drop { color: var(--aero-text); background: rgba(255, 76, 94, 0.22); border-color: rgba(255, 76, 94, 0.6); }
+.pc-badge.pc-drop { color: var(--aero-negative-soft); background: none; border-color: transparent; }
 .pc-badge span { font-size: var(--fs-caption); }
 
 .pc-panel {

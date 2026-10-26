@@ -131,6 +131,18 @@ class ApiViewTests(TestCase):
         self.assertFalse(payload["meta"]["personalized"])
         self.assertEqual(payload["meta"]["risk_profile"], "balanced")
 
+    def test_optimize_team_answers_a_repeat_from_the_cache(self) -> None:
+        from django.core.cache import cache
+
+        cache.clear()
+        first = self.client.get("/api/optimize-team/?budget=1000&horizon=1")
+        self.assertEqual(first.status_code, 200)
+        with patch("etl.fpl_solver.FPLSolver.solve", side_effect=AssertionError("solver ran again")):
+            second = self.client.get("/api/optimize-team/?budget=1000&horizon=1")
+        self.assertEqual(second.status_code, 200)
+        self.assertEqual(second.json(), first.json())
+        self.assertIn("proven_best", first.json()["meta"])
+
     @override_settings(CAPTAIN_PICK_ENABLED=True)
     def test_landing_recommends_highest_projected_next_gameweek_captain(self) -> None:
         Athlete.objects.filter(id__in=[athlete.id for athlete in self.athletes]).update(status="a")

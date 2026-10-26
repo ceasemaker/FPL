@@ -1935,17 +1935,25 @@ def optimize_team(request):
     start_gw = current_gw + 1
     end_gw = start_gw + horizon - 1
 
+    # A solve takes tens of seconds and most of the instance's spare memory, so
+    # the same question within half an hour gets the same answer from the cache.
+    cache_key = "optimize-team:" + ":".join(str(v) for v in (
+        start_gw, manager_id or "-", horizon, free_transfers, budget, risk_profile, allow_wildcard, include_unavailable,
+    ))
+    cached_payload = cache.get(cache_key)
+    if cached_payload is not None:
+        return JsonResponse(cached_payload)
+
     # Fetch manager squad if manager_id provided
     manager_player_ids: list[int] | None = None
     manager_bank = 0
     manager_purchase_prices: dict[int, int] = {}
     if manager_id:
         try:
-            bootstrap = requests.get("https://fantasy.premierleague.com/api/bootstrap-static/", timeout=10)
-            bootstrap.raise_for_status()
-            bootstrap_data = bootstrap.json()
-            current_event = next((e for e in bootstrap_data.get("events", []) if e.get("is_current")), None)
-            event_id = current_event.get("id") if current_event else current_gw
+            # The latest gameweek with stats is FPL's current event. (Fetching
+            # bootstrap-static here only to read it parsed ~1.8 MB of JSON on the
+            # request path, enough to push the 512 MB instance over its limit.)
+            event_id = current_gw
             picks = requests.get(
                 f"https://fantasy.premierleague.com/api/entry/{manager_id}/event/{event_id}/picks/",
                 timeout=10,
@@ -2173,6 +2181,9 @@ def optimize_team(request):
         solved = solver.solve(time_limit=30)
         if not solved:
             return JsonResponse({"error": "Solver could not find a feasible solution."}, status=400)
+        # False when the time limit stopped the search on a good, legal plan
+        # before CBC could prove nothing better exists.
+        solver_proven_best = solver.proven_optimal
 
         # Extract solution
         solution = solver.extract_solution()
@@ -2285,7 +2296,7 @@ def optimize_team(request):
             "bank": bank_by_gw.get(gw, 0.0),
         })
 
-    return JsonResponse({
+    payload = {
         "meta": {
             "budget": budget,
             "start_gameweek": start_gw,
@@ -2300,9 +2311,12 @@ def optimize_team(request):
             "projection_source": projection_source,
             "projection_note": projection_note,
             "candidate_pool_size": len(candidate_ids),
+            "proven_best": solver_proven_best,
         },
         "gameweeks": gameweeks_response,
-    })
+    }
+    cache.set(cache_key, payload, 30 * 60)
+    return JsonResponse(payload)
 
 
 # ============================================================================
