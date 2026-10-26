@@ -14,7 +14,8 @@ export function AnalyzeManagerPage() {
   useEffect(() => {
     const savedManagerId = localStorage.getItem("fpl_manager_id");
     const savedView = localStorage.getItem("fpl_manager_view");
-    const savedGameweek = localStorage.getItem("fpl_selected_gameweek");
+    // The gameweek isn't remembered: the page always opens on the latest one.
+    localStorage.removeItem("fpl_selected_gameweek");
 
     if (savedManagerId) {
       setManagerId(savedManagerId);
@@ -22,9 +23,6 @@ export function AnalyzeManagerPage() {
     }
     if (savedView === "history" || savedView === "gameweek") {
       setView(savedView);
-    }
-    if (savedGameweek) {
-      setSelectedGameweek(Number(savedGameweek));
     }
   }, []);
 
@@ -38,12 +36,6 @@ export function AnalyzeManagerPage() {
   useEffect(() => {
     localStorage.setItem("fpl_manager_view", view);
   }, [view]);
-
-  useEffect(() => {
-    if (selectedGameweek !== null) {
-      localStorage.setItem("fpl_selected_gameweek", String(selectedGameweek));
-    }
-  }, [selectedGameweek]);
 
   const handleAnalyze = () => {
     if (managerId.trim()) {

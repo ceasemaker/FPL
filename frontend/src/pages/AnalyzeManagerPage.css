@@ -623,3 +623,6 @@
 .analyze-data-note strong { color: var(--aero-text); }
 .manager-freshness { display: flex; flex-wrap: wrap; gap: 7px 16px; margin: 0 0 14px; padding: 10px 12px; border: 1px solid var(--aero-line); border-radius: 10px; background: rgba(255,255,255,.025); color: var(--aero-text-dim); font-size: .68rem; }
 .manager-freshness strong { color: var(--aero-lime); text-transform: uppercase; letter-spacing: .07em; }
+.gw-next-note { margin: -4px 0 14px; font-size: .78rem; color: var(--aero-text-dim); }
+.gw-next-note a { color: var(--aero-lime); font-weight: 700; text-decoration: none; }
+.gw-next-note a:hover { text-decoration: underline; }

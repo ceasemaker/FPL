@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import PlayerGameweekModal from "./PlayerGameweekModal";
 
 interface Player {
@@ -58,6 +59,10 @@ const ManagerGameweek: React.FC<ManagerGameweekProps> = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [currentGameweek, setCurrentGameweek] = useState<number>(1);
+  // FPL publishes a manager's picks only once a gameweek's deadline has passed,
+  // so the selector stops at the latest started gameweek.
+  const [latestStarted, setLatestStarted] = useState<number | null>(null);
+  const [nextDeadline, setNextDeadline] = useState<{ id: number; time: string } | null>(null);
   const [loadedAt, setLoadedAt] = useState<Date | null>(null);
   const [finishedGameweeks, setFinishedGameweeks] = useState<Set<number>>(new Set());
   const [selectedPlayer, setSelectedPlayer] = useState<{ id: number; name: string; team: number; position: number } | null>(null);
@@ -72,10 +77,16 @@ const ManagerGameweek: React.FC<ManagerGameweekProps> = ({
           playerMap.set(player.id, player);
         });
         setAllPlayers(playerMap);
-        setCurrentGameweek(data.events.find((e: any) => e.is_current)?.id || 1);
+        const now = Date.now();
+        const started = data.events.filter((e: any) => e.deadline_time && new Date(e.deadline_time).getTime() <= now).map((e: any) => e.id as number);
+        const latest = started.length ? Math.max(...started) : 1;
+        const upcoming = data.events.find((e: any) => e.id === latest + 1 && new Date(e.deadline_time).getTime() > now);
+        setCurrentGameweek(data.events.find((e: any) => e.is_current)?.id || latest);
+        setLatestStarted(latest);
+        setNextDeadline(upcoming ? { id: upcoming.id, time: upcoming.deadline_time } : null);
         setFinishedGameweeks(new Set(data.events.filter((event: any) => event.finished).map((event: any) => event.id)));
-        if (!selectedGameweek) {
-          onGameweekChange(data.events.find((e: any) => e.is_current)?.id || 1);
+        if (!selectedGameweek || selectedGameweek > latest) {
+          onGameweekChange(latest);
         }
       })
       .catch((err) => console.error("Failed to load player data:", err));
@@ -83,15 +94,19 @@ const ManagerGameweek: React.FC<ManagerGameweekProps> = ({
 
   // Fetch picks for selected gameweek
   useEffect(() => {
-    if (!managerId || !selectedGameweek) return;
+    if (!managerId || !selectedGameweek || latestStarted === null) return;
+    if (selectedGameweek > latestStarted) return;  // not started: FPL has no picks yet
 
     setLoading(true);
     setError(null);
 
     fetch(`/api/fpl/entry/${managerId}/event/${selectedGameweek}/picks/`)
       .then((res) => {
+        if (res.status === 404) {
+          throw new Error(`This manager has no team for gameweek ${selectedGameweek}. They may have joined the game after it.`);
+        }
         if (!res.ok) {
-          throw new Error(`Failed to load team (${res.status})`);
+          throw new Error("FPL didn't answer just now. Try again in a minute.");
         }
         return res.json();
       })
@@ -104,7 +119,7 @@ const ManagerGameweek: React.FC<ManagerGameweekProps> = ({
         setError(err.message);
         setLoading(false);
       });
-  }, [managerId, selectedGameweek]);
+  }, [managerId, selectedGameweek, latestStarted]);
 
   // Fetch live gameweek data for player points
   useEffect(() => {
@@ -207,9 +222,58 @@ const ManagerGameweek: React.FC<ManagerGameweekProps> = ({
     );
   };
 
+  const lastGw = latestStarted ?? currentGameweek;
+  const selectedIsFinished = selectedGameweek !== null && finishedGameweeks.has(selectedGameweek);
+  const header = (
+    <>
+      {/* Gameweek Selector: always shown, so a gameweek that fails never strands you */}
+      <div className="gameweek-selector-header">
+        <h2 className="gameweek-title">Gameweek Team</h2>
+        <div className="gameweek-selector">
+          <button
+            className="gw-nav-button"
+            aria-label="Previous gameweek"
+            onClick={() => selectedGameweek && selectedGameweek > 1 && onGameweekChange(selectedGameweek - 1)}
+            disabled={!selectedGameweek || selectedGameweek <= 1}
+          >
+            ‹
+          </button>
+          <select
+            className="gw-select"
+            aria-label="Gameweek"
+            value={selectedGameweek || lastGw}
+            onChange={(e) => onGameweekChange(Number(e.target.value))}
+          >
+            {Array.from({ length: lastGw }, (_, i) => i + 1).map((gw) => (
+              <option key={gw} value={gw}>
+                Gameweek {gw}
+              </option>
+            ))}
+          </select>
+          <button
+            className="gw-nav-button"
+            aria-label="Next gameweek"
+            onClick={() => selectedGameweek && selectedGameweek < lastGw && onGameweekChange(selectedGameweek + 1)}
+            disabled={!selectedGameweek || selectedGameweek >= lastGw}
+          >
+            ›
+          </button>
+        </div>
+      </div>
+      {nextDeadline && selectedGameweek === lastGw && (
+        <p className="gw-next-note">
+          Gameweek {nextDeadline.id} picks appear here after its deadline,{" "}
+          {new Date(nextDeadline.time).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}.{" "}
+          <Link to={`/planner?manager=${managerId}`}>Plan it in the transfer planner</Link>
+        </p>
+      )}
+    </>
+  );
+
   if (loading) {
     return (
       <div className="manager-gameweek-container">
+        {header}
         <div className="loading-state">
           <div className="loading-spinner"></div>
           <p>Loading team...</p>
@@ -221,6 +285,7 @@ const ManagerGameweek: React.FC<ManagerGameweekProps> = ({
   if (error || !picks) {
     return (
       <div className="manager-gameweek-container">
+        {header}
         <div className="error-state">
           <div className="error-icon">⚠️</div>
           <h3>Unable to Load Team</h3>
@@ -238,44 +303,13 @@ const ManagerGameweek: React.FC<ManagerGameweekProps> = ({
   const def = starting11.filter((p) => allPlayers.get(p.element)?.element_type === 2);
   const mid = starting11.filter((p) => allPlayers.get(p.element)?.element_type === 3);
   const fwd = starting11.filter((p) => allPlayers.get(p.element)?.element_type === 4);
-  const selectedIsFinished = selectedGameweek !== null && finishedGameweeks.has(selectedGameweek);
 
   return (
     <div className="manager-gameweek-container">
-      {/* Gameweek Selector */}
-      <div className="gameweek-selector-header">
-        <h2 className="gameweek-title">Gameweek Team</h2>
-        <div className="gameweek-selector">
-          <button
-            className="gw-nav-button"
-            onClick={() => selectedGameweek && selectedGameweek > 1 && onGameweekChange(selectedGameweek - 1)}
-            disabled={!selectedGameweek || selectedGameweek <= 1}
-          >
-            ‹
-          </button>
-          <select
-            className="gw-select"
-            value={selectedGameweek || currentGameweek}
-            onChange={(e) => onGameweekChange(Number(e.target.value))}
-          >
-            {Array.from({ length: 38 }, (_, i) => i + 1).map((gw) => (
-              <option key={gw} value={gw}>
-                Gameweek {gw}
-              </option>
-            ))}
-          </select>
-          <button
-            className="gw-nav-button"
-            onClick={() => selectedGameweek && selectedGameweek < 38 && onGameweekChange(selectedGameweek + 1)}
-            disabled={!selectedGameweek || selectedGameweek >= 38}
-          >
-            ›
-          </button>
-        </div>
-      </div>
+      {header}
 
       <div className="manager-freshness" role="status">
-        <strong>{selectedIsFinished ? "Completed gameweek" : selectedGameweek === currentGameweek ? "Current gameweek" : "Scheduled gameweek"}</strong>
+        <strong>{selectedIsFinished ? "Completed gameweek" : "Current gameweek"}</strong>
         <span>Official FPL picks for GW{selectedGameweek}</span>
         <span>{selectedIsFinished ? "Final recorded squad and points" : "Live points may change until matches finish"}</span>
         <span>Loaded {loadedAt?.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" }) ?? "—"}</span>
