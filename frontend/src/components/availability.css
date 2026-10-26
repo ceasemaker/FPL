@@ -1,0 +1,7 @@
+/* Availability chips and set-piece tags: words, not just colour. */
+.av-chip { display: inline-block; text-align: center; padding: 1px 7px; border-radius: 6px; font-size: 0.66rem; font-weight: 800; border: 1px solid; white-space: nowrap; line-height: 1.5; }
+.av-chip.out, .av-chip.ban { color: var(--aero-negative); border-color: rgba(255, 76, 94, 0.6); background: rgba(255, 76, 94, 0.08); }
+.av-chip.doubt { color: var(--aero-warn); border-color: rgba(226, 183, 91, 0.6); background: rgba(226, 183, 91, 0.08); }
+.av-chip.likely { color: var(--aero-text); border-color: var(--aero-line-strong); }
+.av-chip.gone { color: var(--aero-text-muted); border-color: var(--aero-line-strong); }
+.sp-tag { display: inline-block; padding: 0 6px; border-radius: 5px; font-size: 0.62rem; font-weight: 700; color: var(--aero-text-dim); border: 1px solid var(--aero-line-strong); white-space: nowrap; line-height: 1.6; }

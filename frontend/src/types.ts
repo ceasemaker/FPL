@@ -81,6 +81,8 @@ export interface LandingData {
     experimental?: boolean;
   } | null;
   captain_status: "ok" | "no_projection" | "unvalidated";
+  /** The next FPL deadline (team news used to show it; Home does now). */
+  deadline?: { gameweek: number; time: string } | null;
   captain_record?: CaptainRecord | null;
   pulse: PulseResponse;
   movers: Movers;

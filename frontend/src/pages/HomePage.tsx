@@ -161,6 +161,7 @@ export function HomePage(){
     <aside className="command-rail">
       <article className="command-card snapshot-card">
         <CardTitle title="Gameweek Pulse"/>
+        {data?.deadline&&<Deadline gameweek={data.deadline.gameweek} time={data.deadline.time}/>}
         <div className="snapshot-grid">
           <div><strong>{latestCompletedGw??"—"}</strong><span>Latest completed GW</span></div>
           <div><strong>{data?.pulse.total_points_current?.toLocaleString()??"—"}</strong><span>Points tracked</span></div>
@@ -198,6 +199,20 @@ export function HomePage(){
     {isLoading&&<div className="command-loading">Loading live intelligence…</div>}
     {modalPlayerId!==null&&<PlayerModal playerId={modalPlayerId} onClose={()=>setModalPlayerId(null)}/>}
   </main>;
+}
+
+// The next deadline as a countdown that keeps itself current.
+function Deadline({gameweek,time}:{gameweek:number;time:string}){
+  const [now,setNow]=useState(()=>Date.now());
+  useEffect(()=>{const t=window.setInterval(()=>setNow(Date.now()),30_000);return()=>window.clearInterval(t);},[]);
+  const ms=new Date(time).getTime()-now;
+  const h=Math.floor(ms/3_600_000),d=Math.floor(h/24);
+  const left=ms<=0?"passed":d>=1?`${d}d ${h%24}h`:`${h}h ${Math.floor((ms%3_600_000)/60_000)}m`;
+  return <div className="deadline-row" role="timer" aria-label={`Gameweek ${gameweek} deadline`}>
+    <span>GW{gameweek} deadline</span>
+    <b>{left}</b>
+    <small>{new Date(time).toLocaleString([],{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</small>
+  </div>;
 }
 
 function CardTitle({title,subtitle,action,href}:{title:string;subtitle?:string;action?:string;href?:string}){

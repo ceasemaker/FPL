@@ -76,7 +76,7 @@ export function WatchlistPage() {
     <main className="aero-page mp-page tp-page wl-page">
       <header className="tp-index-head">
         <h1>Watchlist</h1>
-        <p>The players you're tracking. Star a player anywhere on the site to add him here: his page, the planner, DEFCON, Team news or the Stats Explorer.</p>
+        <p>The players you're tracking. Star a player anywhere on the site to add him here: his page, the Players list, the planner, DEFCON or the Stats Explorer.</p>
       </header>
 
       <div className="wl-add">

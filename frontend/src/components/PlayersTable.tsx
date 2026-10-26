@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Player } from "../hooks/usePlayers";
 import "./PlayersTable.css";
+import { availability, SET_PIECE_LABEL, splitNews } from "./availability";
 import { PriceChangeBadge } from "./priceChange/PriceChange";
+import { WatchStar } from "./WatchStar";
 
 interface PlayersTableProps {
     players: Player[];
@@ -9,9 +11,10 @@ interface PlayersTableProps {
     selectedPlayers: Set<number>;
     compareMode: boolean;
     onToggleSelection: (playerId: number) => void;
+    defaultSort?: SortConfig;
 }
 
-type SortField =
+export type SortField =
     | "web_name"
     | "team"
     | "element_type"
@@ -25,9 +28,10 @@ type SortField =
     | "expected_assists"
     | "clean_sheets"
     | "expected_clean_sheets"
+    | "selected_by_percent"
     | "best_value";
 
-interface SortConfig {
+export interface SortConfig {
     field: SortField;
     direction: "asc" | "desc";
 }
@@ -64,12 +68,10 @@ export function PlayersTable({
     onPlayerClick,
     selectedPlayers,
     compareMode,
-    onToggleSelection
+    onToggleSelection,
+    defaultSort = { field: "total_points", direction: "desc" }
 }: PlayersTableProps) {
-    const [sortConfig, setSortConfig] = useState<SortConfig>({
-        field: "total_points",
-        direction: "desc"
-    });
+    const [sortConfig, setSortConfig] = useState<SortConfig>(defaultSort);
 
     const handleSort = (field: SortField) => {
         setSortConfig((prev) => ({
@@ -136,6 +138,10 @@ export function PlayersTable({
                 valA = a.expected_clean_sheets;
                 valB = b.expected_clean_sheets;
                 break;
+            case "selected_by_percent":
+                valA = a.selected_by_percent || 0;
+                valB = b.selected_by_percent || 0;
+                break;
             case "best_value":
                 valA = calculateBestValue(a);
                 valB = calculateBestValue(b);
@@ -176,6 +182,7 @@ export function PlayersTable({
                         >
                             xCS <SortIcon field="expected_clean_sheets" />
                         </th>
+                        <th onClick={() => handleSort("selected_by_percent")}>Owned <SortIcon field="selected_by_percent" /></th>
                         <th onClick={() => handleSort("best_value")}>Value <SortIcon field="best_value" /></th>
                     </tr>
                 </thead>
@@ -202,11 +209,11 @@ export function PlayersTable({
                                 <td className="td-name">
                                     <div className="player-cell">
                                         {player.image_url && <img src={player.image_url} alt="" className="player-thumb" />}
-                                        <span>{player.web_name}</span>
-                                        <PriceChangeBadge athleteId={player.id} />
-                                        {player.status === "i" && <span className="status-indicator injured" title="Injured">🤕</span>}
-                                        {player.status === "d" && <span className="status-indicator doubtful" title="Doubtful">⚠️</span>}
-                                        {player.status === "u" && <span className="status-indicator unavailable" title="Unavailable">❌</span>}
+                                        <div className="pc-text">
+                                            <span className="pc-name">{player.web_name}<PriceChangeBadge athleteId={player.id} /></span>
+                                            <PlayerNotes player={player} />
+                                        </div>
+                                        <WatchStar id={player.id} name={player.web_name} size={14} />
                                     </div>
                                 </td>
                                 <td>{player.team}</td>
@@ -235,6 +242,7 @@ export function PlayersTable({
                                 <td>{player.expected_assists?.toFixed(2) ?? "-"}</td>
                                 <td>{player.clean_sheets}</td>
                                 <td>{player.expected_clean_sheets.toFixed(1)}</td>
+                                <td>{player.selected_by_percent != null ? `${player.selected_by_percent.toFixed(1)}%` : "-"}</td>
                                 <td className="td-value">
                                     {bestValue > 0 ? bestValue.toFixed(2) : "-"}
                                 </td>
@@ -244,5 +252,20 @@ export function PlayersTable({
                 </tbody>
             </table>
         </div>
+    );
+}
+
+// Under the name: FPL's flag and news, then the set pieces he takes.
+export function PlayerNotes({ player }: { player: Player }) {
+    const flag = availability(player.status, player.chance);
+    const { injury, detail } = splitNews(player.news);
+    if (!flag && !player.set_pieces?.length) return null;
+    const news = flag ? [injury, detail].filter(Boolean).join(" · ") : "";
+    return (
+        <small className="pc-sub" title={player.news || undefined}>
+            {flag && <span className={`av-chip ${flag.tone}`}>{flag.text}</span>}
+            {news && <span className="pc-news">{news}</span>}
+            {player.set_pieces?.map((k) => <span key={k} className="sp-tag" title={`Takes most of ${player.team ?? "his club"}'s ${SET_PIECE_LABEL[k].toLowerCase()} this season`}>{SET_PIECE_LABEL[k]}</span>)}
+        </small>
     );
 }

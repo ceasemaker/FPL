@@ -14,6 +14,7 @@ from django.core.cache import cache
 from django.db.models import Max, Q
 
 from ..models import Athlete, MatchGoal, MatchLineupPlayer, MatchTeamStat, PlMatch, Team
+from . import set_pieces
 from .match_page import _round, _teams, went_to_extra_time
 
 CACHE_TTL = 15 * 60
@@ -109,6 +110,7 @@ def _squad(team_code: str, season: int, match_ids: list[int]) -> list[dict]:
             "apps": a["apps"], "starts": a["starts"], "minutes": a["minutes"], "goals": a["goals"], "assists": a["assists"],
             "fplPoints": f.total_points if f else None, "price": f.now_cost / 10 if f and f.now_cost else None,
             "status": f.status if f else None, "news": f.news if f else "",
+            "chance": f.chance_of_playing_next_round if f else None,
         })
     return sorted(rows, key=lambda r: (-r["minutes"], r["name"]))
 
@@ -120,7 +122,7 @@ def build_payload(team_code: str, season: int | None = None) -> dict | None:
     if not seasons:
         return None
     season = season if season in seasons else seasons[0]
-    key = f"team-page:{team_code}:{season}:v2"
+    key = f"team-page:{team_code}:{season}:v3"
     cached = cache.get(key)
     if cached:
         return cached
@@ -171,9 +173,16 @@ def build_payload(team_code: str, season: int | None = None) -> dict | None:
         "matches": rows,
         "leagueAverages": _league_averages(season),
         "squad": _squad(team_code, season, [m.id for m in matches if m.home_score is not None]),
+        "setPieces": _set_pieces(team_code) if season == seasons[0] else None,
     }
     cache.set(key, payload, CACHE_TTL)
     return payload
+
+
+def _set_pieces(team_code: str) -> dict | None:
+    """This season's set-piece takers, for a club in FPL (none for promoted-away or cup-only sides)."""
+    team_id = Team.objects.filter(code=team_code).values_list("id", flat=True).first()
+    return set_pieces.takers().get(team_id) if team_id else None
 
 
 def club_list() -> list[dict]:

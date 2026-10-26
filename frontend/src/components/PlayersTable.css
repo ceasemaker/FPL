@@ -77,8 +77,39 @@
     background: var(--surface-active);
 }
 
-.status-indicator {
-    font-size: 1rem;
+.pc-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.pc-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.pc-sub {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.7rem;
+    color: var(--aero-text-muted);
+}
+
+.pc-news {
+    max-width: 240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--aero-text-dim);
+}
+
+.player-cell .watch-star {
+    margin-left: auto;
 }
 
 .fdr-badge-small {

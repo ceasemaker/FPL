@@ -14,7 +14,6 @@ import {
   PriceMonitorIcon,
   RateIcon,
   StatsExplorerIcon,
-  TeamNewsIcon,
   TeamsIcon,
   WatchlistIcon,
 } from "./navIcons";
@@ -39,7 +38,6 @@ const groups: { title?: string; links: { to: string; label: string; icon: JSX.El
       { to: "/planner", label: "Transfer planner", icon: <PlannerIcon /> },
       { to: "/watchlist", label: "Watchlist", icon: <WatchlistIcon /> },
       { to: "/rate-my-team", label: "Rate my team", icon: <RateIcon /> },
-      { to: "/team-news", label: "Team news", icon: <TeamNewsIcon /> },
       { to: "/decision-lab", label: "Decision Lab", icon: <DecisionLabIcon /> },
       { to: "/analyze", label: "Analyze Manager", icon: <AnalyzeManagerIcon /> },
       { to: "/price-monitor", label: "Price Monitor", icon: <PriceMonitorIcon /> },

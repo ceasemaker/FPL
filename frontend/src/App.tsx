@@ -17,7 +17,6 @@ const TeamsPage = lazy(() => import("./pages/TeamPage").then((m) => ({ default: 
 const PlayerPage = lazy(() => import("./pages/PlayerPage").then((m) => ({ default: m.PlayerPage })));
 const PlannerPage = lazy(() => import("./pages/PlannerPage").then((m) => ({ default: m.PlannerPage })));
 const DefconPage = lazy(() => import("./pages/DefconPage").then((m) => ({ default: m.DefconPage })));
-const TeamNewsPage = lazy(() => import("./pages/TeamNewsPage").then((m) => ({ default: m.TeamNewsPage })));
 const RateTeamPage = lazy(() => import("./pages/RateTeamPage").then((m) => ({ default: m.RateTeamPage })));
 const WatchlistPage = lazy(() => import("./pages/WatchlistPage").then((m) => ({ default: m.WatchlistPage })));
 const MatchPage = lazy(() => import("./pages/MatchPage").then((m) => ({ default: m.MatchPage })));
@@ -62,7 +61,7 @@ export default function App() {
           <Route path="/analyze" element={<AnalyzeManagerPage />} />
           <Route path="/planner" element={<PlannerPage />} />
           <Route path="/watchlist" element={<WatchlistPage />} />
-          <Route path="/team-news" element={<TeamNewsPage />} />
+          <Route path="/team-news" element={<Navigate to="/players?status=flagged" replace />} />
           <Route path="/rate-my-team" element={<RateTeamPage />} />
           <Route path="/defcon" element={<DefconPage />} />
           <Route path="/decision-lab" element={<DecisionDashboardPage />} />

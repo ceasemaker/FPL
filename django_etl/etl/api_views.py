@@ -23,7 +23,7 @@ from django.views.decorators.http import require_GET
 
 from .models import Athlete, AthletePrediction, AthleteStat, Fixture, FixtureOdds, PriceSnapshot, RawEndpointSnapshot, Team, SofasportHeatmap
 from .services.fixture_market import remove_vig
-from .services import chart_lab
+from .services import chart_lab, set_pieces
 from .services.decision_dashboard import build_decision_dashboard
 from .services.stats_explorer import build_payload as build_stats_explorer_payload
 from .services.player_gameweeks import build_player_gameweeks
@@ -927,9 +927,19 @@ def landing_snapshot(request):
             "hardest": hardest,
         },
         "news": player_news,
+        "deadline": _next_deadline(),
     }
 
     return JsonResponse(response)
+
+
+def _next_deadline() -> dict | None:
+    """The next FPL deadline, for the countdown on Home."""
+    from etl.models import GameweekSummary
+
+    season = GameweekSummary.objects.aggregate(s=Max("season"))["s"]
+    nxt = GameweekSummary.objects.filter(season=season, deadline_time__gt=timezone.now()).order_by("gameweek").first()
+    return {"gameweek": nxt.gameweek, "time": nxt.deadline_time.isoformat()} if nxt else None
 
 
 @require_GET
@@ -1262,7 +1272,7 @@ def players_list(request):
     page_size = min(max(10, page_size), 1000)  # Between 10 and 1000
     
     # Build cache key based on filters
-    cache_key = f"players_list:search={search}:team={team_filter}:page={page}:size={page_size}:v4"
+    cache_key = f"players_list:search={search}:team={team_filter}:page={page}:size={page_size}:v5"
     
     # Try to get from cache first
     cached_response = cache.get(cache_key)
@@ -1345,6 +1355,7 @@ def players_list(request):
 
     players_page = list(players_qs_paginated)
     expected_clean_sheets = chart_lab.expected_clean_sheets(player.id for player in players_page)
+    set_piece_roles = set_pieces.roles()
 
     # Calculate average FDR for next 3 fixtures per player (paginated)
     players_data = []
@@ -1385,6 +1396,10 @@ def players_list(request):
             "news": player.news,
             "news_added": player.news_added.isoformat() if player.news_added else None,
             "status": player.status,
+            # FPL's chance of playing next round (null when there's no flag).
+            "chance": player.chance_of_playing_next_round,
+            # Set pieces he takes most for his club this season (Opta counts).
+            "set_pieces": set_piece_roles.get(player.id, []),
             # Performance stats
             "minutes": player.minutes,
             "goals_scored": player.goals_scored,
@@ -3650,14 +3665,6 @@ def defcon(request):
     from etl.services.defcon import build_payload as build_defcon_payload
 
     return JsonResponse(build_defcon_payload())
-
-
-@require_GET
-def team_news(request):
-    """Injuries and bans, set-piece takers by club, and the next deadline."""
-    from etl.services.team_news import build_payload as build_team_news_payload
-
-    return JsonResponse(build_team_news_payload())
 
 
 @require_GET

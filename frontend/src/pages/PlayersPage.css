@@ -319,3 +319,10 @@
 }
 .players-filters > .aero-note { grid-column: 1 / -1; margin: 0; }
 .players-clear-filter { margin-left: 8px; padding: 0; border: 0; background: transparent; color: var(--aero-lime); font: inherit; font-weight: 800; cursor: pointer; }
+
+/* Team news, folded in: FPL's flag and news under the name, set-piece tags. */
+.card-notes:empty { display: none; }
+.card-notes { margin-top: 8px; }
+.card-notes .pc-sub { flex-wrap: wrap; }
+.card-notes .pc-news { max-width: 100%; }
+.players-summary { margin: 0 0 14px; font-size: 0.9rem; line-height: 1.55; color: var(--aero-text-dim); max-width: 90ch; }

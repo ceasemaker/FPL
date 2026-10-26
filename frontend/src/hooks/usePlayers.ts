@@ -25,6 +25,12 @@ export interface Player {
   points_last_3: number;
   minutes_last_3: number;
   news: string | null;
+  news_added: string | null;
+  /** FPL's chance of playing next round; null when there's no flag. */
+  chance: number | null;
+  selected_by_percent: number | null;
+  /** Set pieces he takes most for his club this season (Opta counts). */
+  set_pieces: string[];
 }
 
 interface PlayersResponse {

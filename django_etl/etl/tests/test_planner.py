@@ -201,25 +201,30 @@ class DefconTests(TestCase):
                          ("DEF", 10, 4, 3, 0.75, 11.2, 6))
 
 
-class TeamNewsTests(TestCase):
-    def test_flags_set_pieces_and_deadline(self):
+class AvailabilityAndSetPiecesTests(TestCase):
+    """Team news folded into Players: flags and set pieces on each player, the deadline on Home."""
+
+    def test_players_list_set_pieces_and_deadline(self):
         from ..models import PlayerSeasonStat, PlMatch
-        from ..services import team_news
+        from ..services import set_pieces
         cache.clear()
         GameweekSummary.objects.create(season=2026, gameweek=9, deadline_time=timezone.now() + timedelta(days=2))
         team = Team.objects.create(id=1, code=3, name="Arsenal", short_name="ARS")
         saka = Athlete.objects.create(id=12, code=223340, web_name="Saka", team=team, element_type=3, status="d", chance_of_playing_next_round=75, news="Knock")
-        Athlete.objects.create(id=13, code=204480, web_name="Rice", team=team, element_type=3, status="u", news="Left the club")
+        odegaard = Athlete.objects.create(id=13, code=184029, web_name="Odegaard", team=team, element_type=3)
         PlMatch.objects.create(season=2026, match_id="1", home_team_id="3", away_team_id="8")
         PlayerSeasonStat.objects.create(source="sdp", competition_id=8, season=2026, opta_player_id="223340", athlete=saka, name="Saka",
                                         stats={"penaltiesTaken": 2, "cornersTakenInclShortCorners": 15})
         PlayerSeasonStat.objects.create(source="classic", competition_id=8, season=2026, opta_player_id="223340", athlete=saka, name="Saka",
                                         stats={"att_freekick_total": 1, "freekick_cross": 3})
-        d = team_news.build_payload()
-        club = d["clubs"][0]
-        self.assertEqual(d["deadline"]["gameweek"], 9)
-        self.assertEqual([f["name"] for f in club["flagged"]], ["Saka"])  # "unavailable" (left the club) is left out
-        self.assertEqual((club["setPieces"]["penalties"][0]["count"], club["setPieces"]["corners"][0]["count"], club["setPieces"]["freeKicks"][0]["count"]), (2, 15, 4))
+        PlayerSeasonStat.objects.create(source="sdp", competition_id=8, season=2026, opta_player_id="184029", athlete=odegaard, name="Odegaard",
+                                        stats={"penaltiesTaken": 0, "cornersTakenInclShortCorners": 20})
+        club = set_pieces.takers()[1]
+        self.assertEqual((club["penalties"][0]["count"], club["corners"][0]["name"], club["freeKicks"][0]["count"]), (2, "Odegaard", 4))
+        players = {p["id"]: p for p in self.client.get("/api/players/?page_size=100").json()["players"]}
+        self.assertEqual((players[12]["chance"], players[12]["set_pieces"]), (75, ["penalties", "freeKicks"]))
+        self.assertEqual(players[13]["set_pieces"], ["corners"])
+        self.assertEqual(self.client.get("/api/landing/").json()["deadline"]["gameweek"], 9)
 
 
 class RateTeamTests(TestCase):

@@ -2,7 +2,8 @@ import { useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePlayers, type Player } from "../hooks/usePlayers";
 import { PlayerModal } from "../components/PlayerModal";
-import { PlayersTable } from "../components/PlayersTable";
+import { PlayerNotes, PlayersTable } from "../components/PlayersTable";
+import { availability, AVAILABILITY_FILTERS, type AvailabilityFilter, matchesAvailability, splitNews } from "../components/availability";
 import "./PlayersPage.css";
 
 const TEAM_BADGE_BASE = "https://resources.premierleague.com/premierleague25/badges-alt/";
@@ -31,7 +32,7 @@ function calculateBestValue(player: Player): number {
 
 export function PlayersPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(() => searchParams.get("search") || "");
   const [compareMode, setCompareMode] = useState(false);
   const [selectedPlayers, setSelectedPlayers] = useState<Set<number>>(new Set());
@@ -45,8 +46,16 @@ export function PlayersPage() {
   const [positionFilter, setPositionFilter] = useState<string>("all");
   const [maxFdr, setMaxFdr] = useState<number>(5);
   const [minBestValue, setMinBestValue] = useState<number>(0);
-  const [excludeInjured, setExcludeInjured] = useState<boolean>(false);
-  const flaggedOnly = searchParams.get("status") === "flagged";
+  // Availability lives in the address (?status=flagged) so Home and old Team
+  // news links open the injury list directly.
+  const statusParam = searchParams.get("status") as AvailabilityFilter | null;
+  const availabilityFilter: AvailabilityFilter = AVAILABILITY_FILTERS.some(([k]) => k === statusParam) ? statusParam! : "all";
+  const setAvailability = (f: AvailabilityFilter) => {
+    const next = new URLSearchParams(searchParams);
+    if (f === "all") next.delete("status"); else next.set("status", f);
+    setSearchParams(next, { replace: true });
+  };
+  const injuryView = !["all", "fit"].includes(availabilityFilter);
 
   const { data, isLoading, error } = usePlayers(search);
 
@@ -86,7 +95,7 @@ export function PlayersPage() {
   const filteredPlayers = useMemo(() => {
     if (!data?.players) return [];
 
-    return data.players.filter(player => {
+    const list = data.players.filter(player => {
       // Team Filter
       if (teamFilter !== "all" && player.team !== teamFilter) return false;
 
@@ -96,9 +105,7 @@ export function PlayersPage() {
       // FDR Filter
       if (player.avg_fdr !== null && player.avg_fdr > maxFdr) return false;
 
-      // Exclude Injured
-      if (excludeInjured && (player.status === "i" || player.status === "u")) return false;
-      if (flaggedOnly && (!player.status || player.status === "a")) return false;
+      if (!matchesAvailability(availabilityFilter, player.status, player.chance)) return false;
 
       // Best Value Filter
       if (minBestValue > 0) {
@@ -108,7 +115,19 @@ export function PlayersPage() {
 
       return true;
     });
-  }, [data?.players, teamFilter, positionFilter, maxFdr, excludeInjured, minBestValue, flaggedOnly]);
+    // Looking at injuries: the ones that hit the most managers first.
+    return injuryView ? [...list].sort((a, b) => (b.selected_by_percent ?? 0) - (a.selected_by_percent ?? 0)) : list;
+  }, [data?.players, teamFilter, positionFilter, maxFdr, availabilityFilter, minBestValue, injuryView]);
+
+  const injurySummary = useMemo(() => {
+    if (!injuryView || !filteredPlayers.length) return null;
+    const top = filteredPlayers[0];
+    const flag = availability(top.status, top.chance);
+    const big = filteredPlayers.filter((p) => (p.selected_by_percent ?? 0) >= 5).length;
+    const { detail } = splitNews(top.news);
+    const state = flag?.tone === "out" ? "out" : flag?.tone === "ban" ? "suspended" : `${flag?.text.toLowerCase()} to play`;
+    return `${big} of these ${filteredPlayers.length} are owned by 5% or more of managers. The most owned is ${top.web_name} (${top.team}, ${(top.selected_by_percent ?? 0).toFixed(1)}%): ${state}${detail ? `, ${detail.charAt(0).toLowerCase()}${detail.slice(1)}` : ""}.`;
+  }, [filteredPlayers, injuryView]);
 
   if (error) {
     return (
@@ -143,7 +162,6 @@ export function PlayersPage() {
       </div>
 
       <section className="players-filters aero-card">
-        {flaggedOnly && <div className="aero-note" role="status">Showing players with an injury, suspension or availability flag. <button className="players-clear-filter" onClick={() => navigate("/players")}>Show everyone</button></div>}
         <label className="aero-field players-search-field">
           <span>Search</span>
           <input
@@ -208,16 +226,15 @@ export function PlayersPage() {
           />
         </label>
 
-        <label className="aero-field players-check">
+        <label className="aero-field">
           <span>Availability</span>
-          <span className="players-check-row">
-            <input
-              type="checkbox"
-              checked={excludeInjured}
-              onChange={(e) => setExcludeInjured(e.target.checked)}
-            />
-            Exclude injured
-          </span>
+          <select
+            className="aero-select"
+            value={availabilityFilter}
+            onChange={(e) => setAvailability(e.target.value as AvailabilityFilter)}
+          >
+            {AVAILABILITY_FILTERS.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+          </select>
         </label>
       </section>
 
@@ -227,7 +244,7 @@ export function PlayersPage() {
         <>
           <div className="results-bar">
             <div className="results-count">
-              {filteredPlayers.length} player{filteredPlayers.length === 1 ? "" : "s"}
+              {filteredPlayers.length} player{filteredPlayers.length === 1 ? "" : "s"}{injuryView && ", most owned first"}
               {compareMode && " · tap a card to add it to the comparison"}
             </div>
             <div className="view-toggle">
@@ -249,6 +266,8 @@ export function PlayersPage() {
               </button>
             </div>
           </div>
+
+          {injurySummary && <p className="players-summary">{injurySummary} Flags and news from FPL.</p>}
 
           {viewMode === "grid" ? (
             <div className="players-grid">
@@ -311,6 +330,7 @@ export function PlayersPage() {
                           </>
                         )}
                       </div>
+                      <div className="card-notes"><PlayerNotes player={player} /></div>
                     </div>
                     <div className="player-stats">
                       <div className="stat-item">
@@ -341,6 +361,8 @@ export function PlayersPage() {
             </div>
           ) : (
             <PlayersTable
+              key={injuryView ? "injuries" : "everyone"}
+              defaultSort={injuryView ? { field: "selected_by_percent", direction: "desc" } : undefined}
               players={filteredPlayers}
               onPlayerClick={handlePlayerClick}
               selectedPlayers={selectedPlayers}

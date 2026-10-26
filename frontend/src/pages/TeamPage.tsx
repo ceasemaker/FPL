@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { compById } from "../components/match/competitions";
 import { Crest } from "../components/match/icons";
 import { ZonesPanel } from "../components/match/MatchSections";
+import { availability, SET_PIECE_LABEL } from "../components/availability";
 import { WatchStar } from "../components/WatchStar";
 import "./MatchPage.css";
 import "./TeamPage.css";
@@ -20,11 +21,13 @@ interface TeamMatch {
 interface TableRow { team: string; name: string; short: string; pos: number; p: number; w: number; d: number; l: number; gf: number; ga: number; gd: number; pts: number }
 interface SquadRow {
   optaId: string; fplId: number | null; name: string; short: string; position: string; apps: number; starts: number; minutes: number;
-  goals: number; assists: number; fplPoints: number | null; price: number | null; status: string | null; news: string;
+  goals: number; assists: number; fplPoints: number | null; price: number | null; status: string | null; news: string; chance: number | null;
 }
+interface Taker { id: number; name: string; count: number }
+type SetPieces = Record<"penalties" | "corners" | "freeKicks", Taker[]>;
 interface TeamData {
   team: { id: string; name: string; short: string }; season: number; seasons: number[]; table: TableRow[]; position: number | null;
-  matches: TeamMatch[]; leagueAverages: Stats; squad: SquadRow[];
+  matches: TeamMatch[]; leagueAverages: Stats; squad: SquadRow[]; setPieces: SetPieces | null;
 }
 type Group = "all" | "league" | "europe" | "cup";
 
@@ -155,6 +158,11 @@ export function TeamPage() {
 
       <div className="mp-sec-title"><div><h2>Every game</h2><p>{seasonLabel(data.season)}, every competition{upcoming.length ? "; what's next is at the end" : ""}.</p></div></div>
       <MatchLog matches={[...played].reverse()} upcoming={upcoming} />
+
+      {data.setPieces && <>
+        <div className="mp-sec-title"><div><h2>Set pieces</h2><p>Who has taken them in this season's league games (Opta): penalties taken, corners taken, free kicks shot or crossed. Counts, not official orders.</p></div></div>
+        <SetPieceTakers sp={data.setPieces} />
+      </>}
 
       <div className="tp-two">
         <section>
@@ -298,7 +306,7 @@ function Squad({ rows }: { rows: SquadRow[] }) {
         <tbody>
           {shown.map((p) => (
             <tr key={p.optaId} className={p.status && p.status !== "a" ? "out" : ""}>
-              <th scope="row">{p.fplId && <WatchStar id={p.fplId} name={p.short} size={14} />}{p.fplId ? <Link to={`/players/${p.fplId}`}>{p.short}</Link> : <span>{p.short}</span>}<small>{p.position}</small>{p.news && <em title={p.news} aria-label={p.news}><svg width="12" height="12" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3 18 16.5H2z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M10 8.2v3.6M10 14.2v.1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg></em>}</th>
+              <th scope="row">{p.fplId && <WatchStar id={p.fplId} name={p.short} size={14} />}{p.fplId ? <Link to={`/players/${p.fplId}`}>{p.short}</Link> : <span>{p.short}</span>}<small>{p.position}</small>{(() => { const f = availability(p.status, p.chance); return f ? <span className={`av-chip ${f.tone}`} title={p.news || undefined}>{f.text}</span> : null; })()}</th>
               <td className="n">{p.apps}{p.apps ? <small> ({p.starts})</small> : ""}</td>
               <td className="n">{p.minutes}</td>
               <td className="n">{p.goals || ""}</td>
@@ -353,5 +361,21 @@ export function TeamsPage() {
         </div>
       )}
     </main>
+  );
+}
+
+function SetPieceTakers({ sp }: { sp: SetPieces }) {
+  return (
+    <div className="mp-sheet tp-sp">
+      {(["penalties", "corners", "freeKicks"] as const).map((k) => (
+        <div key={k}>
+          <span className="tp-sp-k">{SET_PIECE_LABEL[k]}</span>
+          {sp[k].length === 0 ? <span className="tp-sp-none">None yet</span> : <>
+            <Link className="tp-sp-main" to={`/players/${sp[k][0].id}`}>{sp[k][0].name}<b>{sp[k][0].count}</b></Link>
+            {sp[k].slice(1).map((t) => <Link key={t.id} className="tp-sp-alt" to={`/players/${t.id}`}>{t.name} {t.count}</Link>)}
+          </>}
+        </div>
+      ))}
+    </div>
   );
 }
