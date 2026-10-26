@@ -65,26 +65,6 @@
   accent-color: var(--aero-text);
 }
 
-.players-check-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 42px;
-  padding: 0 12px;
-  border: 1px solid var(--aero-line-strong);
-  border-radius: var(--aero-radius-sm);
-  background: var(--aero-surface);
-  color: var(--aero-text);
-  font-size: var(--fs-footnote);
-  text-transform: none;
-  letter-spacing: 0;
-  cursor: pointer;
-}
-
-.players-check-row input {
-  accent-color: var(--aero-lime);
-}
-
 /* --------------------------------------------------------- results bar */
 
 .results-bar {
@@ -336,7 +316,6 @@
   }
 }
 .players-filters > .aero-note { margin: 0; }
-.players-clear-filter { margin-left: 8px; padding: 0; border: 0; background: transparent; color: var(--aero-text); font: inherit; font-weight: 600; cursor: pointer; }
 
 /* Team news, folded in: FPL's flag and news under the name, set-piece tags. */
 .card-notes:empty { display: none; }
@@ -345,7 +324,7 @@
 .card-notes .pc-news { max-width: 100%; }
 .players-summary { margin: 0 0 14px; font-size: var(--fs-body); line-height: 1.55; color: var(--aero-text-dim); max-width: 90ch; }
 
-/* Card text colours (the old global card rules in theme.css are gone). */
+/* Card text colours. */
 .players-page .player-team { color: var(--aero-text-dim); }
 
 /* Phones: each card becomes one compact row (photo, name and flags, then

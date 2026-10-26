@@ -61,7 +61,7 @@
 .pc-tracker-head p { margin: 4px 0 0; font-size: var(--fs-footnote); color: var(--aero-text-dim); }
 .pc-filter { display: flex; gap: 6px; flex-wrap: wrap; border: 0; background: var(--aero-fill); border-radius: var(--aero-radius-sm); padding: 2px; }
 .pc-filter button {
-  height: 32px; padding: 0 13px; border-radius: 8px; border: 0;
+  height: 32px; padding: 0 13px; border-radius: calc(var(--aero-radius-sm) - 2px); border: 0;
   background: transparent; color: var(--aero-text); font: inherit; font-size: var(--fs-footnote); font-weight: 500;
   text-transform: none; letter-spacing: 0; cursor: pointer;
 }

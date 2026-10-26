@@ -1,10 +1,10 @@
 /* Stats Explorer: the table is the instrument. Inherits design-system.css. */
 
 .sx-page {
-  --sx-sheet: #151616;
-  --sx-row: #171818;
-  --sx-row-alt: #1a1b1b;
-  --sx-row-hover: #212222;
+  --sx-sheet: var(--aero-surface);
+  --sx-row: var(--aero-surface);
+  --sx-row-alt: var(--aero-surface);
+  --sx-row-hover: var(--aero-surface-raised);
   --sx-top: rgba(165, 255, 1, 0.2);
   --sx-ramp-rgb: 255, 255, 255; /* a quiet white wash; lime is only for the top cells */
   --sx-frozen-w: 290px;
@@ -176,6 +176,13 @@
   flex: none;
 }
 
+/* When the column narrows, the lenses take their own row (they scroll sideways). */
+@media (max-width: 1068px) {
+  .sx-bar-top .sx-lenses {
+    flex: 1 1 100%;
+  }
+}
+
 .sx-bar-top .sx-controls-end {
   margin-left: auto;
 }
@@ -289,7 +296,7 @@
   height: 30px;
   padding: 0 10px;
   border: 0;
-  border-radius: 8px;
+  border-radius: calc(var(--aero-radius-sm) - 2px);
   background: transparent;
   color: var(--aero-text);
   font-size: var(--fs-footnote);
@@ -325,19 +332,6 @@
 /* The bar keeps the label; the reason is in the tooltip and the phone sheet. */
 .sx-control-row:not(.stacked) .sx-window span {
   display: none;
-}
-
-/* -------------------------------------------------------------- controls */
-
-.sx-controls {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 12px 14px;
-  border: 1px solid var(--aero-line-strong);
-  border-radius: var(--aero-radius);
-  background: var(--sx-sheet);
 }
 
 .sx-control-row {
@@ -415,7 +409,7 @@
   height: 28px;
   padding: 0 11px;
   border: 0;
-  border-radius: 8px;
+  border-radius: calc(var(--aero-radius-sm) - 2px);
   background: transparent;
   color: var(--aero-text);
   font-size: var(--fs-footnote);
@@ -650,7 +644,7 @@
   border: 1px solid var(--aero-line-strong);
   border-radius: var(--aero-radius);
   background: var(--sx-sheet);
-  scrollbar-color: #3a3b3c transparent;
+  scrollbar-color: var(--aero-line-strong) transparent;
   scrollbar-width: thin;
 }
 
@@ -660,7 +654,7 @@
 }
 
 .sx-table-wrap::-webkit-scrollbar-thumb {
-  background: #3a3b3c;
+  background: var(--aero-line-strong);
   border-radius: var(--aero-radius-sm);
   border: 2px solid var(--sx-sheet);
 }
@@ -773,7 +767,7 @@ th[aria-sort="descending"] .sx-sort {
 
 .sx-table tbody tr.selected th,
 .sx-table tbody tr.selected td {
-  background-color: #1e2615;
+  background-color: var(--aero-lime-wash);
 }
 
 .sx-frozen {
@@ -868,7 +862,7 @@ th[aria-sort="descending"] .sx-sort {
   padding: 0 4px;
   border-radius: var(--aero-radius-chip);
   background: rgba(43, 177, 255, 0.14);
-  color: #7cc8ff;
+  color: var(--aero-info);
   font-size: var(--fs-caption);
   font-weight: 600;
   letter-spacing: 0;
@@ -882,7 +876,7 @@ th[aria-sort="descending"] .sx-sort {
 }
 
 .sx-status.s-d {
-  background: rgba(226, 183, 91, 0.16);
+  background: var(--aero-tint-warn);
   color: var(--aero-warn);
 }
 
@@ -891,7 +885,7 @@ th[aria-sort="descending"] .sx-sort {
 .sx-status.s-u,
 .sx-status.s-n {
   background: rgba(255, 76, 94, 0.15);
-  color: #ff8592;
+  color: var(--aero-negative-soft);
 }
 
 .sx-dim {
@@ -929,7 +923,6 @@ th[aria-sort="descending"] .sx-sort {
 .sx-table tbody td.sx-cell:focus-visible {
   outline-offset: -3px;
 }
-
 
 .sx-tip {
   position: fixed;
@@ -1094,14 +1087,6 @@ th[aria-sort="descending"] .sx-sort {
   from { transform: translateX(28px); opacity: 0.4; }
 }
 
-.sx-news {
-  color: var(--aero-warn) !important;
-}
-
-.sx-pct {
-  width: 70px;
-}
-
 /* ----------------------------------------------------------------- sheet */
 
 .sx-phonebar,
@@ -1173,17 +1158,6 @@ th[aria-sort="descending"] .sx-sort {
 
 /* ------------------------------------------------------------ responsive */
 
-@media (max-width: 1280px) {
-  .sx-bar-top {
-    flex-wrap: wrap;
-  }
-
-  .sx-bar-top .sx-lenses {
-    flex: 1 1 100%;
-  }
-
-}
-
 @media (max-width: 734px) {
   .sx-wide-only {
     display: none;
@@ -1249,8 +1223,8 @@ th[aria-sort="descending"] .sx-sort {
   .sx-lenses {
     margin-right: -14px;
     padding-right: 14px;
-    -webkit-mask-image: linear-gradient(to right, #000 82%, transparent);
-    mask-image: linear-gradient(to right, #000 82%, transparent);
+    -webkit-mask-image: linear-gradient(to right, black 82%, transparent);
+    mask-image: linear-gradient(to right, black 82%, transparent);
   }
 
   .sx-key-note {

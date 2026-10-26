@@ -125,8 +125,11 @@ Dark graphite + Spring Bud lime, per the user-approved "Option 2" mockup:
 - modular, dense but readable; static cards, subtle borders, restrained glow
 
 Tokens and shared primitives now live in **`frontend/src/styles/design-system.css`**
-(imported ahead of `theme.css` in `main.tsx`). Page stylesheets should use the
-`--aero-*` variables and `.aero-*` primitives rather than new hex values.
+(the only global stylesheet; `theme.css` was removed on 26 Oct 2026), with a
+JavaScript mirror in `frontend/src/styles/tokens.ts` for SVG and canvas code.
+Page stylesheets should use the `--aero-*` / `--fs-*` variables and `.aero-*`
+primitives rather than new values; `node scripts/design-audit.mjs` in
+`frontend/` checks this. The current direction is in `REDESIGN_PLAN.md`.
 
 ## Completed in this pass
 

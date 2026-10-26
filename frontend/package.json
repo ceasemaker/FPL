@@ -7,13 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test --experimental-strip-types src/utils/formula.test.ts src/components/statsExplorer/explorerModel.test.ts"
+    "test": "node --test --experimental-strip-types src/utils/formula.test.ts src/components/statsExplorer/explorerModel.test.ts",
+    "audit:design": "node scripts/design-audit.mjs"
   },
   "dependencies": {
     "@amplitude/unified": "^1.1.43",
-    "animejs": "^3.2.2",
-    "clsx": "^2.1.1",
-    "html2canvas": "^1.4.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.9.3"

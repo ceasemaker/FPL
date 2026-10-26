@@ -27,7 +27,7 @@
   color: var(--aero-text);
 }
 
-.command-brand strong { font-weight: inherit; }
+.command-brand strong { font-weight: 600; }
 
 .command-menu-button { display: none; }
 
@@ -56,7 +56,7 @@
   height: 36px;
   padding: 0 12px;
   border-radius: var(--aero-radius-sm);
-  color: #d1d1d6;
+  color: var(--aero-text-soft);
   font-size: var(--fs-body);
   text-decoration: none;
   white-space: nowrap;
@@ -94,7 +94,7 @@
     border-bottom: 1px solid var(--aero-line);
   }
 
-  .command-brand { margin: 0; padding: 0; font-size: 1.1875rem; }
+  .command-brand { margin: 0; padding: 0; font-size: var(--fs-headline); }
 
   .command-menu-button {
     display: grid;

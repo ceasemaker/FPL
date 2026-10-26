@@ -1,22 +1,11 @@
-.predictor-hero {
-  padding: 2rem;
-}
 
-.predictor-error {
-  margin-top: 1rem;
-  padding: 0.7rem 1rem;
-  border-radius: var(--aero-radius-sm);
-  border: 1px solid rgba(248, 113, 113, 0.4);
-  background: rgba(127, 29, 29, 0.4);
-  color: #fecaca;
-}
 
 .predictor-board {
   padding: 2rem;
 }
 
 .predictor-loading {
-  color: var(--text-secondary);
+  color: var(--aero-text-dim);
 }
 
 .predictor-grid {
@@ -67,19 +56,19 @@
 
 .predictor-meta {
   font-size: var(--fs-footnote);
-  color: var(--text-secondary);
+  color: var(--aero-text-dim);
 }
 
 .predictor-signal {
   text-align: right;
   font-weight: 600;
-  color: var(--accent-cyan);
+  color: var(--aero-info);
 }
 
 .predictor-signal small {
   display: block;
   font-size: var(--fs-caption);
-  color: var(--text-muted);
+  color: var(--aero-text-muted);
 }
 
 .predictor-charts,
@@ -134,18 +123,17 @@
 }
 
 .predictor-delta.positive {
-  color: #22c55e;
+  color: var(--aero-positive);
 }
 
 .predictor-delta.negative {
-  color: #ef4444;
+  color: var(--aero-negative);
 }
 
 .sparkline {
   width: 180px;
   height: 70px;
 }
-
 
 .predictor-search {
   display: flex;
@@ -171,7 +159,7 @@
   border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: var(--aero-radius-sm);
   padding: 0.65rem 0.9rem;
-  color: var(--text-primary);
+  color: var(--aero-text);
 }
 
 .predictor-search-loading {
@@ -180,7 +168,7 @@
   right: 12px;
   transform: translateY(-50%);
   font-size: var(--fs-caption);
-  color: var(--text-muted);
+  color: var(--aero-text-muted);
 }
 
 .predictor-search-results {
@@ -202,7 +190,7 @@
   padding: 0.6rem 0.9rem;
   border: none;
   background: transparent;
-  color: var(--text-primary);
+  color: var(--aero-text);
   display: flex;
   justify-content: space-between;
   gap: 1rem;
@@ -214,7 +202,7 @@
 }
 
 .predictor-search-meta {
-  color: var(--text-muted);
+  color: var(--aero-text-muted);
   font-size: var(--fs-caption);
 }
 
@@ -223,7 +211,7 @@
   flex-direction: column;
   gap: 0.4rem;
   font-size: var(--fs-footnote);
-  color: var(--text-muted);
+  color: var(--aero-text-muted);
   text-transform: none;
   letter-spacing: 0;
 }
@@ -233,7 +221,7 @@
   border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: var(--aero-radius-sm);
   padding: 0.5rem 0.7rem;
-  color: var(--text-primary);
+  color: var(--aero-text);
 }
 
 .predictor-selected {
@@ -250,13 +238,13 @@
   border-radius: var(--aero-radius-pill);
   border: 1px solid rgba(148, 163, 184, 0.35);
   background: rgba(15, 23, 42, 0.6);
-  color: var(--text-primary);
+  color: var(--aero-text);
   font-size: var(--fs-caption);
   cursor: pointer;
 }
 
 .predictor-chip span {
-  color: var(--text-muted);
+  color: var(--aero-text-muted);
   font-size: var(--fs-footnote);
 }
 
@@ -265,7 +253,7 @@
   align-items: center;
   gap: 0.6rem;
   font-size: var(--fs-footnote);
-  color: var(--text-muted);
+  color: var(--aero-text-muted);
   text-transform: none;
   letter-spacing: 0;
 }
@@ -275,11 +263,11 @@
   border: 1px solid rgba(148, 163, 184, 0.3);
   border-radius: var(--aero-radius-sm);
   padding: 0.45rem 0.7rem;
-  color: var(--text-primary);
+  color: var(--aero-text);
 }
 
 .predictor-empty {
-  color: var(--text-muted);
+  color: var(--aero-text-muted);
 }
 
 .predictor-remove {
@@ -288,7 +276,7 @@
   border: 1px solid rgba(148, 163, 184, 0.3);
   border-radius: var(--aero-radius-sm);
   padding: 0.3rem 0.6rem;
-  color: var(--text-primary);
+  color: var(--aero-text);
   cursor: pointer;
   font-size: var(--fs-caption);
 }
@@ -321,13 +309,13 @@
   height: auto;
   background: var(--aero-surface);
   border-radius: var(--aero-radius);
-  border: 1px solid rgba(59, 130, 246, 0.25);
-  box-shadow: 0 18px 40px rgba(6, 12, 26, 0.6), inset 0 0 0 1px rgba(148, 163, 184, 0.08);
+  border: 0;
+  box-shadow: none;
   padding: 0.5rem;
 }
 
 .ownership-grid line {
-  stroke: rgba(59, 130, 246, 0.18);
+  stroke: var(--aero-line);
   stroke-dasharray: 4 6;
 }
 
@@ -354,7 +342,7 @@
   flex-wrap: wrap;
   gap: 0.75rem;
   font-size: var(--fs-footnote);
-  color: var(--text-secondary);
+  color: var(--aero-text-dim);
 }
 
 .ownership-legend-item {
@@ -465,12 +453,6 @@
 .predictor-page .predictor-card.rise .predictor-signal span { color: var(--aero-positive); }
 .predictor-page .predictor-card.fall .predictor-signal span { color: var(--aero-negative); }
 
-.predictor-page .predictor-error {
-  border-color: rgba(255, 76, 94, 0.4);
-  background: rgba(255, 76, 94, 0.08);
-  color: #ffb4bc;
-}
-
 /* ----------------------------------------------------- official changes */
 
 .predictor-official .aero-card-title {
@@ -577,7 +559,7 @@
 
 .predictor-page .ownership-axis text,
 .predictor-page .ownership-axis-label {
-  font-family: var(--font-main);
+  font-family: var(--aero-font);
   fill: var(--aero-text-muted);
 }
 

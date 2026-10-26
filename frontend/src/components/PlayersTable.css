@@ -71,7 +71,7 @@
 .sort-icon {
     display: inline-block;
     margin-left: 4px;
-    font-size: 0.8em;
+    font-size: var(--fs-caption);
     opacity: 0.5;
 }
 

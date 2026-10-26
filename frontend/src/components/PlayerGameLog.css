@@ -15,7 +15,7 @@
 .percentile-pct { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; color: var(--aero-text-dim); }
 .percentile-pct.high { color: var(--aero-lime); }
 .percentile-pct.mid { color: var(--aero-text); }
-.percentile-pct small { margin-left: 1px; font-size: .6em; font-weight: 600; }
+.percentile-pct small { margin-left: 1px; font-size: var(--fs-caption); font-weight: 600; }
 
 .gamelog-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--aero-line); border-radius: var(--aero-radius-sm); }
 .gamelog-table { width: 100%; min-width: 980px; border-collapse: separate; border-spacing: 0; font-size: var(--fs-caption); font-variant-numeric: tabular-nums; }
@@ -30,7 +30,7 @@
 .gamelog-table .fixture-cell { color: var(--aero-text-dim); }
 .gamelog-table .pts-cell { color: var(--aero-lime); font-weight: 600; }
 .gamelog-table .net-pos { color: var(--aero-lime); }
-.gamelog-table .net-neg { color: #f87171; }
+.gamelog-table .net-neg { color: var(--aero-negative-soft); }
 
 @media (max-width: 734px) {
   .percentile-list { grid-template-columns: 1fr; }

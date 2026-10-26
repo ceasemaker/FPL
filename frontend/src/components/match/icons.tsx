@@ -1,5 +1,6 @@
 import type { SyntheticEvent } from "react";
 import type { Kind } from "./matchModel";
+import { colour } from "../../styles/tokens";
 
 // Match event icons on the 20px grid: drawn, not glyphs. Card colours are the
 // real-world card colours; substitution arrows lime (on) and coral (off).
@@ -10,32 +11,32 @@ export function EventIcon({ kind, size = 16 }: { kind: Kind | "play" | "pause"; 
     case "goal":
       return (
         <svg {...common}>
-          <circle cx="10" cy="10" r="8.25" fill="#fff" stroke="#101011" strokeWidth="1.5" />
-          <path d="M10 6.2l3.1 2.3-1.2 3.6H8.1L6.9 8.5z" fill="#101011" />
-          <path d="M10 6.2V2.4M13.1 8.5l3.6-1.2M11.9 12.1l2.2 3.1M8.1 12.1l-2.2 3.1M6.9 8.5L3.3 7.3" stroke="#101011" strokeWidth="1.2" fill="none" />
+          <circle cx="10" cy="10" r="8.25" fill={colour.white} stroke={colour.ink} strokeWidth="1.5" />
+          <path d="M10 6.2l3.1 2.3-1.2 3.6H8.1L6.9 8.5z" fill={colour.ink} />
+          <path d="M10 6.2V2.4M13.1 8.5l3.6-1.2M11.9 12.1l2.2 3.1M8.1 12.1l-2.2 3.1M6.9 8.5L3.3 7.3" stroke={colour.ink} strokeWidth="1.2" fill="none" />
         </svg>
       );
     case "yellow":
-      return <svg {...common}><rect x="5" y="2.5" width="10" height="15" rx="1.5" fill="#f5d64c" /></svg>;
+      return <svg {...common}><rect x="5" y="2.5" width="10" height="15" rx="1.5" fill={colour.yellowCard} /></svg>;
     case "red":
-      return <svg {...common}><rect x="5" y="2.5" width="10" height="15" rx="1.5" fill="#ff4c5e" /></svg>;
+      return <svg {...common}><rect x="5" y="2.5" width="10" height="15" rx="1.5" fill={colour.negative} /></svg>;
     case "second_yellow":
       return (
         <svg {...common}>
-          <rect x="3" y="2.5" width="9" height="13.5" rx="1.5" fill="#f5d64c" />
-          <rect x="8" y="4.5" width="9" height="13.5" rx="1.5" fill="#ff4c5e" stroke="#101011" strokeWidth="1" />
+          <rect x="3" y="2.5" width="9" height="13.5" rx="1.5" fill={colour.yellowCard} />
+          <rect x="8" y="4.5" width="9" height="13.5" rx="1.5" fill={colour.negative} stroke={colour.ink} strokeWidth="1" />
         </svg>
       );
     case "sub":
       return (
         <svg {...common} fill="none" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M6 15V5m0 0L3 8m3-3l3 3" stroke="#a5ff01" />
-          <path d="M14 5v10m0 0l-3-3m3 3l3-3" stroke="#ff4c5e" />
+          <path d="M6 15V5m0 0L3 8m3-3l3 3" stroke={colour.lime} />
+          <path d="M14 5v10m0 0l-3-3m3 3l3-3" stroke={colour.negative} />
         </svg>
       );
     case "var":
       return (
-        <svg {...common} fill="none" stroke="#e2b75b" strokeWidth="1.4">
+        <svg {...common} fill="none" stroke={colour.warn} strokeWidth="1.4">
           <rect x="2.5" y="4.5" width="15" height="11" rx="2" />
           <path d="M6.5 8l1.8 4 1.8-4M11.7 12l1.3-4 1.3 4" />
         </svg>

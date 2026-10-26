@@ -23,7 +23,7 @@
 .ms-range button:hover { color: var(--aero-text); border-color: var(--aero-text-muted); }
 .ms-range span { margin-left: 8px; font-size: var(--fs-footnote); font-weight: 600; font-variant-numeric: tabular-nums; }
 .ms-seg { display: flex; gap: 2px; padding: 2px; border: 0; border-radius: var(--aero-radius-sm); background: var(--aero-fill); }
-.ms-seg button { border: 0; background: transparent; color: var(--aero-text); padding: 6px 12px; border-radius: 8px; font-size: var(--fs-footnote); font-weight: 500; cursor: pointer; white-space: nowrap; }
+.ms-seg button { border: 0; background: transparent; color: var(--aero-text); padding: 6px 12px; border-radius: calc(var(--aero-radius-sm) - 2px); font-size: var(--fs-footnote); font-weight: 500; cursor: pointer; white-space: nowrap; }
 .ms-seg button:hover { color: var(--aero-text); }
 .ms-seg button[aria-pressed="true"] { background: var(--aero-segment-on); color: var(--aero-text); border-color: transparent; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); }
 .ms-page button:focus-visible, .ms-page a:focus-visible, .ms-page select:focus-visible { outline: 2px solid var(--aero-lime); outline-offset: 2px; }
@@ -59,7 +59,7 @@
 .ms-grid td { height: 44px; text-align: center; }
 
 .ms-cell { position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 3px 2px; height: 38px; border-radius: var(--aero-radius-chip); text-decoration: none; background: var(--aero-surface-raised); border: 1px solid var(--aero-line-strong); color: var(--aero-text); transition: border-color 0.15s ease-out, transform 0.15s ease-out; }
-.ms-cell:hover { border-color: #fff; transform: translateY(-1px); }
+.ms-cell:hover { border-color: var(--aero-text); transform: translateY(-1px); }
 .ms-cell b { font-size: var(--fs-footnote); font-weight: 600; letter-spacing: 0; line-height: 1.1; }
 .ms-cell small { font-size: var(--fs-caption); font-weight: 600; color: var(--aero-text-dim); line-height: 1.2; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .ms-cell em { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); font-style: normal; font-size: var(--fs-caption); font-weight: 600; padding: 0 3px; border-radius: var(--aero-radius-chip); background: var(--aero-surface); border: 1px solid currentColor; line-height: 1.4; }

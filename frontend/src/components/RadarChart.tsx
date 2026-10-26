@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { colour, series } from "../styles/tokens";
 
 interface RadarAttributes {
   attacking: number | null;
@@ -42,14 +43,8 @@ const ATTRIBUTE_KEYS: (keyof RadarAttributes)[] = [
   "creativity"
 ];
 
-// Colors for up to 4 players
-// Colors for up to 4 players - Neon Noir Palette
-const PLAYER_COLORS = [
-  { fill: "rgba(22, 242, 255, 0.25)", stroke: "#16f2ff", name: "#16f2ff" },    // Electric Cyan
-  { fill: "rgba(168, 85, 247, 0.25)", stroke: "#a855f7", name: "#a855f7" },    // Neon Purple
-  { fill: "rgba(251, 111, 187, 0.25)", stroke: "#fb6fbb", name: "#fb6fbb" },   // Hot Pink
-  { fill: "rgba(34, 197, 94, 0.25)", stroke: "#22c55e", name: "#22c55e" },    // Neon Green
-];
+// Colours for up to four players: the shared chart series.
+const PLAYER_COLORS = series.slice(0, 4).map((c) => ({ fill: `${c}40`, stroke: c, name: c }));
 
 export function RadarChart({ playerIds, height = 400, width = 400, showBreakdown = true, hideOnError = false }: RadarChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -165,7 +160,7 @@ export function RadarChart({ playerIds, height = 400, width = 400, showBreakdown
     // Draw axes and labels
     ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
     ctx.lineWidth = 1;
-    ctx.fillStyle = "#a5b4fc";
+    ctx.fillStyle = colour.textDim;
     ctx.font = "600 12px system-ui, -apple-system, sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -247,7 +242,7 @@ export function RadarChart({ playerIds, height = 400, width = 400, showBreakdown
         // Draw value text on the point
         if (value > 0) {
           ctx.font = "700 13px system-ui, -apple-system, sans-serif";
-          ctx.fillStyle = "#ffffff";
+          ctx.fillStyle = colour.text;
           ctx.strokeStyle = "rgba(14, 18, 49, 0.8)";
           ctx.lineWidth = 3;
           ctx.textAlign = "center";

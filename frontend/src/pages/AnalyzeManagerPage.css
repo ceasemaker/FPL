@@ -59,7 +59,7 @@
 .analyze-views button {
   padding: 9px 18px;
   border: 0;
-  border-radius: 8px;
+  border-radius: calc(var(--aero-radius-sm) - 2px);
   background: transparent;
   color: var(--aero-text);
   font-family: inherit;
@@ -94,7 +94,7 @@
 .manager-summary-card.error {
   border-color: rgba(255, 76, 94, 0.4);
   background: rgba(255, 76, 94, 0.08);
-  color: #ffb4bc;
+  color: var(--aero-negative-soft);
 }
 
 .manager-summary-title {
@@ -212,7 +212,7 @@
 .analyze-page .error-state {
   border-color: rgba(255, 76, 94, 0.4);
   background: rgba(255, 76, 94, 0.08);
-  color: #ffb4bc;
+  color: var(--aero-negative-soft);
 }
 
 .loading-spinner {

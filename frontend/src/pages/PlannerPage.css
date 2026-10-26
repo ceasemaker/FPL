@@ -34,11 +34,11 @@
 .pl-step button { display: inline-grid; place-items: center; width: 28px; height: 28px; padding: 0; border-radius: 50%; border: 0; background: var(--aero-surface-raised); color: var(--aero-text); cursor: pointer; }
 .pl-step button:hover { background: var(--aero-surface-hover); }
 .pl-step button svg { display: block; }
-.pl-chips { flex-wrap: wrap; font-size: var(--fs-footnote) !important; font-weight: 600 !important; }
+.pl-facts dd.pl-chips { flex-wrap: wrap; font-size: var(--fs-footnote); font-weight: 600; }
 .pl-chips span { padding: 2px 7px; border-radius: var(--aero-radius-chip); border: 1px solid var(--aero-line-strong); color: var(--aero-text-dim); }
 
 .pl-weeks { display: flex; gap: 8px; overflow-x: auto; margin: 24px 0; position: static; width: auto; height: auto; padding: 2px 0 0; background: none; border: 0; scrollbar-width: none; }
-.pl-weeks button { position: relative; flex: 1 0 120px; display: flex; flex-direction: column; align-items: flex-start; gap: 0; padding: 12px 14px; border-radius: 14px; border: 0; background: var(--aero-surface); color: var(--aero-text-dim); cursor: pointer; text-align: left; }
+.pl-weeks button { position: relative; flex: 1 0 120px; display: flex; flex-direction: column; align-items: flex-start; gap: 0; padding: 12px 14px; border-radius: var(--aero-radius); border: 0; background: var(--aero-surface); color: var(--aero-text-dim); cursor: pointer; text-align: left; }
 .pl-weeks button b { font-size: var(--fs-body); font-weight: 600; color: var(--aero-text); }
 .pl-weeks button small { font-size: var(--fs-footnote); line-height: 1.38; white-space: nowrap; }
 .pl-weeks button[aria-pressed="true"] { background: var(--aero-surface-raised); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14); }
@@ -59,8 +59,8 @@
 .pl-row .nm a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .pl-row .nm small { flex-basis: 100%; font-size: var(--fs-footnote); color: var(--aero-text-dim); font-variant-numeric: tabular-nums; }
 .pl-new { font-size: var(--fs-caption); font-weight: 600; padding: 1px 6px; border-radius: var(--aero-radius-chip); color: var(--aero-lime); background: none; border-color: transparent;}
-.pl-status { font-size: var(--fs-caption); font-weight: 500; padding: 1px 6px; border-radius: var(--aero-radius-chip); border: 0; background: rgba(226, 183, 91, 0.16); color: var(--aero-warn); cursor: help; }
-.pl-status.s-i, .pl-status.s-s, .pl-status.s-u { background: rgba(255, 76, 94, 0.18); color: #ff7a87; }
+.pl-status { font-size: var(--fs-caption); font-weight: 500; padding: 1px 6px; border-radius: var(--aero-radius-chip); border: 0; background: var(--aero-tint-warn); color: var(--aero-warn); cursor: help; }
+.pl-status.s-i, .pl-status.s-s, .pl-status.s-u { background: var(--aero-tint-hard); color: var(--aero-negative-soft); }
 .pl-sell { justify-self: end; border: 0; background: var(--aero-surface-raised); color: var(--aero-text); border-radius: var(--aero-radius-pill); height: 30px; padding: 0 14px; font-size: var(--fs-footnote); font-weight: 500; cursor: pointer; }
 .pl-sell:hover { background: var(--aero-surface-hover); }
 .pl-sell[aria-pressed="true"] { background: var(--aero-text); color: var(--aero-bg); }
@@ -70,11 +70,11 @@
 .pl-fx-cell { position: relative; display: flex; flex-direction: column; gap: 2px; }
 .pl-fx-cell i { display: block; text-align: center; font-style: normal; font-size: var(--fs-caption); font-weight: 500; line-height: 16px; padding: 3px 0; border-radius: var(--aero-radius-chip); color: var(--aero-text-dim); background: rgba(255, 255, 255, 0.08); }
 .pl-fx-cell i.blank { color: var(--aero-text-muted); background: transparent; border: 1px dashed var(--aero-line-strong); }
-.pl-fx-cell i.fdr-1 { background: rgba(184, 233, 134, 0.12); color: var(--aero-fdr-2); }
-.pl-fx-cell i.fdr-2 { background: rgba(184, 233, 134, 0.12); color: var(--aero-fdr-2); }
-.pl-fx-cell i.fdr-3 { background: rgba(255, 255, 255, 0.08); color: var(--aero-text-dim); }
-.pl-fx-cell i.fdr-4 { background: rgba(226, 183, 91, 0.16); color: var(--aero-warn); }
-.pl-fx-cell i.fdr-5 { background: rgba(255, 76, 94, 0.18); color: #ff7a87; }
+.pl-fx-cell i.fdr-1 { background: var(--aero-tint-easiest); color: var(--aero-fdr-2); }
+.pl-fx-cell i.fdr-2 { background: var(--aero-tint-easy); color: var(--aero-fdr-2); }
+.pl-fx-cell i.fdr-3 { background: var(--aero-tint-neutral); color: var(--aero-text-dim); }
+.pl-fx-cell i.fdr-4 { background: var(--aero-tint-warn); color: var(--aero-warn); }
+.pl-fx-cell i.fdr-5 { background: var(--aero-tint-hard); color: var(--aero-negative-soft); }
 .pl-fx-cell i.fdr-0 { background: var(--aero-surface-raised); color: var(--aero-text-dim); }
 .pl-fx-cell.on i { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5); }
 .pl-fx-cell em { font-style: normal; font-size: var(--fs-caption); font-weight: 600; text-align: center; color: var(--aero-europe); white-space: nowrap; overflow: hidden; }
@@ -147,7 +147,6 @@
 .pl-xp { display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; cursor: help; }
 .pl-xp b { font-size: var(--fs-headline); font-weight: 600; }
 .pl-xp small { font-size: var(--fs-caption); color: var(--aero-text-muted); white-space: nowrap; }
-.pl-xp-key { font-weight: 500; }
 .pl-fx-head { margin-right: 76px; }
 .pl-cap { font-size: var(--fs-caption); font-weight: 600; width: 16px; height: 16px; display: inline-grid; place-items: center; border-radius: 50%; background: var(--aero-text); color: var(--aero-bg); }
 .pl-rot { color: var(--aero-text-muted); }
@@ -199,8 +198,8 @@
 .pl-league-list li a { color: var(--aero-text); font-weight: 500; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pl-league-list li a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .pl-league-list li small { color: var(--aero-text-muted); font-size: var(--fs-footnote); }
-.pl-league-list .bar { height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
-.pl-league-list .bar i { display: block; height: 100%; background: var(--aero-text-dim); border-radius: 2px; }
+.pl-league-list .bar { height: 4px; border-radius: var(--aero-radius-chip); background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+.pl-league-list .bar i { display: block; height: 100%; background: var(--aero-text-dim); border-radius: var(--aero-radius-chip); }
 .pl-league-list b { text-align: right; font-variant-numeric: tabular-nums; font-size: var(--fs-body); font-weight: 500; }
 
 /* ---------- sync */
@@ -239,7 +238,7 @@
 .pl-tally div:first-child { border-top: 0; }
 
 /* Selected gameweek: a thin lime line on top, the page's "you are here". */
-.pl-weeks button[aria-pressed="true"]::before { content: ""; position: absolute; left: 14px; right: 14px; top: 0; height: 2px; border-radius: 2px; background: var(--aero-lime); }
+.pl-weeks button[aria-pressed="true"]::before { content: ""; position: absolute; left: 14px; right: 14px; top: 0; height: 2px; border-radius: var(--aero-radius-chip); background: var(--aero-lime); }
 
 /* Facts: hairlines between the figures; the suggest action sits at the end. */
 .pl-facts > div + div { box-shadow: inset 1px 0 var(--aero-line); }

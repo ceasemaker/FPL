@@ -4,7 +4,6 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./styles/design-system.css";
-import "./theme.css";
 
 // Amplitude: page views, sessions and clicks (autocapture) plus a few named
 // events. Session Replay is off: we want counts, not recordings.

@@ -14,6 +14,7 @@ import { DEFAULT_HOLDUP, useHoldupView, type HoldupConfig } from "../components/
 import { DEFAULT_CLUTCH, useClutchView, type ClutchConfig } from "../components/chartLab/ClutchView";
 import { compileFormula, FORMULA_FUNCTIONS, type StatValues } from "../utils/formula";
 import "./ChartLabPage.css";
+import { colour } from "../styles/tokens";
 
 // Chart Lab, adapted from the A.R.G.U.S. Chart Lab in the power_rankings
 // repo: trend / scatter / bar charts, saved charts and PNG export. The FPL
@@ -330,22 +331,22 @@ export function ChartLabPage() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.scale(scale, scale);
-    ctx.fillStyle = "#101011";
+    ctx.fillStyle = colour.ink;
     ctx.fillRect(0, 0, sw + pad * 2, sh + headH + footH + pad);
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = colour.text;
     ctx.font = "700 19px Inter, sans-serif";
     ctx.fillText(chartTitle, pad, 34);
-    ctx.fillStyle = "#8f8f8f";
+    ctx.fillStyle = colour.textMuted;
     ctx.font = "12px Inter, sans-serif";
     ctx.fillText(chartSubtitle, pad, 54);
     const image = new Image();
     image.onload = () => {
       ctx.drawImage(image, pad, headH, sw, sh);
-      ctx.fillStyle = "#a5ff01";
+      ctx.fillStyle = colour.lime;
       ctx.font = "800 13px Inter, sans-serif";
       ctx.fillText("AEROFPL CHART LAB", pad, headH + sh + 24);
       const date = new Date().toISOString().slice(0, 10);
-      ctx.fillStyle = "#8f8f8f";
+      ctx.fillStyle = colour.textMuted;
       ctx.font = "11px Inter, sans-serif";
       ctx.fillText(date, pad + 160, headH + sh + 24);
       canvas.toBlob((blob) => {

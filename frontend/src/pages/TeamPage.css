@@ -5,14 +5,14 @@
 
 .tp-head { display: grid; grid-template-columns: auto 1fr auto; gap: 20px; align-items: center; margin: 18px 0 8px; }
 .tp-crest { width: 76px; height: 76px; }
-.tp-title h1 { margin: 0; font-size: var(--fs-large-title); letter-spacing: -0.02em; line-height: 1.05; }
+.tp-title h1 { margin: 0; font-size: var(--fs-title); letter-spacing: -0.02em; line-height: 1.05; }
 .tp-title p { margin: 6px 0 0; font-size: var(--fs-footnote); color: var(--aero-text-dim); }
 .tp-form { display: flex; gap: 5px; margin-top: 10px; }
 .tp-form .chip { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 38px; height: 36px; border-radius: var(--aero-radius-sm); border: 1px solid var(--aero-line-strong); background: var(--aero-surface); color: var(--aero-text-dim); font-size: var(--fs-caption); font-weight: 600; text-decoration: none; line-height: 1.1; }
 .tp-form .chip small { font-size: var(--fs-caption); font-weight: 600; color: var(--aero-text-muted); }
 .tp-form .chip.W { border-color: rgba(165, 255, 1, 0.6); color: var(--aero-lime); }
 .tp-form .chip.L { border-color: rgba(255, 76, 94, 0.6); color: var(--aero-negative); }
-.tp-form .chip:hover { border-color: #fff; }
+.tp-form .chip:hover { border-color: var(--aero-text); }
 .tp-season { display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-caption); color: var(--aero-text-muted); align-self: start; }
 .tp-season select { min-width: 120px; }
 
@@ -20,7 +20,7 @@
 
 .tp-filters { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; margin: 22px 0 0; }
 .tp-seg { display: flex; gap: 2px; padding: 2px; border: 0; border-radius: var(--aero-radius-sm); background: var(--aero-fill); max-width: 100%; overflow-x: auto; scrollbar-width: none; }
-.tp-seg button { border: 0; background: transparent; color: var(--aero-text); padding: 6px 12px; border-radius: 8px; font-size: var(--fs-footnote); font-weight: 500; cursor: pointer; white-space: nowrap; }
+.tp-seg button { border: 0; background: transparent; color: var(--aero-text); padding: 6px 12px; border-radius: calc(var(--aero-radius-sm) - 2px); font-size: var(--fs-footnote); font-weight: 500; cursor: pointer; white-space: nowrap; }
 .tp-seg button:hover { color: var(--aero-text); }
 .tp-seg button[aria-pressed="true"] { background: var(--aero-segment-on); color: var(--aero-text); border-color: transparent; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); }
 .tp-count { flex-basis: 100%; margin: 4px 0 0; font-size: var(--fs-footnote); color: var(--aero-text-muted); font-variant-numeric: tabular-nums; }

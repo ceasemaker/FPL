@@ -1,6 +1,5 @@
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import anime from "animejs";
 import { HomePage } from "./pages/HomePage";
 import { PlayersPage } from "./pages/PlayersPage";
 import { ComparePage } from "./pages/ComparePage";
@@ -27,22 +26,7 @@ const DecisionDashboardPage = lazy(() => import("./pages/DecisionDashboardPage")
 import { Navigation } from "./components/Navigation";
 
 
-const bgAnimation = () => {
-  anime({
-    targets: "body",
-    backgroundPosition: ["0% 50%", "100% 50%"],
-    duration: 16000,
-    easing: "linear",
-    loop: true,
-    direction: "alternate",
-  });
-};
-
 export default function App() {
-  useEffect(() => {
-    bgAnimation();
-  }, []);
-
   return (
     <>
       <Navigation />

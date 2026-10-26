@@ -42,8 +42,6 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks: {
             react: ["react", "react-dom", "react-router-dom"],
-            motion: ["animejs"],
-            capture: ["html2canvas"],
           },
         },
       },

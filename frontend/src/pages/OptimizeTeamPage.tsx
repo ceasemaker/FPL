@@ -223,7 +223,7 @@ export function SquadOptimizer({ defaultManagerId = "" }: { defaultManagerId?: s
               </p>
             </div>
             <button className="optimizer-action" onClick={handleSolve} disabled={loading}>
-              {loading ? "Solving..." : "Solve Team"}
+              {loading ? "Building…" : "Build my squad"}
             </button>
           </div>
 
@@ -251,7 +251,7 @@ export function SquadOptimizer({ defaultManagerId = "" }: { defaultManagerId?: s
               />
             </label>
             <label className="optimizer-field">
-              <span>Free Transfers</span>
+              <span>Free transfers</span>
               <input
                 type="number"
                 min="0"

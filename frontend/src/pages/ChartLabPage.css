@@ -2,7 +2,7 @@
 
 .chart-lab-page code {
   font-family: "SF Mono", ui-monospace, Menlo, monospace;
-  font-size: 0.85em;
+  font-size: var(--fs-footnote);
   color: var(--aero-text);
 }
 
@@ -260,8 +260,7 @@
 /* --------------------------------------------------------------- chart */
 
 .lab-chart-title {
-  font-family: "SF Mono", ui-monospace, Menlo, monospace;
-  font-size: var(--fs-headline) !important;
+  font-size: var(--fs-headline);
   word-break: break-word;
 }
 

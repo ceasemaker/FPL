@@ -27,18 +27,18 @@
 .wl-fx-cell { display: flex; flex-direction: column; gap: 2px; }
 .wl-fx-cell i { display: block; text-align: center; font-style: normal; font-size: var(--fs-caption); font-weight: 600; padding: 4px 0; border-radius: var(--aero-radius-chip); color: var(--aero-bg); cursor: help; }
 .wl-fx-cell i.blank { color: var(--aero-text-muted); border: 1px dashed var(--aero-line-strong); }
-.wl-fx-cell i.b-1 { background: rgba(184, 233, 134, 0.18); color: var(--aero-fdr-2); }
-.wl-fx-cell i.b-2 { background: rgba(184, 233, 134, 0.12); color: var(--aero-fdr-2); }
-.wl-fx-cell i.b-3 { background: rgba(255, 255, 255, 0.08); color: var(--aero-text-dim); }
-.wl-fx-cell i.b-4 { background: rgba(226, 183, 91, 0.16); color: var(--aero-warn); }
-.wl-fx-cell i.b-5 { background: rgba(255, 76, 94, 0.18); color: #ff7a87; }
+.wl-fx-cell i.b-1 { background: var(--aero-tint-easiest); color: var(--aero-fdr-2); }
+.wl-fx-cell i.b-2 { background: var(--aero-tint-easy); color: var(--aero-fdr-2); }
+.wl-fx-cell i.b-3 { background: var(--aero-tint-neutral); color: var(--aero-text-dim); }
+.wl-fx-cell i.b-4 { background: var(--aero-tint-warn); color: var(--aero-warn); }
+.wl-fx-cell i.b-5 { background: var(--aero-tint-hard); color: var(--aero-negative-soft); }
 .wl-fx-cell i.b-0 { background: var(--aero-surface-raised); color: var(--aero-text-dim); }
 .wl-sync { margin-top: 22px; padding: 14px 16px; border-radius: var(--aero-radius); border: 1px solid var(--aero-line); }
 .wl-sync p { margin: 0; font-size: var(--fs-footnote); line-height: 1.6; color: var(--aero-text-dim); max-width: 78ch; }
 .wl-sync .mp-note { margin-top: 8px; }
 .wl-code { font-size: var(--fs-body); letter-spacing: 0; padding: 2px 8px; border-radius: var(--aero-radius-chip); border: 1px dashed var(--aero-line-strong); color: var(--aero-text); font-variant-numeric: tabular-nums; }
 .wl-x { margin-left: 8px; border: 1px solid var(--aero-line-strong); background: none; color: var(--aero-text-dim); border-radius: var(--aero-radius-chip); padding: 3px 9px; font-size: var(--fs-caption); font-weight: 600; cursor: pointer; }
-.wl-x:hover { color: var(--aero-text); border-color: #fff; }
+.wl-x:hover { color: var(--aero-text); border-color: var(--aero-text); }
 .wl-sync-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
 .wl-sync-row span { color: var(--aero-text-muted); font-size: var(--fs-footnote); }
 .wl-sync-row input { width: 160px; }

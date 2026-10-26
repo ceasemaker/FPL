@@ -39,9 +39,8 @@
 .mp-note { font-size: var(--fs-footnote); color: var(--aero-text-muted); margin: 6px 0; }
 .mp-error { padding: 16px; border-radius: var(--aero-radius-sm); border: 1px solid rgba(255, 76, 94, 0.5); background: rgba(255, 76, 94, 0.08); color: var(--aero-text); }
 .mp-error a { color: var(--aero-text); margin-left: 8px; }
-.mp-skeleton { height: 120px; border-radius: var(--aero-radius); margin: 18px 0; background: var(--aero-surface); background-size: 200% 100%; animation: mp-shimmer 1.4s infinite; }
+.mp-skeleton { height: 120px; border-radius: var(--aero-radius); margin: 18px 0; background: var(--aero-surface); }
 .mp-skeleton.tall { height: 360px; }
-@keyframes mp-shimmer { to { background-position: -200% 0; } }
 
 /* ---------- scrubber */
 .mp-scrub { padding: 16px 18px 14px; }
@@ -60,7 +59,7 @@
 .mp-cursor { stroke: var(--aero-lime); stroke-width: 2; }
 .mp-pin { cursor: pointer; }
 .mp-pin-bg { fill: transparent; }
-.mp-pin:hover .mp-pin-bg { fill: #2a2b2c; }
+.mp-pin:hover .mp-pin-bg { fill: var(--aero-surface-raised); }
 .mp-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; font-size: var(--fs-caption); color: var(--aero-text-muted); }
 .mp-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .mp-swatch { width: 12px; height: 12px; border-radius: var(--aero-radius-chip); display: inline-block; }
@@ -72,14 +71,14 @@
 .mp-pitch-card { padding: 14px; }
 .mp-pitch-head { display: flex; justify-content: space-between; align-items: center; font-size: var(--fs-footnote); color: var(--aero-text-dim); margin-bottom: 10px; }
 .mp-pitch-head b { color: var(--aero-text); }
-.mp-pitch { position: relative; width: 100%; aspect-ratio: 105 / 68; border-radius: var(--aero-radius-sm); overflow: hidden; background: repeating-linear-gradient(90deg, #17241a 0 9.5%, #1a291d 9.5% 19%); border: 1px solid #2b3a2d; }
-.mp-pitch.portrait { aspect-ratio: 68 / 100; background: repeating-linear-gradient(0deg, #17241a 0 9.5%, #1a291d 9.5% 19%); }
+.mp-pitch { position: relative; width: 100%; aspect-ratio: 105 / 68; border-radius: var(--aero-radius-sm); overflow: hidden; background: repeating-linear-gradient(90deg, var(--aero-pitch-a) 0 9.5%, var(--aero-pitch-b) 9.5% 19%); border: 1px solid var(--aero-pitch-line); }
+.mp-pitch.portrait { aspect-ratio: 68 / 100; background: repeating-linear-gradient(0deg, var(--aero-pitch-a) 0 9.5%, var(--aero-pitch-b) 9.5% 19%); }
 .mp-lines { position: absolute; inset: 0; width: 100%; height: 100%; }
 .mp-lines * { fill: none; stroke: rgba(255, 255, 255, 0.16); stroke-width: 0.35; }
 .mp-tok { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 3px; transition: left 0.35s cubic-bezier(0.16, 1, 0.3, 1), top 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s; }
 .mp-tok i { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; font-style: normal; font-size: var(--fs-caption); font-weight: 600; position: relative; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4); }
 .mp-tok.h i { background: var(--mp-home); color: var(--aero-bg); }
-.mp-tok.a i { background: #3b3d3f; color: var(--aero-text); border: 1px solid #5a5c5e; }
+.mp-tok.a i { background: var(--aero-surface-hover); color: var(--aero-text); border: 1px solid var(--aero-line-strong); }
 .mp-tok > span { font-size: var(--fs-caption); font-weight: 600; color: var(--aero-text); white-space: nowrap; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8); max-width: 84px; overflow: hidden; text-overflow: ellipsis; }
 .mp-cap { position: absolute; top: -4px; right: -6px; width: 14px; height: 14px; border-radius: 50%; background: var(--aero-text); color: var(--aero-bg); font-size: var(--fs-caption); font-weight: 600; display: grid; place-items: center; }
 .mp-marks { position: absolute; bottom: -3px; left: -8px; display: flex; gap: 1px; }
@@ -128,11 +127,11 @@
 .mp-zones { padding: 16px 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .mp-zones h3 { margin: 0 0 4px; font-size: var(--fs-footnote); }
 .mp-zones p { margin: 0 0 10px; font-size: var(--fs-caption); color: var(--aero-text-muted); }
-.mp-goalmouth { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 38px); border: 2px solid #d9d9d9; border-bottom: 0; border-radius: var(--aero-radius-chip) var(--aero-radius-chip) 0 0; background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.035) 0 6px, transparent 6px 12px); }
+.mp-goalmouth { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 38px); border: 2px solid var(--aero-us); border-bottom: 0; border-radius: var(--aero-radius-chip) var(--aero-radius-chip) 0 0; background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.035) 0 6px, transparent 6px 12px); }
 .mp-goalmouth div { display: flex; align-items: center; justify-content: center; gap: 4px; font-size: var(--fs-footnote); font-weight: 600; border: 1px dashed rgba(255, 255, 255, 0.08); }
 .mp-goalmouth .g { display: inline-flex; align-items: center; gap: 2px; }
 .mp-goalmouth .s { color: var(--aero-text-dim); }
-.mp-goalline { height: 2px; background: #d9d9d9; margin-bottom: 12px; }
+.mp-goalline { height: 2px; background: var(--aero-us); margin-bottom: 12px; }
 .mp-box { border: 1px solid rgba(255, 255, 255, 0.28); border-top: 0; height: 120px; display: grid; grid-template-rows: 68px 1fr; }
 .mp-box .in { display: grid; grid-template-columns: 1fr 1.2fr 1fr; border-bottom: 1px solid rgba(255, 255, 255, 0.28); margin: 0 18%; }
 .mp-box .in div, .mp-box .out { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: var(--fs-body); font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -144,7 +143,7 @@
 
 /* ---------- players */
 .mp-tools { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; border: 0; background: var(--aero-fill); border-radius: var(--aero-radius-sm); padding: 2px; }
-.mp-tools button { height: 32px; padding: 0 13px; border-radius: 8px; border: 0; background: transparent; color: var(--aero-text); font-size: var(--fs-footnote); font-weight: 500; cursor: pointer; }
+.mp-tools button { height: 32px; padding: 0 13px; border-radius: calc(var(--aero-radius-sm) - 2px); border: 0; background: transparent; color: var(--aero-text); font-size: var(--fs-footnote); font-weight: 500; cursor: pointer; }
 .mp-tools button[aria-pressed="true"] { background: var(--aero-segment-on); color: var(--aero-text); border-color: transparent; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); }
 .mp-tbl-wrap { overflow: auto; border-radius: var(--aero-radius); border: 0; background: var(--aero-surface); }
 .mp-table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: var(--fs-footnote); }
@@ -178,7 +177,7 @@
 .mp-form-row .code { width: 34px; }
 .mp-form-row .chips { display: flex; gap: 4px; flex-wrap: wrap; }
 .mp-form-row .chip { width: 30px; height: 30px; border-radius: var(--aero-radius-chip); display: grid; place-items: center; font-size: var(--fs-caption); font-weight: 600; background: var(--aero-surface); border: 1px solid var(--aero-line-strong); color: var(--aero-text-dim); line-height: 1.05; text-align: center; text-decoration: none; }
-.mp-form-row .chip:hover { border-color: #fff; }
+.mp-form-row .chip:hover { border-color: var(--aero-text); }
 .mp-form-row .chip.W { border-color: rgba(165, 255, 1, 0.6); color: var(--aero-lime); }
 .mp-form-row .chip.L { border-color: rgba(255, 76, 94, 0.6); color: var(--aero-negative); }
 .mp-h2h { list-style: none; margin: 0; padding: 0; }
@@ -258,7 +257,7 @@
 .mp-goalmouth .n.scored, .mp-zone-key .n.scored { box-shadow: inset 0 0 0 2px var(--aero-lime); color: var(--aero-text); }
 .mp-zone-key { grid-column: 1 / -1; display: block; line-height: 2; margin: 4px 0 0; font-size: var(--fs-caption); color: var(--aero-text-muted); }
 .mp-zone-key .n { display: inline-grid; place-items: center; min-width: 18px; height: 18px; border-radius: var(--aero-radius-sm); font-size: var(--fs-caption); font-weight: 600; color: var(--aero-text-dim); }
-.mp-tbl-wrap { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
+.mp-tbl-wrap { -webkit-mask-image: linear-gradient(90deg, black calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, black calc(100% - 28px), transparent); }
 @media (min-width: 1069px) { .mp-tbl-wrap { -webkit-mask-image: none; mask-image: none; } }
 /* portrait pitch: which side is which */
 .mp-edge { margin: 6px 0; text-align: center; font-size: var(--fs-caption); font-weight: 600; color: var(--aero-text-muted); }

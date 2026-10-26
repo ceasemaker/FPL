@@ -5,7 +5,7 @@
 .pp-photo { position: relative; width: 96px; height: 116px; border-radius: var(--aero-radius); background: var(--aero-surface); border: 0; overflow: hidden; display: flex; align-items: flex-end; justify-content: center; }
 .pp-photo img:first-child { width: 96px; height: auto; display: block; }
 .pp-badge { position: absolute; top: 6px; left: 6px; width: 24px !important; height: 24px; }
-.pp-title h1 { margin: 0; font-size: var(--fs-large-title); letter-spacing: -0.02em; line-height: 1.05; }
+.pp-title h1 { margin: 0; font-size: var(--fs-title); letter-spacing: -0.02em; line-height: 1.05; }
 .pp-title > p { margin: 6px 0 0; color: var(--aero-text-dim); font-size: var(--fs-footnote); }
 .pp-title > p a { color: var(--aero-text); text-decoration: none; font-weight: 600; }
 .pp-title > p a:hover { color: var(--aero-text); }
@@ -44,11 +44,11 @@
 .pp-next .o { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pp-next .mp-note { padding: 10px 16px; }
 .pp-fdr { font-size: var(--fs-caption); font-weight: 600; padding: 3px 7px; border-radius: var(--aero-radius-chip); color: var(--aero-bg); }
-.pp-fdr.fdr-1 { background: rgba(184, 233, 134, 0.18); color: var(--aero-fdr-2); }
-.pp-fdr.fdr-2 { background: rgba(184, 233, 134, 0.12); color: var(--aero-fdr-2); }
-.pp-fdr.fdr-3 { background: rgba(255, 255, 255, 0.08); color: var(--aero-text-dim); }
-.pp-fdr.fdr-4 { background: rgba(226, 183, 91, 0.16); color: var(--aero-warn); }
-.pp-fdr.fdr-5 { background: rgba(255, 76, 94, 0.18); color: #ff7a87; }
+.pp-fdr.fdr-1 { background: var(--aero-tint-easiest); color: var(--aero-fdr-2); }
+.pp-fdr.fdr-2 { background: var(--aero-tint-easy); color: var(--aero-fdr-2); }
+.pp-fdr.fdr-3 { background: var(--aero-tint-neutral); color: var(--aero-text-dim); }
+.pp-fdr.fdr-4 { background: var(--aero-tint-warn); color: var(--aero-warn); }
+.pp-fdr.fdr-5 { background: var(--aero-tint-hard); color: var(--aero-negative-soft); }
 
 .pp-fpl { margin: 0; padding: 6px 18px; }
 .pp-fpl div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--aero-line); font-size: var(--fs-footnote); }

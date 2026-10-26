@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useState } from "react";
 import "./PriceChangePredictorPage.css";
 import { PlayerModal } from "../components/PlayerModal";
 import { PriceTracker } from "../components/priceChange/PriceTracker";
+import { colour, series as chartSeries } from "../styles/tokens";
 
 interface PriceSignalPlayer {
   id: number;
@@ -94,8 +95,8 @@ function Sparkline({
     <svg className={`sparkline ${accent}`} viewBox={`0 0 ${width} ${height}`} role="img">
       <defs>
         <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={accent === "rise" ? "#22c55e" : "#ef4444"} stopOpacity="0.55" />
-          <stop offset="100%" stopColor={accent === "rise" ? "#22c55e" : "#ef4444"} stopOpacity="0.05" />
+          <stop offset="0%" stopColor={accent === "rise" ? colour.lime : colour.negative} stopOpacity="0.55" />
+          <stop offset="100%" stopColor={accent === "rise" ? colour.lime : colour.negative} stopOpacity="0.05" />
         </linearGradient>
       </defs>
       {areaPath && <path d={areaPath} fill={`url(#${gradientId})`} />}
@@ -103,7 +104,7 @@ function Sparkline({
         <path
           d={linePath}
           fill="none"
-          stroke={accent === "rise" ? "#22c55e" : "#ef4444"}
+          stroke={accent === "rise" ? colour.lime : colour.negative}
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -126,7 +127,7 @@ function MultiLineChart({
   const height = 280;
   const padding = 44;
   const rightPadding = 56;
-  const palette = ["#a5ff01", "#38bdf8", "#a78bfa", "#f59e0b", "#ff4c5e"];
+  const palette = chartSeries.slice(0, 5);
   const formatValue = valueFormatter ?? ((value: number) => value.toFixed(1));
 
   const allValues = series.flatMap((item) => item.points.map((point) => point.value));
@@ -149,8 +150,8 @@ function MultiLineChart({
         <defs>
           {/* Graphite plot ground, matching the surrounding cards. */}
           <linearGradient id="ownership-bg" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#1a1b1b" />
-            <stop offset="100%" stopColor="#131414" />
+            <stop offset="0%" stopColor={colour.surface} />
+            <stop offset="100%" stopColor={colour.ink} />
           </linearGradient>
           {palette.map((color, idx) => (
             <linearGradient key={color} id={`line-${idx}`} x1="0" y1="0" x2="1" y2="0">
@@ -233,7 +234,7 @@ function MultiLineChart({
                   cy={lastPoint[1]}
                   r="4.5"
                   fill={color}
-                  stroke="#0f172a"
+                  stroke={colour.ink}
                   strokeWidth="1.5"
                 />
               )}

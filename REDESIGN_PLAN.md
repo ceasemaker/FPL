@@ -205,12 +205,10 @@ Done means the audit script shows at most 7 font sizes, no raw hex outside the
 token file, 4 radii and 0 all-caps labels, and the per-page alignment scan
 from 26 Oct comes back clean at 1440px and 375px.
 
-Where it stands after the first pass (26 Oct): 0 all-caps labels; every
-font size in page stylesheets is one of the seven tokens (the rest are
-`em`/`inherit` values relative to those); 3 letter-spacing values; 7
-breakpoints (1068px and 734px, plus a few small-phone rules under 560px);
-84 raw hex colours, mostly team, chart and status colours with no token yet.
-Every route scanned at 375px: no sideways scroll, no all-caps text, and lime
-fills only on primary buttons and legend dots. Still to do: fold the
-remaining hex values into tokens, and remove the rest of the legacy rules
-in `theme.css`.
+Where it stands (26 Oct, second pass): every target is met. The audit reads
+7 font sizes, 3 weights, 3 tracking values, 4 radii, 2 breakpoints, 0 raw
+hex colours outside the token files (`design-system.css` and its JavaScript
+mirror `styles/tokens.ts`) and 0 all-caps labels. `theme.css` is gone: its
+base rules live in `design-system.css`, and 26 unused components and pages
+were deleted with it. Every route was checked at 1440px and 375px: no
+sideways scroll, nothing under 12px, no all-caps text.

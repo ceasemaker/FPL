@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import "./PlayerGameweekModal.css";
 
 interface PlayerGameweekModalProps {
   playerId: number;
@@ -116,7 +117,7 @@ const PlayerGameweekModal: React.FC<PlayerGameweekModalProps> = ({
     return (
       <div className="modal-overlay" onClick={onClose}>
         <div className="modal-content gw-stats-modal" onClick={(e) => e.stopPropagation()}>
-          <div className="loading-spinner"></div>
+          <p className="aero-loading">Loading the gameweek…</p>
         </div>
       </div>
     );
@@ -126,8 +127,8 @@ const PlayerGameweekModal: React.FC<PlayerGameweekModalProps> = ({
     return (
       <div className="modal-overlay" onClick={onClose}>
         <div className="modal-content gw-stats-modal" onClick={(e) => e.stopPropagation()}>
-          <button className="modal-close-x" onClick={onClose}>
-            ×
+          <button type="button" className="modal-close-x" onClick={onClose} aria-label="Close">
+            <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
           </button>
           <p>No data available for this gameweek.</p>
         </div>
@@ -138,8 +139,8 @@ const PlayerGameweekModal: React.FC<PlayerGameweekModalProps> = ({
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content gw-stats-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close-x" onClick={onClose}>
-          ×
+        <button type="button" className="modal-close-x" onClick={onClose} aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
         </button>
 
         <div className="gw-modal-header">
@@ -151,19 +152,18 @@ const PlayerGameweekModal: React.FC<PlayerGameweekModalProps> = ({
               alt="Team"
               className="gw-team-badge"
             />
-            <span className="gw-separator">•</span>
-            Gameweek {gameweek} Performance
+            <span>Gameweek {gameweek}</span>
           </p>
         </div>
 
         <div className="gw-total-points">
-          <div className="gw-points-label">Total Points</div>
+          <div className="gw-points-label">Total points</div>
           <div className="gw-points-value">{stats.total_points}</div>
         </div>
 
         {explain.length > 0 && (
           <div className="gw-points-breakdown">
-            <h3>Points Breakdown</h3>
+            <h3>Where the points came from</h3>
             {explain.map((fixture, idx) => (
               <div key={idx} className="gw-fixture-breakdown">
                 {explain.length > 1 && (
@@ -210,8 +210,8 @@ const PlayerGameweekModal: React.FC<PlayerGameweekModalProps> = ({
           
           {stats.clean_sheets > 0 && (
             <div className="gw-stat-card">
-              <div className="gw-stat-label">Clean Sheet</div>
-              <div className="gw-stat-value">✓</div>
+              <div className="gw-stat-label">Clean sheet</div>
+              <div className="gw-stat-value">Yes</div>
             </div>
           )}
           
@@ -224,49 +224,49 @@ const PlayerGameweekModal: React.FC<PlayerGameweekModalProps> = ({
           
           {stats.goals_conceded > 0 && (
             <div className="gw-stat-card">
-              <div className="gw-stat-label">Goals Conceded</div>
+              <div className="gw-stat-label">Goals conceded</div>
               <div className="gw-stat-value">{stats.goals_conceded}</div>
             </div>
           )}
           
           {stats.yellow_cards > 0 && (
             <div className="gw-stat-card warning">
-              <div className="gw-stat-label">Yellow Cards</div>
+              <div className="gw-stat-label">Yellow cards</div>
               <div className="gw-stat-value">{stats.yellow_cards}</div>
             </div>
           )}
           
           {stats.red_cards > 0 && (
             <div className="gw-stat-card danger">
-              <div className="gw-stat-label">Red Cards</div>
+              <div className="gw-stat-label">Red cards</div>
               <div className="gw-stat-value">{stats.red_cards}</div>
             </div>
           )}
           
           {stats.penalties_saved > 0 && (
             <div className="gw-stat-card">
-              <div className="gw-stat-label">Penalties Saved</div>
+              <div className="gw-stat-label">Penalties saved</div>
               <div className="gw-stat-value">{stats.penalties_saved}</div>
             </div>
           )}
           
           {stats.penalties_missed > 0 && (
             <div className="gw-stat-card danger">
-              <div className="gw-stat-label">Penalties Missed</div>
+              <div className="gw-stat-label">Penalties missed</div>
               <div className="gw-stat-value">{stats.penalties_missed}</div>
             </div>
           )}
           
           {stats.own_goals > 0 && (
             <div className="gw-stat-card danger">
-              <div className="gw-stat-label">Own Goals</div>
+              <div className="gw-stat-label">Own goals</div>
               <div className="gw-stat-value">{stats.own_goals}</div>
             </div>
           )}
         </div>
 
         <div className="gw-advanced-stats">
-          <h3>Advanced Stats</h3>
+          <h3>FPL's own measures</h3>
           <div className="gw-advanced-grid">
             <div className="gw-advanced-item">
               <span className="gw-advanced-label">BPS</span>

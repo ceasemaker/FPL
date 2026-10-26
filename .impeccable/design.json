@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-25T11:46:06.878715+00:00",
+  "generatedAt": "2026-10-26T17:06:31+00:00",
   "title": "Design System: AeroFPL",
   "extensions": {
     "colorMeta": {
@@ -9,35 +9,25 @@
         "displayName": "Spring Bud Lime",
         "canonical": "#a5ff01",
         "tonalRamp": [
-          "#1e2615",
-          "#33461a",
-          "#4d5a33",
-          "#6f9e1c",
+          "#1c2a05",
+          "#2f4709",
+          "#45670d",
+          "#5f7a2e",
           "#78c800",
           "#8fe800",
           "#a5ff01",
-          "#c6ff5c"
+          "#b6ff33"
         ]
       },
-      "lime-dim": {
+      "lime-hover": {
         "role": "primary",
-        "displayName": "Pressed Lime",
-        "canonical": "#78c800"
+        "displayName": "Lime Hover",
+        "canonical": "#b6ff33"
       },
       "lime-wash": {
         "role": "primary",
         "displayName": "Lime Wash",
-        "canonical": "rgba(165, 255, 1, 0.12)"
-      },
-      "band-olive": {
-        "role": "secondary",
-        "displayName": "Olive Band",
-        "canonical": "#6f9e1c"
-      },
-      "band-moss": {
-        "role": "secondary",
-        "displayName": "Moss Band",
-        "canonical": "#33461a"
+        "canonical": "rgba(165, 255, 1, 0.10)"
       },
       "ink": {
         "role": "neutral",
@@ -45,256 +35,272 @@
         "canonical": "#101011",
         "tonalRamp": [
           "#101011",
-          "#151616",
-          "#171818",
-          "#191919",
-          "#1f2020",
-          "#242424",
-          "#2e2f30",
-          "#3a3b3c"
+          "#1b1b1d",
+          "#262628",
+          "#2e2e31",
+          "#636366",
+          "#86868b",
+          "#a1a1a6",
+          "#f5f5f7"
         ]
       },
       "surface": {
         "role": "neutral",
-        "displayName": "Graphite Surface",
-        "canonical": "#191919"
+        "displayName": "Graphite",
+        "canonical": "#1b1b1d"
       },
       "surface-raised": {
         "role": "neutral",
-        "displayName": "Graphite Raised",
-        "canonical": "#1f2020"
+        "displayName": "Raised Graphite",
+        "canonical": "#262628"
       },
       "surface-hover": {
         "role": "neutral",
-        "displayName": "Graphite Hover",
-        "canonical": "#242424"
+        "displayName": "Hover Graphite",
+        "canonical": "#2e2e31"
       },
-      "sheet": {
+      "fill": {
         "role": "neutral",
-        "displayName": "Sheet",
-        "canonical": "#151616"
+        "displayName": "Tertiary Fill",
+        "canonical": "rgba(118, 118, 128, 0.24)"
       },
-      "row": {
+      "segment-on": {
         "role": "neutral",
-        "displayName": "Row",
-        "canonical": "#171818"
-      },
-      "row-alt": {
-        "role": "neutral",
-        "displayName": "Row Alt",
-        "canonical": "#1a1b1b"
-      },
-      "row-hover": {
-        "role": "neutral",
-        "displayName": "Row Hover",
-        "canonical": "#212222"
-      },
-      "row-selected": {
-        "role": "neutral",
-        "displayName": "Row Selected",
-        "canonical": "#1e2615"
+        "displayName": "Selected Segment",
+        "canonical": "#636366"
       },
       "line": {
         "role": "neutral",
         "displayName": "Hairline",
-        "canonical": "#2e2f30"
+        "canonical": "rgba(255, 255, 255, 0.09)"
       },
       "line-strong": {
         "role": "neutral",
         "displayName": "Strong Hairline",
-        "canonical": "#3a3b3c"
+        "canonical": "rgba(255, 255, 255, 0.14)"
       },
       "text": {
         "role": "neutral",
-        "displayName": "White",
-        "canonical": "#ffffff",
-        "tonalRamp": [
-          "#3a3b3c",
-          "#57595a",
-          "#8f8f8f",
-          "#9c9c9c",
-          "#b7b7b7",
-          "#c8c8c8",
-          "#f4f4f2",
-          "#ffffff"
-        ]
+        "displayName": "Off-white",
+        "canonical": "#f5f5f7"
+      },
+      "text-soft": {
+        "role": "neutral",
+        "displayName": "Soft Text",
+        "canonical": "#d1d1d6"
       },
       "text-dim": {
         "role": "neutral",
-        "displayName": "Dim Text",
-        "canonical": "#b7b7b7"
+        "displayName": "Secondary Text",
+        "canonical": "#a1a1a6"
       },
       "text-muted": {
         "role": "neutral",
-        "displayName": "Muted Text",
-        "canonical": "#8f8f8f"
-      },
-      "paper": {
-        "role": "neutral",
-        "displayName": "Paper",
-        "canonical": "#f4f4f2"
-      },
-      "side-us": {
-        "role": "secondary",
-        "displayName": "Us Light",
-        "canonical": "#e8e8e8"
-      },
-      "side-them": {
-        "role": "secondary",
-        "displayName": "Them Grey",
-        "canonical": "#8f8f8f"
-      },
-      "comp-europe": {
-        "role": "tertiary",
-        "displayName": "Europe Blue",
-        "canonical": "#7aa7ff",
-        "tonalRamp": [
-          "#0f1a33",
-          "#1a2c55",
-          "#284178",
-          "#3a589c",
-          "#5277c0",
-          "#7aa7ff",
-          "#a6c4ff",
-          "#d3e2ff"
-        ]
-      },
-      "comp-cup": {
-        "role": "tertiary",
-        "displayName": "Cup Violet",
-        "canonical": "#c59bff",
-        "tonalRamp": [
-          "#1f1233",
-          "#331f55",
-          "#4a2f7a",
-          "#62429e",
-          "#8a68d6",
-          "#c59bff",
-          "#dbc2ff",
-          "#efe3ff"
-        ]
+        "displayName": "Tertiary Text",
+        "canonical": "#86868b"
       },
       "negative": {
         "role": "status",
         "displayName": "Coral",
-        "canonical": "#ff4c5e"
+        "canonical": "#ff4c5e",
+        "tonalRamp": [
+          "#2a0d11",
+          "#4a161d",
+          "#7a3b3b",
+          "#b8303f",
+          "#ff4c5e",
+          "#ff7a87",
+          "#ffb4bc",
+          "#ffe0e4"
+        ]
+      },
+      "negative-soft": {
+        "role": "status",
+        "displayName": "Soft Coral",
+        "canonical": "#ff7a87"
       },
       "warn": {
         "role": "status",
         "displayName": "Amber",
-        "canonical": "#e2b75b"
+        "canonical": "#e2b75b",
+        "tonalRamp": [
+          "#2a210d",
+          "#4a3a17",
+          "#76602a",
+          "#a8873f",
+          "#e2b75b",
+          "#f5d06f",
+          "#f8e0a0",
+          "#fcf0d2"
+        ]
+      },
+      "warn-soft": {
+        "role": "status",
+        "displayName": "Soft Amber",
+        "canonical": "#f5d06f"
+      },
+      "info": {
+        "role": "tertiary",
+        "displayName": "Info Cyan",
+        "canonical": "#64d2ff"
+      },
+      "us": {
+        "role": "secondary",
+        "displayName": "Us Light",
+        "canonical": "#e8e8e8"
+      },
+      "them": {
+        "role": "secondary",
+        "displayName": "Them Grey",
+        "canonical": "#8f8f8f"
+      },
+      "europe": {
+        "role": "secondary",
+        "displayName": "Europe Blue",
+        "canonical": "#7aa7ff"
+      },
+      "cup": {
+        "role": "secondary",
+        "displayName": "Cup Violet",
+        "canonical": "#c59bff"
       },
       "fdr-2": {
         "role": "status",
-        "displayName": "FDR 2 Pale Lime",
+        "displayName": "FDR Easy Pale Lime",
         "canonical": "#b8e986"
       },
       "fdr-3": {
         "role": "status",
         "displayName": "FDR 3 Sage",
         "canonical": "#95ae67"
+      },
+      "fdr-4": {
+        "role": "status",
+        "displayName": "FDR 4 Amber",
+        "canonical": "#e2b75b"
+      },
+      "fdr-5": {
+        "role": "status",
+        "displayName": "FDR 5 Coral",
+        "canonical": "#ff4c5e"
+      },
+      "pitch-a": {
+        "role": "neutral",
+        "displayName": "Pitch Stripe A",
+        "canonical": "#17241a"
+      },
+      "pitch-b": {
+        "role": "neutral",
+        "displayName": "Pitch Stripe B",
+        "canonical": "#1a291d"
+      },
+      "pitch-line": {
+        "role": "neutral",
+        "displayName": "Pitch Line",
+        "canonical": "#2b3a2d"
       }
     },
     "typographyMeta": {
-      "scoreboard": {
-        "displayName": "Scoreboard",
-        "purpose": "The Match page score only."
-      },
-      "display": {
-        "displayName": "Display",
-        "purpose": "Page titles; club, player and match team names tune within the range."
-      },
-      "headline": {
-        "displayName": "Headline",
-        "purpose": "Bottom-sheet titles."
-      },
-      "section": {
-        "displayName": "Section",
-        "purpose": "Football-page section titles, over a muted note line."
+      "large-title": {
+        "displayName": "Large title",
+        "purpose": "The Home heading only."
       },
       "title": {
         "displayName": "Title",
-        "purpose": "Card titles and the momentum band heading."
+        "purpose": "Page titles in the page header."
       },
-      "summary": {
-        "displayName": "Summary",
-        "purpose": "Plain-language paragraph under a header, 68-80ch."
+      "section": {
+        "displayName": "Section",
+        "purpose": "Section headings, fact-strip figures, the sidebar wordmark."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Panel titles and player names in panels."
       },
       "body": {
         "displayName": "Body",
-        "purpose": "Descriptions and notes, about 62ch."
+        "purpose": "Copy, table cells, controls, sidebar labels."
       },
       "data": {
         "displayName": "Data",
-        "purpose": "Table cells with tabular numerals, numbers right-aligned."
+        "purpose": "Numbers in tables: Body at 500 with tabular figures, right-aligned."
       },
-      "label": {
-        "displayName": "Label",
-        "purpose": "Control legends, column groups and sub-lines, sentence case."
+      "footnote": {
+        "displayName": "Footnote",
+        "purpose": "Meta, notes, column headers, field labels, segmented-control text."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Chips, FDR, price-change text, legends. The smallest size (12px)."
       }
     },
     "shadows": [
       {
-        "name": "card-ambient",
-        "value": "0 14px 38px rgba(0, 0, 0, 0.22)",
-        "purpose": "Content cards (.aero-card), every .mp-sheet, the calendar grid container."
-      },
-      {
-        "name": "menu",
-        "value": "0 18px 40px rgba(0, 0, 0, 0.5)",
-        "purpose": "Dropdown panels."
-      },
-      {
-        "name": "tray",
-        "value": "0 16px 40px rgba(0, 0, 0, 0.55)",
-        "purpose": "Floating compare tray."
-      },
-      {
         "name": "segment-lift",
-        "value": "0 1px 2px rgba(0, 0, 0, 0.4)",
-        "purpose": "Active option in a tab switch."
+        "value": "0 1px 3px rgba(0, 0, 0, 0.3)",
+        "purpose": "Selected option in a segmented control; the only resting shadow."
+      },
+      {
+        "name": "inset-hairline",
+        "value": "inset 0 1px var(--aero-line)",
+        "purpose": "Row separators in tables and fact strips."
+      },
+      {
+        "name": "lime-ring",
+        "value": "0 0 0 2px var(--aero-lime) inset",
+        "purpose": "Selected card in compare mode; a just-on pitch token."
       },
       {
         "name": "token-lift",
         "value": "0 2px 6px rgba(0, 0, 0, 0.4)",
-        "purpose": "Player tokens on the match pitch."
+        "purpose": "Player tokens over the pitch stripes."
       },
       {
         "name": "focus-ring",
         "value": "outline: 2px solid #a5ff01; outline-offset: 2px",
-        "purpose": "Focus on every interactive element."
+        "purpose": "Focus on every interactive element; no glow."
+      },
+      {
+        "name": "sidebar-material",
+        "value": "background: rgba(24, 24, 26, 0.72); backdrop-filter: saturate(180%) blur(20px)",
+        "purpose": "The sidebar and phone top bar; the one translucent surface."
       }
     ],
     "motion": [
       {
-        "name": "ease-out-expo",
-        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
-        "purpose": "Bottom-sheet rise, 0.22s; removed under prefers-reduced-motion."
+        "name": "state",
+        "value": "0.15s ease",
+        "purpose": "Colour and background changes on hover and press."
       },
       {
-        "name": "state",
-        "value": "0.15s-0.18s ease",
-        "purpose": "Background, border and colour changes on controls."
+        "name": "segment",
+        "value": "0.2s ease-out",
+        "purpose": "The selected segment changing."
+      },
+      {
+        "name": "sheet-rise",
+        "value": "0.22s cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Phone bottom sheet opening."
       },
       {
         "name": "pitch-glide",
         "value": "0.35s cubic-bezier(0.16, 1, 0.3, 1)",
-        "purpose": "Pitch tokens moving to the cursor minute; removed under prefers-reduced-motion."
+        "purpose": "Pitch tokens following the user's match cursor."
       },
       {
-        "name": "shimmer",
-        "value": "1.4s infinite",
-        "purpose": "Skeleton loading blocks; removed under prefers-reduced-motion."
+        "name": "reduced-motion",
+        "value": "transition-duration and animation-duration 0.01ms",
+        "purpose": "Global under prefers-reduced-motion."
       }
     ],
     "breakpoints": [
       {
-        "name": "rail-collapse",
-        "value": "1050px"
+        "name": "tablet",
+        "value": "1068px"
       },
       {
         "name": "phone",
-        "value": "720px"
+        "value": "734px"
       }
     ]
   },
@@ -303,163 +309,150 @@
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "The one lit action per region.",
-      "html": "<button class=\"ds-btn-primary\">Compare 2</button>",
-      "css": ".ds-btn-primary{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 18px;border-radius:var(--aero-radius-sm,10px);border:1px solid transparent;background:linear-gradient(100deg,#b8ff37,#8fe800);color:#101011;font:700 0.85rem Inter,sans-serif;cursor:pointer;transition:background .18s ease}.ds-btn-primary:hover{background:linear-gradient(100deg,#c6ff5c,#9dff0a)}.ds-btn-primary:focus-visible{outline:2px solid #a5ff01;outline-offset:2px}"
+      "description": "The one lime action in a screen area.",
+      "html": "<button class=\"ds-btn-primary\">Save plan</button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 18px;border:0;border-radius:980px;background:var(--aero-lime,#a5ff01);color:var(--aero-bg,#101011);font:500 0.9375rem/1 -apple-system,BlinkMacSystemFont,\"SF Pro Text\",Inter,\"Segoe UI\",Roboto,sans-serif;cursor:pointer;transition:background .15s ease}.ds-btn-primary:hover{background:#b6ff33}.ds-btn-primary:focus-visible{outline:2px solid var(--aero-lime,#a5ff01);outline-offset:2px}"
     },
     {
       "name": "Secondary Button",
       "kind": "button",
       "refersTo": "button-secondary",
-      "description": "Default action button.",
+      "description": "The default button: raised graphite pill.",
       "html": "<button class=\"ds-btn\">Share link</button>",
-      "css": ".ds-btn{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 18px;border-radius:10px;border:1px solid #3a3b3c;background:#1f2020;color:#fff;font:600 0.85rem Inter,sans-serif;cursor:pointer;transition:background .18s ease}.ds-btn:hover{background:#242424}.ds-btn:focus-visible{outline:2px solid #a5ff01;outline-offset:2px}.ds-btn:disabled{opacity:.45;cursor:not-allowed}"
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 18px;border:0;border-radius:980px;background:var(--aero-surface-raised,#262628);color:var(--aero-text,#f5f5f7);font:500 0.9375rem/1 -apple-system,BlinkMacSystemFont,\"SF Pro Text\",Inter,\"Segoe UI\",Roboto,sans-serif;cursor:pointer;transition:background .15s ease}.ds-btn:hover{background:var(--aero-surface-hover,#2e2e31)}.ds-btn:disabled{opacity:.45;cursor:not-allowed}.ds-btn:focus-visible{outline:2px solid var(--aero-lime,#a5ff01);outline-offset:2px}"
     },
     {
-      "name": "Filter Segments",
+      "name": "Segmented Control",
       "kind": "custom",
-      "refersTo": "filter-segment",
-      "description": "Graphite track; the pressed option is solid lime with ink text.",
-      "html": "<div class=\"ds-fseg\" role=\"group\" aria-label=\"Competition\"><button aria-pressed=\"true\">All</button><button aria-pressed=\"false\">Premier League</button><button aria-pressed=\"false\">Europe</button><button aria-pressed=\"false\">Cups</button></div>",
-      "css": ".ds-fseg{display:inline-flex;gap:2px;padding:3px;border:1px solid #3a3b3c;border-radius:10px;background:#191919}.ds-fseg button{border:0;background:none;color:#b7b7b7;padding:6px 12px;border-radius:7px;font:700 .78rem Inter,sans-serif;cursor:pointer;white-space:nowrap}.ds-fseg button:hover{color:#fff}.ds-fseg button[aria-pressed=true]{background:#a5ff01;color:#101011}.ds-fseg button:focus-visible{outline:2px solid #a5ff01;outline-offset:2px}"
+      "refersTo": "segmented-option-selected",
+      "description": "Five options or fewer; the selected segment is grey, never lime, at a concentric inner radius.",
+      "html": "<div class=\"ds-seg\" role=\"group\" aria-label=\"Position\"><button aria-pressed=\"true\">All</button><button aria-pressed=\"false\">GK</button><button aria-pressed=\"false\">DEF</button><button aria-pressed=\"false\">MID</button><button aria-pressed=\"false\">FWD</button></div>",
+      "css": ".ds-seg{display:inline-flex;padding:2px;border-radius:10px;background:var(--aero-fill,rgba(118,118,128,.24))}.ds-seg button{height:32px;min-width:44px;padding:0 14px;border:0;border-radius:calc(10px - 2px);background:none;color:var(--aero-text,#f5f5f7);font:500 0.8125rem/1 -apple-system,BlinkMacSystemFont,\"SF Pro Text\",Inter,\"Segoe UI\",Roboto,sans-serif;cursor:pointer;transition:background .2s ease-out}.ds-seg button[aria-pressed=true]{background:var(--aero-segment-on,#636366);box-shadow:0 1px 3px rgba(0,0,0,.3)}.ds-seg button:focus-visible{outline:2px solid #a5ff01;outline-offset:2px}"
     },
     {
-      "name": "Sheet with Section Title",
-      "kind": "card",
-      "refersTo": "content-sheet",
-      "description": "Football-page section: 1.3rem title, muted note with an inline provenance badge, then a gradient sheet of compare rows with us-light / them-grey split bars.",
-      "html": "<div class=\"ds-sec\"><h2>The full match</h2><p>Totals over 90 minutes. <span class=\"ds-badge\">Full-match totals</span></p></div><div class=\"ds-sheet\"><div class=\"ds-crow\"><b>1.84</b><span>Expected goals<i class=\"ds-split\"><i style=\"width:68%\"></i><i style=\"width:32%\"></i></i></span><b class=\"lo r\">0.86</b></div><div class=\"ds-crow\"><b>14</b><span>Shots<i class=\"ds-split\"><i style=\"width:58%\"></i><i style=\"width:42%\"></i></i></span><b class=\"lo r\">10</b></div></div>",
-      "css": ".ds-sec{margin:0 0 12px;font-family:Inter,sans-serif}.ds-sec h2{margin:0;font-size:1.3rem;letter-spacing:-.025em;color:#fff}.ds-sec p{margin:4px 0 0;font-size:.8rem;color:#8f8f8f}.ds-badge{display:inline-flex;margin-left:6px;padding:1px 6px;border:1px solid rgba(226,183,91,.6);border-radius:5px;color:#e2b75b;font-size:.62rem;font-weight:700}.ds-sheet{padding:8px 18px;background:linear-gradient(145deg,#1b1c1c,#151616);border:1px solid #3a3b3c;border-radius:16px;box-shadow:0 14px 38px rgba(0,0,0,.22);font-family:Inter,sans-serif;color:#fff}.ds-crow{display:grid;grid-template-columns:72px 1fr 72px;gap:10px;align-items:center;padding:9px 0;border-top:1px solid #2e2f30}.ds-crow:first-child{border-top:0}.ds-crow b{font-size:.95rem;font-variant-numeric:tabular-nums}.ds-crow b.r{text-align:right}.ds-crow b.lo{color:#8f8f8f;font-weight:500}.ds-crow span{display:flex;flex-direction:column;gap:5px;align-items:center;font-size:.76rem;color:#b7b7b7}.ds-split{display:flex;width:100%;height:4px;border-radius:4px;overflow:hidden;background:#2e2f30}.ds-split i{display:block}.ds-split i:first-child{background:#e8e8e8}.ds-split i:last-child{background:#8f8f8f}"
-    },
-    {
-      "name": "Competition Tags",
-      "kind": "chip",
-      "refersTo": "competition-tag",
-      "description": "Always-written competition tag; league neutral, Europe blue, cups violet.",
-      "html": "<span class=\"ds-ctag\">PL</span> <span class=\"ds-ctag eu\">UCL</span> <span class=\"ds-ctag eu\">UEL</span> <span class=\"ds-ctag cup\">FAC</span> <span class=\"ds-ctag cup\">EFL</span>",
-      "css": ".ds-ctag{display:inline-block;padding:2px 6px;border-radius:5px;border:1px solid #3a3b3c;color:#b7b7b7;font:800 .62rem Inter,sans-serif}.ds-ctag.eu{color:#7aa7ff;border-color:rgba(122,167,255,.5)}.ds-ctag.cup{color:#c59bff;border-color:rgba(197,155,255,.5)}"
-    },
-    {
-      "name": "Result Chips",
-      "kind": "chip",
-      "refersTo": "result-chip",
-      "description": "Form chips linking to matches: W lime, L coral on border and letter; non-league games hang a micro tag.",
-      "html": "<div class=\"ds-form\"><a href=\"#\" class=\"ds-rc W\">W<br>2-0</a><a href=\"#\" class=\"ds-rc D\">D<br>1-1</a><a href=\"#\" class=\"ds-rc L\">L<br>0-1<em>UCL</em></a><a href=\"#\" class=\"ds-rc W\">W<br>3-1<em>EFL</em></a></div>",
-      "css": ".ds-form{display:flex;gap:4px;padding-bottom:8px}.ds-rc{position:relative;width:30px;height:30px;display:grid;place-items:center;border-radius:7px;background:#191919;border:1px solid #3a3b3c;color:#b7b7b7;font:700 .6rem/1.05 Inter,sans-serif;text-align:center;text-decoration:none}.ds-rc:hover{border-color:#fff}.ds-rc:focus-visible{outline:2px solid #a5ff01;outline-offset:2px}.ds-rc.W{border-color:rgba(165,255,1,.6);color:#a5ff01}.ds-rc.L{border-color:rgba(255,76,94,.6);color:#ff4c5e}.ds-rc em{position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);font-style:normal;font-size:.48rem;font-weight:800;padding:0 3px;border-radius:3px;background:#1f2020;color:#b7b7b7;border:1px solid #3a3b3c}"
-    },
-    {
-      "name": "Navigation",
-      "kind": "nav",
-      "refersTo": "",
-      "description": "Rail with the five sections, then smaller My FPL and Data rooms groups; active row is a lime gradient.",
-      "html": "<nav class=\"ds-nav\"><div class=\"ds-grp\"><a href=\"#\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3.5 9l6.5-5.5L16.5 9v7.5h-13z\"/></svg><span>Home</span></a><a href=\"#\" class=\"active\" aria-current=\"page\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"4\" width=\"14\" height=\"13\" rx=\"2\"/><path d=\"M3 8h14M7 2.5v3M13 2.5v3\"/></svg><span>Matches</span></a><a href=\"#\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M10 2.5l6 2.5v5c0 3.5-2.6 6-6 7.5-3.4-1.5-6-4-6-7.5V5z\"/></svg><span>Teams</span></a></div><div class=\"ds-grp minor\"><p>My FPL</p><a href=\"#\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"><path d=\"M4 15l4-5 3 3 5-7\"/></svg><span>Price Monitor</span></a></div></nav>",
-      "css": ".ds-nav{display:flex;flex-direction:column;width:196px;padding:12px;background:linear-gradient(145deg,#171818,#111212 70%);border-right:1px solid #262728;font-family:Inter,sans-serif}.ds-grp{display:flex;flex-direction:column;gap:6px}.ds-grp.minor{margin-top:14px;padding-top:12px;border-top:1px solid #2a2b2c;gap:2px}.ds-grp p{margin:0 14px 6px;font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#7d7e7f}.ds-nav a{display:flex;align-items:center;gap:13px;min-height:48px;padding:0 14px;border-radius:8px;color:#c8c8c8;text-decoration:none;font-size:.86rem;transition:.18s ease}.ds-grp.minor a{min-height:38px;font-size:.8rem}.ds-nav a:hover{background:#202121;color:#fff}.ds-nav a.active{color:#101011;background:linear-gradient(100deg,#b8ff37,#6b951f)}.ds-nav a:focus-visible{outline:2px solid #a5ff01;outline-offset:2px}"
-    },
-    {
-      "name": "Search Input",
+      "name": "Search Field",
       "kind": "input",
       "refersTo": "input",
-      "description": "Icon-led search shell; lime border on focus-within.",
-      "html": "<label class=\"ds-search\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 20 20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"><circle cx=\"8.5\" cy=\"8.5\" r=\"5\"/><path d=\"M12.5 12.5l4 4\"/></svg><input placeholder=\"Search players\"></label>",
-      "css": ".ds-search{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 12px;border-radius:10px;border:1px solid #3a3b3c;background:#191919;color:#8f8f8f}.ds-search:focus-within{border-color:rgba(165,255,1,.6)}.ds-search input{width:160px;border:0;outline:0;background:transparent;color:#fff;font:400 0.86rem Inter,sans-serif}"
+      "description": "Translucent fill, no border, lime outline on keyboard focus.",
+      "html": "<label class=\"ds-field\">Search<input class=\"ds-input\" placeholder=\"Player or team\"></label>",
+      "css": ".ds-field{display:flex;flex-direction:column;gap:6px;font:400 0.8125rem -apple-system,BlinkMacSystemFont,\"SF Pro Text\",Inter,\"Segoe UI\",Roboto,sans-serif;color:var(--aero-text-dim,#a1a1a6)}.ds-input{height:36px;padding:0 12px;border:0;border-radius:10px;background:var(--aero-fill,rgba(118,118,128,.24));color:var(--aero-text,#f5f5f7);font:400 0.9375rem -apple-system,BlinkMacSystemFont,\"SF Pro Text\",Inter,\"Segoe UI\",Roboto,sans-serif}.ds-input::placeholder{color:#86868b}.ds-input:focus{outline:none}.ds-input:focus-visible{outline:2px solid #a5ff01;outline-offset:2px}"
     },
     {
-      "name": "Provenance Badge",
+      "name": "Grouped Table",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Flat graphite panel, inset hairlines, text left, numbers right, your row in lime wash.",
+      "html": "<div class=\"ds-panel\"><table class=\"ds-tbl\"><thead><tr><th class=\"t\">#</th><th class=\"t\">Team</th><th>GW</th><th>Total</th></tr></thead><tbody><tr><td class=\"t r\">1</td><th scope=\"row\">Cold Palmer</th><td>71</td><td>512</td></tr><tr class=\"me\"><td class=\"t r\">2</td><th scope=\"row\">Your team</th><td>64</td><td>498</td></tr><tr><td class=\"t r\">3</td><th scope=\"row\">Saka Potatoes</th><td>58</td><td>476</td></tr></tbody></table></div>",
+      "css": ".ds-panel{background:var(--aero-surface,#1b1b1d);border-radius:18px;padding:4px 0;font-family:-apple-system,BlinkMacSystemFont,\"SF Pro Text\",Inter,\"Segoe UI\",Roboto,sans-serif;color:var(--aero-text,#f5f5f7)}.ds-tbl{width:100%;border-collapse:collapse;font-size:0.9375rem;font-variant-numeric:tabular-nums}.ds-tbl th,.ds-tbl td{padding:10px 20px 10px 8px;text-align:right}.ds-tbl .t,.ds-tbl tbody th{text-align:left}.ds-tbl .r{padding-left:20px;width:48px;color:#a1a1a6}.ds-tbl thead th{font-size:0.8125rem;font-weight:500;color:#a1a1a6;padding-top:14px}.ds-tbl tbody th{font-weight:600}.ds-tbl td{font-weight:500}.ds-tbl tbody tr+tr>*{box-shadow:inset 0 1px rgba(255,255,255,.09)}.ds-tbl tbody tr:hover{background:rgba(255,255,255,.03)}.ds-tbl tr.me{background:rgba(165,255,1,.10)}.ds-tbl tr.me .r{color:#a5ff01;font-weight:600}"
+    },
+    {
+      "name": "FDR Chips",
       "kind": "chip",
-      "refersTo": "provenance-badge",
-      "description": "Amber tag marking a number's source limit: 'PL only' or 'Estimate'.",
-      "html": "<span class=\"ds-col\">xGOT <span class=\"ds-badge\" title=\"Counts Premier League matches only.\">PL only</span></span> <span class=\"ds-col\">Defcon <span class=\"ds-badge\">Estimate</span></span>",
-      "css": ".ds-col{color:#b7b7b7;font:600 0.82rem Inter,sans-serif}.ds-badge{display:inline-block;margin-left:6px;padding:1px 5px;border-radius:5px;border:1px solid rgba(226,183,91,.55);color:#e2b75b;font-size:.6rem;font-weight:700;letter-spacing:.03em;vertical-align:middle}"
+      "refersTo": "fdr-chip",
+      "description": "Fixture difficulty as soft tints with the rating written in; never solid lime.",
+      "html": "<span class=\"ds-fdr\" data-fdr=\"1\">1</span> <span class=\"ds-fdr\" data-fdr=\"2\">2</span> <span class=\"ds-fdr\" data-fdr=\"3\">3</span> <span class=\"ds-fdr\" data-fdr=\"4\">4</span> <span class=\"ds-fdr\" data-fdr=\"5\">5</span>",
+      "css": ".ds-fdr{display:inline-grid;place-items:center;min-width:28px;height:22px;padding:0 6px;border-radius:6px;font:500 0.75rem -apple-system,BlinkMacSystemFont,\"SF Pro Text\",Inter,\"Segoe UI\",Roboto,sans-serif;color:#a1a1a6;background:rgba(255,255,255,.08)}.ds-fdr[data-fdr='1'],.ds-fdr[data-fdr='2']{background:rgba(184,233,134,.12);color:#b8e986}.ds-fdr[data-fdr='4']{background:rgba(226,183,91,.16);color:#e2b75b}.ds-fdr[data-fdr='5']{background:rgba(255,76,94,.18);color:#ff7a87}"
     },
     {
-      "name": "Percentile Cells",
+      "name": "Chips",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Neutral and accent chips at 6px radius, Caption.",
+      "html": "<span class=\"ds-chip\">Bench boost</span> <span class=\"ds-chip accent\">New</span>",
+      "css": ".ds-chip{display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border-radius:6px;background:var(--aero-surface-raised,#262628);color:#a1a1a6;font:500 0.75rem -apple-system,BlinkMacSystemFont,\"SF Pro Text\",Inter,\"Segoe UI\",Roboto,sans-serif}.ds-chip.accent{background:rgba(165,255,1,.10);color:#a5ff01}"
+    },
+    {
+      "name": "Sidebar",
+      "kind": "nav",
+      "refersTo": "nav-item-active",
+      "description": "Translucent 220px rail; the current page is a raised row with a lime icon.",
+      "html": "<nav class=\"ds-nav\"><div class=\"ds-brand\">AeroFPL</div><div class=\"ds-grp\"><a href=\"#\"><i><svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3.5 9l6.5-5.5L16.5 9v7.5h-13z\"/></svg></i>Home</a><a href=\"#\" class=\"active\" aria-current=\"page\"><i><svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"><circle cx=\"10\" cy=\"7\" r=\"3\"/><path d=\"M4 17c.8-3 3.2-4.5 6-4.5s5.2 1.5 6 4.5\"/></svg></i>Players</a></div><div class=\"ds-grp\"><p>My FPL</p><a href=\"#\"><i><svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"><path d=\"M4 15l4-5 3 3 5-7\"/></svg></i>Transfer planner</a></div></nav>",
+      "css": ".ds-nav{display:flex;flex-direction:column;gap:20px;width:220px;padding:24px 12px;background:rgba(24,24,26,.72);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-right:1px solid rgba(255,255,255,.09);font-family:-apple-system,BlinkMacSystemFont,\"SF Pro Text\",Inter,\"Segoe UI\",Roboto,sans-serif}.ds-brand{padding:0 12px;margin-bottom:8px;font-size:1.375rem;font-weight:600;letter-spacing:-.02em;color:#f5f5f7}.ds-grp{display:flex;flex-direction:column;gap:2px}.ds-grp p{margin:0;padding:0 12px 6px;font-size:0.8125rem;font-weight:500;color:#86868b}.ds-nav a{display:flex;align-items:center;gap:10px;height:36px;padding:0 12px;border-radius:10px;color:#d1d1d6;font-size:0.9375rem;text-decoration:none;white-space:nowrap;transition:background-color .15s ease,color .15s ease}.ds-nav a:hover{background:rgba(255,255,255,.05);color:#f5f5f7}.ds-nav a.active{background:#262628;color:#f5f5f7;font-weight:500}.ds-nav i{display:grid;place-items:center;width:20px;color:#a1a1a6}.ds-nav a.active i{color:#a5ff01}.ds-nav a:focus-visible{outline:2px solid #a5ff01;outline-offset:2px}"
+    },
+    {
+      "name": "Error and Empty States",
       "kind": "custom",
-      "refersTo": "data-cell-top",
-      "description": "Five-band shading within position: colour plus weight, rank in the label.",
-      "html": "<table class=\"ds-cells\"><tr><td class=\"b4\" aria-label=\"xG 0.62, 96th percentile among forwards\">0.62</td><td class=\"b3\">0.41</td><td class=\"b2\">0.28</td><td class=\"b1\">0.17</td><td class=\"b0\">0.05</td></tr></table>",
-      "css": ".ds-cells{border-collapse:separate;border-spacing:0;font:400 0.82rem Inter,sans-serif;font-variant-numeric:tabular-nums}.ds-cells td{height:34px;padding:0 10px;text-align:right;background:#171818;color:#b7b7b7;border-bottom:1px solid #222323}.ds-cells td.b4{background:#a5ff01;color:#101011;font-weight:700}.ds-cells td.b3{background:#6f9e1c;color:#101011;font-weight:600}.ds-cells td.b2{background:#33461a;color:#fff}.ds-cells td.b0{color:#8f8f8f}.ds-cells td:hover{outline:2px solid #a5ff01;outline-offset:-2px}"
+      "refersTo": "error",
+      "description": "Honest messaging: tertiary footnote for empty, coral tint panel for errors.",
+      "html": "<p class=\"ds-empty\">No price snapshot for today yet.</p><div class=\"ds-error\">Couldn't load fixtures. Try again in a minute.</div>",
+      "css": ".ds-empty{margin:0 0 12px;color:#86868b;font:400 0.8125rem/1.4 -apple-system,BlinkMacSystemFont,\"SF Pro Text\",Inter,\"Segoe UI\",Roboto,sans-serif}.ds-error{padding:12px 16px;border:1px solid rgba(255,76,94,.4);border-radius:10px;background:rgba(255,76,94,.08);color:#ffb4bc;font:400 0.9375rem -apple-system,BlinkMacSystemFont,\"SF Pro Text\",Inter,\"Segoe UI\",Roboto,sans-serif}"
     }
   ],
   "narrative": {
-    "northStar": "The Lit Instrument Panel",
-    "overview": "AeroFPL is a dark graphite instrument for weekly FPL decisions and for reading the football behind them. The ground is near-black ink, surfaces step up in small tonal increments, and one lime voice lights only what matters: the current selection, the primary action, the best numbers, the minute or day you are standing on, and a win. Everything else stays grey so that lime always means something.\n\nDensity is high and earned. Data surfaces are sheets, not dashboards of tiles: tight rows, 1px hairlines, tabular figures, frozen identity columns. The football pages (Match, Matches, Team, Player) open with words before charts: a plain-language summary paragraph sits under every header, and every section title carries a one-line note on what the section counts and what it cannot. The product's honesty commitment is visual too: provenance and limits (\"PL only\", \"Estimate\", \"Full-match totals\") are first-class amber components, never hidden. Colour never carries meaning alone; position, weight, written tags and accessible labels travel with it.\n\nThe tokens and shared primitives live in `frontend/src/styles/design-system.css` (the `--aero-*` custom properties and `.aero-*` classes). The football pages share a second, page-scoped layer: the `.mp-*` classes in `frontend/src/pages/MatchPage.css`, which the Team and Player pages reuse by carrying `mp-page` on their root. The live navigation rail (`.command-nav*`) lives at the top and end of `frontend/src/theme.css`; the rest of `theme.css` (pure black, iOS grey, blue tertiary, pill buttons) is legacy, not the system.",
+    "northStar": "Apple Sports in AeroFPL colours",
+    "overview": "AeroFPL is a weekly FPL decision tool that now reads like one of Apple's own data apps (Sports, Stocks, Settings) set on AeroFPL's graphite ground. Headings are big and quiet, panels are flat graphite on ink with no border or shadow, rows are separated by inset hairlines, and every screen area has at most one lime thing: the primary action, or the marker that says where you are. Everything else is greys of different strengths, so the lime is always the answer to \"what do I do here?\" or \"where am I?\".\n\nDensity comes from tables and grouped lists, not from tiles. Text sits left and numbers sit right in tabular figures; there are no zebra stripes. Copy is sentence case and British English, labels are plain words (\"Search\", never \"SEARCH\"), and status (fixture difficulty, injury, price change) is shown as a soft tint or tinted text, never a solid lime block. The honesty commitment from PRODUCT.md stays visual: notes, empty states and errors are components in their own right, and data that is missing or estimated is labelled, not filled.\n\nTokens and shared primitives live in `frontend/src/styles/design-system.css` (`--aero-*`, `--fs-*`, `.aero-*`); `frontend/src/styles/tokens.ts` mirrors the colours for SVG and canvas drawing and holds the chart series. `frontend/scripts/design-audit.mjs` measures the system: 7 font sizes, 3 weights, 3 tracking values, 4 radii, 2 breakpoints, no raw hex outside the two token files, no all-caps.",
     "keyCharacteristics": [
-      "Graphite ink ground with tonal surface steps, no pure black.",
-      "One accent, lime, reserved for selection, primary action, the \"now\" marker, wins and top-band data.",
-      "Us light above the line, them grey below: position, not hue, says which side.",
-      "Inter throughout; tabular numerals on every data surface.",
-      "10px controls, 16px sheets, 7px chips and segments, pills only for toggles, chips and tags.",
-      "Authored SVG icons on a 20px grid; never glyphs.",
-      "Amber provenance badges wherever a number has a source caveat."
+      "Graphite ink ground (#101011) with flat graphite panels; depth from contrast, not shadow.",
+      "One lime thing per screen area: the primary action or where you are.",
+      "System SF stack with Inter as the fallback, on a seven-step type scale and three weights (400, 500, 600).",
+      "One centred 1200px column beside a 220px translucent sidebar; every heading, panel and table shares its left edge.",
+      "Inset hairlines, text left, numbers right, tabular figures, no zebra.",
+      "Four radii: 6px chips, 10px controls, 18px panels, pill buttons.",
+      "Sentence case, British English, no motion the user did not start."
     ],
     "rules": [
       {
-        "name": "The One Voice Rule",
-        "body": "Lime marks selection, the primary action, \"now\" (cursor, today), a win, and the best data only. If more than one non-data element per region is lime, one of them is wrong.",
+        "name": "The One Lime Rule",
+        "body": "Each screen area gets at most one lime thing: the primary action, or where you are. Positive numbers may be lime text; lime is never a fill on anything except the primary button, the cursor tag on the match timeline and legend dots.",
         "section": "colors"
       },
       {
-        "name": "The Us Above, Them Below Rule",
-        "body": "Whenever two sides are compared (home and away, for and against), the subject is the light bar above the axis or on the left, the other side the grey bar below or on the right. Position carries the meaning; the two greys only reinforce it, and a legend or key names both.",
+        "name": "The Soft Tint Rule",
+        "body": "Fixture difficulty and status are a tinted ground with matching text (12–18% alpha), never a solid block, and never colour alone: the number or word is always written in the chip.",
         "section": "colors"
       },
       {
-        "name": "The Written Tag Rule",
-        "body": "A competition is always named by its short written tag (PL, UCL, UEL, UECL, USC, EFL, FAC, CS). Europe blue and cup violet help the eye group games; the tag carries the meaning. The league is the default and stays untinted.",
+        "name": "The Quiet Heat Rule",
+        "body": "Table heat shading is a white wash whose strength follows the value within the position group (up to 16% white); only the top cells (roughly the top 7%) switch to a 20% lime tint with lime text at 600. Weight and the cell's accessible label carry the same information as the shade.",
         "section": "colors"
       },
       {
-        "name": "The Result Rule",
-        "body": "Results read W, D, L in words or letters first; W is lime, L is coral, D stays dim. On chips the colour sits on a 60% border and the letter, never on a filled background.",
+        "name": "The Data-Only Status Rule",
+        "body": "Coral and amber describe data (drops, flags, hard fixtures, caveats). They are never decoration or a second accent.",
         "section": "colors"
       },
       {
-        "name": "The Percentile Ramp Rule",
-        "body": "Data cells are shaded by percentile within the player's position (or among the 20 clubs): top fifth lime with ink text at weight 700, next fifth olive with ink text at weight 600, middle fifth moss with white text, fourth fifth unshaded dim text, bottom fifth unshaded muted text. Colour plus weight, never colour alone; every shaded cell carries its percentile and cohort in its accessible label and in a hover/focus tooltip.",
-        "section": "colors"
-      },
-      {
-        "name": "The Amber Caveat Rule",
-        "body": "Amber means \"read this number with care\". It is never decoration and never a second accent.",
-        "section": "colors"
+        "name": "The Seven Sizes Rule",
+        "body": "Every font size is one of the seven `--fs-*` tokens. Weights are 400, 500 and 600 only; tracking is 0, -0.01em or -0.02em only.",
+        "section": "typography"
       },
       {
         "name": "The Tabular Rule",
-        "body": "Every surface that shows comparable numbers, scores, minutes or dates sets `font-variant-numeric: tabular-nums` and right-aligns numeric columns.",
+        "body": "Every table sets `font-variant-numeric: tabular-nums` (globally on `table`), and any other figure that lines up with another (facts, tallies, timelines) sets it too.",
         "section": "typography"
       },
       {
-        "name": "The Sentence Case Control Rule",
-        "body": "Button and control text is sentence case with no extra tracking. The legacy global `button` style in `theme.css` uppercases with 0.3em tracking; every aero page root resets it (`text-transform: none; letter-spacing: 0`), and new surfaces must too. Uppercase tracked text appears only as structural dividers: nav group titles, calendar month marks, and competition separator rows in a match log.",
+        "name": "The Sentence Case Rule",
+        "body": "All text, including buttons, column headers and group headings, is sentence case with no added tracking. Copy is British English; identifiers and routes stay as they are.",
         "section": "typography"
       },
       {
-        "name": "The Flat Sheet Rule",
-        "body": "Tables that scroll in place inside their own bordered wrapper (the Stats Explorer sheet, the Match page's \"Every player\" table) never cast shadows; depth comes from the surface ramp and 1px lines. Short tables and lists that sit inside a content sheet ride that sheet's ambient shadow.",
+        "name": "The No Card Shadow Rule",
+        "body": "Panels are separated from the ground by colour alone. A shadow appears only on a selected segment or on an object floating over imagery (pitch tokens).",
         "section": "elevation"
       }
     ],
     "dos": [
-      "**Do** take every colour, radius and shadow from the `--aero-*` tokens in `design-system.css` rather than re-declaring hex values.",
-      "**Do** build football pages from the shared spine: breadcrumb, header, summary paragraph, `.mp-sec-title` plus `.mp-sheet` sections, source footnote.",
-      "**Do** put the subject side light and above (or left), the other side grey and below (or right), and name both in a key.",
-      "**Do** write the competition tag on every non-league game; tint is a helper, not the label.",
-      "**Do** colour results W lime and L coral on the border and letter only, with the letter always present.",
-      "**Do** use solid lime for the pressed option in filter segments and tool pills.",
-      "**Do** load crests through the `Crest` component so cup and European opponents fall back cleanly.",
-      "**Do** shade comparable numbers by percentile within a fair cohort, and pair each shade with weight and an accessible label carrying the rank.",
-      "**Do** set tabular numerals and right-align numbers on every data surface.",
-      "**Do** badge a number's provenance (\"PL only\", \"Estimate\", \"Full-match totals\") in amber whenever its source has a limit.",
-      "**Do** draw new icons as 20px SVG: 1.5px currentColor strokes for interface icons.",
-      "**Do** keep control text in sentence case with no added tracking, overriding the legacy global button style."
+      "**Do** take every colour, size, radius and spacing from the `--aero-*` and `--fs-*` tokens; raw hex lives only in `design-system.css` and `tokens.ts`.",
+      "**Do** keep each screen area to one lime thing: the primary action or where you are.",
+      "**Do** put content in the shared 1200px column (`.aero-page` or `.page`) and start every heading, panel and table on its left edge.",
+      "**Do** build panels as flat graphite (#1b1b1d) at 18px radius with no border or shadow.",
+      "**Do** separate rows with inset hairlines, put text left and numbers right, and use tabular figures.",
+      "**Do** use a segmented control for five options or fewer, with the #636366 selected segment at `calc(var(--aero-radius-sm) - 2px)`.",
+      "**Do** show fixture difficulty and status as soft tints with the number or word written in.",
+      "**Do** write sentence case in British English, for buttons and headers too.",
+      "**Do** keep motion to responses to the user and respect `prefers-reduced-motion`.",
+      "**Do** run `node scripts/design-audit.mjs` from `frontend/` before shipping; every count should stay at its target."
     ],
     "donts": [
-      "**Don't** use lime for secondary actions or ornaments; beyond the faint radial glow on the page ground, it is the single voice.",
-      "**Don't** let colour alone carry meaning in shading, status, side, result, competition or difficulty.",
-      "**Don't** use the olive or moss band colours outside data shading, or the competition tints outside competition tags and calendar cells.",
-      "**Don't** reach for `theme.css` tokens (pure black, #8E8E93 grey, #007AFF blue) or its pill-shaped buttons and inputs on new surfaces.",
-      "**Don't** put shadows on tables that scroll in their own wrapper or on control bars.",
-      "**Don't** use emoji or text glyphs as icons, markers or crest stand-ins."
+      "**Don't** fill FDR, status, tabs, segments or the active sidebar row with solid lime.",
+      "**Don't** add card shadows, gradients on buttons or panels, or borders round panels.",
+      "**Don't** use font sizes outside the seven tokens, weights above 600, or text under 12px.",
+      "**Don't** use all-caps or tracked labels anywhere.",
+      "**Don't** add breakpoints beyond 1068px and 734px, or radii beyond the four.",
+      "**Don't** zebra-stripe tables or centre numbers and row headers.",
+      "**Don't** animate anything the user did not trigger: no entrance fades, hover lifts or decorative loops.",
+      "**Don't** let colour alone carry meaning; the number, word or accessible label travels with it."
     ]
   }
 }

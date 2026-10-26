@@ -9,7 +9,7 @@
     position: relative;
     width: 300px;
     height: 200px;
-    background-color: #2e7d32;
+    background-color: var(--aero-pitch-b);
     /* Grass green */
     border: 2px solid rgba(255, 255, 255, 0.8);
     border-radius: var(--aero-radius-chip);
@@ -89,7 +89,7 @@
 
 .heatmap-caption {
     font-size: var(--fs-footnote);
-    color: var(--text-secondary);
+    color: var(--aero-text-dim);
 }
 
 .heatmap-loading,
@@ -100,12 +100,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--surface-hover);
+    background: var(--aero-surface-hover);
     border-radius: var(--aero-radius-sm);
-    color: var(--text-secondary);
+    color: var(--aero-text-dim);
     font-size: var(--fs-body);
 }
 
 .heatmap-error {
-    color: #ef4444;
+    color: var(--aero-negative);
 }

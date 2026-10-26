@@ -1,11 +1,12 @@
+import { colour, series } from "../../styles/tokens";
 // SVG charts for Chart Lab, ported from the A.R.G.U.S. Chart Lab
 // (power_rankings analytics.html: svgScatter / svgLineChart / svgBars).
 // Plain SVG keeps them dependency-free and lets the PNG export serialise
 // exactly what is on screen.
 
-export const SERIES_COLORS = ["#a5ff01", "#2bb1ff", "#ffc603", "#f472b6", "#a78bfa", "#ff7a45"];
+export const SERIES_COLORS = series;
 
-const AXIS_TEXT = "#8f8f8f";
+const AXIS_TEXT = colour.textMuted;
 const GRID = "rgba(255,255,255,0.07)";
 
 export function formatValue(value: number): string {
@@ -127,20 +128,20 @@ export function ScatterChart({ points, xLabel, yLabel, highlighted, onToggle, or
         return (
           <g>
             <line x1={X(x0)} y1={Y(originLine.slope * x0)} x2={X(xEnd)} y2={Y(originLine.slope * xEnd)}
-              stroke="#a5ff01" strokeOpacity="0.55" strokeDasharray="6 5" strokeWidth={1.4} />
-            <text x={X(xEnd) - 4} y={Y(originLine.slope * xEnd) - 6} textAnchor="end" fontSize="10" fill="#a5ff01" fillOpacity="0.8">
+              stroke={colour.lime} strokeOpacity="0.55" strokeDasharray="6 5" strokeWidth={1.4} />
+            <text x={X(xEnd) - 4} y={Y(originLine.slope * xEnd) - 6} textAnchor="end" fontSize="10" fill={colour.lime} fillOpacity="0.8">
               {originLine.label}
             </text>
           </g>
         );
       })() : (
         <>
-          <line x1={X(medX)} x2={X(medX)} y1={T} y2={T + ih} stroke="#a5ff01" strokeOpacity="0.25" strokeDasharray="4 4" />
-          <line x1={L} x2={w - R} y1={Y(medY)} y2={Y(medY)} stroke="#a5ff01" strokeOpacity="0.25" strokeDasharray="4 4" />
+          <line x1={X(medX)} x2={X(medX)} y1={T} y2={T + ih} stroke={colour.lime} strokeOpacity="0.25" strokeDasharray="4 4" />
+          <line x1={L} x2={w - R} y1={Y(medY)} y2={Y(medY)} stroke={colour.lime} strokeOpacity="0.25" strokeDasharray="4 4" />
         </>
       )}
-      <text x={L + iw / 2} y={h - 8} textAnchor="middle" fontSize="11" fill="#b7b7b7">{xLabel}</text>
-      <text x={14} y={T + ih / 2} textAnchor="middle" fontSize="11" fill="#b7b7b7" transform={`rotate(-90 14 ${T + ih / 2})`}>{yLabel}</text>
+      <text x={L + iw / 2} y={h - 8} textAnchor="middle" fontSize="11" fill={colour.textDim}>{xLabel}</text>
+      <text x={14} y={T + ih / 2} textAnchor="middle" fontSize="11" fill={colour.textDim} transform={`rotate(-90 14 ${T + ih / 2})`}>{yLabel}</text>
       {plain.filter((p) => !labelled?.has(p.id)).map((p) => (
         <circle key={p.id} className="lab-dot" cx={X(p.x)} cy={Y(p.y)} r={radius(p, 3.6)}
           fill="rgba(255,255,255,0.22)" stroke="rgba(255,255,255,0.5)" strokeWidth={0.6}
@@ -153,12 +154,12 @@ export function ScatterChart({ points, xLabel, yLabel, highlighted, onToggle, or
         return (
           <g key={p.id}>
             <circle className="lab-dot" cx={cx} cy={cy} r={radius(p, 5.8)}
-              fill={strong ? "#a5ff01" : "rgba(255,255,255,0.55)"} stroke="#101011" strokeWidth={1.2}
+              fill={strong ? colour.lime : "rgba(255,255,255,0.55)"} stroke={colour.ink} strokeWidth={1.2}
               onClick={() => onToggle(p.id)}>
               <title>{`${p.name} (${p.detail}) · x ${formatValue(p.x)} · y ${formatValue(p.y)}${p.size !== undefined ? ` · ${sizeLabel ?? "size"} ${formatValue(p.size)}` : ""} — click to ${strong ? "remove" : "highlight"}`}</title>
             </circle>
-            <text x={pick.lx} y={pick.ly} textAnchor={pick.anchor} fontSize="10.5" fontWeight="700" fill={strong ? "#a5ff01" : "#e6e6e6"}
-              stroke="#101011" strokeWidth={3} paintOrder="stroke" strokeLinejoin="round">{p.name}</text>
+            <text x={pick.lx} y={pick.ly} textAnchor={pick.anchor} fontSize="10.5" fontWeight="600" fill={strong ? colour.lime : colour.text}
+              stroke={colour.ink} strokeWidth={3} paintOrder="stroke" strokeLinejoin="round">{p.name}</text>
           </g>
         );
       })}
@@ -256,16 +257,16 @@ export function BarChart({ items, format = formatValue, compact = false, stacked
         const y = i * rowH + 4;
         const barY = twoLines ? y + 7 : y + 2;
         const x0 = Math.min(X(0), X(item.value)), bw = Math.max(2, Math.abs(X(item.value) - X(0)));
-        const color = item.highlighted ? "#a5ff01" : "#5f7a2e";
+        const color = item.highlighted ? colour.lime : colour.limeDeep;
         return (
           <g key={item.id}>
             {twoLines ? (
               <>
-                <text x={0} y={y + 13} fontSize="12" fontWeight="600" fill="#ffffff">{clip(item.label, maxLabel)}</text>
+                <text x={0} y={y + 13} fontSize="12" fontWeight="600" fill={colour.text}>{clip(item.label, maxLabel)}</text>
                 <text x={0} y={y + 28} fontSize="10.5" fill={AXIS_TEXT}>{clip(item.detail, maxDetail)}</text>
               </>
             ) : (
-              <text x={0} y={y + 15} fontSize="12" fontWeight="600" fill="#ffffff">
+              <text x={0} y={y + 15} fontSize="12" fontWeight="600" fill={colour.text}>
                 {clip(item.label, maxLabel)}
                 {!compact && <tspan fill={AXIS_TEXT} fontWeight="400" fontSize="10.5">{`  ${item.detail}`}</tspan>}
               </text>
@@ -273,7 +274,7 @@ export function BarChart({ items, format = formatValue, compact = false, stacked
             <rect x={x0} y={barY} width={bw} height={18} rx={4} fill={color}>
               <title>{`${item.label} (${item.detail}): ${format(item.value)}`}</title>
             </rect>
-            <text x={Math.max(X(0), X(item.value)) + 6} y={barY + 13} fontSize="12" fontWeight="700" fill={item.highlighted ? "#a5ff01" : "#d8d8d8"}>
+            <text x={Math.max(X(0), X(item.value)) + 6} y={barY + 13} fontSize="12" fontWeight="600" fill={item.highlighted ? colour.lime : colour.text}>
               {format(item.value)}
             </text>
           </g>
@@ -309,9 +310,9 @@ export function ChangeChart({ items, beforeLabel, afterLabel, digits = 2, compac
   return (
     <svg viewBox={`0 0 ${w} ${h}`} className="lab-svg" role="img" aria-label={`Change from ${beforeLabel} to ${afterLabel}`}>
       <g fontSize="11" fill={AXIS_TEXT}>
-        <circle cx={legendX + 6} cy={10} r={5} fill="#6b6b6b" />
+        <circle cx={legendX + 6} cy={10} r={5} fill={colour.mark} />
         <text x={legendX + 16} y={14}>{beforeLabel}</text>
-        <circle cx={legendX + 116} cy={10} r={5} fill="#a5ff01" />
+        <circle cx={legendX + 116} cy={10} r={5} fill={colour.lime} />
         <text x={legendX + 126} y={14}>{afterLabel}</text>
       </g>
       {items.map((item, i) => {
@@ -320,19 +321,19 @@ export function ChangeChart({ items, beforeLabel, afterLabel, digits = 2, compac
         const delta = item.after - item.before;
         return (
           <g key={item.id}>
-            <text x={0} y={y + 4} fontSize="12" fontWeight="600" fill="#ffffff">
+            <text x={0} y={y + 4} fontSize="12" fontWeight="600" fill={colour.text}>
               {item.label.length > maxLabel ? `${item.label.slice(0, maxLabel - 1)}…` : item.label}
               {!compact && <tspan fill={AXIS_TEXT} fontWeight="400" fontSize="10.5">{`  ${item.detail}`}</tspan>}
             </text>
             <line x1={labelW} x2={labelW + trackW} y1={y} y2={y} stroke={GRID} />
-            <line x1={X(item.before)} x2={X(item.after)} y1={y} y2={y} stroke={rise ? "#5f7a2e" : "#7a3b3b"} strokeWidth={4} strokeLinecap="round" />
-            <circle cx={X(item.before)} cy={y} r={5.5} fill="#6b6b6b" stroke="#101011" strokeWidth={2}>
+            <line x1={X(item.before)} x2={X(item.after)} y1={y} y2={y} stroke={rise ? colour.limeDeep : colour.negativeDeep} strokeWidth={4} strokeLinecap="round" />
+            <circle cx={X(item.before)} cy={y} r={5.5} fill={colour.mark} stroke={colour.ink} strokeWidth={2}>
               <title>{`${item.label}, ${beforeLabel}: ${fmt(item.before)}`}</title>
             </circle>
-            <circle cx={X(item.after)} cy={y} r={6} fill="#a5ff01" stroke="#101011" strokeWidth={2}>
+            <circle cx={X(item.after)} cy={y} r={6} fill={colour.lime} stroke={colour.ink} strokeWidth={2}>
               <title>{`${item.label}, ${afterLabel}: ${fmt(item.after)}`}</title>
             </circle>
-            <text x={w - valueW + 8} y={y + 4} fontSize="12" fontWeight="700" fill={rise ? "#a5ff01" : "#ff8a8a"}>
+            <text x={w - valueW + 8} y={y + 4} fontSize="12" fontWeight="600" fill={rise ? colour.lime : colour.negativeSoft}>
               {`${delta >= 0 ? "+" : "−"}${fmt(Math.abs(delta))}`}
             </text>
           </g>

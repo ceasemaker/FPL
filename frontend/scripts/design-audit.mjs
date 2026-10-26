@@ -5,7 +5,8 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 const root = new URL("../src/", import.meta.url).pathname;
-const TOKEN_FILE = "styles/design-system.css";
+// Token files: the only places a raw colour value may live.
+const TOKEN_FILES = ["styles/design-system.css", "styles/tokens.ts"];
 
 function walk(dir) {
   return readdirSync(dir).flatMap((name) => {
@@ -14,7 +15,7 @@ function walk(dir) {
   });
 }
 
-const files = walk(root).filter((f) => /\.(css|tsx)$/.test(f));
+const files = walk(root).filter((f) => /\.(css|tsx?)$/.test(f) && !/\.test\.ts$/.test(f));
 const css = files.filter((f) => f.endsWith(".css"));
 const read = (f) => readFileSync(f, "utf8");
 
@@ -27,13 +28,39 @@ const distinct = (list, re) => {
   return seen;
 };
 
+// Radii: count the lengths in use. Circles (50%), 0 and inherit are shapes,
+// not radii; a calc() built on a token counts as that token.
+const radii = () => {
+  const seen = new Map();
+  for (const f of css) for (const m of read(f).matchAll(/border(?:-[a-z]+)*-radius:\s*([^;}]+)/g)) {
+    const value = m[1].replace("!important", "").trim();
+    const parts = value.startsWith("calc(") ? (value.match(/var\(--[\w-]+\)/g) ?? [value]) : value.split(/\s+/);
+    for (const part of parts) {
+      if (["0", "50%", "inherit"].includes(part)) continue;
+      seen.set(part, (seen.get(part) ?? 0) + 1);
+    }
+  }
+  return seen;
+};
+
+// Breakpoints: count widths, treating a min-width one pixel past a max-width
+// as the same breakpoint (1068 and 1069).
+const breakpoints = () => {
+  const seen = new Map();
+  for (const f of css) for (const m of read(f).matchAll(/\((max|min)-width:\s*(\d+)px\)/g)) {
+    const px = Number(m[2]) - (m[1] === "min" ? 1 : 0);
+    seen.set(`${px}px`, (seen.get(`${px}px`) ?? 0) + 1);
+  }
+  return seen;
+};
+
 const rows = [
   ["Font sizes", distinct(css, /font-size:\s*([^;}]+)/g), 7],
   ["Font weights", distinct(css, /font-weight:\s*([^;}]+)/g), 3],
   ["Letter-spacing values", distinct(css, /letter-spacing:\s*([^;}]+)/g), 3],
-  ["Corner radii", distinct(css, /border-radius:\s*([^;}]+)/g), 4],
-  ["Breakpoints", distinct(css, /@media\s*([^{]*\bwidth[^{]*)/g), 2],
-  ["Raw hex colours (outside tokens)", distinct(files.filter((f) => !f.endsWith(TOKEN_FILE)), /(#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b)/g), 0],
+  ["Corner radii", radii(), 4],
+  ["Breakpoints", breakpoints(), 2],
+  ["Raw hex colours (outside tokens)", distinct(files.filter((f) => !TOKEN_FILES.some((t) => f.endsWith(t))), /(#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b)/g), 0],
 ];
 
 const count = (list, re) => list.reduce((n, f) => n + (read(f).match(re)?.length ?? 0), 0);

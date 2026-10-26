@@ -24,8 +24,8 @@
 
   /* Spring Bud lime: the primary action, or where you are. One per screen area. */
   --aero-lime: #a5ff01;
-  --aero-lime-dim: #78c800;
   --aero-lime-wash: rgba(165, 255, 1, 0.10);
+  --aero-lime-hover: #b6ff33;
 
   /* Status */
   --aero-positive: #a5ff01;
@@ -37,8 +37,26 @@
   --aero-europe: #7aa7ff;
   --aero-cup: #c59bff;
 
+  /* Status text on dark panels: softer than the fill colours above. */
+  --aero-negative-soft: #ff7a87;
+  --aero-warn-soft: #f5d06f;
+  /* Soft tints behind status text: fixture difficulty, flags, results. */
+  --aero-tint-easy: var(--aero-tint-easy);
+  --aero-tint-easiest: var(--aero-tint-easiest);
+  --aero-tint-neutral: rgba(255, 255, 255, 0.08);
+  --aero-tint-warn: var(--aero-tint-warn);
+  --aero-tint-hard: var(--aero-tint-hard);
+  /* Information and the second chart series (Apple's dark-mode cyan). */
+  --aero-info: #64d2ff;
+
+  /* Match pitch: alternating mown stripes and line colour. */
+  --aero-pitch-a: #17241a;
+  --aero-pitch-b: #1a291d;
+  --aero-pitch-line: #2b3a2d;
+
   /* Text */
   --aero-text: #f5f5f7;
+  --aero-text-soft: #d1d1d6;
   --aero-text-dim: #a1a1a6;
   --aero-text-muted: #86868b;
 
@@ -65,11 +83,145 @@
   --aero-nav: 220px;
 
   /* Fixture difficulty ramp, easiest to hardest */
-  --aero-fdr-1: #a5ff01;
   --aero-fdr-2: #b8e986;
   --aero-fdr-3: #95ae67;
   --aero-fdr-4: #e2b75b;
   --aero-fdr-5: #ff4c5e;
+}
+
+/* ------------------------------------------------------------------ base */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  color-scheme: dark;
+  background: var(--aero-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* `height: 100%` here pinned the body to the viewport and made it — rather
+ * than the document — the scroll container, which broke window.scrollTo and
+ * anchor navigation on every page. `min-height` keeps the full-bleed
+ * background without capturing the scroll. */
+body {
+  width: 100%;
+  min-height: 100%;
+  font-family: var(--aero-font);
+  font-size: var(--fs-body);
+  line-height: 1.47;
+  background: var(--aero-bg);
+  color: var(--aero-text);
+  overflow-x: hidden;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--aero-bg);
+}
+
+a {
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+/* Buttons are quiet by default; page styles and .aero-button decide the look.
+ * Sentence case, no added tracking: uppercase tracking pushed glyphs and
+ * icons off-centre in small buttons. */
+button {
+  font-family: inherit;
+  padding: 0.5rem 1rem;
+  border-radius: var(--aero-radius-pill);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: var(--fs-body);
+  text-transform: none;
+  letter-spacing: 0;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+input,
+select,
+textarea {
+  background: var(--aero-fill);
+  border: 0;
+  border-radius: var(--aero-radius-sm);
+  padding: 0.5rem 0.75rem;
+  color: var(--aero-text);
+  font-family: inherit;
+  font-size: var(--fs-body);
+  transition: background-color 0.15s ease;
+}
+
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"] {
+  padding: 0;
+  background: none;
+  accent-color: var(--aero-lime);
+}
+
+::placeholder {
+  color: var(--aero-text-muted);
+}
+
+/* One focus style everywhere: a 2px lime outline, no glow. */
+:focus-visible {
+  outline: 2px solid var(--aero-lime);
+  outline-offset: 2px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--aero-lime);
+  outline-offset: 2px;
+}
+
+/* The browser's "smaller" would drop under the 12px floor inside 13px text. */
+small {
+  font-size: var(--fs-caption);
+}
+
+/* Tables: fixed-width figures; row headers sit left, never centred. */
+table {
+  font-variant-numeric: tabular-nums;
+}
+
+th {
+  font-weight: 500;
+}
+
+tbody th,
+th[scope="row"] {
+  text-align: left;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
 /* ---------------------------------------------------------------- layout */
@@ -83,6 +235,17 @@
   padding: 48px max(var(--aero-gutter), calc((100% - var(--aero-nav) - var(--aero-column)) / 2)) 96px;
   background: var(--aero-bg);
   color: var(--aero-text);
+}
+
+/* Older routes use .page instead of .aero-page; same column. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: calc(100% - var(--aero-nav));
+  margin-left: var(--aero-nav);
+  padding: 48px max(var(--aero-gutter), calc((100% - var(--aero-nav) - var(--aero-column)) / 2)) 96px;
+  flex: 1;
 }
 
 .aero-header {
@@ -118,6 +281,29 @@
   border-radius: var(--aero-radius);
   box-shadow: none;
   padding: 20px;
+}
+
+/* Older name for a panel, kept for the optimiser and price pages. */
+.glow-card {
+  position: relative;
+  background: var(--aero-surface);
+  border-radius: var(--aero-radius);
+  padding: 20px;
+}
+
+/* Dialog shell used by the player gameweek modal. */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  padding: 24px;
 }
 
 .aero-card-title {
@@ -226,7 +412,7 @@
 }
 
 .aero-button.primary:hover:not(:disabled) {
-  background: #b6ff33;
+  background: var(--aero-lime-hover);
 }
 
 .aero-button.ghost {
@@ -246,7 +432,7 @@
   min-width: 44px;
   padding: 0 14px;
   border: 0;
-  border-radius: 8px;
+  border-radius: calc(var(--aero-radius-sm) - 2px);
   background: none;
   color: var(--aero-text);
   font-family: inherit;
@@ -282,15 +468,6 @@
   color: var(--aero-lime);
 }
 
-/* Small label over a block. Sentence case, quiet. */
-.aero-eyebrow {
-  color: var(--aero-text-dim);
-  font-size: var(--fs-footnote);
-  font-weight: 500;
-  letter-spacing: 0;
-  text-transform: none;
-}
-
 /* Fixture difficulty: a soft tint per rating, never a solid lime block. */
 .aero-fdr {
   display: inline-grid;
@@ -305,10 +482,11 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-.aero-fdr[data-fdr="1"], .aero-fdr[data-fdr="2"] { background: rgba(184, 233, 134, 0.12); color: var(--aero-fdr-2); }
-.aero-fdr[data-fdr="3"] { background: rgba(255, 255, 255, 0.08); color: var(--aero-text-dim); }
-.aero-fdr[data-fdr="4"] { background: rgba(226, 183, 91, 0.16); color: var(--aero-fdr-4); }
-.aero-fdr[data-fdr="5"] { background: rgba(255, 76, 94, 0.18); color: #ff7a87; }
+.aero-fdr[data-fdr="1"] { background: var(--aero-tint-easiest); color: var(--aero-fdr-2); }
+.aero-fdr[data-fdr="2"] { background: var(--aero-tint-easy); color: var(--aero-fdr-2); }
+.aero-fdr[data-fdr="3"] { background: var(--aero-tint-neutral); color: var(--aero-text-dim); }
+.aero-fdr[data-fdr="4"] { background: var(--aero-tint-warn); color: var(--aero-fdr-4); }
+.aero-fdr[data-fdr="5"] { background: var(--aero-tint-hard); color: var(--aero-negative-soft); }
 
 .aero-positive { color: var(--aero-positive); }
 .aero-negative { color: var(--aero-negative); }
@@ -327,9 +505,9 @@
 
 .aero-note {
   border: 0;
-  border-left: 3px solid var(--aero-warn);
   border-radius: var(--aero-radius-sm);
-  background: var(--aero-surface);
+  background: var(--aero-tint-warn);
+  color: var(--aero-text-dim);
   padding: 12px 16px;
 }
 
@@ -343,7 +521,7 @@
   border: 1px solid rgba(255, 76, 94, 0.4);
   border-radius: var(--aero-radius-sm);
   background: rgba(255, 76, 94, 0.08);
-  color: #ffb4bc;
+  color: var(--aero-negative-soft);
   font-size: var(--fs-body);
   padding: 12px 16px;
 }
@@ -359,14 +537,15 @@
   /* The sidebar becomes a top bar, so nothing is offset by it. */
   :root { --aero-gutter: 16px; --aero-nav: 0px; }
 
-  .aero-page {
+  .aero-page,
+  .page {
     width: 100%;
     margin: 0;
     padding: 84px var(--aero-gutter) 64px;
   }
 
   .aero-header { margin-bottom: 24px; }
-  .aero-header h1 { font-size: 1.75rem; }
+  .aero-header h1 { font-size: var(--fs-title); }
 }
 
 /* Visually hidden, still read by screen readers (labels for icon-only columns). */

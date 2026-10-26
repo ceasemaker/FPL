@@ -288,7 +288,7 @@ const ManagerGameweek: React.FC<ManagerGameweekProps> = ({
         {header}
         <div className="error-state">
           <div className="error-icon">⚠️</div>
-          <h3>Unable to Load Team</h3>
+          <h3>This team couldn't be loaded</h3>
           <p>{error || "Failed to fetch gameweek team"}</p>
         </div>
       </div>
