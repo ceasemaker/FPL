@@ -132,6 +132,12 @@ export const RateIcon = () => (
   </Svg>
 );
 
+export const WatchlistIcon = () => (
+  <Svg>
+    <path d="M6 3.5h8a1 1 0 0 1 1 1v12l-5-3-5 3v-12a1 1 0 0 1 1-1z" />
+  </Svg>
+);
+
 export const MenuIcon = () => (
   <Svg>
     <path d="M3.5 6h13M3.5 10h13M3.5 14h13" />

@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { compById } from "../components/match/competitions";
 import { Crest } from "../components/match/icons";
 import { ZonesPanel } from "../components/match/MatchSections";
+import { WatchStar } from "../components/WatchStar";
 import "./MatchPage.css";
 import "./TeamPage.css";
 
@@ -297,7 +298,7 @@ function Squad({ rows }: { rows: SquadRow[] }) {
         <tbody>
           {shown.map((p) => (
             <tr key={p.optaId} className={p.status && p.status !== "a" ? "out" : ""}>
-              <th scope="row">{p.fplId ? <Link to={`/players/${p.fplId}`}>{p.short}</Link> : <span>{p.short}</span>}<small>{p.position}</small>{p.news && <em title={p.news} aria-label={p.news}><svg width="12" height="12" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3 18 16.5H2z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M10 8.2v3.6M10 14.2v.1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg></em>}</th>
+              <th scope="row">{p.fplId && <WatchStar id={p.fplId} name={p.short} size={14} />}{p.fplId ? <Link to={`/players/${p.fplId}`}>{p.short}</Link> : <span>{p.short}</span>}<small>{p.position}</small>{p.news && <em title={p.news} aria-label={p.news}><svg width="12" height="12" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3 18 16.5H2z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M10 8.2v3.6M10 14.2v.1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg></em>}</th>
               <td className="n">{p.apps}{p.apps ? <small> ({p.starts})</small> : ""}</td>
               <td className="n">{p.minutes}</td>
               <td className="n">{p.goals || ""}</td>

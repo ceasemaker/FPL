@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Crest } from "../components/match/icons";
+import { WatchStar } from "../components/WatchStar";
 import "./MatchPage.css";
 import "./TeamPage.css";
 import "./DefconPage.css";
@@ -80,7 +81,7 @@ export function DefconPage() {
               <tbody>
                 {rows.map((p) => (
                   <tr key={p.id}>
-                    <th scope="row"><Link to={`/players/${p.id}`}><Crest team={p.team} /><span>{p.name}</span></Link><small>{p.teamShort}</small></th>
+                    <th scope="row"><Link to={`/players/${p.id}`}><Crest team={p.team} /><span>{p.name}</span></Link><small>{p.teamShort}</small><WatchStar id={p.id} name={p.name} size={14} /></th>
                     <td className="n"><span className="dc-rate"><i style={{ width: `${Math.round(p.hitRate * 100)}%` }} className={p.hitRate >= 0.6 ? "top" : ""} /></span>{Math.round(p.hitRate * 100)}%<small> {p.hits}/{p.matches}</small></td>
                     <td className="n"><span className="dc-dots" aria-label={`${p.recentHits} of the last ${p.recentMatches} matches`}>{p.recent.map((r) => <i key={r.gw} className={r.hits ? "hit" : ""} title={`GW${r.gw}: ${r.dc} actions${r.hits ? ", points" : ""}`} />)}</span></td>
                     <td className="n">{p.perMatch.toFixed(1)}</td>

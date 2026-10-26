@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import sys
 
 def env_bool(name: str, default: bool = False) -> bool:
     value = os.getenv(name)
@@ -189,6 +190,10 @@ CACHES = {
         "TIMEOUT": 1800,  # 30 minutes default
     }
 }
+# Tests get their own in-memory cache: they clear and seed it, which must never
+# touch the Redis a running server reads from.
+if "test" in sys.argv[1:2]:
+    CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 
 LOG_LEVEL = os.getenv("DJANGO_LOG_LEVEL", "INFO")
 

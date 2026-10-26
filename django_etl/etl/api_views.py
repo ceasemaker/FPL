@@ -3664,6 +3664,18 @@ def rate_my_team(request, manager_id):
 
 
 @require_GET
+def watchlist(request):
+    """Status, form, projections and fixtures for the watched players (?ids=1,2,3)."""
+    from etl.services.watchlist import build_payload as build_watchlist
+
+    try:
+        ids = [int(x) for x in request.GET.get("ids", "").split(",") if x.strip()]
+    except ValueError:
+        return JsonResponse({"error": "ids must be FPL player ids, comma-separated."}, status=400)
+    return JsonResponse(build_watchlist(ids))
+
+
+@require_GET
 def match_for_fixture(request, fixture_id):
     """Opta match id for an FPL fixture id, so FPL screens can link to the Match page."""
     from etl.services.match_page import match_for_fixture as resolve

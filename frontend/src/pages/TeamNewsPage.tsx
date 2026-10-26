@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Crest } from "../components/match/icons";
+import { WatchStar } from "../components/WatchStar";
 import "./MatchPage.css";
 import "./TeamPage.css";
 import "./TeamNewsPage.css";
@@ -114,7 +115,7 @@ export function TeamNewsPage() {
                     const c = chip(r);
                     return (
                       <tr key={r.id}>
-                        <th scope="row"><Link to={`/players/${r.id}`}><Crest team={r.club.id} /><span>{r.name}</span></Link><small>{r.club.short} · {r.position}</small></th>
+                        <th scope="row"><Link to={`/players/${r.id}`}><Crest team={r.club.id} /><span>{r.name}</span></Link><WatchStar id={r.id} name={r.name} size={14} /><small>{r.club.short} · {r.position}</small></th>
                         <td><span className={`tn-chip ${c.tone}`}>{c.text}</span></td>
                         <td className="what">{r.injury}<small className="show-s">{r.detail}</small></td>
                         <td className="hide-s ret">{r.detail || "–"}</td>

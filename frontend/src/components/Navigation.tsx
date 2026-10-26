@@ -16,6 +16,7 @@ import {
   StatsExplorerIcon,
   TeamNewsIcon,
   TeamsIcon,
+  WatchlistIcon,
 } from "./navIcons";
 
 // Five sections for the game itself (Home, Matches, Teams, Players, Chart
@@ -36,6 +37,7 @@ const groups: { title?: string; links: { to: string; label: string; icon: JSX.El
     title: "My FPL",
     links: [
       { to: "/planner", label: "Transfer planner", icon: <PlannerIcon /> },
+      { to: "/watchlist", label: "Watchlist", icon: <WatchlistIcon /> },
       { to: "/rate-my-team", label: "Rate my team", icon: <RateIcon /> },
       { to: "/team-news", label: "Team news", icon: <TeamNewsIcon /> },
       { to: "/decision-lab", label: "Decision Lab", icon: <DecisionLabIcon /> },

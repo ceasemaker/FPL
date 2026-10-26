@@ -1,0 +1,4 @@
+.watch-star { display: inline-grid; place-items: center; flex: none; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 7px; background: none; color: var(--aero-text-muted); cursor: pointer; transition: color 0.15s ease-out, background 0.15s ease-out; }
+.watch-star:hover { color: #fff; background: var(--aero-surface-hover); }
+.watch-star.on { color: var(--aero-lime); }
+.watch-star:focus-visible { outline: 2px solid var(--aero-lime); outline-offset: 1px; }

@@ -224,3 +224,19 @@ class RateTeamTests(TestCase):
         self.assertTrue(sum(1 for i in xi if pos[i] == "DEF") >= 3)
         self.assertEqual(captain, 13)
         self.assertEqual(total, sum(pts[i] for i in xi) + 9)
+
+
+class WatchlistTests(TestCase):
+    def test_players_in_the_order_watched(self):
+        cache.clear()
+        GameweekSummary.objects.create(season=2026, gameweek=9, deadline_time=timezone.now() + timedelta(days=2))
+        ars = Team.objects.create(id=1, code=3, name="Arsenal", short_name="ARS")
+        che = Team.objects.create(id=2, code=8, name="Chelsea", short_name="CHE")
+        Athlete.objects.create(id=10, code=100, web_name="Saka", team=ars, element_type=3, now_cost=100, ep_next=6, status="d", news="Knock")
+        Athlete.objects.create(id=11, code=101, web_name="Palmer", team=che, element_type=3, now_cost=105)
+        Fixture.objects.create(id=1, event=9, team_h=ars, team_a=che, team_h_difficulty=3, team_a_difficulty=4, kickoff_time=timezone.now() + timedelta(days=3))
+        d = self.client.get("/api/watchlist/?ids=11,10").json()
+        self.assertEqual([p["name"] for p in d["players"]], ["Palmer", "Saka"])
+        saka = d["players"][1]
+        self.assertEqual((saka["status"], saka["projected"]["9"], saka["fixtures"]["9"][0]["opp"], saka["fixtures"]["9"][0]["home"]), ("d", 6.0, "CHE", True))
+        self.assertEqual(self.client.get("/api/watchlist/?ids=x").status_code, 400)

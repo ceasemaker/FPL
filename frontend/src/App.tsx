@@ -19,6 +19,7 @@ const PlannerPage = lazy(() => import("./pages/PlannerPage").then((m) => ({ defa
 const DefconPage = lazy(() => import("./pages/DefconPage").then((m) => ({ default: m.DefconPage })));
 const TeamNewsPage = lazy(() => import("./pages/TeamNewsPage").then((m) => ({ default: m.TeamNewsPage })));
 const RateTeamPage = lazy(() => import("./pages/RateTeamPage").then((m) => ({ default: m.RateTeamPage })));
+const WatchlistPage = lazy(() => import("./pages/WatchlistPage").then((m) => ({ default: m.WatchlistPage })));
 const MatchPage = lazy(() => import("./pages/MatchPage").then((m) => ({ default: m.MatchPage })));
 const MatchFromFixture = lazy(() => import("./pages/MatchPage").then((m) => ({ default: m.MatchFromFixture })));
 const ModelLabPage = lazy(() => import("./pages/ModelLabPage").then((m) => ({ default: m.ModelLabPage })));
@@ -60,6 +61,7 @@ export default function App() {
           <Route path="/compare" element={<ComparePage />} />
           <Route path="/analyze" element={<AnalyzeManagerPage />} />
           <Route path="/planner" element={<PlannerPage />} />
+          <Route path="/watchlist" element={<WatchlistPage />} />
           <Route path="/team-news" element={<TeamNewsPage />} />
           <Route path="/rate-my-team" element={<RateTeamPage />} />
           <Route path="/defcon" element={<DefconPage />} />

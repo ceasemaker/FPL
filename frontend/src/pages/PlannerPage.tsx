@@ -7,6 +7,7 @@ import {
   type ChipKey, type Plan, type PlannerData, type PlannerPlayer, type Transfer, type WeekSummary,
 } from "../components/planner/planModel";
 import { PriceChangeBadge } from "../components/priceChange/PriceChange";
+import { WatchStar } from "../components/WatchStar";
 import { direction, usePriceChanges, type PriceChangeData } from "../hooks/usePriceChanges";
 import "./MatchPage.css";
 import "./TeamPage.css";
@@ -362,6 +363,7 @@ function SquadRow({ player, selling, data, gw, isNew, inXI, captain, active, onS
       <Crest team={player.team} />
       <span className="nm">
         <Link to={`/players/${player.id}`}>{player.name}</Link>
+        <WatchStar id={player.id} name={player.name} size={14} />
         {captain && <span className="pl-cap" title="Projected captain">C</span>}
         {flagged && <span className={`pl-status s-${player.status}`} title={player.news || "Flagged"}>{player.chance != null ? `${player.chance}%` : player.status === "i" ? "Injured" : player.status === "s" ? "Suspended" : "Doubt"}</span>}
         {isNew && <span className="pl-new">New</span>}
@@ -423,7 +425,7 @@ function Replacements({ out, selling, bank, squadIds, clubCounts: counts, data, 
               <input type="checkbox" aria-label={`Compare ${p.name}`} checked={compare.includes(p.id)} onChange={() => toggle(p.id)} disabled={!compare.includes(p.id) && compare.length >= 3} />
               <button type="button" disabled={!!reason} onClick={() => onPick(p)}>
                 <Crest team={p.team} />
-                <span className="nm"><b>{p.name}</b>{p.status !== "a" && <span className={`pl-status s-${p.status}`} title={p.news}>{p.chance != null ? `${p.chance}%` : "Flag"}</span>}<small>{p.teamShort} · {money(p.price)} · {sum6(data, p.id, gw).toFixed(1)} projected · form {p.form.toFixed(1)}{rot?.risky ? ` · ${rot.text}` : ""} <PriceChangeBadge athleteId={p.id} /></small></span>
+                <span className="nm"><b>{p.name}</b><WatchStar id={p.id} name={p.name} size={14} />{p.status !== "a" && <span className={`pl-status s-${p.status}`} title={p.news}>{p.chance != null ? `${p.chance}%` : "Flag"}</span>}<small>{p.teamShort} · {money(p.price)} · {sum6(data, p.id, gw).toFixed(1)} projected · form {p.form.toFixed(1)}{rot?.risky ? ` · ${rot.text}` : ""} <PriceChangeBadge athleteId={p.id} /></small></span>
                 <FixtureStrip data={data} team={p.team} from={gw} count={3} />
                 <span className="why">{reason ?? "Buy"}</span>
               </button>

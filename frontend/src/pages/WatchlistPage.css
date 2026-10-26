@@ -1,0 +1,41 @@
+/* Watchlist: one decision table; lime star for watched, fixture bands like the planner. */
+.wl-add { position: relative; max-width: 460px; margin: 4px 0 14px; }
+.wl-add input { width: 100%; }
+.wl-results { position: absolute; z-index: 5; top: calc(100% + 4px); left: 0; right: 0; list-style: none; margin: 0; padding: 6px; border-radius: 12px; border: 1px solid var(--aero-line-strong); background: #1a1b1b; box-shadow: 0 14px 38px rgba(0, 0, 0, 0.35); }
+.wl-results li { display: flex; align-items: center; gap: 8px; padding: 6px; border-radius: 8px; font-size: 0.82rem; color: var(--aero-text-dim); }
+.wl-results li:hover { background: var(--aero-surface-hover); }
+.wl-results b { color: #fff; }
+.wl-empty { padding: 26px 20px; border-radius: 16px; border: 1px dashed var(--aero-line-strong); color: var(--aero-text-dim); }
+.wl-empty p { margin: 0; }
+.wl-label { display: inline-flex; align-items: center; gap: 8px; font-size: 0.74rem; color: var(--aero-text-muted); }
+.wl-table { overflow-x: auto; padding: 4px 0; margin-top: 12px; }
+.wl-table table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+.wl-table thead th { text-align: left; font-size: 0.68rem; font-weight: 700; color: var(--aero-text-muted); padding: 10px 10px 8px; white-space: nowrap; }
+.wl-table tbody th, .wl-table tbody td { padding: 9px 10px; border-top: 1px solid var(--aero-line); text-align: left; vertical-align: middle; }
+.wl-table td.star { width: 30px; padding-right: 0; }
+.wl-table tbody th { font-weight: 500; white-space: nowrap; }
+.wl-table tbody th a { display: inline-flex; align-items: center; gap: 9px; color: #fff; text-decoration: none; font-weight: 800; }
+.wl-table tbody th a:hover span { color: var(--aero-lime); }
+.wl-table tbody th img { width: 22px; height: 22px; }
+.wl-table tbody th small { display: flex; align-items: center; gap: 6px; margin: 2px 0 0 31px; font-size: 0.68rem; color: var(--aero-text-muted); }
+.wl-table .n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.wl-table .n small { color: var(--aero-text-muted); font-size: 0.66rem; }
+.wl-move { display: block; margin-top: 2px; }
+.wl-flag { font-size: 0.6rem; font-weight: 800; padding: 1px 6px; border-radius: 5px; border: 1px solid rgba(226, 183, 91, 0.6); color: var(--aero-warn); cursor: help; }
+.wl-flag.s-i, .wl-flag.s-s, .wl-flag.s-u { border-color: rgba(255, 76, 94, 0.6); color: var(--aero-negative); }
+.wl-fx { display: grid; grid-template-columns: repeat(5, 42px); gap: 3px; }
+.wl-fx-cell { display: flex; flex-direction: column; gap: 2px; }
+.wl-fx-cell i { display: block; text-align: center; font-style: normal; font-size: 0.64rem; font-weight: 800; padding: 4px 0; border-radius: 5px; color: #101011; cursor: help; }
+.wl-fx-cell i.blank { color: var(--aero-text-muted); border: 1px dashed var(--aero-line-strong); }
+.wl-fx-cell i.b-1 { background: var(--aero-fdr-1); }
+.wl-fx-cell i.b-2 { background: var(--aero-fdr-2); }
+.wl-fx-cell i.b-3 { background: var(--aero-fdr-3); }
+.wl-fx-cell i.b-4 { background: var(--aero-fdr-4); color: #fff; }
+.wl-fx-cell i.b-5 { background: var(--aero-fdr-5); color: #fff; }
+.wl-fx-cell i.b-0 { background: var(--aero-surface-raised); color: var(--aero-text-dim); }
+@media (max-width: 720px) {
+  .hide-s { display: none; }
+  .wl-fx { grid-template-columns: repeat(3, 36px); }
+  .wl-fx-cell:nth-child(n+4) { display: none; }
+  .wl-table tbody th, .wl-table tbody td { padding: 8px 6px; }
+}

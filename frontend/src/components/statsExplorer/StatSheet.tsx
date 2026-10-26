@@ -5,6 +5,7 @@ import {
   type ExplorerPayload, type ExplorerPlayer, type Norm, type Position, type Stat,
 } from "./explorerModel";
 import { DEFAULT_STATE } from "./useExplorerState";
+import { useWatchlist } from "../../hooks/useWatchlist";
 
 // The Stats Explorer's full stat sheet for one player (it used to live in the
 // explorer's side drawer; it now sits on the Player page). Same payload and
@@ -19,17 +20,10 @@ const GROUP_ORDER: Record<Position, string[]> = {
   FWD: ["Shooting", "Creating", "Involvement", "Defending", "Goalkeeping"],
 };
 
-// The explorer's watchlist (same key), so watching from either place is the same list.
-const WATCH_KEY = "aerofpl_stats_watchlist";
+// The watchlist hook lives in hooks/useWatchlist; kept here for the Player page's import.
 export function useWatch(id: number): [boolean, () => void] {
-  const read = (): number[] => { try { return JSON.parse(localStorage.getItem(WATCH_KEY) ?? "[]"); } catch { return []; } };
-  const [list, setList] = useState<number[]>(read);
-  const toggle = () => {
-    const next = list.includes(id) ? list.filter((w) => w !== id) : [...list, id];
-    setList(next);
-    try { localStorage.setItem(WATCH_KEY, JSON.stringify(next)); } catch { /* private window: forgets */ }
-  };
-  return [list.includes(id), toggle];
+  const { has, toggle } = useWatchlist();
+  return [has(id), () => { toggle(id); }];
 }
 
 // One request per visit: every Player page shares the payload.
