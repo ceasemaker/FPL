@@ -306,7 +306,7 @@ A graphite neutral ramp under a single high-chroma Spring Bud lime, a light-grey
 ### Named Rules
 **The Tabular Rule.** Every surface that shows comparable numbers, scores, minutes or dates sets `font-variant-numeric: tabular-nums` and right-aligns numeric columns.
 
-**The Sentence Case Control Rule.** Button and control text is sentence case with no extra tracking. The legacy global `button` style in `theme.css` uppercases with 0.3em tracking; every aero page root resets it (`text-transform: none; letter-spacing: 0`), and new surfaces must too. Uppercase tracked text appears only as structural dividers: nav group titles, calendar month marks, and competition separator rows in a match log.
+**The Sentence Case Control Rule.** Button and control text is sentence case with no extra tracking. The legacy global `button` style in `theme.css` no longer uppercases or tracks (it pushed glyphs and icons off-centre in small buttons), but it still adds 12px × 24px padding and a pill radius, so every button sets its own padding. Icon-only buttons use `padding: 0; display: inline-grid; place-items: center` around an SVG, never a text glyph (⊞, ≡, ‹ and − sit at different heights in different fonts). Uppercase tracked text appears only as structural dividers: nav group titles, calendar month marks, and competition separator rows in a match log.
 
 ## Layout
 

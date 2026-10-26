@@ -63,8 +63,11 @@
 }
 
 .view-btn {
+  display: inline-grid;
+  place-items: center;
   width: 36px;
   height: 36px;
+  padding: 0;
   border-radius: var(--aero-radius-sm);
   border: 1px solid var(--aero-line-strong);
   background: var(--aero-surface);
@@ -326,6 +329,13 @@
 .card-notes .pc-sub { flex-wrap: wrap; }
 .card-notes .pc-news { max-width: 100%; }
 .players-summary { margin: 0 0 14px; font-size: 0.9rem; line-height: 1.55; color: var(--aero-text-dim); max-width: 90ch; }
+
+/* theme.css still carries the old card's padding, team-name margin and a
+ * second stats border; cancel them so the card lines up with its own layout. */
+.players-page .player-card { padding: 0; }
+.players-page .player-name { margin-bottom: 0; }
+.players-page .player-team { margin: 0; font-size: inherit; color: var(--aero-text-dim); }
+.players-page .player-stats { gap: 0; padding: 0; border-bottom: 0; margin-bottom: 0; }
 
 /* Phones: each card becomes one compact row (photo, name and flags, then
  * price, points and FDR) so a screen holds six or seven players, not one.

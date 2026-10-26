@@ -221,10 +221,12 @@
     width: 100%;
   }
 
+  /* Size each option to its label so none wraps onto two lines. */
   .lab-mode-switch button {
-    flex: 1;
+    flex: 1 1 auto;
     padding: 9px 10px;
     font-size: 0.76rem;
+    white-space: nowrap;
   }
 }
 

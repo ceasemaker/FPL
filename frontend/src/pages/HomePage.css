@@ -87,3 +87,4 @@
 .upnext-row small { white-space: nowrap; }
 
 .deadline-row{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;column-gap:12px;align-items:baseline;margin-bottom:12px;padding:10px 14px;border-radius:12px;border:1px solid rgba(165,255,1,.45);background:rgba(165,255,1,.06)}.deadline-row span{font-size:.72rem;font-weight:700;color:#cfcfcf}.deadline-row b{grid-row:span 2;font-size:1.5rem;font-weight:800;letter-spacing:-.03em;color:#a5ff01;font-variant-numeric:tabular-nums}.deadline-row small{font-size:.68rem;color:#999}
+.captain-metrics .best-fixture span{margin-top:0}

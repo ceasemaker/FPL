@@ -252,17 +252,19 @@ export function PlayersPage() {
                 className={`view-btn ${viewMode === "grid" ? "active" : ""}`}
                 onClick={() => setViewMode("grid")}
                 aria-pressed={viewMode === "grid"}
+                aria-label="Grid view"
                 title="Grid view"
               >
-                ⊞
+                <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><g fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="2" width="5" height="5" rx="1.2" /><rect x="9" y="2" width="5" height="5" rx="1.2" /><rect x="2" y="9" width="5" height="5" rx="1.2" /><rect x="9" y="9" width="5" height="5" rx="1.2" /></g></svg>
               </button>
               <button
                 className={`view-btn ${viewMode === "table" ? "active" : ""}`}
                 onClick={() => setViewMode("table")}
                 aria-pressed={viewMode === "table"}
+                aria-label="Table view"
                 title="Table view"
               >
-                ≡
+                <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4h11M2.5 8h11M2.5 12h11" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
               </button>
             </div>
           </div>

@@ -102,7 +102,7 @@
   text-transform: uppercase;
   letter-spacing: 0.14em;
   color: var(--aero-text-muted);
-  margin: 0 0 12px;
+  margin: 0;
 }
 
 .manager-name {
@@ -124,11 +124,14 @@
   object-fit: contain;
 }
 
+/* The spacing sits on the header, not the title, so the title and the club
+   badge stay centred on each other. */
 .manager-summary-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  margin-bottom: 12px;
 }
 
 .manager-meta {
@@ -364,8 +367,11 @@
 }
 
 .gw-nav-button {
+  display: inline-grid;
+  place-items: center;
   width: 36px;
   height: 36px;
+  padding: 0;
   border-radius: var(--aero-radius-sm);
   border: 1px solid var(--aero-line-strong);
   background: var(--aero-surface);

@@ -199,9 +199,9 @@ export function PlannerPage() {
         <div>
           <dt>Free transfers for GW{data.nextGameweek} <span title="Worked out from your history; FPL doesn't publish it. Correct it if it's wrong.">(estimate)</span></dt>
           <dd className="pl-step">
-            <button type="button" aria-label="One fewer" onClick={() => savePlan({ ...plan, freeTransfers: Math.max(0, (plan.freeTransfers ?? data.freeTransfers) - 1) })}>−</button>
+            <button type="button" aria-label="One fewer" onClick={() => savePlan({ ...plan, freeTransfers: Math.max(0, (plan.freeTransfers ?? data.freeTransfers) - 1) })}><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6h7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg></button>
             {plan.freeTransfers ?? data.freeTransfers}
-            <button type="button" aria-label="One more" onClick={() => savePlan({ ...plan, freeTransfers: Math.min(5, (plan.freeTransfers ?? data.freeTransfers) + 1) })}>+</button>
+            <button type="button" aria-label="One more" onClick={() => savePlan({ ...plan, freeTransfers: Math.min(5, (plan.freeTransfers ?? data.freeTransfers) + 1) })}><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6h7M6 2.5v7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg></button>
           </dd>
         </div>
         <div><dt>Team value</dt><dd>{data.teamValue != null ? money(data.teamValue) : "–"}</dd></div>

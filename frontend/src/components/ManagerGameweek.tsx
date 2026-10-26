@@ -236,7 +236,7 @@ const ManagerGameweek: React.FC<ManagerGameweekProps> = ({
             onClick={() => selectedGameweek && selectedGameweek > 1 && onGameweekChange(selectedGameweek - 1)}
             disabled={!selectedGameweek || selectedGameweek <= 1}
           >
-            ‹
+            <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M8.5 3 4.5 7l4 4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </button>
           <select
             className="gw-select"
@@ -256,7 +256,7 @@ const ManagerGameweek: React.FC<ManagerGameweekProps> = ({
             onClick={() => selectedGameweek && selectedGameweek < lastGw && onGameweekChange(selectedGameweek + 1)}
             disabled={!selectedGameweek || selectedGameweek >= lastGw}
           >
-            ›
+            <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M5.5 3l4 4-4 4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </button>
         </div>
       </div>

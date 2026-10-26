@@ -31,7 +31,9 @@
 .pl-facts dt span { font-weight: 500; cursor: help; }
 .pl-facts dd { margin: 0; font-size: 1.05rem; font-weight: 800; font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 8px; }
 .pl-facts dd.neg { color: var(--aero-negative); }
-.pl-step button { width: 24px; height: 24px; border-radius: 7px; border: 1px solid var(--aero-line-strong); background: var(--aero-surface); color: #fff; cursor: pointer; font-weight: 800; }
+.pl-step button { display: inline-grid; place-items: center; width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 1px solid var(--aero-line-strong); background: var(--aero-surface); color: #fff; cursor: pointer; }
+.pl-step button:hover { border-color: #fff; }
+.pl-step button svg { display: block; }
 .pl-chips { flex-wrap: wrap; font-size: 0.78rem !important; font-weight: 700 !important; }
 .pl-chips span { padding: 2px 7px; border-radius: 6px; border: 1px solid var(--aero-line-strong); color: var(--aero-text-dim); }
 
