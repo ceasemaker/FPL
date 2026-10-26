@@ -9,6 +9,7 @@ import {
 import { PriceChangeBadge } from "../components/priceChange/PriceChange";
 import { WatchStar } from "../components/WatchStar";
 import { direction, usePriceChanges, type PriceChangeData } from "../hooks/usePriceChanges";
+import { mergeRemoteWatchlist, readWatchlist, SYNC_KEY } from "../hooks/useWatchlist";
 import "./MatchPage.css";
 import "./TeamPage.css";
 import "./PlannerPage.css";
@@ -18,13 +19,13 @@ import "./PlannerPage.css";
 // tallied, see fixtures (with cup and European games in between), projected
 // points from the AeroFPL forecast (with its record), rotation risk, FPL's own
 // price-change flags, optimizer suggestions and mini-league rivals. Plans are
-// saved in this browser and can be synced to another device with a code.
+// saved in this browser and can be synced to another device with a code (the
+// same code carries the watchlist).
 
 const PLAN_NAMES = ["A", "B", "C"];
 const ORDER: Record<string, number> = { GKP: 0, DEF: 1, MID: 2, FWD: 3 };
 const POS_WORD: Record<string, string> = { GKP: "Goalkeepers", DEF: "Defenders", MID: "Midfielders", FWD: "Forwards" };
 const storeKey = (id: number) => `aerofpl_planner_v1_${id}`;
-const SYNC_KEY = "aerofpl_planner_sync";
 interface Stored { active: string; plans: Record<string, Plan> }
 
 const safeGet = (k: string) => { try { return localStorage.getItem(k); } catch { return null; } };
@@ -153,7 +154,7 @@ export function PlannerPage() {
         {error && <p className="mp-error" role="alert">{error}</p>}
         {loading && <div className="mp-skeleton tall" aria-busy="true" />}
         {!loading && !error && <p className="pl-help">Your manager ID is the number in the address of your team's Points page on the FPL site: fantasy.premierleague.com/entry/<b>576154</b>/event/8. No login needed.</p>}
-        <SyncLoad onLoaded={(code, d) => { setSyncCode(code); safeSet(SYNC_KEY, code); if (d.managerId) { safeSet(storeKey(d.managerId), JSON.stringify(d.plans)); setDraft(String(d.managerId)); setManagerId(d.managerId); } }} />
+        <SyncLoad onLoaded={(code, d) => { setSyncCode(code); safeSet(SYNC_KEY, code); mergeRemoteWatchlist(d.watchlist, code); if (d.managerId && d.plans?.plans) { safeSet(storeKey(d.managerId), JSON.stringify(d.plans)); setDraft(String(d.managerId)); setManagerId(d.managerId); } }} />
       </main>
     );
   }
@@ -587,7 +588,7 @@ function SyncPanel({ code, managerId, stored, onLinked, onUnlinked, onPulled }: 
   const [entry, setEntry] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const create = async () => {
-    const r = await fetch("/api/planner/sync/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ managerId, plans: stored }) });
+    const r = await fetch("/api/planner/sync/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ managerId, plans: stored, watchlist: readWatchlist() }) });
     if (!r.ok) { setMsg("Couldn't create a code. Try again."); return; }
     const d = await r.json(); onLinked(d.code); setMsg(null); track("Planner Sync Created");
   };
@@ -596,18 +597,23 @@ function SyncPanel({ code, managerId, stored, onLinked, onUnlinked, onPulled }: 
     if (!r.ok) { setMsg("No plans under that code."); return; }
     const d = await r.json();
     if (d.managerId && d.managerId !== managerId) { setMsg(`That code holds plans for manager ${d.managerId}. Load that team first.`); return; }
-    onPulled(d.plans as Stored); onLinked(d.code); setMsg("Plans loaded from your other device.");
+    mergeRemoteWatchlist(d.watchlist, d.code);
+    onLinked(d.code);
+    if (d.plans?.plans) { onPulled(d.plans as Stored); setMsg("Plans loaded from your other device."); return; }
+    // A code made on the Watchlist page holds no plans yet: send this device's.
+    fetch(`/api/planner/sync/${d.code}/`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ managerId, plans: stored }) }).catch(() => undefined);
+    setMsg("Synced. Your plans now save under this code too.");
   };
   return (
     <section className="mp-sheet pl-sync">
       {code ? (
         <>
-          <p>Your plans sync under this code. Enter it in the planner on another device to open them there.</p>
+          <p>Your plans and watchlist sync under this code. Enter it in the planner or on the Watchlist page on another device to open them there.</p>
           <div className="pl-code"><b>{code}</b><button type="button" className="pl-x" onClick={() => navigator.clipboard?.writeText(code).then(() => setMsg("Copied."))}>Copy</button><button type="button" className="pl-x" onClick={onUnlinked}>Stop syncing here</button></div>
         </>
       ) : (
         <>
-          <p>No account needed: create a code, then enter it on your phone or laptop to open the same plans. Anyone with the code can see and change these plans, so keep it to yourself.</p>
+          <p>No account needed: create a code, then enter it on your phone or laptop to open the same plans and watchlist. Anyone with the code can see and change them, so keep it to yourself.</p>
           <div className="pl-code">
             <button type="button" className="aero-button primary" onClick={create}>Create a sync code</button>
             <span>or</span>
@@ -622,7 +628,7 @@ function SyncPanel({ code, managerId, stored, onLinked, onUnlinked, onPulled }: 
 }
 
 // Before a team is loaded: open plans from another device by their code.
-function SyncLoad({ onLoaded }: { onLoaded: (code: string, d: { managerId: number | null; plans: Stored }) => void }) {
+function SyncLoad({ onLoaded }: { onLoaded: (code: string, d: { managerId: number | null; plans: Stored; watchlist: number[] | null }) => void }) {
   const [entry, setEntry] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const go = async (e: FormEvent) => {
@@ -630,7 +636,7 @@ function SyncLoad({ onLoaded }: { onLoaded: (code: string, d: { managerId: numbe
     const r = await fetch(`/api/planner/sync/${entry.trim().toLowerCase()}/`);
     if (!r.ok) { setMsg("No plans under that code."); return; }
     const d = await r.json();
-    onLoaded(d.code, { managerId: d.managerId, plans: d.plans });
+    onLoaded(d.code, { managerId: d.managerId, plans: d.plans, watchlist: d.watchlist });
   };
   return (
     <form className="pl-import pl-syncload" onSubmit={go}>

@@ -1772,6 +1772,8 @@ class PlannerSync(models.Model):
     code = models.CharField(max_length=16, unique=True)
     manager_id = models.PositiveIntegerField(null=True)
     data = models.JSONField(default=dict)
+    # Watchlist player ids under the same code; null until a device first sends one.
+    watchlist = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

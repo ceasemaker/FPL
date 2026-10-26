@@ -348,6 +348,16 @@ def league_view(league_id: int, manager_id: int, client: FPLClient | None = None
 
 SYNC_ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789"  # no look-alikes (0/o, 1/l/i)
 MAX_SYNC_BYTES = 64 * 1024
+MAX_WATCHLIST = 200
+
+
+def clean_watchlist(value) -> list[int]:
+    """Player ids in order, no repeats; anything else is dropped."""
+    out: list[int] = []
+    for v in value if isinstance(value, list) else []:
+        if isinstance(v, int) and not isinstance(v, bool) and v > 0 and v not in out:
+            out.append(v)
+    return out[:MAX_WATCHLIST]
 
 
 def new_sync_code() -> str:

@@ -149,6 +149,16 @@ class PlannerSyncTests(TestCase):
         self.client.put(f"/api/planner/sync/{code}/", json.dumps({"plans": {"active": "B"}}), content_type="application/json")
         self.assertEqual(self.client.get(f"/api/planner/sync/{code.upper()}/").json()["plans"], {"active": "B"})
         self.assertEqual(self.client.get("/api/planner/sync/nope/").status_code, 404)
+        # The watchlist rides on the same code; saving one half leaves the other alone.
+        self.assertIsNone(self.client.get(f"/api/planner/sync/{code}/").json()["watchlist"])
+        self.client.put(f"/api/planner/sync/{code}/", json.dumps({"watchlist": [7, 3, 7, "x", True, -1]}), content_type="application/json")
+        got = self.client.get(f"/api/planner/sync/{code}/").json()
+        self.assertEqual((got["watchlist"], got["plans"]), ([7, 3], {"active": "B"}))
+        self.client.put(f"/api/planner/sync/{code}/", json.dumps({"plans": {"active": "C"}}), content_type="application/json")
+        self.assertEqual(self.client.get(f"/api/planner/sync/{code}/").json()["watchlist"], [7, 3])
+        only = self.client.post("/api/planner/sync/", json.dumps({"watchlist": [9]}), content_type="application/json").json()
+        got = self.client.get(f"/api/planner/sync/{only['code']}/").json()
+        self.assertEqual((got["watchlist"], got["plans"], got["managerId"]), ([9], {}, None))
         big = json.dumps({"plans": {"x": "y" * 70000}})
         self.assertEqual(self.client.post("/api/planner/sync/", big, content_type="application/json").status_code, 413)
 

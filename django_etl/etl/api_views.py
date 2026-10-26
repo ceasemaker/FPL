@@ -3598,15 +3598,16 @@ def planner_league(request, league_id):
 
 @csrf_exempt
 def planner_sync(request, code=None):
-    """Plans under a sync code. POST creates a code, GET reads, PUT replaces.
+    """Plans and the watchlist under a sync code. POST creates a code, GET reads,
+    PUT replaces whichever of the two it is sent (so saving one never wipes the other).
 
-    No account and no cookies: the code is the only key, and the plans hold no
+    No account and no cookies: the code is the only key, and the data holds no
     personal data (player ids and gameweeks), so CSRF protection adds nothing.
     """
     import json as _json
 
     from etl.models import PlannerSync
-    from etl.services.planner import MAX_SYNC_BYTES, new_sync_code
+    from etl.services.planner import MAX_SYNC_BYTES, clean_watchlist, new_sync_code
 
     if request.method in ("POST", "PUT"):
         if len(request.body) > MAX_SYNC_BYTES:
@@ -3615,23 +3616,31 @@ def planner_sync(request, code=None):
             body = _json.loads(request.body or b"{}")
         except ValueError:
             return JsonResponse({"error": "Send the plans as JSON."}, status=400)
+        if not isinstance(body, dict):
+            return JsonResponse({"error": "Send the plans as JSON."}, status=400)
         manager = body.get("managerId")
+        watch = clean_watchlist(body["watchlist"]) if "watchlist" in body else None
         if request.method == "POST" and code is None:
-            row = PlannerSync.objects.create(code=new_sync_code(), manager_id=manager if isinstance(manager, int) else None, data=body.get("plans", {}))
+            row = PlannerSync.objects.create(code=new_sync_code(), manager_id=manager if isinstance(manager, int) else None,
+                                             data=body.get("plans") or {}, watchlist=watch)
             return JsonResponse({"code": row.code, "updatedAt": row.updated_at.isoformat()}, status=201)
-        row = PlannerSync.objects.filter(code=code).first() if code else None
+        row = PlannerSync.objects.filter(code=code.strip().lower()).first() if code else None
         if row is None:
             return JsonResponse({"error": "No plans under that code."}, status=404)
-        row.data = body.get("plans", {})
+        if "plans" in body:
+            row.data = body.get("plans") or {}
+        if watch is not None:
+            row.watchlist = watch
         if isinstance(manager, int):
             row.manager_id = manager
-        row.save(update_fields=["data", "manager_id", "updated_at"])
+        row.save(update_fields=["data", "watchlist", "manager_id", "updated_at"])
         return JsonResponse({"code": row.code, "updatedAt": row.updated_at.isoformat()})
     if request.method == "GET" and code:
         row = PlannerSync.objects.filter(code=code.strip().lower()).first()
         if row is None:
             return JsonResponse({"error": "No plans under that code."}, status=404)
-        return JsonResponse({"code": row.code, "managerId": row.manager_id, "plans": row.data, "updatedAt": row.updated_at.isoformat()})
+        return JsonResponse({"code": row.code, "managerId": row.manager_id, "plans": row.data, "watchlist": row.watchlist,
+                             "updatedAt": row.updated_at.isoformat()})
     return JsonResponse({"error": "Method not allowed."}, status=405)
 
 

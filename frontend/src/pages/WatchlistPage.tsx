@@ -1,17 +1,19 @@
-import { useEffect, useMemo, useState } from "react";
+import { track } from "@amplitude/unified";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Crest } from "../components/match/icons";
 import { PriceChangeBadge } from "../components/priceChange/PriceChange";
 import { WatchStar } from "../components/WatchStar";
 import { direction, usePriceChanges } from "../hooks/usePriceChanges";
-import { useWatchlist } from "../hooks/useWatchlist";
+import { getSyncCode, mergeRemoteWatchlist, readWatchlist, setSyncCode, useWatchlist } from "../hooks/useWatchlist";
 import "./MatchPage.css";
 import "./TeamPage.css";
 import "./WatchlistPage.css";
 
 // Watchlist (/watchlist): the players you're tracking, with what matters for a
 // transfer decision side by side: price and FPL's price-move signal, status,
-// form, projected points and the next five gameweeks of fixtures.
+// form, projected points and the next five gameweeks of fixtures. A sync code
+// (shared with the transfer planner) opens the same list on another device.
 
 interface Cell { opp: string; home: boolean; difficulty: number | null; cleanSheet: number | null; goals: number | null }
 interface W {
@@ -150,9 +152,59 @@ export function WatchlistPage() {
               </tbody>
             </table>
           </div>
-          <p className="mp-foot">Fixture colours: {data.fixtureModel ? "clean-sheet chance for goalkeepers and defenders, projected goals for midfielders and forwards (AeroFPL fixture model)" : "FPL's difficulty rating"}. Capitals are home games. Starts: in the club's last games, every competition. Your watchlist is saved in this browser.</p>
+          <p className="mp-foot">Fixture colours: {data.fixtureModel ? "clean-sheet chance for goalkeepers and defenders, projected goals for midfielders and forwards (AeroFPL fixture model)" : "FPL's difficulty rating"}. Capitals are home games. Starts: in the club's last games, every competition.</p>
         </>
       )}
+      <WatchlistSync />
     </main>
+  );
+}
+
+// Same code as the transfer planner's: one code carries plans and watchlist.
+function WatchlistSync() {
+  const [code, setCode] = useState<string | null>(getSyncCode);
+  const [entry, setEntry] = useState("");
+  const [msg, setMsg] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const create = async () => {
+    setBusy(true);
+    const r = await fetch("/api/planner/sync/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ watchlist: readWatchlist() }) }).catch(() => null);
+    setBusy(false);
+    if (!r?.ok) { setMsg("Couldn't create a code. Try again."); return; }
+    const d = await r.json();
+    setSyncCode(d.code); setCode(d.code); setMsg(null); track("Planner Sync Created", { from: "watchlist" });
+  };
+  const join = async (e: FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    const r = await fetch(`/api/planner/sync/${entry.trim().toLowerCase()}/`).catch(() => null);
+    setBusy(false);
+    if (!r?.ok) { setMsg("Nothing is saved under that code."); return; }
+    const d = await r.json();
+    setSyncCode(d.code); setCode(d.code); mergeRemoteWatchlist(d.watchlist, d.code);
+    setMsg("Synced. Players from both devices are on your list.");
+  };
+
+  return (
+    <section className="wl-sync" aria-label="Sync">
+      {code ? (
+        <p>Synced under <b className="wl-code">{code}</b>. Enter the code on another device, here or in the transfer planner, to see the same list. Changes save as you make them.
+          <button type="button" className="wl-x" onClick={() => navigator.clipboard?.writeText(code).then(() => setMsg("Copied."))}>Copy</button>
+          <button type="button" className="wl-x" onClick={() => { setSyncCode(null); setCode(null); setMsg("This device has stopped syncing. Your list stays here."); }}>Stop syncing here</button>
+        </p>
+      ) : (
+        <form onSubmit={join}>
+          <p>Saved in this browser only. To keep the same list on your phone and laptop, create a sync code, or enter one you made here or in the transfer planner. No account needed; anyone with the code can see and change the list.</p>
+          <div className="wl-sync-row">
+            <button type="button" className="aero-button primary" onClick={create} disabled={busy}>Create a sync code</button>
+            <span>or</span>
+            <input className="aero-input" placeholder="Enter a code" value={entry} onChange={(e) => setEntry(e.target.value)} aria-label="Sync code" />
+            <button type="submit" className="aero-button" disabled={busy || entry.trim().length < 6}>Use code</button>
+          </div>
+        </form>
+      )}
+      {msg && <p className="mp-note" role="status">{msg}</p>}
+    </section>
   );
 }

@@ -33,6 +33,15 @@
 .wl-fx-cell i.b-4 { background: var(--aero-fdr-4); color: #fff; }
 .wl-fx-cell i.b-5 { background: var(--aero-fdr-5); color: #fff; }
 .wl-fx-cell i.b-0 { background: var(--aero-surface-raised); color: var(--aero-text-dim); }
+.wl-sync { margin-top: 22px; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--aero-line); }
+.wl-sync p { margin: 0; font-size: 0.82rem; line-height: 1.6; color: var(--aero-text-dim); max-width: 78ch; }
+.wl-sync .mp-note { margin-top: 8px; }
+.wl-code { font-size: 0.95rem; letter-spacing: 0.08em; padding: 2px 8px; border-radius: 7px; border: 1px dashed var(--aero-lime); color: var(--aero-lime); font-variant-numeric: tabular-nums; }
+.wl-x { margin-left: 8px; border: 1px solid var(--aero-line-strong); background: none; color: var(--aero-text-dim); border-radius: 7px; padding: 3px 9px; font-size: 0.72rem; font-weight: 700; cursor: pointer; }
+.wl-x:hover { color: #fff; border-color: #fff; }
+.wl-sync-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+.wl-sync-row span { color: var(--aero-text-muted); font-size: 0.8rem; }
+.wl-sync-row input { width: 160px; }
 @media (max-width: 720px) {
   .hide-s { display: none; }
   .wl-fx { grid-template-columns: repeat(3, 36px); }
