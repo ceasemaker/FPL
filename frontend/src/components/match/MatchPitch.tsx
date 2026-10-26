@@ -9,7 +9,7 @@ import type { MatchData, MinuteState, Slot, Timeline } from "./matchModel";
 const lastName = (n: string) => { const p = n.split(" "); return p.length > 1 ? p.slice(1).join(" ") : n; };
 
 function usePortrait() {
-  const query = "(max-width: 720px)";
+  const query = "(max-width: 734px)";
   const [portrait, setPortrait] = useState(() => typeof window !== "undefined" && window.matchMedia(query).matches);
   useEffect(() => {
     const m = window.matchMedia(query);

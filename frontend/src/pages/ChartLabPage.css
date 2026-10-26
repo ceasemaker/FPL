@@ -3,7 +3,7 @@
 .chart-lab-page code {
   font-family: "SF Mono", ui-monospace, Menlo, monospace;
   font-size: 0.85em;
-  color: var(--aero-lime);
+  color: var(--aero-text);
 }
 
 .lab-layout {
@@ -47,25 +47,25 @@
   min-width: 0;
   padding: 0 4px;
   height: 36px;
-  border-radius: 999px;
+  border-radius: var(--aero-radius-pill);
   border: 1px solid var(--aero-line-strong);
   background: var(--aero-surface);
   color: var(--aero-text-dim);
   font-family: inherit;
-  font-size: 0.8rem;
+  font-size: var(--fs-footnote);
   font-weight: 600;
   cursor: pointer;
 }
 
 .lab-pill.active {
-  background: var(--aero-lime);
+  background: var(--aero-segment-on);
   border-color: transparent;
-  color: #101011;
+  color: var(--aero-text);
 }
 
 .lab-formula-input {
   font-family: "SF Mono", ui-monospace, Menlo, monospace;
-  font-size: 0.86rem;
+  font-size: var(--fs-footnote);
 }
 
 .lab-formula-input.invalid {
@@ -74,7 +74,7 @@
 
 .lab-formula-error {
   color: var(--aero-negative);
-  font-size: 0.72rem;
+  font-size: var(--fs-caption);
   letter-spacing: 0;
   text-transform: none;
 }
@@ -87,19 +87,19 @@
 
 .lab-chip {
   padding: 5px 10px;
-  border-radius: 999px;
+  border-radius: var(--aero-radius-pill);
   border: 1px solid var(--aero-line-strong);
   background: var(--aero-surface-raised);
   color: var(--aero-text-dim);
   font-family: inherit;
-  font-size: 0.7rem;
+  font-size: var(--fs-caption);
   font-weight: 600;
   cursor: pointer;
 }
 
 .lab-chip:hover {
-  border-color: var(--aero-lime);
-  color: var(--aero-lime);
+  border-color: var(--aero-line-strong);
+  color: var(--aero-text);
 }
 
 .lab-filter-row {
@@ -119,7 +119,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.8rem;
+  font-size: var(--fs-footnote);
   color: var(--aero-text-dim);
   cursor: pointer;
 }
@@ -142,13 +142,13 @@
   border-radius: var(--aero-radius-sm);
   border: 1px solid var(--aero-line);
   background: var(--aero-surface);
-  font-size: 0.82rem;
+  font-size: var(--fs-footnote);
 }
 
 .lab-selected i {
   width: 9px;
   height: 9px;
-  border-radius: 2px;
+  border-radius: var(--aero-radius-chip);
   flex: none;
 }
 
@@ -164,7 +164,7 @@
 .lab-selected small,
 .lab-search-results small {
   color: var(--aero-text-muted);
-  font-size: 0.7rem;
+  font-size: var(--fs-caption);
 }
 
 .lab-selected button,
@@ -208,7 +208,7 @@
   background: transparent;
   color: var(--aero-text);
   font-family: inherit;
-  font-size: 0.82rem;
+  font-size: var(--fs-footnote);
   text-align: left;
   cursor: pointer;
 }
@@ -249,7 +249,7 @@
   background: var(--aero-surface);
   color: var(--aero-text-dim);
   font-family: inherit;
-  font-size: 0.74rem;
+  font-size: var(--fs-caption);
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
@@ -261,7 +261,7 @@
 
 .lab-chart-title {
   font-family: "SF Mono", ui-monospace, Menlo, monospace;
-  font-size: 1rem !important;
+  font-size: var(--fs-headline) !important;
   word-break: break-word;
 }
 
@@ -306,7 +306,7 @@
   flex-wrap: wrap;
   gap: 14px;
   margin-top: 10px;
-  font-size: 0.76rem;
+  font-size: var(--fs-caption);
   color: var(--aero-text-dim);
 }
 
@@ -319,7 +319,7 @@
 .lab-legend i {
   width: 14px;
   height: 3px;
-  border-radius: 2px;
+  border-radius: var(--aero-radius-chip);
 }
 
 .lab-hint {
@@ -331,15 +331,15 @@
 .lab-takeaway {
   margin: 0 0 14px;
   padding: 12px 14px;
-  border-left: 3px solid var(--aero-lime);
+  border-left: 0;
   border-radius: var(--aero-radius-sm);
-  background: var(--aero-lime-wash);
+  background: var(--aero-surface-raised);
   color: var(--aero-text);
-  font-size: 0.92rem;
+  font-size: var(--fs-body);
   line-height: 1.5;
 }
 
-.lab-takeaway strong { color: var(--aero-lime); }
+.lab-takeaway strong { color: var(--aero-text); }
 
 .lab-table-wrap {
   margin-top: 14px;
@@ -349,7 +349,7 @@
 .lab-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.82rem;
+  font-size: var(--fs-footnote);
 }
 
 .lab-table th {
@@ -397,13 +397,13 @@
   background: var(--aero-surface);
   color: var(--aero-text-dim);
   font-family: inherit;
-  font-size: 0.74rem;
+  font-size: var(--fs-caption);
   text-align: left;
   cursor: pointer;
 }
 
 .lab-stat:hover {
-  border-color: var(--aero-lime);
+  border-color: var(--aero-line-strong);
 }
 
 .lab-stat code {
@@ -416,7 +416,7 @@
   .lab-dot { transition: none; }
 }
 
-@media (max-width: 1050px) {
+@media (max-width: 1068px) {
   .lab-layout {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -436,8 +436,8 @@
 }
 
 /* One lab: a question picker, then the chart form. */
-.lab-question { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; font-size: 0.72rem; font-weight: 700; color: var(--aero-text-muted); }
+.lab-question { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; font-size: var(--fs-caption); font-weight: 600; color: var(--aero-text-muted); }
 .lab-question select { width: 100%; }
-.lab-view-note { margin: 10px 0 0; font-size: 0.74rem; line-height: 1.5; color: var(--aero-text-muted); }
+.lab-view-note { margin: 10px 0 0; font-size: var(--fs-caption); line-height: 1.5; color: var(--aero-text-muted); }
 .lab-stat.season code { color: var(--aero-warn); }  /* amber: a caveat (season totals only) */
 .lab-stat:disabled { opacity: 0.35; cursor: not-allowed; }

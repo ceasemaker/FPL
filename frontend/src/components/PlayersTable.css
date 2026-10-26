@@ -1,55 +1,71 @@
+/* Apple-style grouped table: one surface, inset hairlines, text left and
+ * numbers right in fixed-width figures. */
 .players-table-container {
     overflow-x: auto;
-    background: var(--surface-card);
-    border-radius: 12px;
-    border: 1px solid var(--border-subtle);
-    box-shadow: var(--shadow-sm);
+    background: var(--aero-surface);
+    border-radius: var(--aero-radius);
 }
 
 .players-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.9rem;
-    color: var(--text-primary);
+    font-size: var(--fs-body);
+    color: var(--aero-text);
+    font-variant-numeric: tabular-nums;
 }
 
 .players-table th,
 .players-table td {
-    padding: 12px 16px;
+    padding: 10px 12px;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.players-table th.text,
+.players-table td.text,
+.players-table td.td-name {
     text-align: left;
-    border-bottom: 1px solid var(--border-subtle);
+}
+
+.players-table th:first-child,
+.players-table td:first-child {
+    padding-left: 20px;
+}
+
+.players-table th:last-child,
+.players-table td:last-child {
+    padding-right: 20px;
 }
 
 .players-table th {
-    background: var(--surface-hover);
-    font-weight: 600;
-    color: var(--text-secondary);
+    padding-top: 14px;
+    padding-bottom: 10px;
+    font-size: var(--fs-footnote);
+    font-weight: 500;
+    color: var(--aero-text-dim);
     cursor: pointer;
     user-select: none;
-    white-space: nowrap;
-    transition: color 0.2s;
 }
 
 .players-table th:hover {
-    color: var(--text-primary);
-    background: var(--surface-active);
+    color: var(--aero-text);
 }
 
-.players-table tr:last-child td {
-    border-bottom: none;
+.players-table tbody tr + tr td {
+    box-shadow: inset 0 1px var(--aero-line);
 }
 
 .players-table tbody tr {
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.15s ease;
 }
 
 .players-table tbody tr:hover {
-    background-color: var(--surface-hover);
+    background-color: rgba(255, 255, 255, 0.03);
 }
 
 .players-table tbody tr.selected {
-    background-color: rgba(59, 130, 246, 0.1);
+    background-color: var(--aero-lime-wash);
 }
 
 .sort-icon {
@@ -66,15 +82,16 @@
 .player-cell {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
 }
 
 .player-thumb {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     object-fit: cover;
-    background: var(--surface-active);
+    object-position: top;
+    background: var(--aero-surface-hover);
 }
 
 .pc-text {
@@ -96,7 +113,7 @@
     display: flex;
     align-items: center;
     gap: 5px;
-    font-size: 0.7rem;
+    font-size: var(--fs-caption);
     color: var(--aero-text-muted);
 }
 
@@ -112,24 +129,12 @@
     margin-left: auto;
 }
 
-.fdr-badge-small {
-    display: inline-block;
-    padding: 2px 6px;
-    border-radius: 4px;
-    color: #fff;
-    font-weight: 600;
-    font-size: 0.75rem;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
 .fw-bold {
     font-weight: 600;
 }
 
 .td-value {
-    font-family: monospace;
-    color: var(--accent-primary);
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .th-checkbox,
@@ -139,11 +144,11 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (max-width: 734px) {
 
     .players-table th,
     .players-table td {
-        padding: 8px 12px;
+        padding: 8px 10px;
     }
 
     .player-thumb {

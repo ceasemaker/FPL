@@ -366,7 +366,7 @@ export function ComparePage() {
           </p>
         </div>
         <button className="aero-button ghost" onClick={() => navigate("/players")}>
-          ← Back to players
+          Back to players
         </button>
       </div>
 

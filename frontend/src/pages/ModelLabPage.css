@@ -10,7 +10,7 @@
 
 .ml-page ::selection {
   background: rgba(165, 255, 1, 0.35);
-  color: #fff;
+  color: var(--aero-text);
 }
 
 .ml-page :focus-visible {
@@ -26,32 +26,32 @@
 
 .ml-head h1 {
   margin: 0;
-  font-size: 1.9rem;
+  font-size: var(--fs-title);
   line-height: 1.1;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.02em;
 }
 
 .ml-head p {
   max-width: 68ch;
   margin: 6px 0 0;
   color: var(--aero-text-dim);
-  font-size: 0.88rem;
+  font-size: var(--fs-body);
 }
 
 .ml-panel,
 .ml-verdict {
   padding: 18px 20px;
-  border: 1px solid var(--aero-line-strong);
+  border: 0;
   border-radius: var(--aero-radius);
-  background: #151616;
+  background: var(--aero-surface);
 }
 
 .ml-panel h2,
 .ml-verdict h2 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: var(--fs-headline);
   line-height: 1.2;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 .ml-section-head {
@@ -65,7 +65,7 @@
   max-width: 72ch;
   margin: 6px 0 0;
   color: var(--aero-text-dim);
-  font-size: 0.86rem;
+  font-size: var(--fs-footnote);
   line-height: 1.55;
 }
 
@@ -74,11 +74,11 @@
 .ml-verdict {
   display: grid;
   gap: 4px;
-  background: #171818;
+  background: var(--aero-surface);
 }
 
 .ml-verdict h2 {
-  font-size: 1.4rem;
+  font-size: var(--fs-section);
 }
 
 .ml-verdict.pass h2 {
@@ -91,7 +91,7 @@
 
 .ml-verdict .ml-meta {
   color: var(--aero-text-muted);
-  font-size: 0.78rem;
+  font-size: var(--fs-footnote);
 }
 
 /* ----------------------------------------------------------- intervals */
@@ -112,9 +112,9 @@
 .ml-int-head {
   padding-bottom: 6px;
   color: var(--aero-text-muted);
-  font-size: 0.7rem;
+  font-size: var(--fs-caption);
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
 }
 
 .ml-int-axis svg {
@@ -126,7 +126,7 @@
 
 .ml-int-axis text {
   fill: var(--aero-text-muted);
-  font-size: 11px;
+  font-size: var(--fs-caption);
 }
 
 .ml-int-row {
@@ -135,7 +135,7 @@
 }
 
 .ml-int-label {
-  font-size: 0.86rem;
+  font-size: var(--fs-footnote);
   color: var(--aero-text);
 }
 
@@ -192,17 +192,17 @@
 }
 
 .ml-int-row .ml-num strong {
-  font-size: 0.95rem;
+  font-size: var(--fs-body);
 }
 
 .ml-int-row .ml-num small {
   color: var(--aero-text-muted);
-  font-size: 0.72rem;
+  font-size: var(--fs-caption);
 }
 
 .ml-int-row .ml-num em {
   font-style: normal;
-  font-size: 0.72rem;
+  font-size: var(--fs-caption);
   font-weight: 600;
   color: var(--aero-text-dim);
 }
@@ -218,16 +218,16 @@
 .ml-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.82rem;
+  font-size: var(--fs-footnote);
 }
 
 .ml-table caption {
   padding: 10px 12px 0;
   text-align: left;
   color: var(--aero-text-muted);
-  font-size: 0.72rem;
+  font-size: var(--fs-caption);
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
 }
 
 .ml-table th,
@@ -241,7 +241,7 @@
 .ml-table thead th {
   border-top: 0;
   color: var(--aero-text-muted);
-  font-size: 0.72rem;
+  font-size: var(--fs-caption);
   font-weight: 600;
   white-space: normal;
   vertical-align: bottom;
@@ -254,13 +254,13 @@
 }
 
 .ml-table tbody tr:nth-child(even) {
-  background-color: #171818;
+  background-color: var(--aero-surface);
 }
 
 .ml-table tfoot th,
 .ml-table tfoot td {
   border-top: 1px solid var(--aero-line-strong);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .ml-table td span {
@@ -311,7 +311,7 @@
   margin: 10px 0 0;
   padding-left: 18px;
   color: var(--aero-text-dim);
-  font-size: 0.86rem;
+  font-size: var(--fs-footnote);
   line-height: 1.6;
 }
 
@@ -321,7 +321,7 @@
 
 .ml-skeleton {
   height: 220px;
-  background: linear-gradient(90deg, #151616, #1b1c1c, #151616);
+  background: var(--aero-surface);
   background-size: 200% 100%;
   animation: ml-shimmer 1.4s ease-out infinite;
 }
@@ -334,19 +334,19 @@
   .ml-skeleton { animation: none; }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1068px) {
   .ml-split {
     grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 734px) {
   .ml-page {
     gap: 14px;
   }
 
   .ml-head h1 {
-    font-size: 1.55rem;
+    font-size: var(--fs-section);
   }
 
   .ml-panel,

@@ -1,26 +1,31 @@
 /* AeroFPL design system — dark graphite + Spring Bud lime.
  *
  * Single source of truth for the tokens and primitives shared by the
- * redesigned routes (Home, Players, Compare, Analyze Manager, Decision Lab,
- * Price Monitor). Page stylesheets should reach for these variables and
+ * routes. The Apple direction is set out in REDESIGN_PLAN.md. Page stylesheets should reach for these variables and
  * `.aero-*` primitives rather than re-declaring hex values.
  */
 
 :root {
-  /* Graphite surfaces, darkest to lightest */
+  /* Apple direction (REDESIGN_PLAN.md): same graphite and lime, stricter roles. */
+
+  /* Surfaces, darkest to lightest */
   --aero-bg: #101011;
-  --aero-surface: #191919;
-  --aero-surface-raised: #1f2020;
-  --aero-surface-hover: #242424;
+  --aero-surface: #1b1b1d;
+  --aero-surface-raised: #262628;
+  --aero-surface-hover: #2e2e31;
+  /* Fill for search fields, selects and segmented controls (Apple's tertiary fill). */
+  --aero-fill: rgba(118, 118, 128, 0.24);
+  /* The selected segment in a segmented control. */
+  --aero-segment-on: #636366;
 
-  /* Borders */
-  --aero-line: #2e2f30;
-  --aero-line-strong: #3a3b3c;
+  /* Hairlines */
+  --aero-line: rgba(255, 255, 255, 0.09);
+  --aero-line-strong: rgba(255, 255, 255, 0.14);
 
-  /* Spring Bud lime accent */
+  /* Spring Bud lime: the primary action, or where you are. One per screen area. */
   --aero-lime: #a5ff01;
   --aero-lime-dim: #78c800;
-  --aero-lime-wash: rgba(165, 255, 1, 0.12);
+  --aero-lime-wash: rgba(165, 255, 1, 0.10);
 
   /* Status */
   --aero-positive: #a5ff01;
@@ -33,14 +38,31 @@
   --aero-cup: #c59bff;
 
   /* Text */
-  --aero-text: #ffffff;
-  --aero-text-dim: #b7b7b7;
-  --aero-text-muted: #8f8f8f;
+  --aero-text: #f5f5f7;
+  --aero-text-dim: #a1a1a6;
+  --aero-text-muted: #86868b;
 
-  /* Shape + depth */
-  --aero-radius: 16px;
+  /* Shape: four radii. Chips, controls, panels, pills. */
+  --aero-radius-chip: 6px;
   --aero-radius-sm: 10px;
-  --aero-shadow: 0 14px 38px rgba(0, 0, 0, 0.22);
+  --aero-radius: 18px;
+  --aero-radius-pill: 980px;
+  --aero-shadow: none;
+
+  /* Type: SF Pro on Apple devices, Inter elsewhere. Seven sizes, nothing under 12px. */
+  --aero-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
+  --fs-large-title: 3rem;     /* 48 */
+  --fs-title: 2rem;           /* 32 */
+  --fs-section: 1.375rem;     /* 22 */
+  --fs-headline: 1.0625rem;   /* 17 */
+  --fs-body: 0.9375rem;       /* 15 */
+  --fs-footnote: 0.8125rem;   /* 13 */
+  --fs-caption: 0.75rem;      /* 12 */
+
+  /* Spacing: 4 8 12 16 24 32 48 64 */
+  --aero-gutter: 32px;
+  --aero-column: 1200px;
+  --aero-nav: 220px;
 
   /* Fixture difficulty ramp, easiest to hardest */
   --aero-fdr-1: #a5ff01;
@@ -52,15 +74,14 @@
 
 /* ---------------------------------------------------------------- layout */
 
-/* Page shell that sits beside the fixed 196px navigation rail. */
+/* Page shell beside the fixed sidebar. Content sits in one centred column,
+ * so every heading, card and table starts on the same left edge. */
 .aero-page {
-  width: calc(100% - 196px);
-  margin-left: 196px;
+  width: calc(100% - var(--aero-nav));
+  margin-left: var(--aero-nav);
   min-height: 100vh;
-  padding: 22px 24px 40px;
-  background:
-    radial-gradient(circle at 68% 12%, rgba(165, 255, 1, 0.045), transparent 24%),
-    var(--aero-bg);
+  padding: 48px max(var(--aero-gutter), calc((100% - var(--aero-nav) - var(--aero-column)) / 2)) 96px;
+  background: var(--aero-bg);
   color: var(--aero-text);
 }
 
@@ -68,33 +89,35 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 20px;
+  gap: 24px;
   flex-wrap: wrap;
-  margin-bottom: 22px;
+  margin-bottom: 32px;
 }
 
 .aero-header h1 {
-  font-size: clamp(1.8rem, 2.6vw, 2.5rem);
-  line-height: 1.05;
-  letter-spacing: -0.045em;
+  font-size: var(--fs-title);
+  line-height: 1.19;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   margin: 0;
 }
 
 .aero-header p {
   color: var(--aero-text-dim);
-  font-size: 0.95rem;
-  margin: 7px 0 0;
+  font-size: var(--fs-body);
+  line-height: 1.47;
+  margin: 8px 0 0;
   max-width: 62ch;
 }
 
 /* ----------------------------------------------------------------- cards */
 
 .aero-card {
-  border: 1px solid var(--aero-line-strong);
-  background: linear-gradient(145deg, #1b1c1c, #151616);
+  border: 0;
+  background: var(--aero-surface);
   border-radius: var(--aero-radius);
-  box-shadow: var(--aero-shadow);
-  padding: 18px;
+  box-shadow: none;
+  padding: 20px;
 }
 
 .aero-card-title {
@@ -107,71 +130,88 @@
 
 .aero-card-title h2,
 .aero-card-title h3 {
-  font-size: 1.1rem;
-  letter-spacing: -0.02em;
+  font-size: var(--fs-headline);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0;
   margin: 0;
 }
 
 .aero-card-title p {
-  font-size: 0.75rem;
+  font-size: var(--fs-footnote);
   color: var(--aero-text-muted);
   margin: 4px 0 0;
 }
 
 /* --------------------------------------------------------------- controls */
 
+/* Field labels: footnote, sentence case. */
 .aero-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 0.72rem;
-  color: var(--aero-text-muted);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: var(--fs-footnote);
+  color: var(--aero-text-dim);
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .aero-input,
 .aero-select {
-  height: 42px;
+  height: 36px;
   padding: 0 12px;
   border-radius: var(--aero-radius-sm);
-  border: 1px solid var(--aero-line-strong);
-  background: var(--aero-surface);
+  border: 0;
+  background-color: var(--aero-fill);
   color: var(--aero-text);
-  font-size: 0.88rem;
+  font-size: var(--fs-body);
   font-family: inherit;
   text-transform: none;
   letter-spacing: 0;
 }
+
+.aero-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23a1a1a6' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  cursor: pointer;
+}
+
+.aero-input::placeholder { color: var(--aero-text-muted); }
 
 .aero-input:focus-visible,
 .aero-select:focus-visible,
 .aero-button:focus-visible {
   outline: 2px solid var(--aero-lime);
   outline-offset: 2px;
+  box-shadow: none;
 }
 
+/* Pill buttons. Secondary by default; `.primary` is the one lime action. */
 .aero-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  height: 42px;
+  gap: 6px;
+  height: 36px;
   padding: 0 18px;
-  border-radius: var(--aero-radius-sm);
-  border: 1px solid var(--aero-line-strong);
+  border-radius: var(--aero-radius-pill);
+  border: 0;
   background: var(--aero-surface-raised);
   color: var(--aero-text);
   font-family: inherit;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: var(--fs-body);
+  font-weight: 500;
+  white-space: nowrap;
   cursor: pointer;
-  transition: background 0.18s ease, border-color 0.18s ease;
+  transition: background 0.15s ease;
 }
 
 .aero-button:hover:not(:disabled) {
   background: var(--aero-surface-hover);
-  border-color: var(--aero-line-strong);
 }
 
 .aero-button:disabled {
@@ -180,18 +220,45 @@
 }
 
 .aero-button.primary {
-  background: linear-gradient(100deg, #b8ff37, #8fe800);
-  border-color: transparent;
-  color: #101011;
-  font-weight: 700;
+  background: var(--aero-lime);
+  color: var(--aero-bg);
+  font-weight: 500;
 }
 
 .aero-button.primary:hover:not(:disabled) {
-  background: linear-gradient(100deg, #c6ff5c, #9dff0a);
+  background: #b6ff33;
 }
 
 .aero-button.ghost {
   background: transparent;
+}
+
+/* Segmented control: a group of buttons using aria-pressed. */
+.aero-segmented {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: var(--aero-radius-sm);
+  background: var(--aero-fill);
+}
+
+.aero-segmented button {
+  height: 32px;
+  min-width: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--aero-text);
+  font-family: inherit;
+  font-size: var(--fs-footnote);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease-out;
+}
+
+.aero-segmented button[aria-pressed="true"] {
+  background: var(--aero-segment-on);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* ------------------------------------------------------------ small bits */
@@ -200,49 +267,48 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 9px;
-  border-radius: 999px;
-  border: 1px solid var(--aero-line-strong);
+  padding: 2px 8px;
+  border-radius: var(--aero-radius-chip);
+  border: 0;
   background: var(--aero-surface-raised);
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
+  font-size: var(--fs-caption);
+  font-weight: 500;
+  letter-spacing: 0;
   color: var(--aero-text-dim);
 }
 
 .aero-chip.accent {
-  border-color: transparent;
   background: var(--aero-lime-wash);
   color: var(--aero-lime);
 }
 
+/* Small label over a block. Sentence case, quiet. */
 .aero-eyebrow {
-  color: var(--aero-lime);
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  color: var(--aero-text-dim);
+  font-size: var(--fs-footnote);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
-/* Fixture difficulty pill. `data-fdr` carries the 1-5 rating. */
+/* Fixture difficulty: a soft tint per rating, never a solid lime block. */
 .aero-fdr {
   display: inline-grid;
   place-items: center;
-  min-width: 26px;
-  height: 24px;
+  min-width: 28px;
+  height: 22px;
   padding: 0 6px;
-  border-radius: 7px;
-  font-size: 0.68rem;
-  font-weight: 800;
-  color: #101011;
-  background: var(--aero-line-strong);
+  border-radius: var(--aero-radius-chip);
+  font-size: var(--fs-caption);
+  font-weight: 500;
+  color: var(--aero-text-dim);
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.aero-fdr[data-fdr="1"] { background: var(--aero-fdr-1); }
-.aero-fdr[data-fdr="2"] { background: var(--aero-fdr-2); }
-.aero-fdr[data-fdr="3"] { background: var(--aero-fdr-3); }
-.aero-fdr[data-fdr="4"] { background: var(--aero-fdr-4); }
-.aero-fdr[data-fdr="5"] { background: var(--aero-fdr-5); color: #fff; }
+.aero-fdr[data-fdr="1"], .aero-fdr[data-fdr="2"] { background: rgba(184, 233, 134, 0.12); color: var(--aero-fdr-2); }
+.aero-fdr[data-fdr="3"] { background: rgba(255, 255, 255, 0.08); color: var(--aero-text-dim); }
+.aero-fdr[data-fdr="4"] { background: rgba(226, 183, 91, 0.16); color: var(--aero-fdr-4); }
+.aero-fdr[data-fdr="5"] { background: rgba(255, 76, 94, 0.18); color: #ff7a87; }
 
 .aero-positive { color: var(--aero-positive); }
 .aero-negative { color: var(--aero-negative); }
@@ -254,23 +320,23 @@
 .aero-note,
 .aero-empty {
   color: var(--aero-text-muted);
-  font-size: 0.78rem;
-  line-height: 1.5;
+  font-size: var(--fs-footnote);
+  line-height: 1.4;
   margin: 0;
 }
 
 .aero-note {
-  border: 1px solid var(--aero-line-strong);
+  border: 0;
   border-left: 3px solid var(--aero-warn);
   border-radius: var(--aero-radius-sm);
   background: var(--aero-surface);
-  padding: 11px 14px;
+  padding: 12px 16px;
 }
 
 .aero-loading {
   color: var(--aero-text-muted);
-  font-size: 0.85rem;
-  padding: 28px 0;
+  font-size: var(--fs-body);
+  padding: 32px 0;
 }
 
 .aero-error {
@@ -278,25 +344,29 @@
   border-radius: var(--aero-radius-sm);
   background: rgba(255, 76, 94, 0.08);
   color: #ffb4bc;
-  font-size: 0.85rem;
-  padding: 14px 16px;
+  font-size: var(--fs-body);
+  padding: 12px 16px;
 }
 
 /* ------------------------------------------------------------ responsive */
 
-@media (max-width: 1050px) {
-  .aero-page {
-    width: calc(100% - 86px);
-    margin-left: 86px;
-  }
+/* Two breakpoints, Apple's own: 1068px and 734px. */
+@media (max-width: 1068px) {
+  :root { --aero-nav: 200px; --aero-gutter: 24px; }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 734px) {
+  /* The sidebar becomes a top bar, so nothing is offset by it. */
+  :root { --aero-gutter: 16px; --aero-nav: 0px; }
+
   .aero-page {
     width: 100%;
     margin: 0;
-    padding: 82px 14px 28px;
+    padding: 84px var(--aero-gutter) 64px;
   }
+
+  .aero-header { margin-bottom: 24px; }
+  .aero-header h1 { font-size: 1.75rem; }
 }
 
 /* Visually hidden, still read by screen readers (labels for icon-only columns). */

@@ -1,13 +1,13 @@
 /* DEFCON: Team page tables, lime for the reliable. */
-.dc-label { display: inline-flex; align-items: center; gap: 8px; font-size: 0.74rem; color: var(--aero-text-muted); }
+.dc-label { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-caption); color: var(--aero-text-muted); }
 .dc-label select { min-width: 120px; }
 .dc-table thead button { border: 0; background: none; color: inherit; font: inherit; cursor: pointer; padding: 0; }
-.dc-table thead button[aria-pressed="true"] { color: var(--aero-lime); }
-.dc-table th small, .dc-table td small { margin-left: 6px; font-size: 0.66rem; color: var(--aero-text-muted); font-weight: 500; }
-.dc-rate { display: inline-block; vertical-align: middle; width: 70px; height: 6px; border-radius: 6px; background: var(--aero-line); overflow: hidden; margin-right: 8px; }
-.dc-rate i { display: block; height: 100%; border-radius: 6px; background: var(--aero-us); }
-.dc-rate i.top { background: var(--aero-lime); }
+.dc-table thead button[aria-pressed="true"] { color: var(--aero-text); }
+.dc-table th small, .dc-table td small { margin-left: 6px; font-size: var(--fs-caption); color: var(--aero-text-muted); font-weight: 500; }
+.dc-rate { display: inline-block; vertical-align: middle; width: 70px; height: 6px; border-radius: var(--aero-radius-chip); background: var(--aero-line); overflow: hidden; margin-right: 8px; }
+.dc-rate i { display: block; height: 100%; border-radius: var(--aero-radius-chip); background: var(--aero-us); }
+.dc-rate i.top { background: var(--aero-text); }
 .dc-dots { display: inline-flex; gap: 3px; }
 .dc-dots i { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--aero-line-strong); }
-.dc-dots i.hit { background: var(--aero-lime); border-color: var(--aero-lime); }
+.dc-dots i.hit { background: var(--aero-text); border-color: var(--aero-lime); }
 

@@ -178,16 +178,18 @@ export function PlannerPage() {
       <header className="pl-head">
         <div>
           <h1>Transfer planner</h1>
-          <p><b>{data.teamName}</b> · {data.name}{data.overallRank ? ` · rank ${data.overallRank.toLocaleString()}` : ""} · <button type="button" className="pl-link" onClick={() => { setData(null); setManagerId(null); }}>Load another team</button></p>
+          <p><b>{data.teamName}</b>, managed by {data.name}.{data.overallRank ? ` Overall rank ${data.overallRank.toLocaleString()}.` : ""} <button type="button" className="pl-link" onClick={() => { setData(null); setManagerId(null); }}>Load another team</button></p>
         </div>
         <div className="pl-plans" role="group" aria-label="Plans">
-          {PLAN_NAMES.map((n) => (
-            <button key={n} type="button" aria-pressed={stored!.active === n} onClick={() => switchPlan(n)} className={stored!.plans[n] ? "" : "empty"}>
-              Plan {n}{stored!.plans[n]?.transfers.length ? <small>{stored!.plans[n].transfers.length}</small> : null}
-            </button>
-          ))}
-          <button type="button" className="pl-ghost" onClick={copyPlan} disabled={!freeSlot}>Copy to a new plan</button>
-          <button type="button" className={`pl-ghost${syncCode ? " on" : ""}`} aria-pressed={panel === "sync"} onClick={() => setPanel(panel === "sync" ? null : "sync")}>{syncCode ? "Synced" : "Sync to another device"}</button>
+          <div className="aero-segmented" role="group" aria-label="Plan">
+            {PLAN_NAMES.map((n) => (
+              <button key={n} type="button" aria-pressed={stored!.active === n} onClick={() => switchPlan(n)} className={stored!.plans[n] ? "" : "empty"}>
+                Plan {n}{stored!.plans[n]?.transfers.length ? <small>{stored!.plans[n].transfers.length}</small> : null}
+              </button>
+            ))}
+          </div>
+          <button type="button" className="aero-button pl-ghost" onClick={copyPlan} disabled={!freeSlot}>Copy to a new plan</button>
+          <button type="button" className={`aero-button pl-ghost${syncCode ? " on" : ""}`} aria-pressed={panel === "sync"} onClick={() => setPanel(panel === "sync" ? null : "sync")}>{syncCode ? "Synced" : "Sync to another device"}</button>
         </div>
       </header>
 
@@ -230,7 +232,7 @@ export function PlannerPage() {
       <div className="pl-grid">
         <section className="mp-sheet pl-squad" aria-label={`Squad for gameweek ${gw}`}>
           <div className="pl-squad-head">
-            <span>Your squad for GW{gw} <span className="pl-xp-key">· projected points this week</span></span>
+            <h2>Your squad for GW{gw}</h2>
             <span className="pl-fx-head">{data.gameweeks.map((g) => <b key={g.gameweek} className={g.gameweek === gw ? "on" : ""}>GW{g.gameweek}</b>)}</span>
           </div>
           {(["GKP", "DEF", "MID", "FWD"] as const).map((pos) => (
@@ -509,7 +511,7 @@ function Suggest({ data, plan, freeSlot, onPlan }: { data: PlannerData; plan: Pl
     <div className="pl-suggest">
       <dt>Optimiser</dt>
       <dd>
-        <button type="button" className="pl-ghost-btn" onClick={run} disabled={!freeSlot || state === "busy"} title={freeSlot ? `Loads into Plan ${freeSlot}` : "Clear a plan first: suggestions go into a free plan"}>
+        <button type="button" className="aero-button primary pl-ghost-btn" onClick={run} disabled={!freeSlot || state === "busy"} title={freeSlot ? `Loads into Plan ${freeSlot}` : "Clear a plan first: suggestions go into a free plan"}>
           {state === "busy" ? "Working it out…" : "Suggest transfers"}
         </button>
         {state === "error" && <small className="neg">The optimiser couldn't finish. Try again.</small>}
@@ -557,14 +559,16 @@ function MiniLeagues({ managerId }: { managerId: number }) {
         <div className="pl-league-grid">
           <div className="mp-sheet tp-squad pl-league-table">
             <table>
-              <thead><tr><th scope="col">#</th><th scope="col">Team</th><th scope="col" className="n">GW{view.gameweek}</th><th scope="col" className="n">Total</th></tr></thead>
-              <tbody>{view.managers.map((m) => <tr key={m.entry} className={m.entry === managerId ? "me" : ""}><td>{m.rank}</td><th scope="row">{m.team}<small> {m.manager}</small></th><td className="n">{m.gw}</td><td className="n">{m.total}</td></tr>)}</tbody>
+              <thead><tr><th scope="col" className="rank">#</th><th scope="col" className="team">Team</th><th scope="col" className="n">GW{view.gameweek}</th><th scope="col" className="n">Total</th></tr></thead>
+              <tbody>{view.managers.map((m) => <tr key={m.entry} className={m.entry === managerId ? "me" : ""}><td className="rank">{m.rank}</td><th scope="row">{m.team}<small>{m.manager}</small></th><td className="n">{m.gw}</td><td className="n">{m.total}</td></tr>)}</tbody>
             </table>
             {view.managers.length >= 20 && <p className="mp-note">The top 20 only.</p>}
           </div>
+          <div className="pl-league-lists">
           <LeagueList title={`Your rivals own, you don't (of ${view.rivals})`} rows={view.theyHave} empty="Nothing: you own all their popular picks." />
           <LeagueList title="Only you (or few rivals) own" rows={view.onlyYou} empty="No differentials: your squad looks like theirs." />
           <LeagueList title={`Their captains, GW${view.gameweek}`} rows={view.captains} empty="No captains found." />
+          </div>
         </div>
       )}
     </section>

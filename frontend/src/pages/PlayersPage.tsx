@@ -161,22 +161,28 @@ export function PlayersPage() {
         </button>
       </div>
 
-      <section className="players-filters aero-card">
-        <label className="aero-field players-search-field">
-          <span>Search</span>
-          <input
-            type="text"
-            className="aero-input"
-            placeholder="Search players…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </label>
+      <section className="players-filters" aria-label="Filters">
+        <div className="players-filter-row">
+          <label className="players-search">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.5" /><path d="M10.5 10.5 14 14" /></svg>
+            <input
+              type="search"
+              placeholder="Search players"
+              aria-label="Search players"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </label>
 
-        <label className="aero-field">
-          <span>Team</span>
+          <div className="aero-segmented" role="group" aria-label="Position">
+            {([["all", "All"], ["1", "GK"], ["2", "DEF"], ["3", "MID"], ["4", "FWD"]] as const).map(([value, label]) => (
+              <button key={value} type="button" aria-pressed={positionFilter === value} onClick={() => setPositionFilter(value)}>{label}</button>
+            ))}
+          </div>
+
           <select
             className="aero-select"
+            aria-label="Team"
             value={teamFilter}
             onChange={(e) => setTeamFilter(e.target.value)}
           >
@@ -185,57 +191,42 @@ export function PlayersPage() {
               <option key={team} value={team!}>{team}</option>
             ))}
           </select>
-        </label>
 
-        <label className="aero-field">
-          <span>Position</span>
           <select
             className="aero-select"
-            value={positionFilter}
-            onChange={(e) => setPositionFilter(e.target.value)}
-          >
-            <option value="all">All positions</option>
-            <option value="1">Goalkeepers</option>
-            <option value="2">Defenders</option>
-            <option value="3">Midfielders</option>
-            <option value="4">Forwards</option>
-          </select>
-        </label>
-
-        <label className="aero-field players-range">
-          <span>Max FDR · {maxFdr}</span>
-          <input
-            type="range"
-            min="1"
-            max="5"
-            step="0.1"
-            value={maxFdr}
-            onChange={(e) => setMaxFdr(Number(e.target.value))}
-          />
-        </label>
-
-        <label className="aero-field players-range">
-          <span>Min value · {minBestValue}</span>
-          <input
-            type="range"
-            min="0"
-            max="2"
-            step="0.1"
-            value={minBestValue}
-            onChange={(e) => setMinBestValue(Number(e.target.value))}
-          />
-        </label>
-
-        <label className="aero-field">
-          <span>Availability</span>
-          <select
-            className="aero-select"
+            aria-label="Availability"
             value={availabilityFilter}
             onChange={(e) => setAvailability(e.target.value as AvailabilityFilter)}
           >
             {AVAILABILITY_FILTERS.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
           </select>
-        </label>
+        </div>
+
+        <div className="players-filter-row">
+          <label className="players-range">
+            <span>Fixture difficulty up to <b>{maxFdr}</b></span>
+            <input
+              type="range"
+              min="1"
+              max="5"
+              step="0.1"
+              value={maxFdr}
+              onChange={(e) => setMaxFdr(Number(e.target.value))}
+            />
+          </label>
+
+          <label className="players-range">
+            <span>Value at least <b>{minBestValue}</b></span>
+            <input
+              type="range"
+              min="0"
+              max="2"
+              step="0.1"
+              value={minBestValue}
+              onChange={(e) => setMinBestValue(Number(e.target.value))}
+            />
+          </label>
+        </div>
       </section>
 
       {isLoading ? (
@@ -247,9 +238,9 @@ export function PlayersPage() {
               {filteredPlayers.length} player{filteredPlayers.length === 1 ? "" : "s"}{injuryView && ", most owned first"}
               {compareMode && " · tap a card to add it to the comparison"}
             </div>
-            <div className="view-toggle">
+            <div className="view-toggle aero-segmented" role="group" aria-label="View">
               <button
-                className={`view-btn ${viewMode === "grid" ? "active" : ""}`}
+                className="view-btn"
                 onClick={() => setViewMode("grid")}
                 aria-pressed={viewMode === "grid"}
                 aria-label="Grid view"
@@ -258,7 +249,7 @@ export function PlayersPage() {
                 <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><g fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="2" width="5" height="5" rx="1.2" /><rect x="9" y="2" width="5" height="5" rx="1.2" /><rect x="2" y="9" width="5" height="5" rx="1.2" /><rect x="9" y="9" width="5" height="5" rx="1.2" /></g></svg>
               </button>
               <button
-                className={`view-btn ${viewMode === "table" ? "active" : ""}`}
+                className="view-btn"
                 onClick={() => setViewMode("table")}
                 aria-pressed={viewMode === "table"}
                 aria-label="Table view"
@@ -308,7 +299,7 @@ export function PlayersPage() {
                       />
                       {bestValue >= 1.0 && (
                         <div className="value-badge" title="Best Value Rating">
-                          💎 {bestValue.toFixed(1)}
+                          Value {bestValue.toFixed(1)}
                         </div>
                       )}
                     </div>

@@ -216,6 +216,14 @@ components:
     textColor: "{colors.text}"
 ---
 
+> **26 Oct 2026: the Apple direction supersedes the type and surface values
+> below.** Fonts are the system SF stack with Inter as the fallback, on a
+> seven-step scale (`--fs-*` in `frontend/src/styles/design-system.css`);
+> panels are flat `#1b1b1d` with no border or shadow; lime is the primary
+> action or "where you are", one per screen area. See `REDESIGN_PLAN.md`.
+> The front matter here still records the earlier values until this file is
+> rewritten from the shipped build.
+
 # Design System: AeroFPL
 
 ## Overview

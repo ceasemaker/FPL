@@ -19,20 +19,20 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.8rem;
+  font-size: var(--fs-footnote);
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .fdr-chip {
   width: 28px;
   height: 28px;
-  border-radius: 8px;
+  border-radius: var(--aero-radius-sm);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
+  font-weight: 600;
   color: #0f172a;
 }
 
@@ -46,16 +46,16 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.8rem;
+  font-size: var(--fs-footnote);
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .fixtures-ticker-sort select {
   background: rgba(8, 12, 30, 0.8);
   border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 8px;
+  border-radius: var(--aero-radius-sm);
   padding: 0.35rem 0.5rem;
   color: var(--text-primary);
 }
@@ -64,7 +64,7 @@
   background: rgba(148, 163, 184, 0.2);
   border: 1px solid rgba(148, 163, 184, 0.3);
   color: var(--text-primary);
-  border-radius: 8px;
+  border-radius: var(--aero-radius-sm);
   padding: 0.35rem 0.6rem;
   cursor: pointer;
 }
@@ -72,7 +72,7 @@
 .fixtures-ticker-error {
   margin-bottom: 1rem;
   padding: 0.7rem 1rem;
-  border-radius: 12px;
+  border-radius: var(--aero-radius-sm);
   border: 1px solid rgba(248, 113, 113, 0.4);
   background: rgba(127, 29, 29, 0.4);
   color: #fecaca;
@@ -92,9 +92,9 @@
 
 .fixtures-ticker-head {
   font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
+  text-transform: none;
+  font-size: var(--fs-caption);
+  letter-spacing: 0;
   color: var(--text-muted);
 }
 
@@ -106,20 +106,20 @@
 
 .fixtures-ticker-cell {
   background: rgba(15, 23, 42, 0.6);
-  border-radius: 10px;
+  border-radius: var(--aero-radius-sm);
   padding: 0.4rem;
   text-align: center;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 0.2rem;
-  font-size: 0.85rem;
+  font-size: var(--fs-footnote);
 }
 
 .fixtures-ticker-cell small {
-  font-size: 0.65rem;
+  font-size: var(--fs-caption);
   color: rgba(15, 23, 42, 0.8);
-  text-transform: uppercase;
+  text-transform: none;
 }
 
 
@@ -163,13 +163,13 @@
   color: #0f172a;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1068px) {
   .fixtures-ticker-row {
     grid-template-columns: 90px repeat(auto-fit, minmax(70px, 1fr)) 70px;
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 734px) {
   .fixtures-ticker-table {
     overflow-x: auto;
   }

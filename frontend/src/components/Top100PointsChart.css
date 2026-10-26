@@ -13,8 +13,8 @@
 }
 
 .chart-subtitle {
-  font-size: 0.8rem;
-  color: var(--text-secondary, #a1a1aa);
+  font-size: var(--fs-footnote);
+  color: var(--text-secondary, var(--aero-text-dim));
   margin: 0;
 }
 
@@ -35,9 +35,9 @@
   padding: 0.6rem 1rem;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: var(--aero-radius-sm);
   color: white;
-  font-size: 0.875rem;
+  font-size: var(--fs-body);
   transition: border-color 0.2s;
 }
 
@@ -47,16 +47,16 @@
 }
 
 .team-input::placeholder {
-  color: var(--text-secondary, #a1a1aa);
+  color: var(--text-secondary, var(--aero-text-dim));
 }
 
 .btn-add-team {
   padding: 0.6rem 1rem;
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--aero-radius-sm);
   color: white;
-  font-size: 0.875rem;
+  font-size: var(--fs-body);
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
@@ -64,16 +64,16 @@
 
 .btn-add-team:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+  box-shadow: none;
 }
 
 .btn-clear-team {
   padding: 0.6rem 0.8rem;
   background: rgba(239, 68, 68, 0.2);
   border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 8px;
+  border-radius: var(--aero-radius-sm);
   color: #ef4444;
-  font-size: 0.875rem;
+  font-size: var(--fs-body);
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -91,7 +91,7 @@
   padding: 0.5rem 1rem;
   background: rgba(245, 158, 11, 0.1);
   border: 1px solid rgba(245, 158, 11, 0.3);
-  border-radius: 8px;
+  border-radius: var(--aero-radius-sm);
 }
 
 .user-name {
@@ -100,21 +100,21 @@
 }
 
 .user-team-name {
-  color: var(--text-secondary, #a1a1aa);
-  font-size: 0.875rem;
+  color: var(--text-secondary, var(--aero-text-dim));
+  font-size: var(--fs-body);
 }
 
 .user-rank {
   margin-left: auto;
-  font-size: 0.8rem;
-  color: var(--text-secondary, #a1a1aa);
+  font-size: var(--fs-footnote);
+  color: var(--text-secondary, var(--aero-text-dim));
 }
 
 /* Chart Container */
 .trading-chart-container {
   position: relative;
   background: #0d0d1a;
-  border-radius: 12px;
+  border-radius: var(--aero-radius-sm);
   overflow: hidden;
   margin: 1rem 0;
 }
@@ -129,18 +129,18 @@
   position: absolute;
   background: rgba(15, 15, 30, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+  border-radius: var(--aero-radius-sm);
   padding: 0.75rem;
   pointer-events: none;
   transform: translateX(-50%);
   z-index: 10;
   min-width: 140px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: none;
 }
 
 .tooltip-header {
-  font-weight: 700;
-  font-size: 0.9rem;
+  font-weight: 600;
+  font-size: var(--fs-body);
   margin-bottom: 0.5rem;
   padding-bottom: 0.4rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -150,12 +150,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.8rem;
+  font-size: var(--fs-footnote);
   padding: 0.2rem 0;
 }
 
 .tooltip-row span {
-  color: var(--text-secondary, #a1a1aa);
+  color: var(--text-secondary, var(--aero-text-dim));
 }
 
 .tooltip-row strong {
@@ -175,7 +175,7 @@
 }
 
 .tooltip-row.range strong {
-  color: #a1a1aa;
+  color: var(--aero-text-dim);
 }
 
 /* Chart Legend */
@@ -191,14 +191,14 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.8rem;
-  color: var(--text-secondary, #a1a1aa);
+  font-size: var(--fs-footnote);
+  color: var(--text-secondary, var(--aero-text-dim));
 }
 
 .legend-color {
   width: 16px;
   height: 3px;
-  border-radius: 2px;
+  border-radius: var(--aero-radius-chip);
 }
 
 .legend-color.template {
@@ -225,7 +225,7 @@
   background: linear-gradient(90deg, #1a1a2e 25%, #2a2a40 50%, #1a1a2e 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-  border-radius: 12px;
+  border-radius: var(--aero-radius-sm);
 }
 
 @keyframes shimmer {
@@ -242,7 +242,7 @@
 .no-data-message {
   text-align: center;
   padding: 3rem;
-  color: var(--text-secondary, #a1a1aa);
+  color: var(--text-secondary, var(--aero-text-dim));
 }
 
 .error-message {
@@ -250,7 +250,7 @@
 }
 
 /* Responsive */
-@media (max-width: 600px) {
+@media (max-width: 734px) {
   .team-input-group {
     flex-direction: column;
   }
@@ -273,6 +273,6 @@
   }
 
   .legend-item {
-    font-size: 0.7rem;
+    font-size: var(--fs-caption);
   }
 }

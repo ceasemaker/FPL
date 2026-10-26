@@ -17,6 +17,7 @@ import {
   TeamsIcon,
   WatchlistIcon,
 } from "./navIcons";
+import "./Navigation.css";
 
 // Five sections for the game itself (Home, Matches, Teams, Players, Chart
 // Lab), then the tools for your own FPL team, then the raw-data rooms.
@@ -89,9 +90,6 @@ export function Navigation() {
             ))}
           </div>
         ))}
-      </div>
-      <div className="command-nav-footer">
-        <p><b />Better decisions<br />Higher ranks</p>
       </div>
     </nav>
   );

@@ -5,8 +5,8 @@
   --sx-row: #171818;
   --sx-row-alt: #1a1b1b;
   --sx-row-hover: #212222;
-  --sx-top: #a5ff01;
-  --sx-ramp-rgb: 74, 115, 22; /* #4a7316: the ramp's darkest-to-brightest green */
+  --sx-top: rgba(165, 255, 1, 0.2);
+  --sx-ramp-rgb: 255, 255, 255; /* a quiet white wash; lime is only for the top cells */
   --sx-frozen-w: 290px;
   display: flex;
   flex-direction: column;
@@ -18,7 +18,7 @@
 
 .sx-page ::selection {
   background: rgba(165, 255, 1, 0.35);
-  color: #fff;
+  color: var(--aero-text);
 }
 
 .sx-page :focus-visible {
@@ -58,15 +58,15 @@
 
 .sx-title h1 {
   margin: 0;
-  font-size: 1.9rem;
+  font-size: var(--fs-title);
   line-height: 1.1;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.02em;
 }
 
 .sx-title p {
   margin: 6px 0 0;
   color: var(--aero-text-dim);
-  font-size: 0.86rem;
+  font-size: var(--fs-footnote);
 }
 
 .sx-head-actions {
@@ -80,7 +80,7 @@
   display: inline-flex;
   padding: 3px;
   border: 1px solid var(--aero-line-strong);
-  border-radius: 12px;
+  border-radius: var(--aero-radius-sm);
   background: var(--aero-surface);
 }
 
@@ -88,10 +88,10 @@
   height: 34px;
   padding: 0 16px;
   border: 0;
-  border-radius: 9px;
+  border-radius: var(--aero-radius-sm);
   background: transparent;
   color: var(--aero-text-dim);
-  font-size: 0.86rem;
+  font-size: var(--fs-footnote);
   font-weight: 600;
   cursor: pointer;
 }
@@ -114,7 +114,7 @@
   border: 1px solid var(--aero-line-strong);
   background: var(--aero-surface);
   color: var(--aero-text);
-  font-size: 0.84rem;
+  font-size: var(--fs-footnote);
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease;
@@ -131,8 +131,9 @@
 }
 
 .sx-btn.on {
-  border-color: rgba(165, 255, 1, 0.5);
-  color: var(--aero-lime);
+  background: var(--aero-segment-on);
+  border-color: transparent;
+  color: var(--aero-text);
 }
 
 .sx-icon-btn {
@@ -140,7 +141,7 @@
   place-items: center;
   width: 34px;
   height: 34px;
-  border-radius: 9px;
+  border-radius: var(--aero-radius-sm);
   border: 0;
   background: transparent;
   color: var(--aero-text-dim);
@@ -204,7 +205,7 @@
   flex-wrap: wrap;
   gap: 6px 14px;
   margin: -4px 2px 0;
-  font-size: 0.74rem;
+  font-size: var(--fs-caption);
   color: var(--aero-text-muted);
 }
 
@@ -217,14 +218,14 @@
 .sx-key i {
   width: 14px;
   height: 10px;
-  border-radius: 3px;
+  border-radius: var(--aero-radius-chip);
 }
 
 .sx-key i.top { background: var(--sx-top); }
 
 .sx-key i.sx-key-ramp {
   width: 44px;
-  background: linear-gradient(90deg, rgba(var(--sx-ramp-rgb), 0.08), rgba(var(--sx-ramp-rgb), 1));
+  background: linear-gradient(90deg, rgba(var(--sx-ramp-rgb), 0.02), rgba(var(--sx-ramp-rgb), 0.16));
   box-shadow: inset 0 0 0 1px var(--aero-line-strong);
 }
 
@@ -252,11 +253,11 @@
   flex: none;
   height: 36px;
   padding: 0 16px;
-  border-radius: 999px;
+  border-radius: var(--aero-radius-pill);
   border: 1px solid var(--aero-line-strong);
   background: transparent;
   color: var(--aero-text-dim);
-  font-size: 0.86rem;
+  font-size: var(--fs-footnote);
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
@@ -268,9 +269,9 @@
 }
 
 .sx-lenses button.active {
-  background: var(--aero-lime);
+  background: var(--aero-segment-on);
   border-color: transparent;
-  color: #101011;
+  color: var(--aero-text);
 }
 
 /* Position defines every colour on the page, so it sits beside the lenses
@@ -278,9 +279,9 @@
 .sx-positions {
   display: flex;
   flex: none;
-  padding: 3px;
-  border: 1px solid var(--aero-line-strong);
-  border-radius: 999px;
+  padding: 2px;
+  border: 0;
+  border-radius: var(--aero-radius-sm); background: var(--aero-fill);
 }
 
 .sx-positions button {
@@ -288,11 +289,11 @@
   height: 30px;
   padding: 0 10px;
   border: 0;
-  border-radius: 999px;
+  border-radius: 8px;
   background: transparent;
-  color: var(--aero-text-dim);
-  font-size: 0.8rem;
-  font-weight: 600;
+  color: var(--aero-text);
+  font-size: var(--fs-footnote);
+  font-weight: 500;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
 }
@@ -302,15 +303,15 @@
 }
 
 .sx-positions button.active {
-  background: var(--aero-surface-hover);
+  background: var(--aero-segment-on);
   color: var(--aero-text);
-  box-shadow: inset 0 0 0 1px rgba(165, 255, 1, 0.45);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); border-color: transparent;
 }
 
 .sx-window {
   margin: 0;
   align-self: center;
-  font-size: 0.8rem;
+  font-size: var(--fs-footnote);
   font-weight: 600;
   color: var(--aero-text-dim);
   white-space: nowrap;
@@ -371,9 +372,9 @@
 .sx-field legend,
 .sx-legend {
   padding: 0;
-  font-size: 0.7rem;
+  font-size: var(--fs-caption);
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
   color: var(--aero-text-muted);
 }
 
@@ -384,7 +385,7 @@
 .sx-field .aero-select,
 .sx-field .aero-input {
   height: 36px;
-  font-size: 0.84rem;
+  font-size: var(--fs-footnote);
 }
 
 .sx-field-narrow .aero-input {
@@ -401,10 +402,10 @@
 
 .sx-seg {
   display: inline-flex;
-  padding: 3px;
-  border: 1px solid var(--aero-line-strong);
-  border-radius: 10px;
-  background: var(--aero-surface);
+  padding: 2px;
+  border: 0;
+  border-radius: var(--aero-radius-sm);
+  background: var(--aero-fill);
 }
 
 .sx-seg button {
@@ -414,19 +415,19 @@
   height: 28px;
   padding: 0 11px;
   border: 0;
-  border-radius: 7px;
+  border-radius: 8px;
   background: transparent;
-  color: var(--aero-text-dim);
-  font-size: 0.8rem;
-  font-weight: 600;
+  color: var(--aero-text);
+  font-size: var(--fs-footnote);
+  font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
 }
 
 .sx-seg button.active {
-  background: var(--aero-surface-hover);
+  background: var(--aero-segment-on);
   color: var(--aero-text);
-  box-shadow: inset 0 0 0 1px rgba(165, 255, 1, 0.45);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); border-color: transparent;
 }
 
 .sx-seg button:disabled {
@@ -435,9 +436,9 @@
 }
 
 .sx-soon {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  letter-spacing: 0;
   color: var(--aero-warn);
 }
 
@@ -456,7 +457,7 @@
   align-items: center;
   gap: 8px;
   min-height: 36px;
-  font-size: 0.84rem;
+  font-size: var(--fs-footnote);
   color: var(--aero-text);
   cursor: pointer;
 }
@@ -491,7 +492,7 @@
   background: transparent;
   color: var(--aero-text);
   font: inherit;
-  font-size: 0.86rem;
+  font-size: var(--fs-footnote);
 }
 
 .sx-search input::placeholder {
@@ -522,9 +523,9 @@
   overflow: auto;
   padding: 14px;
   border: 1px solid var(--aero-line-strong);
-  border-radius: 14px;
+  border-radius: var(--aero-radius);
   background: var(--aero-surface-raised);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: none;
 }
 
 .sx-views form {
@@ -570,11 +571,11 @@
   justify-content: space-between;
   min-height: 38px;
   padding: 0 10px;
-  border-radius: 9px;
+  border-radius: var(--aero-radius-sm);
   border: 0;
   background: transparent;
   color: var(--aero-text);
-  font-size: 0.86rem;
+  font-size: var(--fs-footnote);
   text-align: left;
   cursor: pointer;
 }
@@ -599,9 +600,9 @@
 
 .sx-columns-list legend {
   margin-bottom: 4px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  letter-spacing: 0;
   color: var(--aero-text-muted);
 }
 
@@ -621,7 +622,7 @@
 .sx-muted {
   margin: 0;
   color: var(--aero-text-muted);
-  font-size: 0.78rem;
+  font-size: var(--fs-footnote);
   line-height: 1.5;
 }
 
@@ -629,12 +630,12 @@
   display: inline-block;
   margin-left: 6px;
   padding: 1px 5px;
-  border-radius: 5px;
+  border-radius: var(--aero-radius-chip);
   border: 1px solid rgba(226, 183, 91, 0.55);
   color: var(--aero-warn);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  letter-spacing: 0;
   white-space: nowrap;
   vertical-align: middle;
 }
@@ -660,7 +661,7 @@
 
 .sx-table-wrap::-webkit-scrollbar-thumb {
   background: #3a3b3c;
-  border-radius: 10px;
+  border-radius: var(--aero-radius-sm);
   border: 2px solid var(--sx-sheet);
 }
 
@@ -668,13 +669,13 @@
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 0.82rem;
+  font-size: var(--fs-footnote);
 }
 
 .sx-table thead th {
   position: sticky;
   z-index: 3;
-  background: #1b1c1c;
+  background: var(--aero-surface);
   color: var(--aero-text-dim);
   font-weight: 600;
   text-align: left;
@@ -696,9 +697,9 @@
 
 .sx-group {
   padding: 0 10px;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  letter-spacing: 0;
   color: var(--aero-text-muted) !important;
   border-left: 1px solid var(--aero-line);
 }
@@ -709,7 +710,7 @@
   gap: 4px;
   padding: 2px 4px;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--aero-radius-chip);
   background: transparent;
   color: inherit;
   font: inherit;
@@ -723,12 +724,12 @@
 
 th[aria-sort="ascending"] .sx-sort,
 th[aria-sort="descending"] .sx-sort {
-  color: var(--aero-lime);
+  color: var(--aero-text);
 }
 
 .sx-col-label small {
   margin-left: 2px;
-  font-size: 0.6875rem;
+  font-size: var(--fs-caption);
   color: var(--aero-text-muted);
 }
 
@@ -754,7 +755,7 @@ th[aria-sort="descending"] .sx-sort {
 .sx-table tbody th {
   height: 39px;
   padding: 0 10px;
-  border-bottom: 1px solid #222323;
+  border-bottom: 1px solid var(--aero-line);
   background-color: var(--sx-row);
   white-space: nowrap;
 }
@@ -802,7 +803,7 @@ th[aria-sort="descending"] .sx-sort {
   width: 28px;
   height: 28px;
   border: 0;
-  border-radius: 7px;
+  border-radius: var(--aero-radius-chip);
   background: transparent;
   color: var(--aero-text-muted);
   cursor: pointer;
@@ -823,7 +824,7 @@ th[aria-sort="descending"] .sx-sort {
   min-width: 0;
   padding: 2px 4px;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--aero-radius-chip);
   background: transparent;
   color: var(--aero-text);
   text-align: left;
@@ -834,7 +835,7 @@ th[aria-sort="descending"] .sx-sort {
   max-width: 128px;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 0.86rem;
+  font-size: var(--fs-footnote);
   font-weight: 600;
 }
 
@@ -850,34 +851,34 @@ th[aria-sort="descending"] .sx-sort {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.72rem;
+  font-size: var(--fs-caption);
   color: var(--aero-text-muted);
 }
 
 .sx-name:hover strong {
-  color: var(--aero-lime);
+  color: var(--aero-text);
 }
 
 .sx-team-name strong {
-  font-size: 0.86rem;
+  font-size: var(--fs-footnote);
   color: var(--aero-text);
 }
 
 .sx-ucl {
   padding: 0 4px;
-  border-radius: 4px;
+  border-radius: var(--aero-radius-chip);
   background: rgba(43, 177, 255, 0.14);
   color: #7cc8ff;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
 .sx-status {
   padding: 0 4px;
-  border-radius: 4px;
-  font-size: 0.6875rem;
-  font-weight: 700;
+  border-radius: var(--aero-radius-chip);
+  font-size: var(--fs-caption);
+  font-weight: 600;
 }
 
 .sx-status.s-d {
@@ -907,18 +908,18 @@ th[aria-sort="descending"] .sx-sort {
 }
 
 .sx-table tbody td.sx-cell {
-  background-image: linear-gradient(rgba(var(--sx-ramp-rgb), var(--sx-level)), rgba(var(--sx-ramp-rgb), var(--sx-level)));
+  background-image: linear-gradient(rgba(var(--sx-ramp-rgb), calc(var(--sx-level) * 0.16)), rgba(var(--sx-ramp-rgb), calc(var(--sx-level) * 0.16)));
 }
 
 .sx-table tbody td.sx-cell.strong {
-  color: #fff;
+  color: var(--aero-text);
   font-weight: 600;
 }
 
 .sx-table tbody td.sx-cell.top {
   background-image: linear-gradient(var(--sx-top), var(--sx-top));
-  color: #101011;
-  font-weight: 700;
+  color: var(--aero-lime);
+  font-weight: 600;
 }
 
 .sx-table tbody td.sx-cell.na {
@@ -929,24 +930,20 @@ th[aria-sort="descending"] .sx-sort {
   outline-offset: -3px;
 }
 
-/* A lime ring vanishes on a lime cell; ink is 15:1 there. */
-.sx-table tbody td.sx-cell.top:focus-visible {
-  outline-color: #101011;
-}
 
 .sx-tip {
   position: fixed;
   z-index: 1150;
   transform: translate(-50%, calc(-100% - 8px));
   padding: 5px 9px;
-  border-radius: 7px;
-  background: #f4f4f2;
-  color: #101011;
-  font-size: 0.74rem;
+  border-radius: var(--aero-radius-chip);
+  background: var(--aero-text);
+  color: var(--aero-bg);
+  font-size: var(--fs-caption);
   font-weight: 600;
   white-space: nowrap;
   pointer-events: none;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  box-shadow: none;
 }
 
 /* ---------------------------------------------------------------- states */
@@ -964,14 +961,14 @@ th[aria-sort="descending"] .sx-sort {
 
 .sx-state h2 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: var(--fs-headline);
 }
 
 .sx-state p {
   margin: 0;
   max-width: 62ch;
   color: var(--aero-text-dim);
-  font-size: 0.88rem;
+  font-size: var(--fs-body);
   line-height: 1.55;
 }
 
@@ -984,7 +981,7 @@ th[aria-sort="descending"] .sx-sort {
 
 .sx-skel-row {
   height: 46px;
-  background: linear-gradient(90deg, #171818 0%, #1f2020 45%, #171818 90%);
+  background: var(--aero-surface);
   background-size: 200% 100%;
   animation: sx-shimmer 1.3s linear infinite;
 }
@@ -1000,20 +997,20 @@ th[aria-sort="descending"] .sx-sort {
   z-index: 1200;
   transform: translateX(-50%);
   padding: 10px 16px;
-  border-radius: 10px;
-  background: #f4f4f2;
-  color: #101011;
-  font-size: 0.84rem;
+  border-radius: var(--aero-radius-sm);
+  background: var(--aero-text);
+  color: var(--aero-bg);
+  font-size: var(--fs-footnote);
   font-weight: 600;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: none;
 }
 
 /* ------------------------------------------------------------------ tray */
 
 .sx-tray {
   position: fixed;
-  left: calc(196px + 24px);
-  right: 24px;
+  left: calc(var(--aero-nav) + var(--aero-gutter));
+  right: var(--aero-gutter);
   bottom: 18px;
   z-index: 30;
   display: flex;
@@ -1021,10 +1018,10 @@ th[aria-sort="descending"] .sx-sort {
   justify-content: space-between;
   gap: 12px;
   padding: 10px 12px;
-  border: 1px solid rgba(165, 255, 1, 0.35);
-  border-radius: 14px;
-  background: #181917;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+  border: 1px solid var(--aero-line-strong);
+  border-radius: var(--aero-radius);
+  background: var(--aero-surface);
+  box-shadow: none;
 }
 
 .sx-tray-chips,
@@ -1046,9 +1043,9 @@ th[aria-sort="descending"] .sx-sort {
   gap: 4px;
   height: 32px;
   padding: 0 4px 0 12px;
-  border-radius: 999px;
+  border-radius: var(--aero-radius-pill);
   background: var(--aero-surface-hover);
-  font-size: 0.82rem;
+  font-size: var(--fs-footnote);
   font-weight: 600;
 }
 
@@ -1075,7 +1072,7 @@ th[aria-sort="descending"] .sx-sort {
   width: 24px;
   height: 24px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--aero-radius-pill);
   background: transparent;
   color: var(--aero-text-muted);
   cursor: pointer;
@@ -1083,7 +1080,7 @@ th[aria-sort="descending"] .sx-sort {
 
 .sx-tray-count {
   flex: none;
-  font-size: 0.74rem;
+  font-size: var(--fs-caption);
   color: var(--aero-text-muted);
 }
 
@@ -1119,10 +1116,10 @@ th[aria-sort="descending"] .sx-sort {
   max-width: 100%;
   max-height: 88vh;
   padding: 0;
-  border: 1px solid var(--aero-line-strong);
+  border: 0;
   border-bottom: 0;
-  border-radius: 18px 18px 0 0;
-  background: #171818;
+  border-radius: var(--aero-radius) var(--aero-radius) 0 0;
+  background: var(--aero-surface);
   color: var(--aero-text);
 }
 
@@ -1151,7 +1148,7 @@ th[aria-sort="descending"] .sx-sort {
 
 .sx-sheet header h2 {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: var(--fs-headline);
 }
 
 .sx-sheet footer {
@@ -1187,14 +1184,7 @@ th[aria-sort="descending"] .sx-sort {
 
 }
 
-@media (max-width: 1050px) {
-  .sx-tray {
-    left: calc(86px + 16px);
-    right: 16px;
-  }
-}
-
-@media (max-width: 720px) {
+@media (max-width: 734px) {
   .sx-wide-only {
     display: none;
   }
@@ -1218,7 +1208,7 @@ th[aria-sort="descending"] .sx-sort {
   }
 
   .sx-title h1 {
-    font-size: 1.55rem;
+    font-size: var(--fs-section);
   }
 
   .sx-head-actions {
@@ -1282,7 +1272,7 @@ th[aria-sort="descending"] .sx-sort {
 
   .sx-table-wrap {
     max-height: calc(100vh - 250px);
-    border-radius: 12px;
+    border-radius: var(--aero-radius-sm);
   }
 
   .sx-table tbody td,
@@ -1406,4 +1396,4 @@ th[aria-sort="descending"] .sx-sort {
 }
 
 /* Under 450 league minutes: ranked, but flagged */
-.sx-small { display: block; font-size: 0.56rem; font-weight: 700; color: var(--aero-warn); white-space: nowrap; cursor: help; }
+.sx-small { display: block; font-size: var(--fs-caption); font-weight: 600; color: var(--aero-warn); white-space: nowrap; cursor: help; }

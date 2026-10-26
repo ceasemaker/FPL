@@ -5,7 +5,7 @@
 .predictor-error {
   margin-top: 1rem;
   padding: 0.7rem 1rem;
-  border-radius: 12px;
+  border-radius: var(--aero-radius-sm);
   border: 1px solid rgba(248, 113, 113, 0.4);
   background: rgba(127, 29, 29, 0.4);
   color: #fecaca;
@@ -40,7 +40,7 @@
   gap: 0.75rem;
   align-items: center;
   padding: 0.75rem 1rem;
-  border-radius: 14px;
+  border-radius: var(--aero-radius);
   background: rgba(8, 12, 30, 0.8);
   border: 1px solid rgba(148, 163, 184, 0.2);
 }
@@ -66,7 +66,7 @@
 }
 
 .predictor-meta {
-  font-size: 0.85rem;
+  font-size: var(--fs-footnote);
   color: var(--text-secondary);
 }
 
@@ -78,7 +78,7 @@
 
 .predictor-signal small {
   display: block;
-  font-size: 0.75rem;
+  font-size: var(--fs-caption);
   color: var(--text-muted);
 }
 
@@ -113,7 +113,7 @@
   gap: 1.5rem;
   align-items: center;
   padding: 1rem 1.2rem;
-  border-radius: 16px;
+  border-radius: var(--aero-radius);
   border: 1px solid rgba(148, 163, 184, 0.2);
   background: rgba(8, 12, 30, 0.85);
   box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.08);
@@ -129,7 +129,7 @@
 
 .predictor-delta {
   margin-top: 0.4rem;
-  font-size: 0.9rem;
+  font-size: var(--fs-body);
   font-weight: 600;
 }
 
@@ -169,7 +169,7 @@
   width: 100%;
   background: rgba(8, 12, 30, 0.8);
   border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 12px;
+  border-radius: var(--aero-radius-sm);
   padding: 0.65rem 0.9rem;
   color: var(--text-primary);
 }
@@ -179,7 +179,7 @@
   top: 50%;
   right: 12px;
   transform: translateY(-50%);
-  font-size: 0.75rem;
+  font-size: var(--fs-caption);
   color: var(--text-muted);
 }
 
@@ -190,7 +190,7 @@
   right: 0;
   background: rgba(8, 12, 30, 0.95);
   border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 12px;
+  border-radius: var(--aero-radius-sm);
   max-height: 220px;
   overflow-y: auto;
   z-index: 10;
@@ -215,23 +215,23 @@
 
 .predictor-search-meta {
   color: var(--text-muted);
-  font-size: 0.75rem;
+  font-size: var(--fs-caption);
 }
 
 .predictor-search-direction {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  font-size: 0.8rem;
+  font-size: var(--fs-footnote);
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .predictor-search-direction select {
   background: rgba(8, 12, 30, 0.8);
   border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 10px;
+  border-radius: var(--aero-radius-sm);
   padding: 0.5rem 0.7rem;
   color: var(--text-primary);
 }
@@ -247,33 +247,33 @@
   align-items: center;
   gap: 0.4rem;
   padding: 0.35rem 0.6rem;
-  border-radius: 999px;
+  border-radius: var(--aero-radius-pill);
   border: 1px solid rgba(148, 163, 184, 0.35);
   background: rgba(15, 23, 42, 0.6);
   color: var(--text-primary);
-  font-size: 0.75rem;
+  font-size: var(--fs-caption);
   cursor: pointer;
 }
 
 .predictor-chip span {
   color: var(--text-muted);
-  font-size: 0.85rem;
+  font-size: var(--fs-footnote);
 }
 
 .predictor-filter {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  font-size: 0.8rem;
+  font-size: var(--fs-footnote);
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .predictor-filter select {
   background: rgba(8, 12, 30, 0.8);
   border: 1px solid rgba(148, 163, 184, 0.3);
-  border-radius: 10px;
+  border-radius: var(--aero-radius-sm);
   padding: 0.45rem 0.7rem;
   color: var(--text-primary);
 }
@@ -286,18 +286,18 @@
   margin-top: 0.5rem;
   background: rgba(148, 163, 184, 0.2);
   border: 1px solid rgba(148, 163, 184, 0.3);
-  border-radius: 8px;
+  border-radius: var(--aero-radius-sm);
   padding: 0.3rem 0.6rem;
   color: var(--text-primary);
   cursor: pointer;
-  font-size: 0.75rem;
+  font-size: var(--fs-caption);
 }
 
 .clickable {
   cursor: pointer;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1068px) {
   .predictor-graph-card {
     grid-template-columns: 1fr;
   }
@@ -319,8 +319,8 @@
 .ownership-chart svg {
   width: 100%;
   height: auto;
-  background: radial-gradient(circle at 20% 20%, rgba(24, 36, 72, 0.8), rgba(5, 9, 20, 0.95));
-  border-radius: 16px;
+  background: var(--aero-surface);
+  border-radius: var(--aero-radius);
   border: 1px solid rgba(59, 130, 246, 0.25);
   box-shadow: 0 18px 40px rgba(6, 12, 26, 0.6), inset 0 0 0 1px rgba(148, 163, 184, 0.08);
   padding: 0.5rem;
@@ -334,26 +334,26 @@
 .ownership-axis {
   stroke: rgba(148, 163, 184, 0.3);
   stroke-width: 1;
-  font-size: 10px;
+  font-size: var(--fs-caption);
   fill: rgba(148, 163, 184, 0.8);
 }
 
 .ownership-axis text {
-  font-family: "Space Grotesk", sans-serif;
+  font-family: inherit;
 }
 
 .ownership-axis-label {
   fill: rgba(148, 163, 184, 0.7);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: var(--fs-caption);
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .ownership-legend {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  font-size: 0.85rem;
+  font-size: var(--fs-footnote);
   color: var(--text-secondary);
 }
 
@@ -383,9 +383,9 @@
 /* The page predates the design system, so re-skin its `glow-card` sections
  * rather than rewriting all of the markup. */
 .predictor-page .glow-card {
-  border: 1px solid var(--aero-line-strong);
+  border: 0;
   border-radius: var(--aero-radius);
-  background: linear-gradient(145deg, #1b1c1c, #151616);
+  background: var(--aero-surface);
   box-shadow: var(--aero-shadow);
   overflow: hidden;
 }
@@ -403,22 +403,22 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  font-size: 1.08rem;
+  font-size: var(--fs-headline);
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   color: var(--aero-text);
 }
 
 .predictor-page .section-subtitle {
   margin: 5px 0 0;
-  font-size: 0.76rem;
+  font-size: var(--fs-caption);
   color: var(--aero-text-muted);
 }
 
 .predictor-page .predictor-grid h3 {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
+  font-size: var(--fs-caption);
+  text-transform: none;
+  letter-spacing: 0;
   color: var(--aero-text-muted);
   margin: 0 0 12px;
 }
@@ -440,24 +440,24 @@
 }
 
 .predictor-page .predictor-name {
-  font-size: 0.84rem;
+  font-size: var(--fs-footnote);
   font-weight: 600;
 }
 
 .predictor-page .predictor-meta {
-  font-size: 0.68rem;
+  font-size: var(--fs-caption);
   color: var(--aero-text-muted);
   margin-top: 3px;
 }
 
 .predictor-page .predictor-signal {
   text-align: right;
-  font-size: 0.76rem;
+  font-size: var(--fs-caption);
 }
 
 .predictor-page .predictor-signal small {
   display: block;
-  font-size: 0.64rem;
+  font-size: var(--fs-caption);
   color: var(--aero-text-muted);
   margin-top: 3px;
 }
@@ -487,16 +487,16 @@
   display: flex;
   align-items: baseline;
   gap: 8px;
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
+  font-size: var(--fs-caption);
+  text-transform: none;
+  letter-spacing: 0;
   color: var(--aero-text-muted);
   margin: 0 0 10px;
 }
 
 .official-grid h3 span {
-  font-size: 1rem;
-  font-weight: 800;
+  font-size: var(--fs-headline);
+  font-weight: 600;
   letter-spacing: 0;
   color: var(--aero-text);
 }
@@ -520,7 +520,7 @@
   background: transparent;
   color: var(--aero-text);
   font-family: inherit;
-  font-size: 0.78rem;
+  font-size: var(--fs-footnote);
   text-align: left;
   cursor: pointer;
 }
@@ -539,16 +539,16 @@
 
 .official-meta,
 .official-cost {
-  font-size: 0.7rem;
+  font-size: var(--fs-caption);
   color: var(--aero-text-muted);
 }
 
 .official-row b {
   text-align: right;
-  font-weight: 700;
+  font-weight: 600;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 734px) {
   .official-row {
     grid-template-columns: 1.3fr 0.8fr 0.9fr;
   }
@@ -561,9 +561,7 @@
 /* Charts and inputs predate the palette — bring them onto graphite/lime. */
 
 .predictor-page .ownership-chart svg {
-  background:
-    radial-gradient(circle at 22% 18%, rgba(165, 255, 1, 0.06), transparent 55%),
-    #131414;
+  background: var(--aero-surface);
   border: 1px solid var(--aero-line);
   box-shadow: none;
 }

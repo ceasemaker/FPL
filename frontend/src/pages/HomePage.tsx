@@ -74,7 +74,6 @@ export function HomePage(){
         <h1>FPL Command Centre</h1>
         <p>Planning Gameweek {nextGw??"—"} · data through GW{latestCompletedGw??"—"}</p>
       </div>
-      <span className="command-kicker">DATA DRIVEN<br/>FPL DECISIONS</span>
     </div>
 
     <p className="freshness-strip" role="status">
@@ -93,7 +92,7 @@ export function HomePage(){
       {captain
         ? <article className="captain-hero">
             <div className="captain-copy">
-              <span className="eyebrow">★ MODEL CAPTAIN PICK · GW{captain.game_week}{captain.experimental&&<b className="captain-badge">Experimental</b>}</span>
+              <span className="eyebrow">Model captain pick for GW{captain.game_week}{captain.experimental&&<b className="captain-experimental">Experimental</b>}</span>
               <h2>Captain <em>{captain.web_name}</em></h2>
               <div className="captain-metrics">
                 <div><strong>{captain.predicted_points.toFixed(1)}</strong><span>projected points</span></div>
@@ -110,7 +109,7 @@ export function HomePage(){
         ? null
         : <article className="captain-hero">
             <div className="captain-copy">
-              <span className="eyebrow">▲ CAPTAIN FORECAST · GW{nextGw??"—"}</span>
+              <span className="eyebrow">Captain forecast for GW{nextGw??"—"}</span>
               <h2>Captain pick <em>{isLoading?"loading…":captainOnHold?"on hold":"unavailable"}</em></h2>
               <div className="captain-metrics">
                 {captainOnHold
@@ -243,7 +242,7 @@ function CaptainRecordCard({record}:{record:CaptainRecord}){
         <b className={v.difference!==null&&v.low!==null&&v.low>0?"positive":v.difference!==null&&v.high!==null&&v.high<0?"negative":""}>{signed(v.difference)}</b>
       </li>)}
     </ul>}
-    <Link className="captain-record-link" to="/model-lab">Full record in Model Lab →</Link>
+    <Link className="captain-record-link" to="/model-lab">Full record in Model Lab</Link>
   </article>;
 }
 

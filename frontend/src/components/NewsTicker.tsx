@@ -92,7 +92,7 @@ const NewsTicker: React.FC<NewsTickerProps> = ({ news }) => {
     <div className="news-ticker-wrapper">
       <div className="news-ticker-label">
         <span className="news-icon">📰</span>
-        <span>LATEST NEWS</span>
+        <span>Latest news</span>
       </div>
       <div
         className="news-ticker"

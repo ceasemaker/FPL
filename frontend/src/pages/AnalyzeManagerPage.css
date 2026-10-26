@@ -20,12 +20,12 @@
 .analyze-hint {
   align-self: center;
   margin: 0;
-  font-size: 0.74rem;
+  font-size: var(--fs-caption);
   color: var(--aero-text-muted);
 }
 
 .analyze-hint strong {
-  color: var(--aero-lime);
+  color: var(--aero-text);
 }
 
 .analyze-empty {
@@ -34,13 +34,13 @@
 }
 
 .analyze-empty h2 {
-  font-size: 1.1rem;
+  font-size: var(--fs-headline);
   margin: 0 0 8px;
 }
 
 .analyze-empty p {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--fs-footnote);
   color: var(--aero-text-muted);
 }
 
@@ -49,28 +49,28 @@
 .analyze-views {
   display: inline-flex;
   gap: 4px;
-  padding: 4px;
-  border: 1px solid var(--aero-line-strong);
-  border-radius: 999px;
-  background: var(--aero-surface);
+  padding: 2px;
+  border: 0;
+  border-radius: var(--aero-radius-sm);
+  background: var(--aero-fill);
   width: fit-content;
 }
 
 .analyze-views button {
   padding: 9px 18px;
   border: 0;
-  border-radius: 999px;
+  border-radius: 8px;
   background: transparent;
-  color: var(--aero-text-dim);
+  color: var(--aero-text);
   font-family: inherit;
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-size: var(--fs-footnote);
+  font-weight: 500;
   cursor: pointer;
 }
 
 .analyze-views button.active {
-  background: linear-gradient(100deg, #b8ff37, #8fe800);
-  color: #101011;
+  background: var(--aero-segment-on);
+  color: var(--aero-text); border-color: transparent; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* --------------------------------------------------------------- layout */
@@ -85,9 +85,9 @@
 /* ------------------------------------------------------- manager summary */
 
 .manager-summary-card {
-  border: 1px solid var(--aero-line-strong);
+  border: 0;
   border-radius: var(--aero-radius);
-  background: linear-gradient(160deg, #1f2220, #151616 62%);
+  background: var(--aero-surface);
   padding: 18px;
 }
 
@@ -98,23 +98,23 @@
 }
 
 .manager-summary-title {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
+  font-size: var(--fs-caption);
+  text-transform: none;
+  letter-spacing: 0;
   color: var(--aero-text-muted);
   margin: 0;
 }
 
 .manager-name {
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: var(--fs-headline);
+  font-weight: 600;
+  letter-spacing: -0.01em;
   margin: 0;
 }
 
 .team-name {
-  font-size: 0.82rem;
-  color: var(--aero-lime);
+  font-size: var(--fs-footnote);
+  color: var(--aero-text);
   margin: 3px 0 0;
 }
 
@@ -144,15 +144,15 @@
 }
 
 .meta-item {
-  font-size: 0.72rem;
+  font-size: var(--fs-caption);
   color: var(--aero-text-dim);
 }
 
 .meta-label {
   display: block;
-  font-size: 0.6rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  font-size: var(--fs-caption);
+  text-transform: none;
+  letter-spacing: 0;
   color: var(--aero-text-muted);
 }
 
@@ -175,37 +175,37 @@
 
 .stat-box.highlight {
   border-color: transparent;
-  background: var(--aero-lime-wash);
+  background: var(--aero-surface-raised);
 }
 
 .stat-box.highlight .stat-value {
-  color: var(--aero-lime);
+  color: var(--aero-text);
 }
 
 .stat-box .stat-label {
-  font-size: 0.58rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  font-size: var(--fs-caption);
+  text-transform: none;
+  letter-spacing: 0;
   color: var(--aero-text-muted);
 }
 
 .stat-box .stat-value {
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: var(--fs-headline);
+  font-weight: 600;
 }
 
 .stat-value.team-value { color: var(--aero-text); }
-.stat-value.bank { color: var(--aero-lime); }
+.stat-value.bank { color: var(--aero-text); }
 
 .manager-summary-loading,
 .loading-state,
 .analyze-page .error-state {
   padding: 26px;
-  border: 1px solid var(--aero-line-strong);
+  border: 0;
   border-radius: var(--aero-radius);
   background: var(--aero-surface);
   color: var(--aero-text-muted);
-  font-size: 0.85rem;
+  font-size: var(--fs-footnote);
   text-align: center;
 }
 
@@ -240,9 +240,9 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  border: 1px solid var(--aero-line-strong);
+  border: 0;
   border-radius: var(--aero-radius);
-  background: linear-gradient(145deg, #1b1c1c, #151616);
+  background: var(--aero-surface);
   padding: 18px;
 }
 
@@ -250,8 +250,8 @@
 .gameweek-title,
 .past-seasons-title,
 .bench-title {
-  font-size: 1.05rem;
-  letter-spacing: -0.02em;
+  font-size: var(--fs-headline);
+  letter-spacing: -0.01em;
   margin: 0;
 }
 
@@ -272,15 +272,15 @@
 }
 
 .summary-label {
-  font-size: 0.58rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  font-size: var(--fs-caption);
+  text-transform: none;
+  letter-spacing: 0;
   color: var(--aero-text-muted);
 }
 
 .summary-value {
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-size: var(--fs-section);
+  font-weight: 600;
 }
 
 .history-table-wrapper {
@@ -292,7 +292,7 @@
   width: 100%;
   min-width: 560px;
   border-collapse: collapse;
-  font-size: 0.78rem;
+  font-size: var(--fs-footnote);
 }
 
 .history-table th,
@@ -301,9 +301,9 @@
   top: 0;
   padding: 9px 10px;
   text-align: left;
-  font-size: 0.6rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  font-size: var(--fs-caption);
+  text-transform: none;
+  letter-spacing: 0;
   color: var(--aero-text-muted);
   background: var(--aero-surface);
   border-bottom: 1px solid var(--aero-line-strong);
@@ -325,8 +325,8 @@
 }
 
 .points-cell {
-  font-weight: 700;
-  color: var(--aero-lime);
+  font-weight: 600;
+  color: var(--aero-text);
 }
 
 .rank-change.positive { color: var(--aero-lime); }
@@ -336,11 +336,11 @@
 .chip-badge {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: var(--aero-radius-pill);
   background: var(--aero-lime-wash);
   color: var(--aero-lime);
-  font-size: 0.62rem;
-  font-weight: 700;
+  font-size: var(--fs-caption);
+  font-weight: 600;
 }
 
 .past-seasons {
@@ -376,7 +376,7 @@
   border: 1px solid var(--aero-line-strong);
   background: var(--aero-surface);
   color: var(--aero-text);
-  font-size: 1rem;
+  font-size: var(--fs-headline);
   cursor: pointer;
 }
 
@@ -393,7 +393,7 @@
   background: var(--aero-surface);
   color: var(--aero-text);
   font-family: inherit;
-  font-size: 0.85rem;
+  font-size: var(--fs-footnote);
 }
 
 .gameweek-stats-bar {
@@ -418,20 +418,20 @@
 }
 
 .gw-stat-label {
-  font-size: 0.58rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  font-size: var(--fs-caption);
+  text-transform: none;
+  letter-spacing: 0;
   color: var(--aero-text-muted);
 }
 
 .gw-stat-value {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: var(--fs-headline);
+  font-weight: 600;
 }
 
 .gw-stat-value.chip-active {
   color: var(--aero-lime);
-  font-size: 0.9rem;
+  font-size: var(--fs-body);
 }
 
 /* Pitch */
@@ -442,15 +442,14 @@
   padding: 18px 12px;
   border-radius: var(--aero-radius);
   border: 1px solid var(--aero-line);
-  background:
-    repeating-linear-gradient(
+  background: repeating-linear-gradient(
       to bottom,
       rgba(165, 255, 1, 0.035) 0,
       rgba(165, 255, 1, 0.035) 58px,
       transparent 58px,
       transparent 116px
     ),
-    #131414;
+    var(--aero-surface);
 }
 
 .formation-row,
@@ -471,12 +470,12 @@
   padding: 8px 6px;
   border: 1px solid var(--aero-line-strong);
   border-radius: var(--aero-radius-sm);
-  background: linear-gradient(165deg, #202220, #171818);
+  background: var(--aero-surface);
   transition: border-color 0.18s ease, transform 0.18s ease;
 }
 
 .gameweek-player-card:hover {
-  border-color: var(--aero-lime);
+  border-color: var(--aero-line-strong);
   transform: translateY(-2px);
 }
 
@@ -496,7 +495,7 @@
 }
 
 .player-card-name {
-  font-size: 0.7rem;
+  font-size: var(--fs-caption);
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -509,7 +508,7 @@
   justify-content: center;
   gap: 4px;
   margin-top: 3px;
-  font-size: 0.58rem;
+  font-size: var(--fs-caption);
   color: var(--aero-text-muted);
 }
 
@@ -521,26 +520,26 @@
 
 .position-mini {
   padding: 1px 5px;
-  border-radius: 4px;
+  border-radius: var(--aero-radius-chip);
   background: var(--aero-surface-hover);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .player-card-points {
   display: flex;
   align-items: baseline;
   gap: 4px;
-  font-size: 0.72rem;
+  font-size: var(--fs-caption);
 }
 
 .total-points {
-  font-weight: 800;
-  color: var(--aero-lime);
+  font-weight: 600;
+  color: var(--aero-text);
 }
 
 .base-points,
 .multiplier-text {
-  font-size: 0.6rem;
+  font-size: var(--fs-caption);
   color: var(--aero-text-muted);
 }
 
@@ -556,18 +555,19 @@
   height: 18px;
   padding: 0 4px;
   border-radius: 50%;
-  font-size: 0.58rem;
-  font-weight: 800;
+  font-size: var(--fs-caption);
+  font-weight: 600;
 }
 
-.captain-badge,
-.triple-captain-badge {
-  background: var(--aero-lime);
-  color: #101011;
+.captain-badge {
+  background: var(--aero-text);
+  color: var(--aero-bg);
 }
 
 .triple-captain-badge {
-  border-radius: 6px;
+  border-radius: var(--aero-radius-chip);
+  background: var(--aero-lime-wash);
+  color: var(--aero-lime);
 }
 
 .vice-captain-badge {
@@ -581,16 +581,16 @@
 }
 
 .bench-title {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
+  font-size: var(--fs-caption);
+  text-transform: none;
+  letter-spacing: 0;
   color: var(--aero-text-muted);
   margin-bottom: 10px;
 }
 
 /* ---------------------------------------------------------- responsive */
 
-@media (max-width: 1050px) {
+@media (max-width: 1068px) {
   .analyze-content-grid {
     grid-template-columns: 1fr;
   }
@@ -604,7 +604,7 @@
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 734px) {
   .analyze-lookup {
     grid-template-columns: 1fr;
   }
@@ -627,8 +627,8 @@
 }
 .analyze-data-note { margin: 0 0 18px; }
 .analyze-data-note strong { color: var(--aero-text); }
-.manager-freshness { display: flex; flex-wrap: wrap; gap: 7px 16px; margin: 0 0 14px; padding: 10px 12px; border: 1px solid var(--aero-line); border-radius: 10px; background: rgba(255,255,255,.025); color: var(--aero-text-dim); font-size: .68rem; }
-.manager-freshness strong { color: var(--aero-lime); text-transform: uppercase; letter-spacing: .07em; }
-.gw-next-note { margin: -4px 0 14px; font-size: .78rem; color: var(--aero-text-dim); }
-.gw-next-note a { color: var(--aero-lime); font-weight: 700; text-decoration: none; }
+.manager-freshness { display: flex; flex-wrap: wrap; gap: 7px 16px; margin: 0 0 14px; padding: 10px 12px; border: 1px solid var(--aero-line); border-radius: var(--aero-radius-sm); background: rgba(255,255,255,.025); color: var(--aero-text-dim); font-size: var(--fs-caption); }
+.manager-freshness strong { color: var(--aero-text); text-transform: none; letter-spacing: 0; }
+.gw-next-note { margin: -4px 0 14px; font-size: var(--fs-footnote); color: var(--aero-text-dim); }
+.gw-next-note a { color: var(--aero-text); font-weight: 600; text-decoration: none; }
 .gw-next-note a:hover { text-decoration: underline; }

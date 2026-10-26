@@ -13,12 +13,12 @@
 .optimizer-action {
   background: var(--accent-blue);
   border: 1px solid transparent;
-  color: #000;
+  color: var(--aero-bg);
   padding: 0.6rem 1.25rem;
-  border-radius: 4px; /* Sharper */
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  border-radius: var(--aero-radius-chip); /* Sharper */
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -33,7 +33,7 @@
 .optimizer-action:not(:disabled):hover {
   transform: translateY(1px);
   background: #00d4eb; /* slightly darker neon cyan */
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+  box-shadow: none;
 }
 
 .optimizer-controls {
@@ -48,19 +48,19 @@
   flex-direction: column;
   gap: 0.5rem;
   color: var(--text-muted);
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-size: var(--fs-footnote);
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .optimizer-field input,
 .optimizer-field select {
   background: var(--bg-tertiary);
   border: 1px solid var(--border-subtle);
-  border-radius: 4px; /* Sharper */
+  border-radius: var(--aero-radius-chip); /* Sharper */
   padding: 0.6rem 0.8rem;
   color: var(--text-primary);
-  font-size: 0.95rem;
+  font-size: var(--fs-body);
   transition: all 0.2s ease;
 }
 
@@ -69,14 +69,14 @@
   outline: none;
   border-color: var(--accent-green);
   background: var(--bg-secondary);
-  box-shadow: 0 0 0 3px rgba(0, 220, 130, 0.25);
+  box-shadow: none;
 }
 
 .optimizer-toggle {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-size: 0.9rem;
+  font-size: var(--fs-body);
   color: var(--text-secondary);
 }
 
@@ -87,10 +87,10 @@
 .optimizer-error {
   margin-top: 1.2rem;
   padding: 0.75rem 1rem;
-  border-radius: 12px;
+  border-radius: var(--aero-radius-sm);
   border-left: 4px solid var(--accent-red);
   background: rgba(127, 29, 29, 0.4);
-  color: #ffffff;
+  color: var(--aero-text);
 }
 
 .optimizer-results {
@@ -115,7 +115,7 @@
 .summary-metrics div {
   background: rgba(15, 23, 42, 0.7);
   border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 14px;
+  border-radius: var(--aero-radius);
   padding: 0.75rem 1rem;
   display: flex;
   flex-direction: column;
@@ -123,14 +123,14 @@
 }
 
 .summary-metrics span {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-size: var(--fs-caption);
+  text-transform: none;
+  letter-spacing: 0;
   color: var(--text-muted);
 }
 
 .summary-metrics strong {
-  font-size: 1.4rem;
+  font-size: var(--fs-section);
 }
 
 .optimizer-lineup {
@@ -141,7 +141,7 @@
 
 .optimizer-lineup h3 {
   margin: 0 0 1rem;
-  font-size: 1.2rem;
+  font-size: var(--fs-section);
 }
 
 .optimizer-position {
@@ -150,9 +150,9 @@
 
 .optimizer-position h4 {
   margin: 0 0 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  font-size: 0.75rem;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: var(--fs-caption);
   color: var(--text-muted);
 }
 
@@ -167,7 +167,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.8rem 1rem;
-  border-radius: 14px;
+  border-radius: var(--aero-radius);
   border: 1px solid rgba(148, 163, 184, 0.2);
   background: rgba(8, 12, 30, 0.85);
 }
@@ -182,7 +182,7 @@
 
 .optimizer-card.starter {
   border-color: rgba(34, 197, 94, 0.4);
-  box-shadow: 0 0 12px rgba(34, 197, 94, 0.15);
+  box-shadow: none;
 }
 
 .optimizer-card.bench {
@@ -194,7 +194,7 @@
 }
 
 .optimizer-meta {
-  font-size: 0.85rem;
+  font-size: var(--fs-footnote);
   color: var(--text-secondary);
 }
 
@@ -209,21 +209,21 @@
   gap: 0.5rem;
   margin-bottom: 1.5rem;
   overflow-x: auto;
-  padding-bottom: 0.5rem;
+  padding-bottom: 0.5rem; border: 0; background: var(--aero-fill); border-radius: var(--aero-radius-sm); padding: 2px;
 }
 
 .gw-tab {
   padding: 0.6rem 1rem;
   border: 1px solid var(--border-subtle);
-  border-radius: 6px;
+  border-radius: var(--aero-radius-chip);
   background: var(--bg-secondary);
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
   font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.8rem;
+  text-transform: none;
+  font-size: var(--fs-footnote);
 }
 
 .gw-tab:hover {
@@ -233,7 +233,7 @@
 .gw-tab.active {
   background: var(--accent-blue);
   border-color: var(--accent-blue);
-  color: #000;
+  color: var(--aero-bg);
 }
 
 /* GW Panel */
@@ -252,14 +252,14 @@
 
 .chip-badge {
   padding: 0.5rem 1rem;
-  border-radius: 20px;
+  border-radius: var(--aero-radius);
   background: rgba(0, 220, 130, 0.2);
   border: 1px solid rgba(0, 220, 130, 0.5);
   color: #00dc82;
   font-weight: 600;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: var(--fs-footnote);
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 /* Transfer Panel */
@@ -268,7 +268,7 @@
   align-items: stretch;
   gap: 1.5rem;
   padding: 1.5rem;
-  border-radius: 12px;
+  border-radius: var(--aero-radius-sm);
   border: 1px solid var(--border-subtle);
   background: rgba(15, 23, 42, 0.6);
   flex-wrap: wrap;
@@ -281,9 +281,9 @@
 
 .transfer-section h3 {
   margin: 0 0 1rem;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  font-size: var(--fs-body);
+  text-transform: none;
+  letter-spacing: 0;
   color: var(--text-muted);
 }
 
@@ -300,7 +300,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem;
-  border-radius: 8px;
+  border-radius: var(--aero-radius-sm);
   border: 2px solid;
   background: rgba(0, 0, 0, 0.4);
 }
@@ -328,12 +328,12 @@
 
 .transfer-name {
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: var(--fs-footnote);
   line-height: 1.2;
 }
 
 .transfer-cost {
-  font-size: 0.8rem;
+  font-size: var(--fs-footnote);
   color: var(--text-secondary);
 }
 
@@ -341,13 +341,13 @@
   color: var(--text-muted);
   text-align: center;
   padding: 1rem;
-  font-size: 0.9rem;
+  font-size: var(--fs-body);
 }
 
 .transfer-arrow {
   display: flex;
   align-items: center;
-  font-size: 1.5rem;
+  font-size: var(--fs-section);
   color: var(--text-muted);
   min-width: 2rem;
 }
@@ -358,7 +358,7 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  font-size: 0.9rem;
+  font-size: var(--fs-body);
   color: var(--text-secondary);
 }
 
@@ -376,9 +376,9 @@
 
 .squad-section h3 {
   margin: 0;
-  font-size: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  font-size: var(--fs-headline);
+  text-transform: none;
+  letter-spacing: 0;
   color: var(--text-secondary);
 }
 
@@ -394,7 +394,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem;
-  border-radius: 8px;
+  border-radius: var(--aero-radius-sm);
   border: 1px solid var(--border-subtle);
   background: rgba(8, 12, 30, 0.85);
   transition: all 0.2s ease;
@@ -402,7 +402,7 @@
 
 .squad-card:hover {
   border-color: var(--accent-blue);
-  box-shadow: 0 0 12px rgba(0, 220, 130, 0.2);
+  box-shadow: none;
 }
 
 .squad-card.bench {
@@ -426,7 +426,7 @@
   position: absolute;
   bottom: -4px;
   right: -4px;
-  font-size: 1.5rem;
+  font-size: var(--fs-section);
   background: rgba(0, 0, 0, 0.8);
   border-radius: 50%;
   width: 28px;
@@ -447,24 +447,24 @@
 
 .card-name {
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: var(--fs-footnote);
   line-height: 1.2;
 }
 
 .card-meta {
-  font-size: 0.75rem;
+  font-size: var(--fs-caption);
   color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .card-cost {
-  font-size: 0.8rem;
+  font-size: var(--fs-footnote);
   color: var(--accent-cyan);
   font-weight: 600;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 734px) {
   .optimizer-header {
     flex-direction: column;
     align-items: stretch;
@@ -501,9 +501,9 @@
 }
 
 .optimizer-panel .glow-card {
-  border: 1px solid var(--aero-line-strong);
+  border: 0;
   border-radius: var(--aero-radius);
-  background: linear-gradient(145deg, #1b1c1c, #151616);
+  background: var(--aero-surface);
   box-shadow: var(--aero-shadow);
   overflow: hidden;
 }
@@ -513,15 +513,15 @@
 }
 
 .optimizer-panel .section-title {
-  font-size: 1.08rem;
+  font-size: var(--fs-headline);
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   color: var(--aero-text);
 }
 
 .optimizer-panel .section-subtitle {
   margin: 5px 0 0;
-  font-size: 0.78rem;
+  font-size: var(--fs-footnote);
   color: var(--aero-text-muted);
   max-width: 68ch;
 }
@@ -540,18 +540,18 @@
   padding: 0 20px;
   border: 0;
   border-radius: var(--aero-radius-sm);
-  background: linear-gradient(100deg, #b8ff37, #8fe800);
-  color: #101011;
+  background: var(--aero-lime);
+  color: var(--aero-bg);
   font-family: inherit;
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: var(--fs-footnote);
+  font-weight: 600;
   letter-spacing: 0;
   text-transform: none;
   cursor: pointer;
 }
 
 .optimizer-panel .optimizer-action:not(:disabled):hover {
-  background: linear-gradient(100deg, #c6ff5c, #9dff0a);
+  background: var(--aero-lime);
 }
 
 .optimizer-panel .optimizer-action:disabled {
@@ -591,20 +591,20 @@
 }
 
 .optimizer-panel .gw-tabs button {
-  background: var(--aero-surface);
-  border: 1px solid var(--aero-line-strong);
-  color: var(--aero-text-dim);
+  background: transparent;
+  border: 0;
+  color: var(--aero-text); border-radius: 8px; font-weight: 500; font-size: var(--fs-footnote);
 }
 
 .optimizer-panel .gw-tabs button.active {
-  background: var(--aero-lime-wash);
+  background: var(--aero-segment-on);
   border-color: transparent;
-  color: var(--aero-lime);
+  color: var(--aero-text); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .optimizer-panel .chip-badge,
 .optimizer-panel .transfer-arrow {
-  color: var(--aero-lime);
+  color: var(--aero-text-dim);
 }
 
 .optimizer-panel .transfer-in {
@@ -643,10 +643,10 @@
 }
 
 .optimizer-panel .summary-metrics strong {
-  font-size: 1.2rem;
+  font-size: var(--fs-section);
 }
 
-@media (max-width: 720px) {
+@media (max-width: 734px) {
   .optimizer-panel .summary-metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -665,16 +665,16 @@
 
 .optimizer-panel .squad-card {
   border: 1px solid var(--aero-line);
-  background: linear-gradient(165deg, #202220, #171818);
+  background: var(--aero-surface);
 }
 
 .optimizer-panel .card-name {
-  font-size: 0.74rem;
+  font-size: var(--fs-caption);
   font-weight: 600;
 }
 
 .optimizer-panel .card-meta,
 .optimizer-panel .card-cost {
-  font-size: 0.62rem;
+  font-size: var(--fs-caption);
   color: var(--aero-text-muted);
 }

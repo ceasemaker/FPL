@@ -6,6 +6,11 @@
   gap: 16px;
 }
 
+/* Page-level buttons keep their own width in the column. */
+.compare-page > .aero-button {
+  align-self: flex-start;
+}
+
 .compare-block {
   padding: 18px;
 }
@@ -39,9 +44,9 @@
   gap: 8px;
   padding: 16px 12px;
   text-align: center;
-  border: 1px solid var(--aero-line-strong);
+  border: 0;
   border-radius: var(--aero-radius);
-  background: linear-gradient(160deg, #1f2220, #151616 62%);
+  background: var(--aero-surface);
 }
 
 .compare-player-face {
@@ -60,8 +65,8 @@
 }
 
 .compare-player h2 {
-  font-size: 1.12rem;
-  letter-spacing: -0.03em;
+  font-size: var(--fs-headline);
+  letter-spacing: -0.02em;
   margin: 0;
 }
 
@@ -71,7 +76,7 @@
   justify-content: center;
   gap: 7px;
   margin: 0;
-  font-size: 0.76rem;
+  font-size: var(--fs-caption);
   color: var(--aero-text-dim);
 }
 
@@ -89,22 +94,22 @@
 }
 
 .compare-player-price strong {
-  font-size: 1.25rem;
-  color: var(--aero-lime);
+  font-size: var(--fs-section);
+  color: var(--aero-text);
 }
 
 .compare-player-price span {
-  font-size: 0.7rem;
+  font-size: var(--fs-caption);
   color: var(--aero-text-muted);
 }
 
 .compare-availability {
   display: inline-block;
   padding: 3px 9px;
-  border-radius: 999px;
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  border-radius: var(--aero-radius-pill);
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
 .compare-availability.ok {
@@ -145,13 +150,13 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  font-size: 0.76rem;
+  font-size: var(--fs-caption);
   color: var(--aero-text-muted);
 }
 
 .compare-row-label small {
-  font-size: 0.64rem;
-  color: #6f7071;
+  font-size: var(--fs-caption);
+  color: var(--aero-text-muted);
 }
 
 .compare-cell {
@@ -169,7 +174,7 @@
 }
 
 .compare-cell strong {
-  font-size: 0.95rem;
+  font-size: var(--fs-body);
   font-weight: 600;
 }
 
@@ -180,11 +185,11 @@
 
 .compare-cell.best strong {
   color: var(--aero-lime);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .compare-news {
-  font-size: 0.64rem;
+  font-size: var(--fs-caption);
   line-height: 1.35;
   color: var(--aero-text-muted);
 }
@@ -215,11 +220,11 @@
 }
 
 .compare-fixture b {
-  font-size: 0.7rem;
+  font-size: var(--fs-caption);
 }
 
 .compare-fixture small {
-  font-size: 0.6rem;
+  font-size: var(--fs-caption);
   color: var(--aero-text-muted);
 }
 
@@ -237,7 +242,7 @@
 }
 
 .compare-form-column h4 {
-  font-size: 0.82rem;
+  font-size: var(--fs-footnote);
   margin: 0 0 8px;
   padding-bottom: 6px;
   border-bottom: 1px solid var(--aero-line);
@@ -249,7 +254,7 @@
   align-items: center;
   gap: 8px;
   padding: 6px 0;
-  font-size: 0.7rem;
+  font-size: var(--fs-caption);
   border-bottom: 1px solid rgba(46, 47, 48, 0.6);
 }
 
@@ -263,21 +268,21 @@
 
 .compare-form-detail {
   color: var(--aero-text-muted);
-  font-size: 0.65rem;
+  font-size: var(--fs-caption);
 }
 
 .compare-form-points {
   display: grid;
   place-items: center;
   height: 24px;
-  border-radius: 7px;
-  font-weight: 800;
-  font-size: 0.72rem;
-  color: #101011;
+  border-radius: var(--aero-radius-chip);
+  font-weight: 600;
+  font-size: var(--fs-caption);
+  color: var(--aero-bg);
   background: var(--aero-line-strong);
 }
 
-.compare-form-points.great { background: var(--aero-lime); }
+.compare-form-points.great { background: var(--aero-lime-wash); color: var(--aero-lime); border-color: transparent;}
 .compare-form-points.good { background: #b8e986; }
 .compare-form-points.ok { background: #95ae67; }
 .compare-form-points.poor { background: #4a4b4c; color: var(--aero-text-dim); }
@@ -297,18 +302,18 @@
 .compare-profile-tabs button {
   flex: 0 0 auto;
   border: 1px solid var(--aero-border);
-  border-radius: 999px;
+  border-radius: var(--aero-radius-pill);
   padding: 9px 15px;
   color: var(--aero-muted);
   background: rgba(255, 255, 255, 0.025);
   font: inherit;
-  font-weight: 750;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .compare-profile-tabs button.active {
   border-color: var(--aero-accent);
-  color: #111;
+  color: var(--aero-bg);
   background: var(--aero-accent);
 }
 
@@ -320,7 +325,7 @@
 
 .compare-details summary {
   cursor: pointer;
-  font-size: 0.95rem;
+  font-size: var(--fs-body);
   font-weight: 600;
   letter-spacing: -0.01em;
   list-style: none;
@@ -328,7 +333,7 @@
 
 .compare-details summary::before {
   content: "▸ ";
-  color: var(--aero-lime);
+  color: var(--aero-text-dim);
 }
 
 .compare-details[open] summary::before {
@@ -345,9 +350,9 @@
 
 .compare-stat-group h4,
 .compare-euro h4 {
-  font-size: 0.74rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
+  font-size: var(--fs-caption);
+  text-transform: none;
+  letter-spacing: 0;
   color: var(--aero-text-muted);
   margin: 0 0 6px;
 }
@@ -365,23 +370,23 @@
 }
 
 .compare-euro-match b {
-  font-size: 0.72rem;
+  font-size: var(--fs-caption);
 }
 
 .compare-euro-match small {
-  font-size: 0.64rem;
+  font-size: var(--fs-caption);
   color: var(--aero-text-muted);
 }
 
 /* ---------------------------------------------------------- responsive */
 
-@media (max-width: 900px) {
+@media (max-width: 1068px) {
   .compare-split {
     grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 734px) {
   /* Keep the side-by-side reading order — stacking loses which value belongs
      to which player — but shrink the columns so a two-player comparison fits
      a phone without sideways scrolling. */
@@ -404,7 +409,7 @@
   }
 
   .compare-row-label {
-    font-size: 0.68rem;
+    font-size: var(--fs-caption);
   }
 
   .compare-cell {
@@ -413,7 +418,7 @@
   }
 
   .compare-cell strong {
-    font-size: 0.84rem;
+    font-size: var(--fs-footnote);
   }
 
   .compare-player {
@@ -426,11 +431,11 @@
   }
 
   .compare-player h2 {
-    font-size: 0.86rem;
+    font-size: var(--fs-footnote);
   }
 
   .compare-player-price strong {
-    font-size: 1rem;
+    font-size: var(--fs-headline);
   }
 
   .compare-block {
@@ -440,6 +445,6 @@
   .compare-form-row {
     grid-template-columns: 38px 50px 1fr 26px;
     gap: 5px;
-    font-size: 0.64rem;
+    font-size: var(--fs-caption);
   }
 }

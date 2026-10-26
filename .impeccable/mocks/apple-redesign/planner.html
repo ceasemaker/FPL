@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transfer planner mockup</title>
+<link rel="stylesheet" href="mock.css">
+<style>
+  .plans { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+
+  /* Team facts: one panel, five columns split by hairlines. */
+  .facts { display: grid; grid-template-columns: repeat(5, max-content) 1fr; align-items: center; }
+  .facts > div { padding: 18px 28px 18px 24px; }
+  .facts dt small { color: var(--tertiary); font-size: 13px; }
+  .facts .action { justify-self: end; padding-right: 20px; }
+  .facts > div + div { box-shadow: inset 1px 0 var(--hair); }
+  .facts dt { font-size: 13px; line-height: 18px; color: var(--secondary); }
+  .facts dd { margin-top: 4px; font-size: 22px; line-height: 28px; font-weight: 600; letter-spacing: -0.01em; }
+  .facts dd.words { font-size: 15px; line-height: 28px; font-weight: 500; }
+  .facts .action { box-shadow: none !important; }
+  .stepper { display: inline-flex; align-items: center; gap: 10px; }
+  .stepper button { width: 28px; height: 28px; border: 0; border-radius: 50%; background: var(--raised); display: grid; place-items: center; cursor: pointer; }
+
+  /* Gameweek track */
+  .weeks { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 32px 0 24px; }
+  .week {
+    position: relative;
+    text-align: left;
+    padding: 12px 14px;
+    border: 0;
+    border-radius: 14px;
+    background: var(--graphite);
+    cursor: pointer;
+  }
+  .week b { display: block; font-size: 15px; font-weight: 600; }
+  .week span { display: block; font-size: 13px; line-height: 18px; color: var(--secondary); }
+  .week[aria-pressed="true"] { background: var(--raised); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14); }
+  .week[aria-pressed="true"]::before { content: ""; position: absolute; left: 14px; right: 14px; top: 0; height: 2px; border-radius: 2px; background: var(--lime); }
+
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; align-items: start; }
+
+  /* Squad */
+  .squad-head { display: flex; justify-content: space-between; align-items: baseline; padding: 18px 20px 4px; }
+  .squad-head h2 { font-size: 17px; line-height: 22px; font-weight: 600; }
+  .fx-key { display: grid; grid-template-columns: repeat(6, 40px); gap: 4px; margin-right: 80px; font-size: 12px; color: var(--tertiary); text-align: center; }
+  .pos { padding: 0 0 6px; }
+  .pos h3 { font-size: 13px; line-height: 18px; font-weight: 500; color: var(--secondary); padding: 16px 20px 4px; }
+  .row {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr) 64px auto 64px;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 20px;
+    position: relative;
+  }
+  .row + .row::before { content: ""; position: absolute; top: 0; left: 66px; right: 0; height: 1px; background: var(--hair); }
+  .row.bench > *:not(.sell) { opacity: 0.5; }
+  .row .name { font-weight: 600; display: flex; align-items: baseline; gap: 8px; }
+  .row .meta { font-size: 13px; line-height: 18px; color: var(--secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .meta .warn { color: var(--amber); }
+  .row .new { font-size: 12px; font-weight: 500; color: var(--lime); }
+  .row .cap { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--text); color: var(--ink); font-size: 11px; font-weight: 600; }
+  .xp { text-align: right; }
+  .xp b { display: block; font-size: 17px; line-height: 22px; font-weight: 600; }
+  .xp span { font-size: 12px; line-height: 16px; color: var(--tertiary); }
+  .fx { display: grid; grid-template-columns: repeat(6, 40px); gap: 4px; }
+  .fx .fdr { min-width: 0; width: 40px; font-size: 11px; }
+  .fx .fdr.on { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5); }
+  .sell { justify-self: end; }
+  .squad-foot { padding: 12px 20px 20px; max-width: 80ch; }
+
+  /* Side panels */
+  .side { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 24px; }
+  .side .panel { padding: 18px 20px; }
+  .side h2 { font-size: 17px; line-height: 22px; font-weight: 600; }
+  .side-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .side-head .select { height: 30px; font-size: 13px; }
+  .note { color: var(--secondary); font-size: 13px; line-height: 18px; }
+  .tally { margin-top: 14px; }
+  .tally div { display: flex; justify-content: space-between; padding: 9px 0; box-shadow: inset 0 1px var(--hair); }
+  .tally dt { color: var(--secondary); }
+  .tally dd { font-weight: 500; }
+  .tally .total dd { font-size: 17px; font-weight: 600; }
+  .checks { list-style: none; margin-top: 10px; }
+  .checks li { position: relative; padding: 8px 0 8px 18px; font-size: 13px; line-height: 18px; color: var(--secondary); box-shadow: inset 0 1px var(--hair); }
+  .checks li:first-child { box-shadow: none; }
+  .checks li::before { content: ""; position: absolute; left: 2px; top: 14px; width: 6px; height: 6px; border-radius: 50%; background: var(--amber); }
+
+  /* Mini-leagues */
+  .league-tools { margin-bottom: 16px; }
+  .league-tools .select { min-width: 280px; }
+  .league { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+  .standings { width: 100%; border-collapse: collapse; }
+  .standings th { font-size: 13px; line-height: 18px; font-weight: 500; color: var(--secondary); text-align: right; padding: 16px 20px 8px 8px; }
+  .standings th.text { text-align: left; }
+  .standings th:first-child, .standings td:first-child { padding-left: 20px; width: 52px; text-align: left; }
+  .standings td { padding: 9px 20px 9px 8px; text-align: right; vertical-align: middle; }
+  .standings td.text { text-align: left; }
+  .standings tbody tr + tr td { box-shadow: inset 0 1px var(--hair); }
+  .standings tbody tr + tr td:first-child { box-shadow: none; }
+  .standings .team { font-weight: 600; }
+  .standings .manager { display: block; font-size: 13px; line-height: 18px; color: var(--tertiary); }
+  .standings td.rank { color: var(--secondary); }
+  .standings tr.me td { background: var(--lime-wash); }
+  .standings tr.me td.rank { color: var(--lime); font-weight: 600; }
+  .standings td.total { font-weight: 600; }
+  .standings tr:last-child td:first-child { border-bottom-left-radius: var(--r-panel); }
+  .standings tr:last-child td:last-child { border-bottom-right-radius: var(--r-panel); }
+
+  .lists { display: flex; flex-direction: column; gap: 16px; }
+  .list { padding: 16px 20px 10px; }
+  .list h3 { font-size: 15px; line-height: 20px; font-weight: 600; }
+  .list p.sub { font-size: 13px; line-height: 18px; color: var(--tertiary); margin-top: 2px; }
+  .list ul { list-style: none; margin-top: 8px; }
+  .list li { display: grid; grid-template-columns: minmax(0, 1fr) 40px 64px 40px; align-items: center; gap: 10px; padding: 7px 0; box-shadow: inset 0 1px var(--hair); }
+  .list li:first-child { box-shadow: none; }
+  .list li a { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .list li small { font-size: 13px; color: var(--tertiary); }
+  .list .bar { height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+  .list .bar i { display: block; height: 100%; border-radius: 2px; background: var(--secondary); }
+  .list li b { text-align: right; font-weight: 500; }
+
+  .page-foot { margin-top: 48px; max-width: 80ch; }
+
+  @media (max-width: 1068px) {
+    .facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .facts .action { justify-self: stretch; }
+    .facts > div:nth-child(4) { box-shadow: none; }
+    .facts > div:nth-child(n+4) { border-top: 1px solid var(--hair); }
+    .layout { grid-template-columns: 1fr; }
+    .side { position: static; }
+    .league { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 734px) {
+    .plans .segmented { flex: 1 1 100%; }
+    .plans .segmented button { flex: 1; }
+    .plans .button { flex: 1; }
+    /* Phone: facts become an iPhone Settings-style list, label left, value right. */
+    .facts { display: block; }
+    .facts > div { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 16px; box-shadow: none !important; border-top: 0 !important; }
+    .facts > div + div { background: linear-gradient(var(--hair), var(--hair)) no-repeat 16px 0 / 100% 1px; }
+    .facts dd { margin: 0; font-size: 17px; line-height: 22px; text-align: right; }
+    .facts dd.words { font-size: 15px; line-height: 22px; }
+    .facts .action { padding: 12px 16px 16px; background: none !important; }
+    .facts .action .button { width: 100%; }
+    .weeks { display: flex; overflow-x: auto; scrollbar-width: none; margin: 24px calc(-1 * var(--gutter)); padding: 0 var(--gutter); }
+    .week { flex: 0 0 140px; }
+    .squad-head { padding: 16px 16px 4px; }
+    .row .meta { white-space: normal; }
+    .squad-head .fx-key { display: none; }
+    .row { grid-template-columns: 32px minmax(0, 1fr) 52px 56px; padding: 10px 16px; row-gap: 8px; }
+    .row .fx { grid-column: 2 / -1; grid-row: 2; grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    .row .fx .fdr { width: auto; }
+    .row + .row::before { left: 62px; }
+    .pos h3 { padding-left: 16px; }
+    .standings td, .standings th { padding-right: 12px; }
+    .league-tools .select { width: 100%; min-width: 0; }
+  }
+</style>
+</head>
+<body data-page="planner">
+<main>
+  <div class="column">
+    <header class="page-head">
+      <div>
+        <h1>Transfer planner</h1>
+        <p class="lede">Didier Drogon, managed by Nyasha Mutseta. <a href="#">Load another team</a></p>
+      </div>
+      <div class="plans">
+        <div class="segmented" role="group" aria-label="Plans">
+          <button type="button" aria-pressed="true">Plan A</button>
+          <button type="button" aria-pressed="false">Plan B</button>
+          <button type="button" aria-pressed="false">Plan C</button>
+        </div>
+        <button class="button" type="button">Copy plan</button>
+        <button class="button" type="button">Sync</button>
+      </div>
+    </header>
+
+    <dl class="panel facts" aria-label="Team facts">
+      <div><dt>Bank</dt><dd>£0.4m</dd></div>
+      <div><dt title="Worked out from your history; FPL doesn't publish it.">Free transfers <small>(estimate)</small></dt>
+        <dd class="stepper">
+          <button type="button" aria-label="One fewer"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2.5 6h7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+          2
+          <button type="button" aria-label="One more"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2.5 6h7M6 2.5v7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+        </dd></div>
+      <div><dt>Team value</dt><dd>£102.6m</dd></div>
+      <div><dt>Chips left</dt><dd class="words">Wildcard, Bench Boost</dd></div>
+      <div><dt>Hits</dt><dd class="words">None</dd></div>
+      <div class="action"><button class="button primary" type="button">Suggest transfers</button></div>
+    </dl>
+
+    <nav class="weeks" aria-label="Gameweeks" id="weeks"></nav>
+
+    <div class="layout">
+      <section class="panel" aria-label="Squad for gameweek 9">
+        <div class="squad-head">
+          <h2>Your squad for GW9</h2>
+          <div class="fx-key" aria-hidden="true"><span>GW9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span></div>
+        </div>
+        <div id="squad"></div>
+        <p class="footnote squad-foot">Points are the AeroFPL forecast for GW9, with the six-week total underneath. Tested on 84,200 player-weeks across three seasons, it was off by 1.00 points a week on average, against 1.05 for a guess from form alone. It is a guide, not a promise. Capitals are home games. Faded rows are the projected bench.</p>
+      </section>
+
+      <aside class="side">
+        <section class="panel">
+          <div class="side-head">
+            <h2>GW9</h2>
+            <select class="select" aria-label="Chip for GW9"><option>No chip</option><option>Wildcard</option><option>Bench Boost</option></select>
+          </div>
+          <p class="note">No transfers planned. Choose Sell on a player to plan one.</p>
+          <dl class="tally">
+            <div><dt>Free transfers</dt><dd>2</dd></div>
+            <div><dt>Hits</dt><dd>None</dd></div>
+            <div><dt>Bank after</dt><dd>£0.4m</dd></div>
+            <div class="total"><dt>Projected points</dt><dd>54.1</dd></div>
+          </dl>
+          <p class="footnote" style="margin-top:6px">Best XI 47.6, Haaland captain +6.5</p>
+        </section>
+        <section class="panel">
+          <h2>Plan checks</h2>
+          <ul class="checks">
+            <li>You have three Brighton players, the most allowed.</li>
+            <li>Estêvão has started 3 of the last 5. Chelsea rotate before Champions League nights.</li>
+          </ul>
+        </section>
+      </aside>
+    </div>
+
+    <header class="section-head">
+      <h2 class="section">Your mini-leagues</h2>
+      <p>What your rivals own that you don't, what only you have, and who they captained this gameweek.</p>
+    </header>
+    <div class="league-tools">
+      <select class="select" aria-label="Mini-league"><option>Auba Eats 26/27 (you're 3rd)</option></select>
+    </div>
+
+    <div class="league">
+      <section class="panel">
+        <table class="standings">
+          <thead><tr><th>#</th><th class="text">Team</th><th>GW8</th><th>Total</th></tr></thead>
+          <tbody id="standings"></tbody>
+        </table>
+      </section>
+      <div class="lists" id="lists"></div>
+    </div>
+
+    <p class="footnote page-foot">Squad, bank and chips from FPL. Free transfers are worked out from your history. Selling prices follow FPL's rule: you keep half of any rise. Plans are saved in this browser.</p>
+  </div>
+</main>
+
+<script src="nav.js"></script>
+<script>
+  // Mini-league values from the live planner, 26 Oct 2026. The squad and
+  // projections are sample values for the layout only.
+  const weeks = [[9, "2 free", "54.1 projected"], [10, "1 free", "51.8 projected"], [11, "1 free", "49.3 projected"], [12, "1 free", "No projection yet"], [13, "1 free", "No projection yet"], [14, "1 free", "No projection yet"]];
+  document.getElementById("weeks").innerHTML = weeks.map(([gw, free, xp], i) =>
+    `<button class="week" type="button" aria-pressed="${i === 0}"><b>GW${gw}</b><span>${free}</span><span>${xp}</span></button>`).join("");
+
+  const clubs = { BHA: "#0057b8", BOU: "#b50e12", LEE: "#1d428a", IPS: "#3a64a3", NFO: "#dd0000", MCI: "#6cabdd", CHE: "#034694", HUL: "#f18a01", COV: "#4fa3d9", FUL: "#2b2b2b", BRE: "#e30613" };
+  // [name, team, price, sells, note, xp, six, fixtures (opp, fdr, home), bench, captain, warn]
+  const fx = (s) => s.split(" ").map((t) => [t.slice(0, 3), +t[3]]);
+  const squad = {
+    Goalkeepers: [
+      ["Steele", "BHA", 4.6, 4.6, "started 5 of 5", 3.4, 21, fx("ars3 FUL2 lee2 MUN4 eve3 IPS2")],
+      ["Petrović", "BOU", 4.5, 4.5, "started 5 of 5", 2.9, 17, fx("CHE4 avl3 NFO3 tot3 BHA3 wol2"), true],
+    ],
+    Defenders: [
+      ["De Cuyper", "BHA", 5.3, 5.3, "started 5 of 5", 4.1, 25, fx("ars3 FUL2 lee2 MUN4 eve3 IPS2")],
+      ["Justin", "LEE", 4.4, 4.4, "started 4 of 5", 3.6, 20, fx("WOL2 cov2 BHA3 avl3 HUL2 mci5")],
+      ["Davis", "IPS", 4.3, 4.3, "started 5 of 5", 3.2, 19, fx("NEW3 bha3 COV2 liv5 FUL2 hul2")],
+      ["Senesi", "BOU", 4.9, 4.9, "started 5 of 5", 3.0, 18, fx("CHE4 avl3 NFO3 tot3 BHA3 wol2")],
+      ["Bogle", "LEE", 4.7, 4.7, "started 3 of 5", 2.4, 15, fx("WOL2 cov2 BHA3 avl3 HUL2 mci5"), true],
+    ],
+    Midfielders: [
+      ["Semenyo", "MCI", 7.8, 7.8, "started 5 of 5", 5.6, 33, fx("ful2 BRE2 bou3 NEW3 cov2 LEE2")],
+      ["Gibbs-White", "NFO", 7.4, 7.3, "sells for £7.3m, started 5 of 5", 4.4, 26, fx("TOT3 eve3 bou3 BRE3 mun4 CHE4")],
+      ["Estêvão", "CHE", 7.9, 7.8, "sells for £7.8m, started 3 of 5", 3.8, 14, fx("bou3 SUN2 ars4 WOL2 NFO3 nfo3"), false, false, true],
+      ["Slater", "HUL", 5.0, 5.0, "started 5 of 5", 3.1, 18, fx("cov2 MUN4 sun2 NEW3 lee2 IPS2")],
+      ["Thomas", "COV", 5.5, 5.5, "started 2 of 5", 1.9, 11, fx("HUL2 LEE2 ips2 avl3 MCI5 ful2"), true],
+    ],
+    Forwards: [
+      ["Haaland", "MCI", 15.7, 15.7, "started 5 of 5", 6.5, 38, fx("ful2 BRE2 bou3 NEW3 cov2 LEE2"), false, true],
+      ["Gonzalo", "FUL", 6.0, 6.0, "started 4 of 5", 2.9, 9, fx("avl3 NEW3 mci5 BOU3 tot3 eve3")],
+      ["Thiago", "BRE", 6.6, 6.6, "started 5 of 5", 2.6, 16, fx("LIV5 mci5 WOL2 nfo3 SUN2 ars4"), true],
+    ],
+  };
+  const tier = (d) => d <= 2 ? "f2" : d === 3 ? "f3" : d === 4 ? "f4" : "f5";
+  document.getElementById("squad").innerHTML = Object.entries(squad).map(([pos, rows]) => `
+    <div class="pos"><h3>${pos}</h3>${rows.map(([name, team, price, sells, note, xp, six, fixtures, bench, cap, warn]) => `
+      <div class="row${bench ? " bench" : ""}">
+        <span class="avatar" style="background:${clubs[team]}">${name.slice(0, 1)}</span>
+        <div>
+          <div class="name"><a href="#">${name}</a>${cap ? '<span class="cap" title="Projected captain">C</span>' : ""}</div>
+          <div class="meta">${team}, £${price.toFixed(1)}m, ${warn ? `<span class="warn">${note}</span>` : note}</div>
+        </div>
+        <div class="xp"><b>${xp.toFixed(1)}</b><span>${six} in 6</span></div>
+        <div class="fx">${fixtures.map(([opp, d], i) => `<span class="fdr ${tier(d)}${i === 0 ? " on" : ""}" title="${opp === opp.toUpperCase() ? "Home" : "Away"} v ${opp.toUpperCase()}">${opp}</span>`).join("")}</div>
+        <button class="button small sell" type="button">Sell</button>
+      </div>`).join("")}</div>`).join("");
+
+  const standings = [
+    [1, "Novel FC", "Joshua Muringani", 39, 537], [2, "Tafara's Team", "Tafara Mutseta", 48, 523], [3, "Didier Drogon", "Nyasha Mutseta", 32, 514, true],
+    [4, "Not trying To Win FC", "Esanthan Naidoo", 57, 495], [5, "PAIN IN DIAS", "suhail seedat", 61, 487], [6, "WÜnder Man", "Tandare Venessa", 33, 474],
+    [7, "Bataung FC", "Molete Mathaba", 23, 468], [8, "Victorious secret", "Wesley Springate", 42, 467], [9, "Nhari FC", "Wayne Nyanhi", 28, 466],
+    [10, "Longrich FC", "Kith Mhaka", 29, 460], [11, "Jonasi UTD", "Joel Chinyama", 54, 456], [12, "Palmer Sunday", "Nigel Kadzinga", 59, 455],
+    [13, "Xabi Ever After", "Simba Phiri", 34, 455], [14, "D.O.T.S", "Ano Foroma", 57, 452], [15, "Pending Moderation", "Tariro Patrick Manyewe", 44, 448],
+    [16, "Triumph FC", "Brian Chibanda", 38, 443],
+  ];
+  document.getElementById("standings").innerHTML = standings.map(([rank, team, manager, gw, total, me]) =>
+    `<tr${me ? ' class="me"' : ""}><td class="rank">${rank}</td><td class="text"><span class="team">${team}</span><span class="manager">${manager}</span></td><td>${gw}</td><td class="total">${total}</td></tr>`).join("");
+
+  const lists = [
+    ["Your rivals own, you don't", "Share of your 19 rivals", [["Mbeumo", "MUN", 47], ["Cherki", "MCI", 47], ["Calvert-Lewin", "LEE", 37], ["B.Fernandes", "MUN", 32], ["Dubravka", "TOT", 32], ["Verbruggen", "BHA", 26], ["Gabriel", "ARS", 26], ["Ajayi", "HUL", 26], ["Kostoulas", "BHA", 26], ["Wissa", "NEW", 26], ["Diop", "IPS", 21], ["Saka", "ARS", 21]]],
+    ["Only you, or few rivals, own", "Share of rivals who also own them", [["Steele", "BHA", 0], ["Justin", "LEE", 0], ["Gonzalo", "FUL", 5], ["Gibbs-White", "NFO", 11], ["Slater", "HUL", 11], ["Davis", "IPS", 11], ["Thomas", "COV", 16]]],
+    ["Their captains, GW8", "Share of rivals", [["Haaland", "MCI", 74], ["Ødegaard", "ARS", 5], ["João Pedro", "CHE", 5], ["Saka", "ARS", 5], ["Semenyo", "MCI", 5], ["Wissa", "NEW", 5]]],
+  ];
+  document.getElementById("lists").innerHTML = lists.map(([title, sub, rows]) => `
+    <section class="panel list"><h3>${title}</h3><p class="sub">${sub}</p><ul>${rows.map(([name, team, share]) =>
+      `<li><a href="#">${name}</a><small>${team}</small><span class="bar" aria-hidden="true"><i style="width:${share}%"></i></span><b>${share}%</b></li>`).join("")}</ul></section>`).join("");
+</script>
+</body>
+</html>

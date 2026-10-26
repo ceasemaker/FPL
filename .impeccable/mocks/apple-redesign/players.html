@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Players mockup</title>
+<link rel="stylesheet" href="mock.css">
+<style>
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 16px;
+    margin-bottom: 12px;
+  }
+  .filters .field { flex: 1 1 260px; max-width: 340px; }
+  .filters .spacer { flex: 1; }
+
+  .list-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 28px 0 12px;
+  }
+  .list-bar p { color: var(--secondary); }
+
+  .table { width: 100%; border-collapse: collapse; }
+  .table th {
+    font-size: 13px;
+    line-height: 18px;
+    font-weight: 500;
+    color: var(--secondary);
+    text-align: right;
+    padding: 14px 12px 10px;
+    white-space: nowrap;
+  }
+  .table th:first-child { text-align: left; padding-left: 20px; }
+  .table th[aria-sort] { color: var(--text); }
+  .table th button { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+  .table th svg { color: var(--secondary); }
+  .table td {
+    padding: 10px 12px;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .table td.text, .table th.text { text-align: left; }
+  .table tbody tr { position: relative; cursor: pointer; }
+  .table tbody tr:hover { background: rgba(255, 255, 255, 0.03); }
+  /* Inset hairline that starts at the text edge, not the panel edge. */
+  .table tbody tr + tr td { box-shadow: inset 0 1px var(--hair); }
+  .table tbody tr + tr td:first-child { box-shadow: none; background: linear-gradient(var(--hair), var(--hair)) no-repeat 64px 0 / 100% 1px; }
+  .table td.num-strong { font-weight: 600; }
+  .table td:last-child { padding-right: 12px; width: 44px; }
+
+  .who { display: flex; align-items: center; gap: 12px; padding-left: 8px; text-align: left; }
+  .who .name { font-weight: 600; }
+  .who .line { display: flex; align-items: baseline; gap: 8px; }
+  .who .meta { display: none; }
+
+  .table-foot { padding: 14px 20px 18px; }
+
+  @media (max-width: 1068px) {
+    .table .wide { display: none; }
+  }
+
+  @media (max-width: 734px) {
+    .filters .field { max-width: none; flex-basis: 100%; }
+    .filters .range { display: none; }
+    .filters .spacer { display: none; }
+    .table thead, .table .mid { display: none; }
+    .table td { padding: 10px 8px; }
+    .who { padding-left: 4px; }
+    .who .meta { display: block; font-size: 13px; line-height: 18px; color: var(--secondary); }
+    .who .tags { display: none; }
+    .table tbody tr + tr td:first-child { background-position: 56px 0; }
+    .head-action { width: 100%; }
+  }
+</style>
+</head>
+<body data-page="players">
+<main>
+  <div class="column">
+    <header class="page-head">
+      <div>
+        <h1>Players</h1>
+        <p class="lede">Browse the squad pool, then pick two or more players to compare them side by side.</p>
+      </div>
+      <button class="button primary head-action" type="button">Select to compare</button>
+    </header>
+
+    <div class="filters" role="search">
+      <label class="field">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>
+        <input type="search" placeholder="Search players" aria-label="Search players">
+      </label>
+      <div class="segmented" role="group" aria-label="Position">
+        <button type="button" aria-pressed="true">All</button>
+        <button type="button" aria-pressed="false">GK</button>
+        <button type="button" aria-pressed="false">DEF</button>
+        <button type="button" aria-pressed="false">MID</button>
+        <button type="button" aria-pressed="false">FWD</button>
+      </div>
+      <select class="select" aria-label="Team"><option>All teams</option></select>
+      <select class="select" aria-label="Availability"><option>Everyone</option><option>Flagged only</option></select>
+    </div>
+    <div class="filters">
+      <label class="range">Fixture difficulty up to <b>5</b><input type="range" min="1" max="5" step="0.5" value="5"></label>
+      <label class="range">Value at least <b>0</b><input type="range" min="0" max="20" value="0"></label>
+    </div>
+
+    <div class="list-bar">
+      <p>669 players, most points first</p>
+      <div class="segmented icons" role="group" aria-label="View">
+        <button type="button" aria-pressed="false" aria-label="Cards"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="5" height="5" rx="1.2"/><rect x="9" y="2" width="5" height="5" rx="1.2"/><rect x="2" y="9" width="5" height="5" rx="1.2"/><rect x="9" y="9" width="5" height="5" rx="1.2"/></svg></button>
+        <button type="button" aria-pressed="true" aria-label="List"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2.5 4h11M2.5 8h11M2.5 12h11"/></svg></button>
+      </div>
+    </div>
+
+    <section class="panel">
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="text">Name</th>
+            <th class="text mid">Team</th>
+            <th class="text mid">Pos</th>
+            <th class="mid">Cost</th>
+            <th class="mid">Owned</th>
+            <th aria-sort="descending"><button type="button">Pts <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M4 7 7.5 2h-7z"/></svg></button></th>
+            <th class="mid">Form</th>
+            <th class="wide">Next 3</th>
+            <th class="wide">G</th>
+            <th class="wide">A</th>
+            <th><span class="sr-only" style="position:absolute;clip:rect(0 0 0 0)">Watch</span></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <p class="footnote table-foot">▲ is FPL's own price tracker: how far each player is towards tonight's price rise. 100% means the rise is due. Next 3 is the average fixture difficulty over the next three gameweeks, 1 easiest.</p>
+    </section>
+  </div>
+</main>
+
+<script src="nav.js"></script>
+<script>
+  // Values from the live Players page, 26 Oct 2026.
+  const clubs = { MCI: "#6cabdd", BHA: "#0057b8", BOU: "#b50e12", ARS: "#db0007", LIV: "#c8102e", LEE: "#1d428a" };
+  const players = [
+    ["Haaland", "MCI", "FWD", 15.7, 77.9, 66, 9.0, 2.7, 9, 0, 91.5, ""],
+    ["De Cuyper", "BHA", "DEF", 5.3, 42.5, 60, 7.3, 3.3, 2, 3, null, ""],
+    ["Groß", "BHA", "MID", 6.2, 46.5, 58, 3.7, 3.3, 3, 6, null, "Pens, corners, free kicks"],
+    ["Tavernier", "BOU", "MID", 6.3, 16.3, 52, 7.0, 2.7, 5, 0, 88.6, "Corners, free kicks"],
+    ["Vuskovic", "BHA", "DEF", 5.1, 6.5, 52, 6.7, 3.3, 1, 1, 97.0, ""],
+    ["Gabriel", "ARS", "DEF", 7.9, 22.0, 52, 9.0, 3.0, 1, 0, null, ""],
+    ["Isak", "LIV", "FWD", 9.0, 14.9, 51, 6.0, 3.7, 6, 0, 79.7, ""],
+    ["Bogle", "LEE", "DEF", 4.7, 11.0, 50, 2.7, 3.0, 2, 0, 100.2, ""],
+    ["Raya", "ARS", "GKP", 6.2, 45.7, 49, 6.3, 3.0, 0, 0, null, ""],
+  ];
+  const fdrClass = (v) => v < 2.5 ? "f2" : v < 3.2 ? "f3" : v < 4 ? "f4" : "f5";
+  const arrow = '<svg width="8" height="8" viewBox="0 0 10 10" aria-hidden="true"><path d="M5 1.5 9 8.5H1z" fill="currentColor"/></svg>';
+  const star = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M10 3.5l1.9 4 4.4.5-3.3 3 .9 4.3L10 13.1l-3.9 2.2.9-4.3-3.3-3 4.4-.5z"/></svg>';
+  document.getElementById("rows").innerHTML = players.map(([name, team, pos, cost, owned, pts, form, fdr, g, a, rise, tags]) => `
+    <tr>
+      <td class="text"><div class="who">
+        <span class="avatar" style="background:${clubs[team]}">${name.slice(0, 1)}</span>
+        <div>
+          <div class="line"><span class="name">${name}</span>${rise != null ? `<span class="rise" title="${Math.round(rise)}% of the way to a price rise">${arrow}${Math.round(rise)}%</span>` : ""}</div>
+          <div class="meta">${team}, ${pos}, £${cost.toFixed(1)}m</div>
+          ${tags ? `<div class="tags">${tags}</div>` : ""}
+        </div>
+      </div></td>
+      <td class="text mid">${team}</td>
+      <td class="text mid">${pos}</td>
+      <td class="mid">£${cost.toFixed(1)}m</td>
+      <td class="mid">${owned.toFixed(1)}%</td>
+      <td class="num-strong">${pts}</td>
+      <td class="mid">${form.toFixed(1)}</td>
+      <td class="wide"><span class="fdr ${fdrClass(fdr)}">${fdr.toFixed(1)}</span></td>
+      <td class="wide">${g}</td>
+      <td class="wide">${a}</td>
+      <td><button class="star" type="button" aria-label="Watch ${name}">${star}</button></td>
+    </tr>`).join("");
+</script>
+</body>
+</html>

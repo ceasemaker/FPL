@@ -164,9 +164,9 @@ export function PlayersTable({
                 <thead>
                     <tr>
                         {compareMode && <th className="th-checkbox"></th>}
-                        <th onClick={() => handleSort("web_name")}>Name <SortIcon field="web_name" /></th>
-                        <th onClick={() => handleSort("team")}>Team <SortIcon field="team" /></th>
-                        <th onClick={() => handleSort("element_type")}>Pos <SortIcon field="element_type" /></th>
+                        <th className="text" onClick={() => handleSort("web_name")}>Name <SortIcon field="web_name" /></th>
+                        <th className="text" onClick={() => handleSort("team")}>Team <SortIcon field="team" /></th>
+                        <th className="text" onClick={() => handleSort("element_type")}>Pos <SortIcon field="element_type" /></th>
                         <th onClick={() => handleSort("now_cost")}>Cost <SortIcon field="now_cost" /></th>
                         <th onClick={() => handleSort("selected_by_percent")}>Owned <SortIcon field="selected_by_percent" /></th>
                         <th onClick={() => handleSort("total_points")}>Pts <SortIcon field="total_points" /></th>
@@ -216,8 +216,8 @@ export function PlayersTable({
                                         <WatchStar id={player.id} name={player.web_name} size={14} />
                                     </div>
                                 </td>
-                                <td>{player.team}</td>
-                                <td>{getPositionLabel(player.element_type)}</td>
+                                <td className="text">{player.team}</td>
+                                <td className="text">{getPositionLabel(player.element_type)}</td>
                                 <td>£{(player.now_cost / 10).toFixed(1)}m</td>
                                 <td>{player.selected_by_percent != null ? `${player.selected_by_percent.toFixed(1)}%` : "-"}</td>
                                 <td className="fw-bold">{player.total_points}</td>
@@ -225,13 +225,8 @@ export function PlayersTable({
                                 <td>
                                     {player.avg_fdr !== null && (
                                         <span
-                                            className="fdr-badge-small"
-                                            style={{
-                                                backgroundColor:
-                                                    player.avg_fdr <= 2.5 ? "#22c55e" :
-                                                        player.avg_fdr <= 3.5 ? "#eab308" :
-                                                            "#ef4444"
-                                            }}
+                                            className="aero-fdr"
+                                            data-fdr={player.avg_fdr <= 2.5 ? 2 : player.avg_fdr <= 3.5 ? 3 : player.avg_fdr <= 4.2 ? 4 : 5}
                                         >
                                             {player.avg_fdr.toFixed(1)}
                                         </span>

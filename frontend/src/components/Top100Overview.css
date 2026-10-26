@@ -15,7 +15,7 @@
 .overview-stats {
   display: flex;
   gap: 1.5rem;
-  font-size: 0.875rem;
+  font-size: var(--fs-body);
   color: var(--text-secondary);
 }
 
@@ -30,7 +30,7 @@
   margin-bottom: 1.5rem;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1068px) {
   .overview-grid {
     grid-template-columns: 1fr;
   }
@@ -38,12 +38,12 @@
 
 /* List Titles */
 .list-title {
-  font-size: 0.875rem;
+  font-size: var(--fs-body);
   font-weight: 600;
   color: var(--text-secondary);
   margin: 0 0 0.75rem 0;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .list-title .arrow-in {
@@ -72,7 +72,7 @@
   gap: 0.75rem;
   padding: 0.5rem 0.75rem;
   background: rgba(255, 255, 255, 0.02);
-  border-radius: 8px;
+  border-radius: var(--aero-radius-sm);
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
@@ -90,8 +90,8 @@
 }
 
 .player-rank {
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: var(--fs-caption);
+  font-weight: 600;
   color: var(--text-secondary);
   text-align: center;
 }
@@ -114,7 +114,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: var(--fs-headline);
   color: var(--text-secondary);
 }
 
@@ -125,7 +125,7 @@
 }
 
 .player-name {
-  font-size: 0.875rem;
+  font-size: var(--fs-body);
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
@@ -134,7 +134,7 @@
 }
 
 .player-meta {
-  font-size: 0.75rem;
+  font-size: var(--fs-caption);
   color: var(--text-secondary);
 }
 
@@ -144,7 +144,7 @@
   height: 20px;
   min-width: 80px;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
+  border-radius: var(--aero-radius-chip);
   overflow: hidden;
 }
 
@@ -155,7 +155,7 @@
   height: 100%;
   min-width: 2px;
   background: linear-gradient(90deg, var(--purple), var(--accent));
-  border-radius: 4px;
+  border-radius: var(--aero-radius-chip);
   transition: width 0.5s ease-out;
 }
 
@@ -176,8 +176,8 @@
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: var(--fs-caption);
+  font-weight: 600;
   color: white;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
@@ -187,11 +187,11 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  font-size: 0.75rem;
+  font-size: var(--fs-caption);
 }
 
 .stat-points {
-  font-weight: 700;
+  font-weight: 600;
   color: var(--accent);
 }
 
@@ -208,7 +208,7 @@
 
 .transfers-column {
   background: rgba(255, 255, 255, 0.02);
-  border-radius: 12px;
+  border-radius: var(--aero-radius-sm);
   padding: 1rem;
 }
 
@@ -234,7 +234,7 @@
 
 .transfer-row.clickable {
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: var(--aero-radius-chip);
   margin: 0 -0.25rem;
   padding: 0.4rem 0.25rem;
 }
@@ -244,8 +244,8 @@
 }
 
 .transfer-rank {
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: var(--fs-caption);
+  font-weight: 600;
   color: var(--text-secondary);
   text-align: center;
 }
@@ -270,7 +270,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
+  font-size: var(--fs-caption);
   color: var(--text-secondary);
 }
 
@@ -279,7 +279,7 @@
 }
 
 .transfer-details strong {
-  font-size: 0.8rem;
+  font-size: var(--fs-footnote);
   color: var(--text-primary);
   display: block;
   white-space: nowrap;
@@ -288,15 +288,15 @@
 }
 
 .transfer-meta {
-  font-size: 0.7rem;
+  font-size: var(--fs-caption);
   color: var(--text-secondary);
 }
 
 .transfer-count-badge {
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: var(--fs-caption);
+  font-weight: 600;
   padding: 0.2rem 0.5rem;
-  border-radius: 12px;
+  border-radius: var(--aero-radius-sm);
   text-align: center;
 }
 
@@ -319,7 +319,7 @@
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-@media (max-width: 600px) {
+@media (max-width: 734px) {
   .bottom-stats {
     grid-template-columns: 1fr;
   }
@@ -327,7 +327,7 @@
 
 .captain-stats h4,
 .chip-stats h4 {
-  font-size: 0.875rem;
+  font-size: var(--fs-body);
   font-weight: 600;
   color: var(--text-secondary);
   margin: 0 0 0.75rem 0;
@@ -346,7 +346,7 @@
   gap: 0.5rem;
   background: rgba(255, 255, 255, 0.03);
   padding: 0.4rem 0.75rem;
-  border-radius: 20px;
+  border-radius: var(--aero-radius);
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
@@ -360,8 +360,8 @@
 }
 
 .captain-item .captain-rank {
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: var(--fs-caption);
+  font-weight: 600;
   color: var(--accent);
 }
 
@@ -373,14 +373,14 @@
 }
 
 .captain-name {
-  font-size: 0.8rem;
+  font-size: var(--fs-footnote);
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .captain-pct {
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: var(--fs-caption);
+  font-weight: 600;
   color: var(--green);
 }
 
@@ -397,25 +397,25 @@
   gap: 0.4rem;
   background: rgba(128, 0, 255, 0.15);
   padding: 0.4rem 0.75rem;
-  border-radius: 16px;
+  border-radius: var(--aero-radius);
 }
 
 .chip-label {
-  font-size: 0.75rem;
+  font-size: var(--fs-caption);
   color: var(--text-primary);
 }
 
 .chip-count {
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: var(--fs-caption);
+  font-weight: 600;
   color: var(--purple);
   background: rgba(255, 255, 255, 0.1);
   padding: 0.1rem 0.4rem;
-  border-radius: 8px;
+  border-radius: var(--aero-radius-sm);
 }
 
 .no-chips {
-  font-size: 0.8rem;
+  font-size: var(--fs-footnote);
   color: var(--text-secondary);
   font-style: italic;
 }
@@ -428,7 +428,7 @@
 
 .skeleton-box {
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  border-radius: var(--aero-radius-chip);
   animation: pulse 1.5s ease-in-out infinite;
 }
 
@@ -441,7 +441,7 @@
 .skeleton-text {
   height: 12px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  border-radius: var(--aero-radius-chip);
   animation: pulse 1.5s ease-in-out infinite;
 }
 
@@ -456,7 +456,7 @@
 .skeleton-stats {
   height: 30px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  border-radius: var(--aero-radius-chip);
   animation: pulse 1.5s ease-in-out infinite;
 }
 
@@ -466,7 +466,7 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (max-width: 734px) {
   .player-row {
     grid-template-columns: 24px 32px 1fr 80px;
   }
@@ -493,6 +493,6 @@
   }
   
   .ownership-text {
-    font-size: 0.6rem;
+    font-size: var(--fs-caption);
   }
 }

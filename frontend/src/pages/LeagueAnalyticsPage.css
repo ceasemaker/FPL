@@ -15,17 +15,17 @@
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  font-size: 0.85rem;
+  font-size: var(--fs-footnote);
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .league-controls input,
 .league-select select {
   background: rgba(8, 12, 30, 0.8);
   border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 12px;
+  border-radius: var(--aero-radius-sm);
   padding: 0.6rem 0.8rem;
   color: var(--text-primary);
   min-width: 220px;
@@ -34,10 +34,10 @@
 .league-controls button {
   background: linear-gradient(135deg, rgba(22, 242, 255, 0.85), rgba(79, 70, 229, 0.9));
   border: none;
-  border-radius: 999px;
+  border-radius: var(--aero-radius-pill);
   padding: 0.7rem 1.4rem;
   color: #020617;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -48,7 +48,7 @@
 .league-error {
   margin-top: 1rem;
   padding: 0.7rem 1rem;
-  border-radius: 12px;
+  border-radius: var(--aero-radius-sm);
   border: 1px solid rgba(248, 113, 113, 0.4);
   background: rgba(127, 29, 29, 0.4);
   color: #fecaca;
@@ -69,15 +69,15 @@
   gap: 0.5rem;
   align-items: center;
   padding: 0.6rem 0.8rem;
-  border-radius: 12px;
+  border-radius: var(--aero-radius-sm);
   background: rgba(8, 12, 30, 0.8);
   border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
 .league-head {
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.7rem;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: var(--fs-caption);
   color: var(--text-muted);
   background: rgba(15, 23, 42, 0.7);
 }
@@ -87,13 +87,13 @@
   font-weight: 600;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1068px) {
   .league-row {
     grid-template-columns: 60px 60px 1fr 1fr 70px 70px;
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 734px) {
   .league-table {
     overflow-x: auto;
   }
