@@ -168,6 +168,7 @@ export function PlayersTable({
                         <th onClick={() => handleSort("team")}>Team <SortIcon field="team" /></th>
                         <th onClick={() => handleSort("element_type")}>Pos <SortIcon field="element_type" /></th>
                         <th onClick={() => handleSort("now_cost")}>Cost <SortIcon field="now_cost" /></th>
+                        <th onClick={() => handleSort("selected_by_percent")}>Owned <SortIcon field="selected_by_percent" /></th>
                         <th onClick={() => handleSort("total_points")}>Pts <SortIcon field="total_points" /></th>
                         <th onClick={() => handleSort("form")}>Form <SortIcon field="form" /></th>
                         <th onClick={() => handleSort("avg_fdr")}>FDR <SortIcon field="avg_fdr" /></th>
@@ -182,7 +183,6 @@ export function PlayersTable({
                         >
                             xCS <SortIcon field="expected_clean_sheets" />
                         </th>
-                        <th onClick={() => handleSort("selected_by_percent")}>Owned <SortIcon field="selected_by_percent" /></th>
                         <th onClick={() => handleSort("best_value")}>Value <SortIcon field="best_value" /></th>
                     </tr>
                 </thead>
@@ -219,6 +219,7 @@ export function PlayersTable({
                                 <td>{player.team}</td>
                                 <td>{getPositionLabel(player.element_type)}</td>
                                 <td>£{(player.now_cost / 10).toFixed(1)}m</td>
+                                <td>{player.selected_by_percent != null ? `${player.selected_by_percent.toFixed(1)}%` : "-"}</td>
                                 <td className="fw-bold">{player.total_points}</td>
                                 <td>{player.form?.toFixed(1)}</td>
                                 <td>
@@ -242,7 +243,6 @@ export function PlayersTable({
                                 <td>{player.expected_assists?.toFixed(2) ?? "-"}</td>
                                 <td>{player.clean_sheets}</td>
                                 <td>{player.expected_clean_sheets.toFixed(1)}</td>
-                                <td>{player.selected_by_percent != null ? `${player.selected_by_percent.toFixed(1)}%` : "-"}</td>
                                 <td className="td-value">
                                     {bestValue > 0 ? bestValue.toFixed(2) : "-"}
                                 </td>

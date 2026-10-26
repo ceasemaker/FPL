@@ -326,3 +326,28 @@
 .card-notes .pc-sub { flex-wrap: wrap; }
 .card-notes .pc-news { max-width: 100%; }
 .players-summary { margin: 0 0 14px; font-size: 0.9rem; line-height: 1.55; color: var(--aero-text-dim); max-width: 90ch; }
+
+/* Phones: each card becomes one compact row (photo, name and flags, then
+ * price, points and FDR) so a screen holds six or seven players, not one.
+ * Scoped to .players-page to win over the older global card rules in theme.css. */
+@media (max-width: 720px) {
+  .players-page .players-grid { grid-template-columns: 1fr; gap: 8px; }
+  .players-page .player-card { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; align-items: center; column-gap: 12px; padding: 10px 12px; border-radius: 14px; }
+  .players-page .player-card::before { display: none; }
+  .players-page .player-card:hover { transform: none; }
+  .players-page .player-card.compare-mode { padding-left: 38px; }
+  .players-page .player-checkbox { top: 50%; left: 12px; transform: translateY(-50%); }
+  .players-page .player-image { width: 52px; height: 52px; border-radius: 50%; overflow: hidden; background: var(--aero-surface-hover); place-items: end center; }
+  .players-page .player-image img { height: 50px; }
+  .players-page .value-badge { display: none; }
+  .players-page .player-info { padding: 0; min-width: 0; }
+  .players-page .player-name { font-size: 0.9rem; }
+  .players-page .player-meta { margin-top: 3px; }
+  .players-page .card-notes { margin-top: 5px; }
+  .players-page .card-notes .pc-news { max-width: none; white-space: normal; line-height: 1.35; }
+  .players-page .player-stats { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; margin: 0; padding: 0; border: 0; }
+  .players-page .stat-item { flex-direction: row; align-items: baseline; gap: 5px; padding: 0; border: 0; }
+  .players-page .stat-label { font-size: 0.55rem; }
+  .players-page .stat-value { font-size: 0.8rem; }
+  .players-page .stat-value.aero-fdr { padding: 0 5px; font-size: 0.7rem; }
+}
