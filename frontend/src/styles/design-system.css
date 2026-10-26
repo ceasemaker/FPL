@@ -41,11 +41,11 @@
   --aero-negative-soft: #ff7a87;
   --aero-warn-soft: #f5d06f;
   /* Soft tints behind status text: fixture difficulty, flags, results. */
-  --aero-tint-easy: var(--aero-tint-easy);
-  --aero-tint-easiest: var(--aero-tint-easiest);
+  --aero-tint-easy: rgba(184, 233, 134, 0.12);
+  --aero-tint-easiest: rgba(184, 233, 134, 0.2);
   --aero-tint-neutral: rgba(255, 255, 255, 0.08);
-  --aero-tint-warn: var(--aero-tint-warn);
-  --aero-tint-hard: var(--aero-tint-hard);
+  --aero-tint-warn: rgba(226, 183, 91, 0.16);
+  --aero-tint-hard: rgba(255, 76, 94, 0.18);
   /* Information and the second chart series (Apple's dark-mode cyan). */
   --aero-info: #64d2ff;
 

@@ -301,20 +301,20 @@
 
 .compare-profile-tabs button {
   flex: 0 0 auto;
-  border: 1px solid var(--aero-border);
+  border: 0;
   border-radius: var(--aero-radius-pill);
-  padding: 9px 15px;
-  color: var(--aero-muted);
-  background: rgba(255, 255, 255, 0.025);
+  padding: 8px 16px;
+  color: var(--aero-text-dim);
+  background: var(--aero-fill);
   font: inherit;
-  font-weight: 600;
+  font-size: var(--fs-footnote);
+  font-weight: 500;
   cursor: pointer;
 }
 
 .compare-profile-tabs button.active {
-  border-color: var(--aero-accent);
-  color: var(--aero-bg);
-  background: var(--aero-accent);
+  color: var(--aero-text);
+  background: var(--aero-segment-on);
 }
 
 .compare-profiles .gamelog-section {

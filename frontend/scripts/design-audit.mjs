@@ -63,6 +63,15 @@ const rows = [
   ["Raw hex colours (outside tokens)", distinct(files.filter((f) => !TOKEN_FILES.some((t) => f.endsWith(t))), /(#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b)/g), 0],
 ];
 
+// Token integrity: every --aero-*/--fs-* used is defined, and none is defined as itself.
+const tokenProblems = () => {
+  const all = files.map(read).join("\n");
+  const defined = new Set([...all.matchAll(/(--(?:aero|fs)-[\w-]+)\s*:/g)].map((m) => m[1]));
+  const used = new Set([...all.matchAll(/var\((--(?:aero|fs)-[\w-]+)/g)].map((m) => m[1]));
+  const selfRef = [...all.matchAll(/(--[\w-]+)\s*:\s*var\((--[\w-]+)\)/g)].filter((m) => m[1] === m[2]).map((m) => m[1]);
+  return [...selfRef.map((t) => `${t} (defined as itself)`), ...[...used].filter((t) => !defined.has(t)).map((t) => `${t} (undefined)`)];
+};
+
 const count = (list, re) => list.reduce((n, f) => n + (read(f).match(re)?.length ?? 0), 0);
 const singles = [
   ["All-caps labels", count(css, /text-transform:\s*uppercase/g), 0],
@@ -77,3 +86,9 @@ for (const [name, map, target] of rows) {
   if (list) console.log("   ", [...map].sort((a, b) => b[1] - a[1]).map(([v, n]) => `${v} (${n})`).join(", "));
 }
 for (const [name, n, target] of singles) console.log(`${pad(name, 36)}${pad(n, 8)}${target ?? "-"}`);
+const problems = tokenProblems();
+console.log(`${pad("Broken tokens", 36)}${pad(problems.length, 8)}0`);
+if (problems.length) {
+  console.log("   ", problems.join(", "));
+  process.exitCode = 1;
+}
