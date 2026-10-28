@@ -26,16 +26,18 @@ export function useWatch(id: number): [boolean, () => void] {
   return [has(id), () => { toggle(id); }];
 }
 
-// One request per visit: every Player page shares the payload.
-let explorerRequest: Promise<ExplorerPayload | null> | null = null;
+// One request per season per visit: every Player page and season report shares it.
+const explorerRequests = new Map<number, Promise<ExplorerPayload | null>>();
 export function loadExplorer(season = 2026): Promise<ExplorerPayload | null> {
-  if (!explorerRequest) {
-    explorerRequest = fetch(`/api/stats-explorer/?season=${season}`)
+  let request = explorerRequests.get(season);
+  if (!request) {
+    request = fetch(`/api/stats-explorer/?season=${season}`)
       .then((r) => (r.ok ? (r.json() as Promise<ExplorerPayload>) : null))
       .catch(() => null);
-    explorerRequest.then((d) => { if (!d) explorerRequest = null; });  // let a failure be retried
+    explorerRequests.set(season, request);
+    request.then((d) => { if (!d) explorerRequests.delete(season); });  // let a failure be retried
   }
-  return explorerRequest;
+  return request;
 }
 
 export function StatSheet({ playerId }: { playerId: number }) {

@@ -54,6 +54,16 @@
   --aero-pitch-b: #1a291d;
   --aero-pitch-line: #2b3a2d;
 
+  /* Paper colours for printing and saving as PDF. */
+  --aero-print-paper: #ffffff;
+  --aero-print-panel: #f4f4f5;
+  --aero-print-ink: #111111;
+  --aero-print-dim: #555555;
+  --aero-print-line: #dddddd;
+  --aero-print-track: #e2e2e5;
+  --aero-print-bar: #8e8e93;
+  --aero-print-top: #5f9e00;
+
   /* Text */
   --aero-text: #f5f5f7;
   --aero-text-soft: #d1d1d6;

@@ -14,6 +14,7 @@ const MatchesPage = lazy(() => import("./pages/MatchesPage").then((m) => ({ defa
 const TeamPage = lazy(() => import("./pages/TeamPage").then((m) => ({ default: m.TeamPage })));
 const TeamsPage = lazy(() => import("./pages/TeamPage").then((m) => ({ default: m.TeamsPage })));
 const PlayerPage = lazy(() => import("./pages/PlayerPage").then((m) => ({ default: m.PlayerPage })));
+const SeasonReportPage = lazy(() => import("./pages/SeasonReportPage").then((m) => ({ default: m.SeasonReportPage })));
 const PlannerPage = lazy(() => import("./pages/PlannerPage").then((m) => ({ default: m.PlannerPage })));
 const DefconPage = lazy(() => import("./pages/DefconPage").then((m) => ({ default: m.DefconPage })));
 const RateTeamPage = lazy(() => import("./pages/RateTeamPage").then((m) => ({ default: m.RateTeamPage })));
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/players" element={<PlayersPage />} />
           <Route path="/players/:playerId" element={<PlayerPage />} />
+          <Route path="/players/:playerId/report" element={<SeasonReportPage />} />
           <Route path="/fixtures" element={<FixturesPage />} />
           <Route path="/matches" element={<MatchesPage />} />
           <Route path="/teams" element={<TeamsPage />} />

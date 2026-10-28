@@ -241,6 +241,7 @@ function PlayerActions({ id }: { id: number }) {
     <div className="pp-actions">
       <button type="button" className={`pp-act${watched ? " on" : ""}`} aria-pressed={watched} onClick={toggle}><StarIcon filled={watched} size={15} />{watched ? "Watching" : "Watch"}</button>
       <Link className="pp-act" to={`/stats?compare=${id}`}><CompareIcon size={15} />Compare in Stats Explorer</Link>
+      <Link className="pp-act" to={`/players/${id}/report`}>Season report</Link>
     </div>
   );
 }

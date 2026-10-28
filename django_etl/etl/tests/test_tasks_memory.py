@@ -119,3 +119,22 @@ class OddsSwitchTests(TestCase):
                 mock.patch.object(tasks, "start_render_job", return_value={"status": "started"}) as start:
             self.assertEqual(tasks.sync_fixture_odds()["status"], "started", "odds run even with the rest of SofaSport off")
         start.assert_called_once_with("sync_fixture_odds")
+
+
+class SeasonSheetSyncTests(TestCase):
+    def test_refreshes_this_seasons_sheets_then_clears_the_cache(self):
+        from datetime import datetime, timezone as dt_timezone
+
+        from ..models import Fixture, Team
+
+        home = Team.objects.create(id=1, code=3, name="Arsenal", short_name="ARS")
+        away = Team.objects.create(id=2, code=7, name="Aston Villa", short_name="AVL")
+        Fixture.objects.create(id=1, event=1, team_h=home, team_a=away,
+                               kickoff_time=datetime(2026, 8, 15, 14, tzinfo=dt_timezone.utc))
+        with mock.patch.object(tasks, "run_manage", return_value={"status": "success"}) as manage:
+            tasks.sync_season_sheets()
+        calls = [c.args for c in manage.call_args_list]
+        self.assertIn(("sync_season_stats", "--season", 2026), calls)
+        self.assertIn(("sync_season_stats", "--season", 2026, "--source", "classic", "--competition", "champions-league"), calls)
+        self.assertIn(("sync_team_season_stats", "--season", 2026), calls)
+        self.assertEqual(calls[-1], ("clear_cache",))

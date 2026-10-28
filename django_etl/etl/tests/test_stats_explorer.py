@@ -7,7 +7,10 @@ from unittest.mock import patch
 
 from django.test import TestCase
 
-from ..models import Athlete, AthleteStat, PlayerSeasonStat, Team, TeamSeasonStat
+from datetime import datetime, timezone as dt_timezone
+
+from ..models import Athlete, AthleteStat, Fixture, PlayerSeasonStat, Team, TeamSeasonStat
+from ..services.sample_size import qualifying_minutes
 from ..services.stats_explorer import CATALOGUE, LENSES, TEAM_CATALOGUE
 
 
@@ -64,6 +67,15 @@ class StatsExplorerEndpointTests(TestCase):
             competition_id=8, season=2026, opta_team_id="43", team=self.city, name="Manchester City",
             stats={"gamesPlayed": 6, "expectedGoals": 11.78, "unlisted": 1},
         )
+
+    def test_a_finished_season_ranks_on_a_full_season_of_minutes(self) -> None:
+        Fixture.objects.create(id=1, event=1, team_h=self.city, team_a=self.villa,
+                               kickoff_time=datetime(2026, 8, 15, 14, tzinfo=dt_timezone.utc))
+        past = self.client.get("/api/stats-explorer/?season=2025").json()
+        self.assertEqual(past["latestGameweek"], 38)
+        self.assertEqual(past["minMinutes"], qualifying_minutes(38))
+        now = self.client.get("/api/stats-explorer/?season=2026").json()
+        self.assertEqual(now["latestGameweek"], 1)
 
     @patch("etl.services.stats_explorer.UCL_CLUB_MIN_PLAYERS", 1)
     def test_payload_splits_competitions_and_flags_ucl_clubs(self) -> None:

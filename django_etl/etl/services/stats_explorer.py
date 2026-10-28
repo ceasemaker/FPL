@@ -16,7 +16,7 @@ from collections import defaultdict
 from django.core.cache import cache
 from django.db.models import Max
 
-from ..models import Athlete, AthleteStat, PlayerSeasonStat, TeamSeasonStat
+from ..models import Athlete, AthleteStat, Fixture, PlayerSeasonStat, TeamSeasonStat
 from . import chart_lab
 from .pl_stats_client import COMPETITIONS
 from .sample_size import SMALL_SAMPLE, qualifying_minutes
@@ -173,8 +173,20 @@ def _raw_keys() -> set[str]:
     return {k for k in keys if not k.startswith("fpl_")}
 
 
-def build_payload(season: int) -> dict:
+FULL_SEASON_GAMEWEEKS = 38
+
+
+def gameweeks_played(season: int) -> int:
+    """Gameweeks behind a season's numbers: the latest one for the season in
+    progress, all 38 for a finished one (so its ranking bar isn't this season's)."""
     latest = AthleteStat.objects.aggregate(gw=Max("game_week"))["gw"] or 0
+    first_kickoff = Fixture.objects.exclude(kickoff_time=None).order_by("kickoff_time").values_list("kickoff_time", flat=True).first()
+    current = first_kickoff.year if first_kickoff else None
+    return FULL_SEASON_GAMEWEEKS if current is not None and season < current else latest
+
+
+def build_payload(season: int) -> dict:
+    latest = gameweeks_played(season)
     cache_key = f"stats_explorer:{season}:gw{latest}:v4"
     cached = cache.get(cache_key)
     if cached:

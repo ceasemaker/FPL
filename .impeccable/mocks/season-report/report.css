@@ -1,0 +1,56 @@
+/* Season report mockup. Uses the Apple-direction tokens in mock.css. */
+
+.sr-head { display: grid; grid-template-columns: auto 1fr auto; align-items: end; gap: 24px; margin-bottom: 24px; }
+.sr-photo { width: 88px; height: 112px; object-fit: cover; object-position: top; border-radius: var(--r-panel); background: var(--graphite); }
+.sr-crumb { font-size: 13px; color: var(--secondary); margin-bottom: 4px; }
+.sr-tools { display: flex; gap: 12px; align-items: center; }
+
+.sr-summary { max-width: 68ch; font-size: 17px; line-height: 26px; color: var(--text); margin-bottom: 32px; }
+
+.sr-figures { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 24px; }
+.sr-figures > div { padding: 18px 24px; }
+.sr-figures > div + div { box-shadow: inset 1px 0 var(--hair); }
+.sr-figures dt { font-size: 13px; color: var(--secondary); }
+.sr-figures dd { margin-top: 4px; font-size: 32px; line-height: 38px; font-weight: 600; letter-spacing: -0.02em; }
+
+.sr-two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.sr-list { padding: 18px 20px 10px; }
+.sr-list h2 { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+.sr-list ul { list-style: none; }
+.sr-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "s v" "r r"; gap: 0 12px; padding: 10px 0; box-shadow: inset 0 1px var(--hair); }
+.sr-list li:first-child { box-shadow: none; }
+.sr-list li span { grid-area: s; font-weight: 500; }
+.sr-list li b { grid-area: v; font-weight: 600; text-align: right; }
+.sr-list li b small { font-size: 12px; font-weight: 400; color: var(--secondary); }
+.sr-list li em { grid-area: r; font-style: normal; font-size: 13px; color: var(--secondary); }
+.sr-list .note { color: var(--secondary); padding: 8px 0 12px; }
+
+.sr-section { margin-top: 48px; }
+.sr-section h2 { margin-bottom: 16px; }
+.sr-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.sr-table th, .sr-table td { padding: 10px 12px; text-align: right; white-space: nowrap; }
+.sr-table thead th { font-size: 13px; font-weight: 500; color: var(--secondary); padding-top: 14px; }
+.sr-table th.text, .sr-table tbody th { text-align: left; padding-left: 20px; }
+.sr-table tbody th { font-weight: 500; }
+.sr-table td:last-child, .sr-table th:last-child { padding-right: 20px; }
+.sr-table tbody tr + tr > * { box-shadow: inset 0 1px var(--hair); }
+.sr-table .pct { width: 34%; }
+.sr-table thead .pct { text-align: left; }
+.sr-table .rank span { color: var(--tertiary); }
+.bar { display: block; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 3px; background: var(--secondary); }
+.bar i.top { background: var(--lime); }
+
+.sr-foot { margin-top: 32px; max-width: 80ch; }
+
+@media (max-width: 734px) {
+  .sr-head { grid-template-columns: auto 1fr; }
+  .sr-tools { grid-column: 1 / -1; }
+  .sr-photo { width: 64px; height: 82px; }
+  .sr-figures { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sr-figures > div:nth-child(3) { box-shadow: inset 0 1px var(--hair); }
+  .sr-figures > div:nth-child(4) { box-shadow: inset 1px 0 var(--hair), inset 0 1px var(--hair); }
+  .sr-two { grid-template-columns: 1fr; }
+  .sr-table th:nth-child(2), .sr-table td:nth-child(2) { display: none; }
+  .sr-table .pct { width: 28%; }
+}

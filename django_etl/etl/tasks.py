@@ -513,6 +513,7 @@ def run_daily_pipeline():
     9. run_forecast (points forecast v2: train, forecast, shadow captain picks)
     10. sync_match_goals (this season's new Premier League goals, for Chart Lab's clutch goals)
     11. sync_match_details (team stats, lineups, events, momentum, player match sheets)
+    12. sync_season_sheets (Premier League and Champions League season stat sheets)
     """
     logger.info("🚀 Starting Daily ETL Pipeline...")
     results = {}
@@ -616,8 +617,38 @@ def run_daily_pipeline():
         logger.error(f"❌ Step 11 Failed: {str(e)}")
         results['sync_match_details'] = f"Error: {str(e)}"
 
+    # Step 12: This season's Premier League (and Champions League) season sheets,
+    # which Stats Explorer, Chart Lab, Player pages and season reports read.
+    # Until Oct 2026 these were only loaded by hand, so they fell gameweeks behind.
+    try:
+        logger.info("Step 12: Syncing season stat sheets...")
+        results['sync_season_stats'] = sync_season_sheets()
+    except Exception as e:
+        logger.error(f"❌ Step 12 Failed: {str(e)}")
+        results['sync_season_stats'] = f"Error: {str(e)}"
+
     logger.info("🏁 Daily ETL Pipeline Completed")
     return results
+
+
+def sync_season_sheets():
+    """Refresh the current season's stat sheets, then the caches built on them."""
+    from etl.models import Fixture
+
+    first_kickoff = Fixture.objects.exclude(kickoff_time=None).order_by('kickoff_time').values_list('kickoff_time', flat=True).first()
+    if not first_kickoff:
+        return {'status': 'skipped', 'reason': 'no fixtures'}
+    season = first_kickoff.year
+    steps = {
+        'pl_sdp': ('sync_season_stats', '--season', season),
+        'pl_classic': ('sync_season_stats', '--season', season, '--source', 'classic'),
+        'ucl_classic': ('sync_season_stats', '--season', season, '--source', 'classic', '--competition', 'champions-league'),
+        'teams': ('sync_team_season_stats', '--season', season),
+    }
+    out = {name: run_manage(*command) for name, command in steps.items()}
+    # Stats Explorer's cache is keyed by gameweek, so fresh sheets need a clear.
+    out['clear_cache'] = run_manage('clear_cache')
+    return out
 
 
 @shared_task(name='etl.tasks.retrain_prediction_model')
