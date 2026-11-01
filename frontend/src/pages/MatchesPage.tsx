@@ -12,8 +12,9 @@ import "./MatchesPage.css";
 interface Club { id: string; name: string; short: string }
 interface CalMatch {
   matchId: string; kickoff: string; competitionId: number; competition: string; round: string;
-  home: Club; away: Club; status: "finished" | "upcoming"; score: [number, number] | null; penalties: [number, number] | null;
+  home: Club; away: Club; status: "finished" | "live" | "upcoming"; score: [number, number] | null; penalties: [number, number] | null;
   gameweek: number | null; fixtureId: number | null; chances: [number, number, number] | null;
+  live?: { period: string; clock: string } | null;
 }
 interface Calendar { start: string; days: number; today: string; clubs: Club[]; matches: CalMatch[]; previous: Record<string, string> }
 type Group = "all" | "league" | "europe" | "cup";
@@ -29,6 +30,12 @@ const daysBetween = (a: string, b: string) => Math.round((parseDay(b).getTime() 
 const mondayBefore = (key: string) => { const d = parseDay(key); return addDays(key, -((d.getDay() + 6) % 7)); };
 const words = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 const count = (n: number) => words[n] ?? String(n);
+const POLL_MS = 60_000;
+// "HT", "36′" or "ET 104′" for a game under way.
+const liveLabel = (l: { period: string; clock: string }) =>
+  /HalfTime/.test(l.period) ? (l.period === "HalfTime" ? "HT" : "ET HT")
+    : /Shoot|Penalt/.test(l.period) ? "Pens"
+    : `${l.period.startsWith("Extra") ? "ET " : ""}${l.clock ? `${l.clock}′` : "Live"}`;
 
 interface Cell { match: CalMatch; home: boolean; opp: Club; rest: number | null; res: "W" | "D" | "L" | null; gf: number | null; ga: number | null }
 
@@ -36,7 +43,7 @@ function cellFor(m: CalMatch, club: string, rest: number | null): Cell {
   const home = m.home.id === club;
   const [gf, ga] = m.score ? (home ? m.score : [m.score[1], m.score[0]]) : [null, null];
   let res: Cell["res"] = null;
-  if (gf != null && ga != null) {
+  if (gf != null && ga != null && m.status === "finished") {
     res = gf > ga ? "W" : gf < ga ? "L" : "D";
     if (res === "D" && m.penalties) { const [pf, pa] = home ? m.penalties : [m.penalties[1], m.penalties[0]]; res = pf > pa ? "W" : "L"; }
   }
@@ -53,6 +60,7 @@ export function MatchesPage() {
   const group = (params.get("comp") ?? "all") as Group;
   const club = params.get("club") ?? "";
   const [showPast, setShowPast] = useState(false);
+  const [tick, setTick] = useState(0);
   const set = (patch: Record<string, string | null>) => {
     const next = new URLSearchParams(params);
     for (const [k, v] of Object.entries(patch)) { if (v == null || v === "") next.delete(k); else next.set(k, v); }
@@ -65,9 +73,21 @@ export function MatchesPage() {
     fetch(`/api/matches/calendar/?start=${addDays(start, -1)}&days=${DAYS + 2}`)
       .then((r) => { if (!r.ok) throw new Error(`The calendar couldn't be loaded (HTTP ${r.status}).`); return r.json() as Promise<Calendar>; })
       .then((d) => { if (alive) setData(d); })
-      .catch((e: Error) => { if (alive) setError(e.message); });
+      .catch((e: Error) => { if (alive && tick === 0) setError(e.message); });  // a failed refresh keeps what's shown
     return () => { alive = false; };
-  }, [start]);
+  }, [start, tick]);
+
+  // While a game is on, or one has kicked off since the last load, refresh every minute.
+  useEffect(() => {
+    if (!data) return;
+    const id = window.setInterval(() => {
+      const now = Date.now();
+      if (data.matches.some((m) => m.status === "live" || (m.status === "upcoming" && Date.parse(m.kickoff) <= now && now - Date.parse(m.kickoff) < 3 * 3_600_000))) {
+        setTick((t) => t + 1);
+      }
+    }, POLL_MS);
+    return () => window.clearInterval(id);
+  }, [data]);
 
   useEffect(() => { document.title = "Matches · AeroFPL"; }, []);
 
@@ -225,18 +245,19 @@ export function MatchesPage() {
 
 function GridCell({ cell, club }: { cell: Cell; club: Club }) {
   const { match: m, opp, home, rest, res } = cell;
+  const live = m.status === "live" && m.live;
   const comp = compById(m.competitionId, m.competition);
   const chance = m.chances ? (home ? m.chances[0] : m.chances[2]) : null;
   const when = new Date(m.kickoff).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
   const title = `${club.name} ${home ? "v" : "at"} ${opp.name} · ${comp.name}${m.round ? ` ${m.round}` : ""}${m.gameweek ? ` · GW${m.gameweek}` : ""} · ${when}`
-    + (m.score ? ` · ${m.score[0]}–${m.score[1]}${m.penalties ? ` (${m.penalties[0]}–${m.penalties[1]} pens)` : ""}` : "")
+    + (m.score ? ` · ${live ? `live ${liveLabel(m.live!)} ` : ""}${m.score[0]}–${m.score[1]}${m.penalties ? ` (${m.penalties[0]}–${m.penalties[1]} pens)` : ""}` : "")
     + (rest != null ? ` · ${rest} days after the previous game` : "");
   return (
-    <Link to={`/matches/${m.matchId}`} className={`ms-cell c-${comp.group} t-${comp.tag}${res ? ` r-${res}` : ""}`} title={title}>
+    <Link to={`/matches/${m.matchId}`} className={`ms-cell c-${comp.group} t-${comp.tag}${res ? ` r-${res}` : ""}${live ? " is-live" : ""}`} title={title}>
       <b>{opp.short}</b>
-      <small>{res ? `${res} ${cell.gf}-${cell.ga}` : chance != null ? `${home ? "H" : "A"} ${Math.round(chance)}%` : `${home ? "H" : "A"}${comp.tag !== "PL" ? ` ${comp.tag}` : ""}`}</small>
+      <small>{live ? `${cell.gf}-${cell.ga} ${liveLabel(m.live!).replace("ET ", "")}` : res ? `${res} ${cell.gf}-${cell.ga}` : chance != null ? `${home ? "H" : "A"} ${Math.round(chance)}%` : `${home ? "H" : "A"}${comp.tag !== "PL" ? ` ${comp.tag}` : ""}`}</small>
       {res && comp.tag !== "PL" && <em>{comp.tag}</em>}
-      {!res && chance != null && comp.tag !== "PL" && <em>{comp.tag}</em>}
+      {!res && !live && chance != null && comp.tag !== "PL" && <em>{comp.tag}</em>}
       {rest != null && rest <= 3 && <i className="ms-dot rest" aria-label={`${rest} days after the previous game`} />}
     </Link>
   );
@@ -245,12 +266,13 @@ function GridCell({ cell, club }: { cell: Cell; club: Club }) {
 function ListRow({ m }: { m: CalMatch }) {
   const comp = compById(m.competitionId, m.competition);
   const time = new Date(m.kickoff).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const live = m.status === "live" && m.live;
   return (
     <li>
-      <Link to={`/matches/${m.matchId}`} className="ms-row">
+      <Link to={`/matches/${m.matchId}`} className={`ms-row${live ? " is-live" : ""}`}>
         <span className={`tag c-${comp.group}`}>{comp.tag}</span>
         <span className="side home"><span className="nm">{m.home.name}</span><span className="sh">{m.home.short}</span><Crest team={m.home.id} /></span>
-        <span className="mid">{m.score ? <><b>{m.score[0]}–{m.score[1]}</b>{m.penalties && <small>{m.penalties[0]}–{m.penalties[1]} pens</small>}</> : <b className="ko">{time}</b>}</span>
+        <span className="mid">{m.score ? <><b>{m.score[0]}–{m.score[1]}</b>{live ? <small className="live">{liveLabel(m.live!)}</small> : m.penalties && <small>{m.penalties[0]}–{m.penalties[1]} pens</small>}</> : <b className="ko">{time}</b>}</span>
         <span className="side away"><Crest team={m.away.id} /><span className="nm">{m.away.name}</span><span className="sh">{m.away.short}</span></span>
         <span className="meta">{m.gameweek ? `GW${m.gameweek}` : m.round || comp.name}{m.chances && !m.score ? ` · ${m.chances[0]}–${m.chances[1]}–${m.chances[2]}%` : ""}</span>
       </Link>

@@ -93,6 +93,11 @@
 .ms-row .mid b { font-size: var(--fs-headline); font-weight: 600; font-variant-numeric: tabular-nums; }
 .ms-row .mid b.ko { font-size: var(--fs-footnote); color: var(--aero-text-dim); }
 .ms-row .mid small { font-size: var(--fs-caption); color: var(--aero-text-muted); }
+.ms-row .mid small.live { color: var(--aero-negative); font-weight: 600; }
+.ms-row .mid small.live::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 5px; border-radius: 50%; background: currentColor; vertical-align: 1px; animation: ms-live 1.6s ease-in-out infinite; }
+.ms-cell.is-live { border-color: var(--aero-negative); }
+.ms-cell.is-live small { color: var(--aero-negative); }
+@keyframes ms-live { 50% { opacity: 0.25; } }
 .ms-row .meta { font-size: var(--fs-caption); color: var(--aero-text-muted); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .ms-row .sh { display: none; }
@@ -114,7 +119,7 @@
   .ms-grid .club { width: 74px; min-width: 74px; }
   .ms-grid tbody .club a { padding: 0 8px; gap: 6px; }
 }
-@media (prefers-reduced-motion: reduce) { .ms-cell, .ms-skeleton { transition: none; animation: none; } }
+@media (prefers-reduced-motion: reduce) { .ms-cell, .ms-skeleton, .ms-row .mid small.live::before { transition: none; animation: none; } }
 
 .ms-cell { height: 42px; }
 .ms-grid td { height: 48px; }

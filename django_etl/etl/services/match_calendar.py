@@ -3,9 +3,14 @@
 One window of days: the league, the domestic cups and Europe side by side, so
 congested runs (a Thursday in Europe before a Sunday kick-off) show at a glance.
 League matches carry their FPL gameweek and, when collected, the match odds.
+
+Scores are stored by the nightly sync, so a game that has kicked off since is
+read live from the Premier League feed (one request per game, cached a minute)
+until the sync catches up.
 """
 from __future__ import annotations
 
+import logging
 from datetime import date, datetime, time, timedelta
 
 from django.core.cache import cache
@@ -15,8 +20,13 @@ from django.utils import timezone
 from ..models import Fixture, FixtureOdds, PlMatch, Team
 from .match_page import _round
 
+logger = logging.getLogger(__name__)
+
 CACHE_TTL = 10 * 60
 MAX_DAYS = 120
+LIVE_TTL = 60
+LIVE_WINDOW = timedelta(hours=12)  # kicked off this recently and still no stored score: ask the feed
+NOT_STARTED = {"", "PreMatch", "Postponed", "Abandoned", "Cancelled", "Suspended"}
 
 
 def _clubs() -> list[dict]:
@@ -60,7 +70,7 @@ def build_calendar(start: date, days: int) -> dict:
     key = f"match-calendar:{start.isoformat()}:{days}"
     cached = cache.get(key)
     if cached:
-        return cached
+        return _with_live_scores(cached)
     tz = timezone.get_current_timezone()
     begin = timezone.make_aware(datetime.combine(start, time.min), tz)
     end = begin + timedelta(days=days)
@@ -104,4 +114,42 @@ def build_calendar(start: date, days: int) -> dict:
     payload = {"start": start.isoformat(), "days": days, "today": timezone.localdate().isoformat(),
                "clubs": club_list, "matches": rows, "previous": previous}
     cache.set(key, payload, CACHE_TTL)
-    return payload
+    return _with_live_scores(payload)
+
+
+def _live_state(match_id: str) -> dict | None:
+    """The feed's period, clock and score for one match, cached for a minute (a finished one for an hour)."""
+    key = f"match-live:{match_id}"
+    cached = cache.get(key)
+    if cached is not None:
+        return cached or None
+    from .pl_stats_client import PLStatsClient
+
+    try:
+        row = PLStatsClient(timeout=5, delay=0, retries=1).get_match(match_id)
+    except Exception as exc:  # the feed being down must not take the calendar with it
+        logger.warning("Live score for match %s unavailable: %s", match_id, exc)
+        row = {}
+    home, away = row.get("homeTeam") or {}, row.get("awayTeam") or {}
+    period = row.get("period") or ""
+    state = {}
+    if period not in NOT_STARTED and home.get("score") is not None and away.get("score") is not None:
+        state = {"period": period, "clock": str(row.get("clock") or ""), "score": [home["score"], away["score"]]}
+    cache.set(key, state, LIVE_TTL * 60 if period == "FullTime" else LIVE_TTL)
+    return state or None
+
+
+def _with_live_scores(payload: dict) -> dict:
+    """Games that have kicked off but have no stored score yet, as live (or just finished) from the feed."""
+    now = timezone.now()
+    rows = []
+    for row in payload["matches"]:
+        kickoff = datetime.fromisoformat(row["kickoff"])
+        if row["status"] == "upcoming" and now - LIVE_WINDOW <= kickoff <= now:
+            state = _live_state(row["matchId"])
+            if state:
+                finished = state["period"] == "FullTime"
+                row = {**row, "status": "finished" if finished else "live", "score": state["score"], "chances": None,
+                       "live": None if finished else {"period": state["period"], "clock": state["clock"]}}
+        rows.append(row)
+    return {**payload, "matches": rows}

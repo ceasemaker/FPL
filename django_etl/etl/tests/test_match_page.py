@@ -82,6 +82,41 @@ class MatchCalendarTests(TestCase):
     def test_bad_start_is_400(self):
         self.assertEqual(self.client.get("/api/matches/calendar/?start=soon").status_code, 400)
 
+    def test_game_under_way_is_live_from_the_feed(self):
+        from datetime import timedelta
+        from unittest.mock import patch
+        from django.utils import timezone
+
+        now = timezone.now()
+        PlMatch.objects.create(season=2026, match_id="4", home_team_id="14", away_team_id="43", kickoff=now - timedelta(minutes=40))
+        PlMatch.objects.create(season=2026, match_id="5", home_team_id="43", away_team_id="14", kickoff=now - timedelta(hours=3))
+        PlMatch.objects.create(season=2026, match_id="6", home_team_id="14", away_team_id="43", kickoff=now + timedelta(hours=2))
+        feed = {
+            "4": {"period": "FirstHalf", "clock": "36", "homeTeam": {"score": 0}, "awayTeam": {"score": 1}},
+            "5": {"period": "FullTime", "clock": "94", "homeTeam": {"score": 2}, "awayTeam": {"score": 2}},
+        }
+        start = (now - timedelta(days=1)).date().isoformat()
+        with patch("etl.services.pl_stats_client.PLStatsClient.get_match", side_effect=lambda mid: feed[mid]) as get:
+            d = self.client.get(f"/api/matches/calendar/?start={start}&days=3").json()
+            self.client.get(f"/api/matches/calendar/?start={start}&days=3")
+        by_id = {m["matchId"]: m for m in d["matches"]}
+        self.assertEqual((by_id["4"]["status"], by_id["4"]["score"], by_id["4"]["live"]), ("live", [0, 1], {"period": "FirstHalf", "clock": "36"}))
+        self.assertEqual((by_id["5"]["status"], by_id["5"]["score"]), ("finished", [2, 2]))
+        self.assertEqual(by_id["6"]["status"], "upcoming")  # not kicked off: the feed isn't asked
+        self.assertEqual(get.call_count, 2)  # the second load is served from the cache
+
+    def test_feed_down_leaves_the_game_as_it_was(self):
+        from datetime import timedelta
+        from unittest.mock import patch
+        from django.utils import timezone
+
+        now = timezone.now()
+        PlMatch.objects.create(season=2026, match_id="4", home_team_id="14", away_team_id="43", kickoff=now - timedelta(minutes=40))
+        start = (now - timedelta(days=1)).date().isoformat()
+        with patch("etl.services.pl_stats_client.PLStatsClient.get_match", side_effect=ConnectionError("down")):
+            d = self.client.get(f"/api/matches/calendar/?start={start}&days=3").json()
+        self.assertEqual([(m["matchId"], m["status"]) for m in d["matches"]], [("4", "upcoming")])
+
 
 class TeamPageTests(TestCase):
     def setUp(self):

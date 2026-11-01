@@ -143,6 +143,12 @@ class PLStatsClient(_PulseliveClient):
             if not cursor or not page.get("data"):
                 return
 
+    def get_match(self, match_id: str) -> dict:
+        """One match as it stands: ``period`` (PreMatch, FirstHalf, HalfTime, SecondHalf, FullTime...),
+        ``clock`` (the match minute) and each side's ``score``. Live during the game."""
+        payload = self._get(f"v2/matches/{match_id}")
+        return payload if isinstance(payload, dict) else {}
+
     def get_match_events(self, match_id: str) -> dict:
         """Goals, cards and subs per side: ``{"homeTeam": {"id", "goals": [...]}, "awayTeam": ...}``.
 
