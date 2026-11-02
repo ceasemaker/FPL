@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 CACHE_TTL = 10 * 60
 MAX_DAYS = 120
 LIVE_TTL = 60
-LIVE_WINDOW = timedelta(hours=12)  # kicked off this recently and still no stored score: ask the feed
+LIVE_WINDOW = timedelta(hours=18)  # covers a 12:30 kick-off until the 3:30am sync stores the score
 NOT_STARTED = {"", "PreMatch", "Postponed", "Abandoned", "Cancelled", "Suspended"}
 
 
