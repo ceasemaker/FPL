@@ -3545,6 +3545,14 @@ def home_squads(request):
 
 
 @require_GET
+def home_top100_managers(request):
+    """Each of the top 100 managers' own squads for the latest gameweek, for stepping through on the homepage."""
+    from etl.services.home_squads import build_managers_payload
+
+    return JsonResponse(build_managers_payload())
+
+
+@require_GET
 def match_calendar(request):
     """Every competition's matches for the Premier League clubs, over a window of days."""
     from datetime import date, timedelta

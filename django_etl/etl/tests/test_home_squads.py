@@ -112,3 +112,27 @@ class SquadBeforeFreeHitTests(TestCase):
         manager = Top100Manager.objects.get(entry_id=7, game_week=8)
         self.assertEqual(manager.rank, 150)
         self.assertEqual(sorted(manager.picks.values_list("athlete_id", "position")), [(1, 1), (2, 12)])  # unknown player skipped
+
+
+class Top100ManagersApiTests(TestCase):
+    setUp = HomeSquadsApiTests.setUp
+
+    def test_each_manager_with_their_own_squad(self):
+        from ..models import AthleteStat
+
+        first = Top100Manager.objects.create(entry_id=1, game_week=9, player_name="A", entry_name="A FC", rank=1, total_points=700,
+                                             event_total=80, active_chip="freehit")
+        second = Top100Manager.objects.create(entry_id=2, game_week=9, player_name="B", entry_name="B FC", rank=2)
+        squad = [p for p in self.players if p.id not in (3, 9, 15, 19)]
+        for i, a in enumerate(squad, 1):
+            Top100Pick.objects.create(manager=first, athlete=a, game_week=9, position=i, is_captain=i == 14, is_vice_captain=i == 2,
+                                      multiplier=2 if i == 14 else 1)
+        Top100Pick.objects.create(manager=second, athlete=squad[0], game_week=9, position=1)  # incomplete: left out
+        AthleteStat.objects.create(athlete=squad[13], game_week=9, total_points=12)
+        d = self.client.get("/api/home/top100-managers/").json()["top100"]
+        self.assertEqual(len(d["managers"]), 1)
+        m = d["managers"][0]
+        self.assertEqual((m["rank"], m["team"], m["total"], m["gwTotal"], m["chip"]), (1, "A FC", 700, 80, "freehit"))
+        self.assertEqual((len(m["xi"]), len(m["bench"]), m["captain"], m["vice"]), (11, 4, squad[13].id, squad[1].id))
+        self.assertEqual(m["xi"][0], squad[0].id)  # in pick order
+        self.assertEqual(d["players"][str(squad[13].id)]["gwPoints"], 12)

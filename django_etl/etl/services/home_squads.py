@@ -22,9 +22,10 @@ from datetime import timedelta
 from django.core.cache import cache
 from django.db.models import Max
 
-from ..models import Athlete, Top100Manager, Top100Pick
+from ..models import Athlete, AthleteStat, Top100Manager, Top100Pick
 
 CACHE_KEY = "home-squads:v2"
+MANAGERS_CACHE_KEY = "home-top100-managers"
 CACHE_TTL = 30 * 60
 MANAGERS = 100
 SYNC_WINDOW = timedelta(hours=2)  # one sync of 100 managers takes minutes; older rows are from earlier syncs
@@ -65,13 +66,20 @@ def season_squad() -> dict | None:
             "points": sum(p["points"] for p in picked if p["id"] in xi)}
 
 
-def top100_squad() -> dict | None:
+def _latest_managers(*fields: str) -> tuple[int | None, list[dict]]:
+    """The latest synced gameweek and its top managers by rank, from that gameweek's latest sync only."""
     gw = Top100Manager.objects.order_by("-game_week").values_list("game_week", flat=True).first()
     if gw is None:
-        return None
+        return None, []
     rows = Top100Manager.objects.filter(game_week=gw)
     synced = rows.aggregate(last=Max("updated_at"))["last"]
-    managers = list(rows.filter(updated_at__gte=synced - SYNC_WINDOW).order_by("rank").values("id", "entry_id", "active_chip")[:MANAGERS])
+    return gw, list(rows.filter(updated_at__gte=synced - SYNC_WINDOW).order_by("rank").values(*fields)[:MANAGERS])
+
+
+def top100_squad() -> dict | None:
+    gw, managers = _latest_managers("id", "entry_id", "active_chip")
+    if gw is None:
+        return None
     on_free_hit = [m["entry_id"] for m in managers if (m["active_chip"] or "").lower() == "freehit"]
     previous = list(Top100Manager.objects.filter(game_week=gw - 1, entry_id__in=on_free_hit, picks__isnull=False)
                     .distinct().values_list("id", flat=True))
@@ -96,6 +104,46 @@ def top100_squad() -> dict | None:
     in_xi = sorted((p for p in picked if p["id"] in xi), key=lambda p: p["captained"], reverse=True)
     return {"players": _ordered(picked), "xi": xi, "bench": bench, "captain": in_xi[0]["id"], "vice": in_xi[1]["id"],
             "gameweek": gw, "managers": count, "freeHit": len(previous)}
+
+
+def top100_managers() -> dict | None:
+    """Each top manager's own squad for the latest gameweek, as they picked it (a Free Hit squad included)."""
+    gw, managers = _latest_managers("id", "entry_id", "rank", "player_name", "entry_name", "total_points", "event_total", "active_chip")
+    if gw is None:
+        return None
+    picks: dict[int, list[tuple]] = {}
+    for manager, athlete, position, captain, vice, multiplier in (
+            Top100Pick.objects.filter(manager_id__in=[m["id"] for m in managers]).order_by("position")
+            .values_list("manager_id", "athlete_id", "position", "is_captain", "is_vice_captain", "multiplier")):
+        picks.setdefault(manager, []).append((athlete, position, captain, vice, multiplier))
+    ids = {p[0] for rows in picks.values() for p in rows}
+    gw_points: Counter = Counter()
+    for athlete, points in AthleteStat.objects.filter(game_week=gw, athlete_id__in=ids).values_list("athlete_id", "total_points"):
+        gw_points[athlete] += points  # a double gameweek can hold two rows
+    players = {a.id: _player(a, gwPoints=gw_points.get(a.id)) for a in Athlete.objects.select_related("team").filter(id__in=ids, element_type__in=SQUAD)}
+
+    out = []
+    for m in managers:
+        rows = [p for p in picks.get(m["id"], []) if p[0] in players]
+        if len(rows) < sum(SQUAD.values()):
+            continue  # picks not stored (a player missing from our data, or the fetch failed)
+        out.append({
+            "entry": m["entry_id"], "rank": m["rank"], "name": m["player_name"], "team": m["entry_name"],
+            "total": m["total_points"], "gwTotal": m["event_total"], "chip": m["active_chip"],
+            "xi": [p[0] for p in rows if p[1] <= 11], "bench": [p[0] for p in rows if p[1] > 11],
+            "captain": next((p[0] for p in rows if p[2]), None), "vice": next((p[0] for p in rows if p[3]), None),
+            "tripleCaptain": any(p[4] == 3 for p in rows),
+        })
+    return {"gameweek": gw, "players": players, "managers": out}
+
+
+def build_managers_payload() -> dict:
+    cached = cache.get(MANAGERS_CACHE_KEY)
+    if cached:
+        return cached
+    payload = {"top100": top100_managers()}
+    cache.set(MANAGERS_CACHE_KEY, payload, CACHE_TTL)
+    return payload
 
 
 def build_payload() -> dict:

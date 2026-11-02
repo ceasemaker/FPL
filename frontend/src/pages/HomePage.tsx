@@ -254,27 +254,33 @@ function CaptainRecordCard({record}:{record:CaptainRecord}){
 // shape and formations, but no budget or three-per-club limit.
 interface EliteSquadPlayer extends SquadPlayer { owned: number; started: number }
 interface HomeSquads { top100: (Squad<EliteSquadPlayer> & { gameweek: number; managers: number; freeHit: number }) | null; season: (Squad & { points: number }) | null }
+interface ManagerSquadPlayer extends SquadPlayer { gwPoints: number | null }
+interface TopManager { entry: number; rank: number; name: string; team: string; total: number; gwTotal: number; chip: string | null; xi: number[]; bench: number[]; captain: number | null; vice: number | null }
+interface TopManagers { top100: { gameweek: number; players: Record<string, ManagerSquadPlayer>; managers: TopManager[] } | null }
+const CHIPS: Record<string, string> = { wildcard: "Wildcard", freehit: "Free Hit", bboost: "Bench Boost", "3xc": "Triple Captain", manager: "Assistant Manager" };
 function SquadsCard(){
   const [data,setData]=useState<HomeSquads|null>(null);
   const [failed,setFailed]=useState(false);
-  const [view,setView]=useState<"top100"|"season">("top100");
+  const [view,setView]=useState<"top100"|"managers"|"season">("top100");
   useEffect(()=>{
     fetch("/api/home/squads/").then(r=>r.ok?r.json():Promise.reject(new Error(`HTTP ${r.status}`))).then(setData).catch(()=>setFailed(true));
   },[]);
   const top=data?.top100??null, season=data?.season??null;
-  const subtitle=view==="top100"
+  const subtitle=view==="managers"?undefined:view==="top100"
     ?top?`The players most owned by the top 100 managers in their GW${top.gameweek} squads${top.freeHit?` (the ${top.freeHit} on Free Hit counted with their GW${top.gameweek-1} team)`:""}. Starters are the ones they start most, the captain the one they captain most.${top.managers<100?` Counts ${top.managers} of the 100: Free Hit managers with no GW${top.gameweek-1} team stored are left out.`:""}`:undefined
     :season?`The most FPL points in each position so far, whatever the club or price. The starting XI has scored ${season.points} points.`:undefined;
   return <article className="command-card squads-card">
     <header className="command-card-title">
-      <div><h3>{view==="top100"?"Top 100 team":"Team of the season"}</h3>{subtitle&&<p>{subtitle}</p>}</div>
+      <div><h3>{view==="top100"?"Top 100 team":view==="managers"?"Top 100 managers":"Team of the season"}</h3>{subtitle&&<p>{subtitle}</p>}</div>
       <div className="aero-segmented" role="group" aria-label="Which team">
         <button type="button" aria-pressed={view==="top100"} onClick={()=>setView("top100")}>Top 100</button>
+        <button type="button" aria-pressed={view==="managers"} onClick={()=>setView("managers")}>Managers</button>
         <button type="button" aria-pressed={view==="season"} onClick={()=>setView("season")}>Season</button>
       </div>
     </header>
-    {failed&&<p className="card-empty">The teams couldn't be loaded.</p>}
-    {!failed&&!data&&<p className="card-empty">Loading the teams…</p>}
+    {view==="managers"&&<TopManagersBrowser/>}
+    {view!=="managers"&&failed&&<p className="card-empty">The teams couldn't be loaded.</p>}
+    {view!=="managers"&&!failed&&!data&&<p className="card-empty">Loading the teams…</p>}
     {data&&view==="top100"&&(top
       ?<SquadPitch squad={top} stat={p=>`${p.owned}%`} describe={p=>`owned by ${p.owned}% of the top 100, started by ${p.started}%`}/>
       :<p className="card-empty">No top 100 squads synced yet.</p>)}
@@ -282,6 +288,40 @@ function SquadsCard(){
       ?<SquadPitch squad={season} stat={p=>`${p.points} pts`} describe={p=>`${p.points} points this season`}/>
       :<p className="card-empty">No points recorded yet this season.</p>)}
   </article>;
+}
+
+// The top 100 managers one at a time: each one's own squad for the gameweek,
+// as they picked it (a Free Hit squad included). Loaded the first time it opens.
+function TopManagersBrowser(){
+  const [data,setData]=useState<TopManagers["top100"]|undefined>(undefined);
+  const [failed,setFailed]=useState(false);
+  const [at,setAt]=useState(0);
+  useEffect(()=>{
+    fetch("/api/home/top100-managers/").then(r=>r.ok?r.json():Promise.reject(new Error(`HTTP ${r.status}`))).then((d:TopManagers)=>setData(d.top100)).catch(()=>setFailed(true));
+  },[]);
+  if(failed)return <p className="card-empty">The managers' teams couldn't be loaded.</p>;
+  if(data===undefined)return <p className="card-empty">Loading the managers' teams…</p>;
+  if(!data||data.managers.length===0)return <p className="card-empty">No top 100 squads synced yet.</p>;
+  const m=data.managers[Math.min(at,data.managers.length-1)];
+  const squad={players:[...m.xi,...m.bench].map(id=>data.players[id]).filter(Boolean),xi:m.xi,bench:m.bench,captain:m.captain??-1,vice:m.vice??-1};
+  const step=(n:number)=>setAt(i=>(i+n+data.managers.length)%data.managers.length);
+  return <>
+    <p className="squads-note">Each manager's own GW{data.gameweek} squad, as they picked it. The number under each player is what they scored in GW{data.gameweek}.</p>
+    <div className="manager-step">
+      <button type="button" className="manager-arrow" onClick={()=>step(-1)} aria-label="Previous manager">‹</button>
+      <select className="aero-select" aria-label="Choose a manager" value={at} onChange={e=>setAt(Number(e.target.value))}>
+        {data.managers.map((x,i)=><option key={x.entry} value={i}>{x.rank}. {x.name} ({x.team})</option>)}
+      </select>
+      <button type="button" className="manager-arrow" onClick={()=>step(1)} aria-label="Next manager">›</button>
+    </div>
+    <p className="manager-line">
+      <span><b>{m.total.toLocaleString()}</b> points · rank {m.rank}</span>
+      <span>GW{data.gameweek}: <b>{m.gwTotal}</b></span>
+      {m.chip&&<span className="manager-chip">{CHIPS[m.chip]??m.chip}</span>}
+      <Link to={`/analyse?manager=${m.entry}`}>Full history ›</Link>
+    </p>
+    <SquadPitch squad={squad} stat={p=>p.gwPoints==null?"–":`${p.gwPoints} pts`} describe={p=>p.gwPoints==null?"no GW points yet":`${p.gwPoints} points in GW${data.gameweek}`}/>
+  </>;
 }
 
 // The next games for the Premier League clubs in every competition, each

@@ -9,10 +9,16 @@ export function AnalyzeManagerPage() {
   const [activeManagerId, setActiveManagerId] = useState<string | null>(null);
   const [view, setView] = useState<"history" | "gameweek">("gameweek");
   const [selectedGameweek, setSelectedGameweek] = useState<number | null>(null);
+  // A manager opened from a link (?manager=123, e.g. the homepage's top 100)
+  // is shown but not remembered, so it never replaces the visitor's own ID.
+  const [linkedId] = useState(() => {
+    const id = new URLSearchParams(window.location.search).get("manager");
+    return id && /^\d+$/.test(id) ? id : null;
+  });
 
   // Load from localStorage on mount
   useEffect(() => {
-    const savedManagerId = localStorage.getItem("fpl_manager_id");
+    const savedManagerId = linkedId ?? localStorage.getItem("fpl_manager_id");
     const savedView = localStorage.getItem("fpl_manager_view");
     // The gameweek isn't remembered: the page always opens on the latest one.
     localStorage.removeItem("fpl_selected_gameweek");
@@ -28,7 +34,7 @@ export function AnalyzeManagerPage() {
 
   // Save to localStorage whenever state changes
   useEffect(() => {
-    if (activeManagerId) {
+    if (activeManagerId && activeManagerId !== linkedId) {
       localStorage.setItem("fpl_manager_id", activeManagerId);
     }
   }, [activeManagerId]);
