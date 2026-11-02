@@ -73,7 +73,8 @@ def top100_squad() -> dict | None:
     synced = rows.aggregate(last=Max("updated_at"))["last"]
     managers = list(rows.filter(updated_at__gte=synced - SYNC_WINDOW).order_by("rank").values("id", "entry_id", "active_chip")[:MANAGERS])
     on_free_hit = [m["entry_id"] for m in managers if (m["active_chip"] or "").lower() == "freehit"]
-    previous = list(Top100Manager.objects.filter(game_week=gw - 1, entry_id__in=on_free_hit).values_list("id", flat=True))
+    previous = list(Top100Manager.objects.filter(game_week=gw - 1, entry_id__in=on_free_hit, picks__isnull=False)
+                    .distinct().values_list("id", flat=True))
     sources = [m["id"] for m in managers if m["entry_id"] not in on_free_hit] + previous
 
     owned, started, captained = Counter(), Counter(), Counter()

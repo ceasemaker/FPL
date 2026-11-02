@@ -85,3 +85,30 @@ class HomeSquadsApiTests(TestCase):
 
     def test_no_top100_data_yet(self):
         self.assertIsNone(self.client.get("/api/home/squads/").json()["top100"])
+
+
+class SquadBeforeFreeHitTests(TestCase):
+    def setUp(self):
+        team = Team.objects.create(id=1, code=14, name="Liverpool", short_name="LIV")
+        for i in (1, 2):
+            Athlete.objects.create(id=i, code=i, first_name="P", second_name=str(i), web_name=f"P{i}", now_cost=50,
+                                   element_type=3, team=team, team_code=14)
+
+    def _client(self):
+        from unittest.mock import MagicMock
+        client = MagicMock()
+        client.get_manager_picks.return_value = {"active_chip": None, "picks": [
+            {"element": 1, "position": 1, "is_captain": True}, {"element": 2, "position": 12}, {"element": 999, "position": 13}]}
+        return client
+
+    def test_stores_the_previous_squad_once(self):
+        from ..services.top100_etl import Top100Config, store_squad_before_free_hit
+
+        client, config = self._client(), Top100Config(sleep_between_requests=0)
+        row = {"entry": 7, "player_name": "New", "entry_name": "New FC", "rank": 40, "last_rank": 150}
+        store_squad_before_free_hit(client, row, 9, config)
+        store_squad_before_free_hit(client, row, 9, config)  # already stored: no second request
+        client.get_manager_picks.assert_called_once_with(7, 8)
+        manager = Top100Manager.objects.get(entry_id=7, game_week=8)
+        self.assertEqual(manager.rank, 150)
+        self.assertEqual(sorted(manager.picks.values_list("athlete_id", "position")), [(1, 1), (2, 12)])  # unknown player skipped

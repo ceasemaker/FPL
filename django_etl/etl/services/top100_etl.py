@@ -82,6 +82,47 @@ def fetch_manager_picks(
         return None
 
 
+def store_squad_before_free_hit(client: FPLClient, manager_data: dict, game_week: int, config: Top100Config) -> None:
+    """Store a Free Hit manager's squad from the gameweek before, when it isn't already.
+
+    The Free Hit squad lasts one week, so the homepage's Top 100 team counts
+    the manager's real team instead; a manager new to the top 100 has no
+    earlier snapshot of their own.
+    """
+    previous = game_week - 1
+    entry_id = manager_data["entry"]
+    if previous < 1 or Top100Pick.objects.filter(manager__entry_id=entry_id, manager__game_week=previous).exists():
+        return
+    picks_data = fetch_manager_picks(client, entry_id, previous, config)
+    if not picks_data:
+        return
+    manager, _ = Top100Manager.objects.update_or_create(
+        entry_id=entry_id,
+        game_week=previous,
+        defaults={
+            "player_name": manager_data.get("player_name", ""),
+            "entry_name": manager_data.get("entry_name", ""),
+            "rank": manager_data.get("last_rank") or manager_data.get("rank") or 0,
+            "active_chip": picks_data.get("active_chip"),
+        },
+    )
+    known = set(Athlete.objects.filter(id__in=[p.get("element") for p in picks_data.get("picks", [])]).values_list("id", flat=True))
+    for pick in picks_data.get("picks", []):
+        if pick.get("element") not in known:
+            continue
+        Top100Pick.objects.update_or_create(
+            manager=manager,
+            athlete_id=pick["element"],
+            defaults={
+                "game_week": previous,
+                "position": pick.get("position", 0),
+                "is_captain": pick.get("is_captain", False),
+                "is_vice_captain": pick.get("is_vice_captain", False),
+                "multiplier": pick.get("multiplier", 1),
+            },
+        )
+
+
 def fetch_manager_transfers(
     client: FPLClient, 
     entry_id: int,
@@ -160,7 +201,9 @@ def sync_top100_for_gameweek(
                     manager.active_chip = active_chip
                     manager.save(update_fields=["active_chip"])
                     chip_usage[active_chip] += 1
-                
+                if active_chip == "freehit":
+                    store_squad_before_free_hit(client, manager_data, game_week, config)
+
                 # Get entry history for bank/value
                 entry_history = picks_data.get("entry_history", {})
                 if entry_history:
