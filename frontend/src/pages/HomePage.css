@@ -85,3 +85,6 @@
 
 .deadline-row{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;column-gap:12px;align-items:baseline;margin-bottom:12px;padding:10px 14px;border-radius: var(--aero-radius-sm);border:1px solid rgba(165,255,1,.45);background:rgba(165,255,1,.06)}.deadline-row span{font-size: var(--fs-caption);font-weight: 600;color: var(--aero-text-dim)}.deadline-row b{grid-row:span 2;font-size: var(--fs-section);font-weight: 600;letter-spacing: -0.02em;color: var(--aero-lime);font-variant-numeric:tabular-nums}.deadline-row small{font-size: var(--fs-caption);color: var(--aero-text-muted)}
 .captain-metrics .best-fixture span{margin-top:0}
+
+/* Top 100 / season squads on the pitch. */
+.squads-card .command-card-title{align-items:flex-start}.squads-card .command-card-title p{max-width:560px;line-height:1.4}.squads-card .aero-segmented{flex:none}.squads-card .pp{padding:0}.squads-card .pp-card{text-decoration:none}@media(max-width: 734px){.squads-card{padding:14px 10px}.squads-card .command-card-title{flex-direction:column;padding:0 4px}.squads-card .pp-slot{width:auto;flex:1 1 0;min-width:0;max-width:66px}}

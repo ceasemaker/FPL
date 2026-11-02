@@ -3537,6 +3537,14 @@ def match_page(request, match_id):
 
 
 @require_GET
+def home_squads(request):
+    """Two full squads for the homepage pitch: the Top 100 managers' team and the team of the season."""
+    from etl.services.home_squads import build_payload as build_squads_payload
+
+    return JsonResponse(build_squads_payload())
+
+
+@require_GET
 def match_calendar(request):
     """Every competition's matches for the Premier League clubs, over a window of days."""
     from datetime import date, timedelta

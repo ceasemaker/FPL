@@ -6,6 +6,7 @@ import { PlayerModal } from "../components/PlayerModal";
 import { compById } from "../components/match/competitions";
 import { Crest } from "../components/match/icons";
 import { PriceChangeBadge } from "../components/priceChange/PriceChange";
+import { SquadPitch, type Squad, type SquadPlayer } from "../components/SquadPitch";
 import type { CaptainRecord, PlayerMover, ValuePlayer } from "../types";
 import "./HomePage.css";
 
@@ -121,6 +122,8 @@ export function HomePage(){
             </div>
             <div className="hero-slash"/>
           </article>}
+
+      <SquadsCard/>
 
       <div className="command-middle">
         <article className="command-card outlook-card">
@@ -243,6 +246,41 @@ function CaptainRecordCard({record}:{record:CaptainRecord}){
       </li>)}
     </ul>}
     <Link className="captain-record-link" to="/model-lab">Full record in Model Lab</Link>
+  </article>;
+}
+
+// Two full squads on the pitch, one at a time: the team the top 100 managers
+// own most, and the most FPL points in each position this season. FPL's squad
+// shape and formations, but no budget or three-per-club limit.
+interface EliteSquadPlayer extends SquadPlayer { owned: number; started: number }
+interface HomeSquads { top100: (Squad<EliteSquadPlayer> & { gameweek: number; managers: number; freeHit: number }) | null; season: (Squad & { points: number }) | null }
+function SquadsCard(){
+  const [data,setData]=useState<HomeSquads|null>(null);
+  const [failed,setFailed]=useState(false);
+  const [view,setView]=useState<"top100"|"season">("top100");
+  useEffect(()=>{
+    fetch("/api/home/squads/").then(r=>r.ok?r.json():Promise.reject(new Error(`HTTP ${r.status}`))).then(setData).catch(()=>setFailed(true));
+  },[]);
+  const top=data?.top100??null, season=data?.season??null;
+  const subtitle=view==="top100"
+    ?top?`The players most owned by the top 100 managers in their GW${top.gameweek} squads${top.freeHit?` (the ${top.freeHit} on Free Hit counted with their GW${top.gameweek-1} team)`:""}. Starters are the ones they start most, the captain the one they captain most.`:undefined
+    :season?`The most FPL points in each position so far, whatever the club or price. The starting XI has scored ${season.points} points.`:undefined;
+  return <article className="command-card squads-card">
+    <header className="command-card-title">
+      <div><h3>{view==="top100"?"Top 100 team":"Team of the season"}</h3>{subtitle&&<p>{subtitle}</p>}</div>
+      <div className="aero-segmented" role="group" aria-label="Which team">
+        <button type="button" aria-pressed={view==="top100"} onClick={()=>setView("top100")}>Top 100</button>
+        <button type="button" aria-pressed={view==="season"} onClick={()=>setView("season")}>Season</button>
+      </div>
+    </header>
+    {failed&&<p className="card-empty">The teams couldn't be loaded.</p>}
+    {!failed&&!data&&<p className="card-empty">Loading the teams…</p>}
+    {data&&view==="top100"&&(top
+      ?<SquadPitch squad={top} stat={p=>`${p.owned}%`} describe={p=>`owned by ${p.owned}% of the top 100, started by ${p.started}%`}/>
+      :<p className="card-empty">No top 100 squads synced yet.</p>)}
+    {data&&view==="season"&&(season
+      ?<SquadPitch squad={season} stat={p=>`${p.points} pts`} describe={p=>`${p.points} points this season`}/>
+      :<p className="card-empty">No points recorded yet this season.</p>)}
   </article>;
 }
 
