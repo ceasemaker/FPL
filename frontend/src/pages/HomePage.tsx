@@ -263,7 +263,7 @@ function SquadsCard(){
   },[]);
   const top=data?.top100??null, season=data?.season??null;
   const subtitle=view==="top100"
-    ?top?`The players most owned by the top 100 managers in their GW${top.gameweek} squads${top.freeHit?` (the ${top.freeHit} on Free Hit counted with their GW${top.gameweek-1} team)`:""}. Starters are the ones they start most, the captain the one they captain most.`:undefined
+    ?top?`The players most owned by the top 100 managers in their GW${top.gameweek} squads${top.freeHit?` (the ${top.freeHit} on Free Hit counted with their GW${top.gameweek-1} team)`:""}. Starters are the ones they start most, the captain the one they captain most.${top.managers<100?` Counts ${top.managers} of the 100: Free Hit managers with no GW${top.gameweek-1} team stored are left out.`:""}`:undefined
     :season?`The most FPL points in each position so far, whatever the club or price. The starting XI has scored ${season.points} points.`:undefined;
   return <article className="command-card squads-card">
     <header className="command-card-title">

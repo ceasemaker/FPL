@@ -69,5 +69,19 @@ class HomeSquadsApiTests(TestCase):
         self.assertEqual(d["captain"], 16)
         self.assertEqual({p["owned"] for p in d["players"]}, {100})
 
+    def test_only_the_latest_sync_counts(self):
+        from django.utils import timezone
+
+        current = Top100Manager.objects.create(entry_id=1, game_week=9, player_name="A", entry_name="A", rank=1)
+        dropped = Top100Manager.objects.create(entry_id=5, game_week=9, player_name="E", entry_name="E", rank=1, active_chip="freehit")
+        Top100Manager.objects.filter(id=dropped.id).update(updated_at=timezone.now() - timezone.timedelta(days=2))
+        squad = [p for p in self.players if p.id not in (3, 9, 15, 19)]
+        for i, a in enumerate(squad, 1):
+            Top100Pick.objects.create(manager=current, athlete=a, game_week=9, position=i)
+        Top100Pick.objects.create(manager=dropped, athlete=self.players[2], game_week=9, position=1)
+        d = self.client.get("/api/home/squads/").json()["top100"]
+        self.assertEqual((d["managers"], d["freeHit"]), (1, 0))
+        self.assertNotIn(3, [p["id"] for p in d["players"]])
+
     def test_no_top100_data_yet(self):
         self.assertIsNone(self.client.get("/api/home/squads/").json()["top100"])

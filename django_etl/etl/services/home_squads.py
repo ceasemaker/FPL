@@ -9,19 +9,25 @@ three-per-club limit: the point is who the players are, whatever they cost.
   managers' latest squads. The XI is whoever they start most, the captain
   whoever they captain most. A manager on Free Hit is counted with their
   squad from the gameweek before, since the Free Hit squad isn't their team.
+  Only the latest sync's managers count: a gameweek synced more than once
+  keeps the rows of managers who have since dropped out of the top 100.
 - Season: the most FPL points so far in each position; the XI is the
   highest-scoring legal formation.
 """
 from __future__ import annotations
 
 from collections import Counter
+from datetime import timedelta
 
 from django.core.cache import cache
+from django.db.models import Max
 
 from ..models import Athlete, Top100Manager, Top100Pick
 
 CACHE_KEY = "home-squads"
 CACHE_TTL = 30 * 60
+MANAGERS = 100
+SYNC_WINDOW = timedelta(hours=2)  # one sync of 100 managers takes minutes; older rows are from earlier syncs
 POSITIONS = {1: "GKP", 2: "DEF", 3: "MID", 4: "FWD"}
 SQUAD = {1: 2, 2: 5, 3: 5, 4: 3}
 MIN_XI = {2: 3, 3: 2, 4: 1}  # plus one goalkeeper; ten outfield players
@@ -63,10 +69,12 @@ def top100_squad() -> dict | None:
     gw = Top100Manager.objects.order_by("-game_week").values_list("game_week", flat=True).first()
     if gw is None:
         return None
-    managers = list(Top100Manager.objects.filter(game_week=gw).values("id", "entry_id", "active_chip"))
+    rows = Top100Manager.objects.filter(game_week=gw)
+    synced = rows.aggregate(last=Max("updated_at"))["last"]
+    managers = list(rows.filter(updated_at__gte=synced - SYNC_WINDOW).order_by("rank").values("id", "entry_id", "active_chip")[:MANAGERS])
     on_free_hit = [m["entry_id"] for m in managers if (m["active_chip"] or "").lower() == "freehit"]
-    sources = [m["id"] for m in managers if m["entry_id"] not in on_free_hit]
-    sources += list(Top100Manager.objects.filter(game_week=gw - 1, entry_id__in=on_free_hit).values_list("id", flat=True))
+    previous = list(Top100Manager.objects.filter(game_week=gw - 1, entry_id__in=on_free_hit).values_list("id", flat=True))
+    sources = [m["id"] for m in managers if m["entry_id"] not in on_free_hit] + previous
 
     owned, started, captained = Counter(), Counter(), Counter()
     for athlete, position, captain in Top100Pick.objects.filter(manager_id__in=sources).values_list("athlete_id", "position", "is_captain"):
@@ -86,7 +94,7 @@ def top100_squad() -> dict | None:
     xi, bench = pick_xi(picked, lambda p: (p["started"], p["owned"]))
     in_xi = sorted((p for p in picked if p["id"] in xi), key=lambda p: p["captained"], reverse=True)
     return {"players": _ordered(picked), "xi": xi, "bench": bench, "captain": in_xi[0]["id"], "vice": in_xi[1]["id"],
-            "gameweek": gw, "managers": count, "freeHit": len(on_free_hit)}
+            "gameweek": gw, "managers": count, "freeHit": len(previous)}
 
 
 def build_payload() -> dict:
