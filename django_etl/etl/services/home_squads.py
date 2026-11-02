@@ -24,7 +24,7 @@ from django.db.models import Max
 
 from ..models import Athlete, Top100Manager, Top100Pick
 
-CACHE_KEY = "home-squads"
+CACHE_KEY = "home-squads:v2"
 CACHE_TTL = 30 * 60
 MANAGERS = 100
 SYNC_WINDOW = timedelta(hours=2)  # one sync of 100 managers takes minutes; older rows are from earlier syncs
