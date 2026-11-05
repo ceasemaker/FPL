@@ -129,22 +129,33 @@ export function MatchPage() {
             <ShotZones data={data} />
           </div>
 
-          <div className="mp-sec-title"><div><h2>Every player</h2><p>{data.competitionId === 8 ? "Opta match sheets and FPL points. Sorted by FPL points; choose a column to sort." : "Who played and for how long, with goals and assists."}</p></div></div>
+          <div className="mp-sec-title"><div><h2>Every player</h2><p>{data.competitionId === 8 ? "Match sheets and FPL points. Sorted by FPL points; choose a column to sort." : "Who played and for how long, with goals and assists."}</p></div></div>
           <MatchPlayers data={data} />
         </>
       ) : finished ? (
         <p className="mp-note">{data.competitionId === 8
           ? "The detailed timeline and stats for this match haven't been loaded yet."
-          : "The Premier League's feeds have only the score for this match: no timeline, lineups or stats."}</p>
+          : "Only the score is available for this match: no timeline, lineups or stats."}</p>
       ) : live ? (
-        <p className="mp-note">Live: this page updates every minute with the score and scorers. The timeline, lineups and match stats appear once the match has been played and loaded overnight.</p>
+        <>
+          <p className="mp-note">Live: this page updates every minute. The timeline, lineups and player stats appear once the match has been played and loaded overnight.</p>
+          {Object.keys(data.teamStats).length > 0 && (
+            <>
+              <div className="mp-sec-title"><div><h2>So far</h2><p>Team stats from kick-off to {liveLabel(live)}, updated every minute.</p></div></div>
+              <div className="mp-full">
+                <TeamCompare data={data} />
+                <ShotZones data={data} />
+              </div>
+            </>
+          )}
+        </>
       ) : (
         <UpcomingTimelineNote data={data} timeline={timeline} />
       )}
 
       <div className="mp-sec-title"><div><h2>{played ? "Going into the match" : "Before kick-off"}</h2><p>{live ? (data.odds?.chances ? "Form in every competition, the last meetings, and what the bookmakers expected." : "Form in every competition and the last meetings.") : finished ? (data.competitionId === 8 ? "Form in every competition, the last meetings, and who scored FPL points here." : "Form in every competition and the last meetings.") : "Form in every competition, the last meetings, and what the bookmakers expect."}</p></div></div>
       <MatchContext data={data} />
-      <p className="mp-foot">Match data from the Premier League's stats feeds (Opta){data.competitionId === 8 ? " and FPL" : ""}. Momentum is Opta's per-minute chance of each side scoring, published for Premier League matches only; team and player stats are full-match totals.</p>
+      {finished && data.detailsAvailable && <p className="mp-foot">Momentum is each side's chance of scoring in that minute, available for Premier League matches only; team and player stats are full-match totals.</p>}
     </main>
   );
 }

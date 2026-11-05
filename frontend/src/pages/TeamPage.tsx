@@ -139,7 +139,7 @@ export function TeamPage() {
       {withStats.length > 0 && (
         <>
           {withXg.length > 0 && <>
-            <div className="mp-sec-title"><div><h2>Game by game</h2><p>Expected goals (xG) for {data.team.short} above the line, for the opponent below. Choose a game to open it.{withXg.length < withStats.length ? " Opta publishes xG for Premier League matches only, so cup and European games are left out." : ""}</p></div></div>
+            <div className="mp-sec-title"><div><h2>Game by game</h2><p>Expected goals (xG) for {data.team.short} above the line, for the opponent below. Choose a game to open it.{withXg.length < withStats.length ? " xG is available for Premier League matches only, so cup and European games are left out." : ""}</p></div></div>
             <XgStrip matches={withXg} team={data.team.short} />
           </>}
 
@@ -160,7 +160,7 @@ export function TeamPage() {
       <MatchLog matches={[...played].reverse()} upcoming={upcoming} />
 
       {data.setPieces && <>
-        <div className="mp-sec-title"><div><h2>Set pieces</h2><p>Who has taken them in this season's league games (Opta): penalties taken, corners taken, free kicks shot or crossed. Counts, not official orders.</p></div></div>
+        <div className="mp-sec-title"><div><h2>Set pieces</h2><p>Who has taken them in this season's league games: penalties taken, corners taken, free kicks shot or crossed. Counts, not official orders.</p></div></div>
         <SetPieceTakers sp={data.setPieces} />
       </>}
 
@@ -174,7 +174,7 @@ export function TeamPage() {
           <MiniTable rows={data.table} team={data.team.id} season={data.season} />
         </section>
       </div>
-      <p className="mp-foot">Match data from the Premier League's stats feeds (Opta). Team stats are loaded for most matches; some older European ties have only the score.</p>
+      <p className="mp-foot">Team stats are loaded for most matches; some older European ties have only the score.</p>
     </main>
   );
 }

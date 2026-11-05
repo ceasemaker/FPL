@@ -68,7 +68,7 @@ export function MomentumScrubber({ data, timeline, cursor, onCursor, hasMomentum
   return (
     <section className="mp-sheet mp-scrub" aria-labelledby="mp-scrub-title">
       <div className="mp-scrub-top">
-        <h2 id="mp-scrub-title">Drag through the match {hasMomentum && <span className="mp-badge" title="Opta's momentum: each side's chance of scoring in that minute">Opta momentum</span>}</h2>
+        <h2 id="mp-scrub-title">Drag through the match {hasMomentum && <span className="mp-badge" title="Each side's chance of scoring in that minute">Momentum</span>}</h2>
         <div className="mp-jumps">
           <button type="button" className="mp-play" onClick={play} aria-pressed={isPlaying}>
             <EventIcon kind={isPlaying ? "pause" : "play"} size={12} />{isPlaying ? "Pause" : "Replay the match"}
@@ -76,7 +76,7 @@ export function MomentumScrubber({ data, timeline, cursor, onCursor, hasMomentum
           {jumps.map(([text, i]) => <button type="button" key={text} onClick={() => move(i)}>{text}</button>)}
         </div>
       </div>
-      {!hasMomentum && <p className="mp-nomom"><span className="mp-badge">No momentum</span> Opta publishes momentum for Premier League games only; goals, cards and substitutions are below.</p>}
+      {!hasMomentum && <p className="mp-nomom"><span className="mp-badge">No momentum</span> Momentum is available for Premier League games only; goals, cards and substitutions are below.</p>}
       <div className="mp-band-wrap">
       {/* Labels are HTML over the SVG so they stay readable when the band scales down on phones. */}
       <span className="mp-side-label" style={{ top: pct(mid - 26, H) }}>{data.home.short}</span>

@@ -158,7 +158,7 @@ export function StatsExplorerPage() {
     const value = statValue(stat, player, state.scope, state.norm);
     const text = formatStat(stat, value, state.norm);
     if (value === null) {
-      const reason = stat.kind === "rate" ? "No attempts yet" : "Missing from the Opta feed for this player";
+      const reason = stat.kind === "rate" ? "No attempts yet" : "Not recorded for this player";
       return { value, text: "–", pct: null, shade: null, tip: reason, label: `${stat.label}: ${reason.toLowerCase()}` };
     }
     const cohort = cohorts.get(stat.key)?.get(player.position) ?? [];
@@ -266,7 +266,7 @@ export function StatsExplorerPage() {
           <h1>Stats Explorer</h1>
           <p>
             {data
-              ? `${data.seasonLabel} season to gameweek ${data.latestGameweek} · Opta stats from the ${state.tab === "players" && state.scope === "all" ? "Premier League and Champions League" : "Premier League"}, FPL prices and ownership`
+              ? `${data.seasonLabel} season to gameweek ${data.latestGameweek} · stats from the ${state.tab === "players" && state.scope === "all" ? "Premier League and Champions League" : "Premier League"}, FPL prices and ownership`
               : "Loading this season's stats…"}
           </p>
         </div>
@@ -622,7 +622,7 @@ function ColumnsMenu({ catalogue, lensKeys, extra, onChange }: {
         ))}
         {!groups.size && <p className="sx-muted">No curated stat matches “{q}”.</p>}
       </div>
-      <p className="sx-muted sx-columns-foot">Coming next: search all 290+ raw Opta stats, not just this curated set.</p>
+      <p className="sx-muted sx-columns-foot">Coming next: search all 290+ raw stats, not just this curated set.</p>
     </div>
   );
 }
@@ -794,7 +794,7 @@ function TeamTable({ teams, catalogue, state, onSort }: {
     return (
       <div className="sx-state">
         <h2>Club stats aren't here yet</h2>
-        <p>They arrive with the Premier League's stats feed, which refreshes after each gameweek. Check back after the next update.</p>
+        <p>They arrive with the stats update after each gameweek. Check back after the next update.</p>
       </div>
     );
   }

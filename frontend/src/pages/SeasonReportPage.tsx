@@ -140,7 +140,7 @@ export function SeasonReportPage() {
                   </tbody>
                 </table>
               </div>
-              <p className="footnote sr-note">From match records, so it can run a game ahead of the Opta season sheets above.</p>
+              <p className="footnote sr-note">From match records, so it can run a game ahead of the season stats above.</p>
             </section>
           )}
 
@@ -148,7 +148,7 @@ export function SeasonReportPage() {
             {report.ranked
               ? `Compared with the ${report.group} ${report.positionName} who played at least ${report.minMinutes.toLocaleString("en-GB")} Premier League minutes in ${report.seasonLabel}. `
               : ""}
-            Opta data from the Premier League's stats feeds, refreshed overnight. Per 90 where it applies. Lime marks the top 7% of the position.
+            Refreshed overnight. Per 90 where it applies. Lime marks the top 7% of the position.
           </p>
         </>
       )}

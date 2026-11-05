@@ -2,9 +2,9 @@
 
 Scores, goals and lineups are stored by the nightly sync, so a game that has
 kicked off since has nothing stored yet. The Matches calendar and the Match
-page ask the feed instead: one request per game for the score and minute, two
-more for the Match page's scorers, each cached for a minute (an hour once the
-game is over). The feed being slow or down leaves a game as it was: every
+page ask the feed instead: one request per game for the score and minute, three
+more for the Match page's scorers and team stats, each cached for a minute (an
+hour once the game is over). The feed being slow or down leaves a game as it was: every
 call has a hard deadline, since a timeout per connection attempt can still
 add up to a minute when the host's addresses don't answer.
 """
@@ -55,26 +55,40 @@ def live_state(match_id: str) -> dict | None:
     return state or None
 
 
-def live_goals(match_id: str, finished: bool = False) -> list[dict]:
-    """Goals so far, in the Match page's shape, with scorers named from the live lineups."""
-    key = f"match-live-goals:{match_id}"
+def live_detail(match_id: str, finished: bool = False) -> dict:
+    """Goals so far (scorers named from the live lineups) and each side's team stats and formation.
+
+    ``{"goals": [...], "teams": {"home": {"formation", "stats"}, "away": {...}}}``. Three requests,
+    each on its own: a missing one leaves its part empty rather than losing the rest.
+    """
+    key = f"match-live-detail:{match_id}"
     cached = cache.get(key)
     if cached is not None:
         return cached
-    try:
-        goals = goals_from_events(_fetch("get_match_events", match_id))
-        lineups = _fetch("get_match_lineups", match_id) if goals else {}
-    except Exception as exc:
-        logger.warning("Live goals for match %s unavailable: %s", match_id, exc)
-        cache.set(key, [], LIVE_TTL)
-        return []
+
+    def get(method: str):
+        try:
+            return _fetch(method, match_id)
+        except Exception as exc:
+            logger.warning("Live %s for match %s unavailable: %s", method, match_id, exc)
+            return None
+
+    events, lineups, stats = get("get_match_events"), get("get_match_lineups") or {}, get("get_match_stats") or []
     names = {}
     for side in ("home_team", "away_team"):
         for p in (lineups.get(side) or {}).get("players") or []:
             names[str(p.get("id"))] = p.get("knownName") or f"{p.get('firstName', '')} {p.get('lastName', '')}".strip()
-    out = [{"minute": g["minute"], "period": 1 if g["period"] == "FirstHalf" else 2, "team": g["team_id"],
-            "scorer": (names.get(g["player_id"]) or "Unknown") + (" (own goal)" if g["goal_type"] == "Own" else ""),
-            "assist": names.get(g["assist_player_id"]) if g["assist_player_id"] else None, "type": g["goal_type"],
-            "home": g["home_after"], "away": g["away_after"]} for g in goals]
-    cache.set(key, out, LIVE_TTL * 60 if finished else LIVE_TTL)
-    return out
+    goals = [{"minute": g["minute"], "period": 1 if g["period"] == "FirstHalf" else 2, "team": g["team_id"],
+              "scorer": (names.get(g["player_id"]) or "Unknown") + (" (own goal)" if g["goal_type"] == "Own" else ""),
+              "assist": names.get(g["assist_player_id"]) if g["assist_player_id"] else None, "type": g["goal_type"],
+              "home": g["home_after"], "away": g["away_after"]} for g in goals_from_events(events or {})]
+    teams = {}
+    for entry in stats:
+        side = str(entry.get("side", "")).lower()
+        if side in ("home", "away"):
+            formation = ((lineups.get(f"{side}_team") or {}).get("formation") or {}).get("formation", "")
+            teams[side] = {"formation": formation, "stats": entry.get("stats") or {}}
+    detail = {"goals": goals, "teams": teams}
+    # A failed events request must not be cached as "no goals" for long.
+    cache.set(key, detail, LIVE_TTL * 60 if finished and events is not None else LIVE_TTL)
+    return detail

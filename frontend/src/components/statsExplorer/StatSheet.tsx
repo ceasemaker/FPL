@@ -68,7 +68,7 @@ export function StatSheet({ playerId }: { playerId: number }) {
 
   if (data === undefined) return <div className="sx-sheet-loading" aria-busy="true">Loading the full stat sheet…</div>;
   if (data === null) return <p className="mp-note">The full stat sheet couldn't be loaded. Try again in a minute.</p>;
-  if (!player) return <p className="mp-note">No Opta season stats for him yet this season.</p>;
+  if (!player) return <p className="mp-note">No season stats for him yet.</p>;
 
   const groups = new Map<string, Stat[]>();
   for (const s of data.catalogue) {

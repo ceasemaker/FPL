@@ -20,7 +20,7 @@ from ..models import (
     Athlete, Fixture, FixtureHistory, FixtureOdds, GameweekHistory, MatchGoal, PlMatch, Team, TeamSeasonStat,
 )
 
-from .live_scores import LIVE_WINDOW, live_goals, live_state
+from .live_scores import LIVE_WINDOW, live_detail, live_state
 from .match_goals import premier_league_clubs
 
 CACHE_TTL = 15 * 60
@@ -243,7 +243,7 @@ def build_payload(match_id: str) -> dict | None:
 
 
 def _with_live(payload: dict) -> dict:
-    """A match under way (or just over) that has nothing stored yet: score, minute and scorers from the feed."""
+    """A match under way (or just over) that has nothing stored yet: score, minute, scorers and team stats from the feed."""
     if payload["status"] != "upcoming" or not payload["kickoff"]:
         return payload
     if not timezone.now() - LIVE_WINDOW <= datetime.fromisoformat(payload["kickoff"]) <= timezone.now():
@@ -252,9 +252,13 @@ def _with_live(payload: dict) -> dict:
     if not state:
         return payload
     finished = state["period"] == "FullTime"
+    detail = live_detail(payload["matchId"], finished)
+    ids = {"home": payload["home"]["id"], "away": payload["away"]["id"]}
+    team_stats = {ids[side]: {"formation": t["formation"], **{k: t["stats"].get(k) for k in TEAM_STATS}}
+                  for side, t in detail["teams"].items()}
     return {**payload, "status": "finished" if finished else "live", "score": state["score"],
             "live": None if finished else {"period": state["period"], "clock": state["clock"]},
-            "goals": live_goals(payload["matchId"], finished)}
+            "goals": detail["goals"], "teamStats": team_stats or payload["teamStats"]}
 
 
 def match_for_fixture(fixture_id: int) -> str | None:

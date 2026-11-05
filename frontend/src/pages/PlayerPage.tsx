@@ -194,12 +194,12 @@ export function PlayerPage() {
         </section>
       </div>
 
-      <div className="mp-sec-title"><div><h2>Full stat sheet</h2><p>Every Opta season stat, the same numbers as the Stats Explorer: Premier League, Champions League and both together.</p></div></div>
+      <div className="mp-sec-title"><div><h2>Full stat sheet</h2><p>Every season stat, the same numbers as the Stats Explorer: Premier League, Champions League and both together.</p></div></div>
       <StatSheet playerId={data.id} />
 
       {data.heatmaps.length > 0 && heatGw != null && (
         <>
-          <div className="mp-sec-title"><div><h2>Where he played</h2><p>SofaScore heatmap for one league game. Collected while SofaScore heatmaps were switched on.</p></div></div>
+          <div className="mp-sec-title"><div><h2>Where he played</h2><p>Heatmap for one league game, where we have one.</p></div></div>
           <div className="mp-sheet pp-heat">
             <label>Gameweek <select className="aero-select" value={heatGw} onChange={(e) => setHeatGw(Number(e.target.value))}>
               {data.heatmaps.map((h) => <option key={h.gameweek} value={h.gameweek}>GW{h.gameweek}</option>)}
@@ -208,7 +208,7 @@ export function PlayerPage() {
           </div>
         </>
       )}
-      <p className="mp-foot">FPL data from the official game; match data from the Premier League's stats feeds (Opta). Percentiles use league games only.</p>
+      <p className="mp-foot">Percentiles use league games only.</p>
     </main>
   );
 }

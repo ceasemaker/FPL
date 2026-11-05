@@ -218,9 +218,9 @@ export function useUsageView(active: boolean, config: UsageConfig, update: (patc
   const hint = (
     <>
       Possession-ending actions are shots plus every time the player loses the ball (an incomplete pass or cross, a failed
-      take-on, being tackled, a miscontrol), from Opta via the Premier League. Players above the dashed line get more out of
+      take-on, being tackled, a miscontrol). Players above the dashed line get more out of
       each action than the group does; below it, they use more of the ball for what they produce. Chances created are passes
-      that lead directly to a shot; FBref's "shot-creating actions", used in the videos this chart is based on, aren't available here.
+      that lead directly to a shot; the "shot-creating actions" used in the videos this chart is based on aren't available here.
       Usage percentages run lower than basketball's, or the videos', because every failed pass by every player counts, defenders and goalkeepers included.
       {data && data.players.some((p) => !p.teamKnown) && " A few players' season club is unknown, so their usage uses their current club."}
     </>

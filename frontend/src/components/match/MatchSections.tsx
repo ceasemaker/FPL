@@ -81,7 +81,7 @@ export function ZonesPanel({ sides, label = "Where the shots came from" }: { sid
           </div>
           <div className="out heat" style={heat(out)}>{out}<small>outside the box</small></div>
         </div>
-        <div className="mp-zone-note">{inBox} inside the box{unplaced > 0 ? ` (${unplaced} not placed left, centre or right by Opta)` : ""}</div>
+        <div className="mp-zone-note">{inBox} inside the box{unplaced > 0 ? ` (${unplaced} not placed left, centre or right)` : ""}</div>
       </div>
     );
   };
@@ -131,7 +131,7 @@ export function MatchPlayers({ data }: { data: MatchData }) {
           <button key={k} type="button" aria-pressed={team === k} onClick={() => setTeam(k)}>{l}</button>
         ))}
       </div>
-      {!sheets && <p className="mp-note">Opta player sheets are loaded for Premier League matches; here minutes come from the lineups (who started, who came on or off when).</p>}
+      {!sheets && <p className="mp-note">Full player sheets are loaded for Premier League matches; here minutes come from the lineups (who started, who came on or off when).</p>}
       {data.fplDouble.length > 0 && <p className="mp-note">FPL points for {data.fplDouble.map(short).join(" and ")} players cover both of their matches in this double gameweek.</p>}
       <div className="mp-tbl-wrap">
         <table className="mp-table">
@@ -220,7 +220,7 @@ function OddsCard({ data }: { data: MatchData }) {
   const o = data.odds;
   return (
     <section className="mp-sheet">
-      <h3>What the bookmakers expect <span className="mp-badge" title="Bookmaker odds via SofaScore, with the margin removed">Odds</span></h3>
+      <h3>What the bookmakers expect <span className="mp-badge" title="Bookmaker odds with the margin removed">Odds</span></h3>
       {!o?.chances ? <p className="mp-note">Odds are collected in the three days before kick-off.</p> : (
         <>
           <div className="mp-odds">

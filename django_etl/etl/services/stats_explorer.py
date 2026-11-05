@@ -89,7 +89,7 @@ CATALOGUE: list[dict] = [
     _rate("shot_accuracy", "Shot accuracy", "Shooting", ["ontarget_scoring_att"], ["total_scoring_att"], "Share of shots on target."),
     _rate("conversion", "Conversion", "Shooting", ["goals"], ["total_scoring_att"], "Share of shots scored."),
     # Creating
-    _count("assists", "Assists", "Creating", ["goal_assist"], "Assists (Opta definition, not FPL's)."),
+    _count("assists", "Assists", "Creating", ["goal_assist"], "Assists (the match-stats definition, not FPL's)."),
     _count("xa", "xA", "Creating", ["expectedAssists"], "Expected assists: the quality of chances created.", pl_only=True),
     _count("chances_created", "Chances created", "Creating", ["total_att_assist"], "Passes that led to a shot (key passes)."),
     _count("big_chances_created", "Big chances created", "Creating", ["big_chance_created"], "Passes that set up a big chance."),

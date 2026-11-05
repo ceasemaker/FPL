@@ -586,12 +586,12 @@ export function ChartLabPage() {
             <div className="lab-stat-grid">
               {data?.metrics.map((metric) => (
                 <button key={metric.key} className={`lab-stat${metric.seasonOnly ? " season" : ""}`} onClick={() => insertVariable(metric.key)}
-                  disabled={metric.seasonOnly && config.mode === "trend"} title={metric.seasonOnly ? "A season total from the Premier League's feeds: works in scatter and ranking charts, not trends." : undefined}>
+                  disabled={metric.seasonOnly && config.mode === "trend"} title={metric.seasonOnly ? "A season total: works in scatter and ranking charts, not trends." : undefined}>
                   <code>{metric.key}</code><span>{metric.label}</span>
                 </button>
               ))}
             </div>
-            <p className="aero-empty lab-hint">xCS is an estimate (FPL does not publish it): the clean-sheet chance in each 60+ minute appearance, from expected goals conceded. Ownership is season-level only, so it is blank in trends. Stats marked "(season)" come from the Premier League's own feeds (Opta) and have no gameweek breakdown, so they work in scatter and ranking charts only.</p>
+            <p className="aero-empty lab-hint">xCS is an estimate (FPL does not publish it): the clean-sheet chance in each 60+ minute appearance, from expected goals conceded. Ownership is season-level only, so it is blank in trends. Stats marked "(season)" are season totals with no gameweek breakdown, so they work in scatter and ranking charts only.</p>
           </article>}
         </section>
       </div>

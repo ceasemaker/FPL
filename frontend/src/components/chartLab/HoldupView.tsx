@@ -164,7 +164,7 @@ export function useHoldupView(active: boolean, config: HoldupConfig, update: (pa
     <>
       A lay-off is a short pass, usually first time, played back to a team-mate by a player receiving the ball with his back to
       goal: the "wall pass" that lets midfielders run on. Aerial duels won and fouls won show the other half of holding the ball up.
-      Opta data via the Premier League. Idea from Sincere FC's "Why 'Hold-Up Play' Needs To Become a Statistic in Football".
+      Idea from Sincere FC's "Why 'Hold-Up Play' Needs To Become a Statistic in Football".
     </>
   );
 

@@ -71,10 +71,15 @@ class MatchPageApiTests(TestCase):
         lineups = {"home_team": {"players": [{"id": "5", "firstName": "Mo", "lastName": "Salah"}]}, "away_team": {"players": []}}
         client = "etl.services.pl_stats_client.PLStatsClient"
         with patch(f"{client}.get_match", return_value={"period": "FirstHalf", "clock": "24", "homeTeam": {"score": 1}, "awayTeam": {"score": 0}}), \
-                patch(f"{client}.get_match_events", return_value=events), patch(f"{client}.get_match_lineups", return_value=lineups):
+                patch(f"{client}.get_match_events", return_value=events), patch(f"{client}.get_match_lineups", return_value=lineups), \
+                patch(f"{client}.get_match_stats", return_value=[{"side": "Home", "stats": {"possessionPercentage": 51.5, "totalScoringAtt": 5.0, "junk": 1}},
+                                                                 {"side": "Away", "stats": {"possessionPercentage": 48.5}}]):
             d = self.client.get("/api/matches/9/").json()
         self.assertEqual((d["status"], d["score"], d["live"]), ("live", [1, 0], {"period": "FirstHalf", "clock": "24"}))
         self.assertEqual([(g["scorer"], g["minute"], g["home"], g["away"]) for g in d["goals"]], [("Mo Salah", 22, 1, 0)])
+        self.assertEqual((d["teamStats"]["14"]["possessionPercentage"], d["teamStats"]["14"]["totalScoringAtt"]), (51.5, 5.0))
+        self.assertEqual(d["teamStats"]["2000"]["possessionPercentage"], 48.5)
+        self.assertNotIn("junk", d["teamStats"]["14"])
 
     def test_upcoming_match_never_asks_the_feed(self):
         from unittest.mock import patch
