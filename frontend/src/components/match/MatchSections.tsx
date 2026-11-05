@@ -184,8 +184,10 @@ export function MatchContext({ data }: { data: MatchData }) {
   );
   const pts = data.players.filter((p) => p.fpl != null).sort((a, b) => (b.fpl ?? 0) - (a.fpl ?? 0)).slice(0, 6);
   const short = (t: string) => (t === data.home.id ? data.home.short : data.away.short);
+  // Once a game is under way, odds only show if they were collected before kick-off.
+  const third = data.status === "finished" ? data.competitionId === 8 : data.status === "upcoming" || !!data.odds?.chances;
   return (
-    <div className={`mp-ctx${data.status === "finished" && data.competitionId !== 8 ? " two" : ""}`}>
+    <div className={`mp-ctx${third ? "" : " two"}`}>
       <section className="mp-sheet"><h3>Last five games</h3><div className="mp-form">{formRow(data.home.id, data.home.short, data.home.name, data.form.home)}{formRow(data.away.id, data.away.short, data.away.name, data.form.away)}</div></section>
       <section className="mp-sheet">
         <h3>Last meetings</h3>
@@ -207,7 +209,7 @@ export function MatchContext({ data }: { data: MatchData }) {
             <ul className="mp-fplist">{pts.map((p) => <li key={p.id}><span>{p.fplId ? <Link to={`/players/${p.fplId}`}>{p.name}</Link> : p.name}<small>{short(p.team)}</small></span><b>{p.fpl}</b></li>)}</ul>
           )}
         </section>
-      )) : (
+      )) : third && (
         <OddsCard data={data} />
       )}
     </div>

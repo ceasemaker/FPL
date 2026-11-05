@@ -58,6 +58,31 @@ class MatchPageApiTests(TestCase):
         self.assertEqual([(p["name"], p["minutes"], p["goals"], p["shots"]) for p in d["players"]], [("Mo Salah", 80, 1, None)])
 
 
+    def test_match_under_way_is_live_from_the_feed(self):
+        from datetime import timedelta
+        from unittest.mock import patch
+        from django.utils import timezone
+
+        PlMatch.objects.create(season=2026, match_id="9", competition_id=6, competition_name="UEFA Europa League",
+                               home_team_id="14", away_team_id="2000", away_team_name="Dinamo Zagreb",
+                               kickoff=timezone.now() - timedelta(minutes=30))
+        events = {"homeTeam": {"id": "14", "goals": [{"goalType": "Goal", "period": "FirstHalf", "time": "22", "playerId": "5",
+                                                      "assistPlayerId": None, "timestamp": "1"}]}, "awayTeam": {"id": "2000", "goals": []}}
+        lineups = {"home_team": {"players": [{"id": "5", "firstName": "Mo", "lastName": "Salah"}]}, "away_team": {"players": []}}
+        client = "etl.services.pl_stats_client.PLStatsClient"
+        with patch(f"{client}.get_match", return_value={"period": "FirstHalf", "clock": "24", "homeTeam": {"score": 1}, "awayTeam": {"score": 0}}), \
+                patch(f"{client}.get_match_events", return_value=events), patch(f"{client}.get_match_lineups", return_value=lineups):
+            d = self.client.get("/api/matches/9/").json()
+        self.assertEqual((d["status"], d["score"], d["live"]), ("live", [1, 0], {"period": "FirstHalf", "clock": "24"}))
+        self.assertEqual([(g["scorer"], g["minute"], g["home"], g["away"]) for g in d["goals"]], [("Mo Salah", 22, 1, 0)])
+
+    def test_upcoming_match_never_asks_the_feed(self):
+        from unittest.mock import patch
+
+        with patch("etl.services.pl_stats_client.PLStatsClient.get_match") as get:
+            self.assertEqual(self.client.get("/api/matches/2/").json()["status"], "upcoming")
+        get.assert_not_called()
+
 class MatchCalendarTests(TestCase):
     def setUp(self):
         from datetime import datetime, timezone as tz
@@ -188,3 +213,17 @@ class SampleSizeTests(TestCase):
         from ..services.sample_size import qualifying_minutes
         self.assertEqual([qualifying_minutes(gw) for gw in (0, 5, 8, 19, 38)], [270, 270, 290, 680, 1370])
 
+
+
+class LiveFeedDeadlineTests(TestCase):
+    def test_a_hanging_feed_gives_up(self):
+        import time
+        from unittest.mock import patch
+        from ..services import live_scores
+
+        cache.clear()
+        with patch.object(live_scores, "DEADLINE", 0.2), \
+                patch("etl.services.pl_stats_client.PLStatsClient.get_match", side_effect=lambda mid: time.sleep(2)):
+            started = time.time()
+            self.assertIsNone(live_scores.live_state("77"))
+            self.assertLess(time.time() - started, 1.5)

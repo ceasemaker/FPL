@@ -5,12 +5,10 @@ congested runs (a Thursday in Europe before a Sunday kick-off) show at a glance.
 League matches carry their FPL gameweek and, when collected, the match odds.
 
 Scores are stored by the nightly sync, so a game that has kicked off since is
-read live from the Premier League feed (one request per game, cached a minute)
-until the sync catches up.
+read live from the Premier League feed until the sync catches up (live_scores.py).
 """
 from __future__ import annotations
 
-import logging
 from datetime import date, datetime, time, timedelta
 
 from django.core.cache import cache
@@ -18,15 +16,11 @@ from django.db.models import Q
 from django.utils import timezone
 
 from ..models import Fixture, FixtureOdds, PlMatch, Team
+from .live_scores import LIVE_WINDOW, live_state
 from .match_page import _round
-
-logger = logging.getLogger(__name__)
 
 CACHE_TTL = 10 * 60
 MAX_DAYS = 120
-LIVE_TTL = 60
-LIVE_WINDOW = timedelta(hours=18)  # covers a 12:30 kick-off until the 3:30am sync stores the score
-NOT_STARTED = {"", "PreMatch", "Postponed", "Abandoned", "Cancelled", "Suspended"}
 
 
 def _clubs() -> list[dict]:
@@ -117,28 +111,6 @@ def build_calendar(start: date, days: int) -> dict:
     return _with_live_scores(payload)
 
 
-def _live_state(match_id: str) -> dict | None:
-    """The feed's period, clock and score for one match, cached for a minute (a finished one for an hour)."""
-    key = f"match-live:{match_id}"
-    cached = cache.get(key)
-    if cached is not None:
-        return cached or None
-    from .pl_stats_client import PLStatsClient
-
-    try:
-        row = PLStatsClient(timeout=5, delay=0, retries=1).get_match(match_id)
-    except Exception as exc:  # the feed being down must not take the calendar with it
-        logger.warning("Live score for match %s unavailable: %s", match_id, exc)
-        row = {}
-    home, away = row.get("homeTeam") or {}, row.get("awayTeam") or {}
-    period = row.get("period") or ""
-    state = {}
-    if period not in NOT_STARTED and home.get("score") is not None and away.get("score") is not None:
-        state = {"period": period, "clock": str(row.get("clock") or ""), "score": [home["score"], away["score"]]}
-    cache.set(key, state, LIVE_TTL * 60 if period == "FullTime" else LIVE_TTL)
-    return state or None
-
-
 def _with_live_scores(payload: dict) -> dict:
     """Games that have kicked off but have no stored score yet, as live (or just finished) from the feed."""
     now = timezone.now()
@@ -146,7 +118,7 @@ def _with_live_scores(payload: dict) -> dict:
     for row in payload["matches"]:
         kickoff = datetime.fromisoformat(row["kickoff"])
         if row["status"] == "upcoming" and now - LIVE_WINDOW <= kickoff <= now:
-            state = _live_state(row["matchId"])
+            state = live_state(row["matchId"])
             if state:
                 finished = state["period"] == "FullTime"
                 row = {**row, "status": "finished" if finished else "live", "score": state["score"], "chances": None,

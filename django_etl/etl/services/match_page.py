@@ -5,16 +5,22 @@ VAR from ``MatchEvent``), Opta momentum, lineups with formation slots, team
 stats and every player's match sheet with his FPL points. Upcoming matches
 carry what is known before kick-off: odds (when collected), form and the last
 meetings. See etl/services/match_details.py for where the data comes from.
+A match that has kicked off but isn't stored yet is shown live from the feed
+(live_scores.py): score, minute and scorers, until the nightly sync.
 """
 from __future__ import annotations
 
+from datetime import datetime
+
 from django.core.cache import cache
 from django.db.models import Count, Q
+from django.utils import timezone
 
 from ..models import (
     Athlete, Fixture, FixtureHistory, FixtureOdds, GameweekHistory, MatchGoal, PlMatch, Team, TeamSeasonStat,
 )
 
+from .live_scores import LIVE_WINDOW, live_goals, live_state
 from .match_goals import premier_league_clubs
 
 CACHE_TTL = 15 * 60
@@ -146,7 +152,7 @@ def build_payload(match_id: str) -> dict | None:
     key = f"match-page:{match_id}:v4"
     cached = cache.get(key)
     if cached:
-        return cached
+        return _with_live(cached)
     match = PlMatch.objects.filter(match_id=str(match_id)).first()
     if match is None:
         return None
@@ -233,7 +239,22 @@ def build_payload(match_id: str) -> dict | None:
         "odds": None if finished or not league else _odds(match),
     }
     cache.set(key, payload, CACHE_TTL if not finished else CACHE_TTL * 8)
-    return payload
+    return _with_live(payload)
+
+
+def _with_live(payload: dict) -> dict:
+    """A match under way (or just over) that has nothing stored yet: score, minute and scorers from the feed."""
+    if payload["status"] != "upcoming" or not payload["kickoff"]:
+        return payload
+    if not timezone.now() - LIVE_WINDOW <= datetime.fromisoformat(payload["kickoff"]) <= timezone.now():
+        return payload
+    state = live_state(payload["matchId"])
+    if not state:
+        return payload
+    finished = state["period"] == "FullTime"
+    return {**payload, "status": "finished" if finished else "live", "score": state["score"],
+            "live": None if finished else {"period": state["period"], "clock": state["clock"]},
+            "goals": live_goals(payload["matchId"], finished)}
 
 
 def match_for_fixture(fixture_id: int) -> str | None:

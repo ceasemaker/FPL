@@ -27,6 +27,10 @@
 .mp-score strong { font-size: var(--fs-large-title); font-weight: 600; letter-spacing: -0.02em; line-height: 0.95; font-variant-numeric: tabular-nums; }
 .mp-score strong.ko { font-size: var(--fs-large-title); }
 .mp-score span { font-size: var(--fs-caption); font-weight: 600; color: var(--aero-text-muted); }
+.mp-score span.live { color: var(--aero-negative); font-size: var(--fs-footnote); }
+.mp-score span.live::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; background: currentColor; vertical-align: 1px; animation: mp-live 1.6s ease-in-out infinite; }
+@keyframes mp-live { 50% { opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) { .mp-score span.live::before { animation: none; } }
 .mp-summary { max-width: 68ch; margin: 14px auto 22px; text-align: center; font-size: var(--fs-headline); line-height: 1.55; color: var(--aero-text-dim); }
 .mp-scorers-phone { display: none; }
 

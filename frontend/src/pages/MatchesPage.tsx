@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { compById } from "../components/match/competitions";
 import { Crest } from "../components/match/icons";
+import { liveLabel } from "../components/match/matchModel";
 import "./MatchesPage.css";
 
 // Matches (/matches): every game the Premier League clubs play, in every
@@ -31,11 +32,6 @@ const mondayBefore = (key: string) => { const d = parseDay(key); return addDays(
 const words = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 const count = (n: number) => words[n] ?? String(n);
 const POLL_MS = 60_000;
-// "HT", "36′" or "ET 104′" for a game under way.
-const liveLabel = (l: { period: string; clock: string }) =>
-  /HalfTime/.test(l.period) ? (l.period === "HalfTime" ? "HT" : "ET HT")
-    : /Shoot|Penalt/.test(l.period) ? "Pens"
-    : `${l.period.startsWith("Extra") ? "ET " : ""}${l.clock ? `${l.clock}′` : "Live"}`;
 
 interface Cell { match: CalMatch; home: boolean; opp: Club; rest: number | null; res: "W" | "D" | "L" | null; gf: number | null; ga: number | null }
 

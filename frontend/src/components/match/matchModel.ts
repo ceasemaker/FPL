@@ -17,8 +17,16 @@ export interface PlayerRow {
   boxTouches: number | null; passes: number | null; accuratePasses: number | null; defence: number | null; saves: number | null;
 }
 export interface FormRow { matchId: string; opp: string; home: boolean; gf: number; ga: number; res: "W" | "D" | "L"; date: string | null; competition: string; league: boolean }
+export interface LiveState { period: string; clock: string }
+// "HT", "36′" or "ET 104′" for a game under way.
+export const liveLabel = (l: LiveState) =>
+  /HalfTime/.test(l.period) ? (l.period === "HalfTime" ? "HT" : "ET HT")
+    : /Shoot|Penalt/.test(l.period) ? "Pens"
+    : `${l.period.startsWith("Extra") ? "ET " : ""}${l.clock ? `${l.clock}′` : "Live"}`;
+
 export interface MatchData {
-  matchId: string; season: number; gameweek: number | null; kickoff: string | null; status: "finished" | "upcoming";
+  matchId: string; season: number; gameweek: number | null; kickoff: string | null; status: "finished" | "live" | "upcoming";
+  live?: LiveState | null;  // a game under way, read from the live feed
   competition: string; competitionId: number; round: string; penalties: [number, number] | null;
   home: TeamRef; away: TeamRef; score: [number, number] | null;
   goals: Goal[]; events: MatchEventRow[]; momentum: [number, number, number, number][];

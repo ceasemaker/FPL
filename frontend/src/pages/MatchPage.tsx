@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Crest, EventIcon } from "../components/match/icons";
-import { buildTimeline, findPlayer, slots, stateAt, summary, type MatchData } from "../components/match/matchModel";
+import { buildTimeline, findPlayer, liveLabel, slots, stateAt, summary, type MatchData } from "../components/match/matchModel";
 import { MomentumScrubber } from "../components/match/MomentumScrubber";
 import { MatchPitch, NowPanel } from "../components/match/MatchPitch";
 import { MatchContext, MatchPlayers, ShotZones, TeamCompare, UpcomingTimelineNote } from "../components/match/MatchSections";
@@ -16,16 +16,28 @@ export function MatchPage() {
   const [data, setData] = useState<MatchData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cursor, setCursor] = useState(0);
+  const [tick, setTick] = useState(0);
 
+  useEffect(() => { setData(null); setTick(0); }, [matchId]);
   useEffect(() => {
     let alive = true;
-    setData(null); setError(null);
+    setError(null);
     fetch(`/api/matches/${matchId}/`)
       .then((r) => { if (!r.ok) throw new Error(r.status === 404 ? "We don't have this match." : "Something went wrong loading this match. Try again in a minute."); return r.json() as Promise<MatchData>; })
       .then((d) => { if (alive) setData(d); })
-      .catch((e: Error) => { if (alive) setError(e.message); });
+      .catch((e: Error) => { if (alive && tick === 0) setError(e.message); });  // a failed refresh keeps what's shown
     return () => { alive = false; };
-  }, [matchId]);
+  }, [matchId, tick]);
+
+  // While the game is on, or it has kicked off and the feed hasn't caught up, refresh every minute.
+  useEffect(() => {
+    if (!data) return;
+    const id = window.setInterval(() => {
+      const ko = data.kickoff ? Date.parse(data.kickoff) : NaN;
+      if (data.status === "live" || (data.status === "upcoming" && ko <= Date.now() && Date.now() - ko < 3 * 3_600_000)) setTick((t) => t + 1);
+    }, 60_000);
+    return () => window.clearInterval(id);
+  }, [data]);
 
   const timeline = useMemo(() => (data ? buildTimeline(data) : null), [data]);
   const slotMap = useMemo(() => (data ? slots(data) : {}), [data]);
@@ -54,6 +66,8 @@ export function MatchPage() {
   }
 
   const finished = data.status === "finished";
+  const live = data.status === "live" && data.live ? data.live : null;
+  const played = finished || live != null;
   const state = stateAt(data, timeline, slotMap, cursor);
   const goalsOf = (team: string) => timeline.events.filter((e) => e.kind === "goal" && e.team === team);
   const redsOf = (team: string) => timeline.events.filter((e) => (e.kind === "red" || e.kind === "second_yellow") && e.team === team);
@@ -79,19 +93,21 @@ export function MatchPage() {
       <header className="mp-head">
         <div className="mp-side home">
           <Crest className="mp-crest" team={data.home.id} />
-          <div><h1>{data.home.name}</h1>{finished && scorerList(data.home.id)}</div>
+          <div><h1>{data.home.name}</h1>{played && scorerList(data.home.id)}</div>
         </div>
         <div className="mp-score">
-          {finished && data.score
+          {live && data.score
+            ? <><strong aria-label={`${data.home.name} ${data.score[0]}, ${data.away.name} ${data.score[1]}, live`}>{data.score[0]}–{data.score[1]}</strong><span className="live">{liveLabel(live)}</span></>
+            : finished && data.score
             ? <><strong aria-label={`${data.home.name} ${data.score[0]}, ${data.away.name} ${data.score[1]}`}>{data.score[0]}–{data.score[1]}</strong><span>{data.penalties ? `${data.penalties[0]}–${data.penalties[1]} on penalties` : "Full time"}</span></>
             : <><strong className="ko">{kickoff ? kickoff.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "TBC"}</strong><span>{kickoff ? kickoff.toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" }) : "Kick-off"}</span></>}
         </div>
         <div className="mp-side away">
           <Crest className="mp-crest" team={data.away.id} />
-          <div><h1>{data.away.name}</h1>{finished && scorerList(data.away.id)}</div>
+          <div><h1>{data.away.name}</h1>{played && scorerList(data.away.id)}</div>
         </div>
       </header>
-      {finished && (
+      {played && (
         <div className="mp-scorers-phone">
           <div>{goalsOf(data.home.id).map((g, k) => <span key={k}>{lastName(g.player)} {g.minute}′</span>)}{redsOf(data.home.id).map((r, k) => <span key={`r${k}`} className="red">{lastName(r.player)} {r.minute}′ (sent off)</span>)}</div>
           <div>{goalsOf(data.away.id).map((g, k) => <span key={k}>{lastName(g.player)} {g.minute}′</span>)}{redsOf(data.away.id).map((r, k) => <span key={`r${k}`} className="red">{lastName(r.player)} {r.minute}′ (sent off)</span>)}</div>
@@ -120,11 +136,13 @@ export function MatchPage() {
         <p className="mp-note">{data.competitionId === 8
           ? "The detailed timeline and stats for this match haven't been loaded yet."
           : "The Premier League's feeds have only the score for this match: no timeline, lineups or stats."}</p>
+      ) : live ? (
+        <p className="mp-note">Live: this page updates every minute with the score and scorers. The timeline, lineups and match stats appear once the match has been played and loaded overnight.</p>
       ) : (
         <UpcomingTimelineNote data={data} timeline={timeline} />
       )}
 
-      <div className="mp-sec-title"><div><h2>{finished ? "Going into the match" : "Before kick-off"}</h2><p>{finished ? (data.competitionId === 8 ? "Form in every competition, the last meetings, and who scored FPL points here." : "Form in every competition and the last meetings.") : "Form in every competition, the last meetings, and what the bookmakers expect."}</p></div></div>
+      <div className="mp-sec-title"><div><h2>{played ? "Going into the match" : "Before kick-off"}</h2><p>{live ? (data.odds?.chances ? "Form in every competition, the last meetings, and what the bookmakers expected." : "Form in every competition and the last meetings.") : finished ? (data.competitionId === 8 ? "Form in every competition, the last meetings, and who scored FPL points here." : "Form in every competition and the last meetings.") : "Form in every competition, the last meetings, and what the bookmakers expect."}</p></div></div>
       <MatchContext data={data} />
       <p className="mp-foot">Match data from the Premier League's stats feeds (Opta){data.competitionId === 8 ? " and FPL" : ""}. Momentum is Opta's per-minute chance of each side scoring, published for Premier League matches only; team and player stats are full-match totals.</p>
     </main>
