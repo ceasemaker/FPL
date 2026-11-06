@@ -165,6 +165,7 @@
 .pl-suggest dd { flex-direction: column; align-items: flex-start !important; gap: 4px !important; }
 .pl-suggest small { font-size: var(--fs-caption); font-weight: 500; color: var(--aero-text-muted); max-width: 26ch; }
 .pl-suggest small.neg { color: var(--aero-negative); }
+.pl-suggest small.pl-suggest-done { color: var(--aero-text); max-width: 34ch; }
 .pl-ghost-btn {  }
 .pl-ghost-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .pl-plans .pl-ghost.on { background: var(--aero-surface-hover); }

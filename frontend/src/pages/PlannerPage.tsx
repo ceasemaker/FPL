@@ -507,9 +507,11 @@ function CompareTable({ data, gw, players, onPick, budget, outId, onClear }: {
 // Optimizer suggestions, loaded into a free plan so they never overwrite yours.
 function Suggest({ data, plan, freeSlot, onPlan }: { data: PlannerData; plan: Plan; freeSlot?: string; onPlan: (name: string, p: Plan) => void }) {
   const [state, setState] = useState<"idle" | "busy" | "error" | "busy-server" | "none">("idle");
+  // What the last run loaded, said in words: the plan tab changing is easy to miss.
+  const [loaded, setLoaded] = useState<{ slot: string; moves: string[] } | null>(null);
   const run = async () => {
     if (!freeSlot) return;
-    setState("busy");
+    setState("busy"); setLoaded(null);
     try {
       // Three weeks ahead where the forecast reaches; one week only if three has
       // no legal answer (a 400). A 5xx means the server ran short, so a second
@@ -521,8 +523,9 @@ function Suggest({ data, plan, freeSlot, onPlan }: { data: PlannerData; plan: Pl
       }
       if (!r || r.status >= 500) { setState("busy-server"); return; }
       if (!r.ok) { setState("error"); return; }
-      const body = await r.json() as { gameweeks: { gameweek: number; transfers: { in: { id: number; position: string; now_cost: number }[]; out: { id: number; position: string }[] } }[] };
+      const body = await r.json() as { gameweeks: { gameweek: number; transfers: { in: { id: number; web_name: string; position: string; now_cost: number }[]; out: { id: number; web_name: string; position: string }[] } }[] };
       const draft: Plan = { name: `Plan ${freeSlot}`, transfers: [] };
+      const moves: string[] = [];
       for (const w of body.gameweeks ?? []) {
         const ins = [...w.transfers.in];
         for (const o of w.transfers.out) {
@@ -532,11 +535,13 @@ function Suggest({ data, plan, freeSlot, onPlan }: { data: PlannerData; plan: Pl
           const holding = squadAt(data, draft, w.gameweek).find((h) => h.id === o.id);
           if (!holding) continue;
           draft.transfers.push({ gw: w.gameweek, out: o.id, in: i.id, sell: holding.selling, buy: i.now_cost });
+          moves.push(`GW${w.gameweek}: ${o.web_name} → ${i.web_name}`);
         }
       }
       if (!draft.transfers.length) { setState("none"); return; }
       onPlan(freeSlot, draft);
       track("Optimizer Plan Loaded");
+      setLoaded({ slot: freeSlot, moves });
       setState("idle");
     } catch {
       setState("busy-server");
@@ -552,6 +557,11 @@ function Suggest({ data, plan, freeSlot, onPlan }: { data: PlannerData; plan: Pl
         {state === "error" && <small className="neg">The optimiser couldn't find a legal plan for this squad.</small>}
         {state === "busy-server" && <small className="neg">The optimiser couldn't finish on the server just now. Try again in a minute.</small>}
         {state === "none" && <small>It suggests no transfers: rolling your free transfer is best.</small>}
+        {loaded && (
+          <small className="pl-suggest-done" role="status">
+            Loaded into Plan {loaded.slot}: {loaded.moves.join(" · ")}. Your other plans are unchanged.
+          </small>
+        )}
       </dd>
     </div>
   );
