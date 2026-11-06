@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import Any, Iterable
 from urllib.parse import urlparse
 
-import pandas as pd
 import requests
 
 from django.conf import settings
@@ -1898,7 +1897,10 @@ def optimize_team(request):
     Returns: JSON with gameweeks array detailing transfers, captain, chips, squad per GW.
     """
     # Keep the optional MILP dependency isolated so non-optimizer endpoints can
-    # still run in lightweight local environments.
+    # still run in lightweight local environments. pandas is imported here too:
+    # loading it at startup costs every web and worker process ~60 MB.
+    import pandas as pd
+
     try:
         from .fpl_solver import FPLSolver
     except ImportError:

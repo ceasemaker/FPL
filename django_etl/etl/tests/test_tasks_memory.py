@@ -1,9 +1,15 @@
 from __future__ import annotations
 
+import os
+import shlex
+import subprocess
+import sys
+from pathlib import Path
 from unittest import mock
 
 from django.core.cache import cache
-from django.test import TestCase, override_settings
+from django.core.management import load_command_class
+from django.test import SimpleTestCase, TestCase, override_settings
 
 from .. import tasks
 
@@ -138,3 +144,33 @@ class SeasonSheetSyncTests(TestCase):
         self.assertIn(("sync_season_stats", "--season", 2026, "--source", "classic", "--competition", "champions-league"), calls)
         self.assertIn(("sync_team_season_stats", "--season", 2026), calls)
         self.assertEqual(calls[-1], ("clear_cache",))
+
+
+class JobCommandTests(SimpleTestCase):
+    def test_every_step_of_the_forecast_jobs_parses_with_its_own_command(self):
+        # "--sync" was once appended to the whole chain and landed on backtest_fixture_model,
+        # failing the pre-deadline job every three hours.
+        for chain in (tasks.FORECAST_COMMAND, tasks.DEADLINE_COMMAND):
+            for step in chain.split(";"):
+                _, _, name, *args = shlex.split(step)
+                with self.subTest(step=step.strip()):
+                    load_command_class("etl", name).create_parser("manage.py", name).parse_args(args)
+        self.assertIn("run_forecast --sync;", tasks.DEADLINE_COMMAND)
+
+
+class StartupMemoryTests(SimpleTestCase):
+    def test_web_and_worker_processes_start_without_the_heavy_data_libraries(self):
+        # pandas, scipy and scikit-learn cost each process ~100 MB; the web service and the
+        # Celery worker share a 512 MB instance, so they load only where a request needs them.
+        code = (
+            "import sys, django; django.setup()\n"
+            "from django.urls import get_resolver; get_resolver().url_patterns\n"
+            "from fpl_platform.celery import app; app.loader.import_default_modules()\n"
+            "print('LOADED=' + ','.join(m for m in ('pandas', 'numpy', 'scipy', 'sklearn', 'joblib') if m in sys.modules))\n"
+        )
+        env = {**os.environ, "DJANGO_SETTINGS_MODULE": "fpl_platform.settings"}
+        out = subprocess.run([sys.executable, "-c", code], cwd=Path(__file__).resolve().parents[2], env=env,
+                             capture_output=True, text=True, timeout=120)
+        self.assertEqual(out.returncode, 0, out.stderr[-2000:])
+        loaded = [line for line in out.stdout.splitlines() if line.startswith("LOADED=")]
+        self.assertEqual(loaded, ["LOADED="])

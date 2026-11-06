@@ -150,6 +150,9 @@ NO_JOBS = {"status": "skipped", "reason": "set RENDER_API_KEY on the service so 
 # job of its own rather than running as a child of another job.
 # The seven-day price forecast backtests and publishes in the same job, as its own process.
 FORECAST_COMMAND = "python manage.py run_forecast; python manage.py backtest_price_forecast; python manage.py backtest_fixture_model"
+# Before a deadline the forecast first refreshes team news (--sync belongs to run_forecast,
+# not to the end of the chain, where backtest_fixture_model rejected it).
+DEADLINE_COMMAND = FORECAST_COMMAND.replace("run_forecast", "run_forecast --sync", 1)
 
 
 def start_render_job(name, command=None):
@@ -709,7 +712,7 @@ def refresh_before_deadline():
         return {"status": "skipped", "reason": "already attempted this slot"}
     # Team news, the deadline snapshot, then the forecast and shadow picks.
     if offload_enabled():
-        return start_render_job("deadline_refresh", f"{FORECAST_COMMAND} --sync")
+        return start_render_job("deadline_refresh", DEADLINE_COMMAND)
     if on_render_without_jobs():
         return NO_JOBS
     if not forecast_allowed():
