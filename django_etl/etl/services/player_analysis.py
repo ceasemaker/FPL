@@ -12,6 +12,7 @@ import json
 import math
 import os
 from collections import defaultdict
+from datetime import date
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -514,6 +515,15 @@ This report is generated from the same saved inputs and scoring implementation a
 """
 
 
+def snapshot_label(snapshot_date: str | None) -> str:
+    """'Saved on 4 September 2026.' for the out-of-date note; empty when the date is missing."""
+    try:
+        day = date.fromisoformat(str(snapshot_date)[:10])
+    except ValueError:
+        return ""
+    return f"Saved on {day.day} {day:%B %Y}."
+
+
 def render_player_report_html(analysis: dict[str, Any]) -> str:
     meta = analysis["meta"]
     cards = []
@@ -541,6 +551,10 @@ def render_player_report_html(analysis: dict[str, Any]) -> str:
         </section>
         """)
     limitations = "".join(f"<li>{html.escape(item)}</li>" for item in analysis["limitations"])
+    stale_note = ""
+    if meta.get("is_stale"):
+        stale_note = (f'<p class="note stale"><strong>Out of date:</strong> {html.escape(snapshot_label(meta["snapshot_date"]))} '
+                      f'The next gameweek is GW{meta["live_next_gameweek"]}, so these numbers show how the model works, not who to pick now.</p>')
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title>FPL player analysis</title><style>
     :root{{--ink:#132238;--blue:#1d4ed8;--line:#cbd5e1;--muted:#64748b;--paper:#f8fafc}}
@@ -551,7 +565,7 @@ def render_player_report_html(analysis: dict[str, Any]) -> str:
     .metrics{{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px}} .metrics div{{background:var(--paper);border:1px solid var(--line);padding:14px}}
     .metrics span,.metrics strong{{display:block}} .metrics span{{color:var(--muted);font-size:12px}} .metrics strong{{font-size:24px;margin-top:3px}}
     table{{width:100%;border-collapse:collapse}} th,td{{text-align:left;border-bottom:1px solid var(--line);padding:9px 7px}} th{{background:var(--ink);color:white;font-size:12px}}
-    .note{{background:#eff6ff;border-left:4px solid var(--blue);padding:14px 18px}} a{{color:var(--blue)}}
+    .note{{background:#eff6ff;border-left:4px solid var(--blue);padding:14px 18px}} .note.stale{{background:#fef3c7;border-left-color:#d97706}} a{{color:var(--blue)}}
     @media(max-width:700px){{main{{margin:0;padding:22px}}.metrics{{grid-template-columns:repeat(2,1fr)}}table{{font-size:12px}}}}
     .report-actions{{display:flex;justify-content:flex-end;margin-bottom:18px}} .print-button{{border:0;border-radius:9px;padding:11px 16px;color:#101011;background:#a5ff01;font:inherit;font-weight:800;cursor:pointer}}
     @media print{{body{{background:white}}main{{margin:0;box-shadow:none;max-width:none}}.report-actions{{display:none}}}}
@@ -560,6 +574,7 @@ def render_player_report_html(analysis: dict[str, Any]) -> str:
     <p class="eyebrow">FPL quantitative decision system</p><h1>Dynamic player analysis</h1>
     <p class="meta">Snapshot {html.escape(str(meta['snapshot_date']))} / focus GW{meta['focus_gameweek']} / {meta['horizon']}-gameweek horizon</p>
     <p class="note"><strong>Authority:</strong> {html.escape(meta['authority'])}</p>
+    {stale_note}
     {''.join(cards)}
     <section><h2>How to read it</h2><p>Football value, budget efficiency, differential upside, and omission risk answer different questions. Goal, assist, and clean-sheet events use Poisson means; minutes and availability are modelled separately.</p><ul>{limitations}</ul></section>
     </main></body></html>"""

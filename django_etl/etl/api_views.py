@@ -23,7 +23,7 @@ from django.views.decorators.http import require_GET
 from .models import Athlete, AthletePrediction, AthleteStat, Fixture, FixtureOdds, PriceSnapshot, RawEndpointSnapshot, Team, SofasportHeatmap
 from .services.fixture_market import remove_vig
 from .services import chart_lab, set_pieces
-from .services.decision_dashboard import build_decision_dashboard
+from .services.decision_dashboard import _live_next_gameweek, build_decision_dashboard
 from .services.stats_explorer import build_payload as build_stats_explorer_payload
 from .services.player_gameweeks import build_player_gameweeks
 from .services.player_analysis import (
@@ -1863,13 +1863,24 @@ def _player_analysis_parameters(request) -> tuple[list[int], int | None, int]:
     return player_ids, gameweek, horizon
 
 
+def _snapshot_freshness(gameweeks: list[int]) -> dict:
+    """Whether the saved snapshot's gameweeks have started, so the page can say it is out of date."""
+    live_next = _live_next_gameweek()
+    return {
+        "live_next_gameweek": live_next,
+        "is_stale": bool(live_next and gameweeks and live_next > min(gameweeks)),
+    }
+
+
 @require_GET
 def player_analysis_catalogue(request):
     """Return the searchable player list available in the latest saved snapshot."""
     try:
-        return JsonResponse(player_catalogue(load_latest_snapshot()))
+        payload = player_catalogue(load_latest_snapshot())
     except FileNotFoundError as exc:
         return JsonResponse({"error": str(exc)}, status=404)
+    payload.update(_snapshot_freshness(payload["available_gameweeks"]))
+    return JsonResponse(payload)
 
 
 @require_GET
@@ -1882,6 +1893,7 @@ def player_analysis(request):
         return JsonResponse({"error": str(exc)}, status=400)
     except FileNotFoundError as exc:
         return JsonResponse({"error": str(exc)}, status=404)
+    payload["meta"].update(_snapshot_freshness(payload["meta"].get("gameweeks") or []))
     return JsonResponse(payload)
 
 
@@ -1895,6 +1907,7 @@ def player_analysis_report(request):
         return JsonResponse({"error": str(exc)}, status=400)
     except FileNotFoundError as exc:
         return JsonResponse({"error": str(exc)}, status=404)
+    payload["meta"].update(_snapshot_freshness(payload["meta"].get("gameweeks") or []))
 
     if request.GET.get("format", "html").lower() != "html":
         return JsonResponse({"error": "The report is HTML. Use Print / Save PDF from the report."}, status=400)

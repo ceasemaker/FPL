@@ -182,6 +182,11 @@ interface DashboardPayload {
   };
 }
 
+const formatSnapshotDate = (value: string) => {
+  const day = new Date(`${value.slice(0, 10)}T12:00:00`);
+  return Number.isNaN(day.getTime()) ? value : day.toLocaleDateString("en-GB", { day: "numeric", month: "long" });
+};
+
 interface PlayerCatalogueItem {
   id: number;
   name: string;
@@ -197,6 +202,8 @@ interface PlayerCataloguePayload {
   generated_at: string;
   available_gameweeks: number[];
   players: PlayerCatalogueItem[];
+  live_next_gameweek: number | null;
+  is_stale: boolean;
 }
 
 interface PlayerAnalysisRow {
@@ -394,6 +401,13 @@ export function DecisionDashboardPage() {
             <span className="decision-label">Player workbench</span>
             <h2>Analyse anyone, without hiding the maths</h2>
             <p>{playerAnalysis?.meta.data_policy ?? "Loading the latest saved pre-deadline snapshot..."}</p>
+            {catalogue?.is_stale && (
+              <p className="aero-note decision-stale" role="status">
+                Out of date: these projections were saved on {formatSnapshotDate(catalogue.snapshot_date)}, for
+                GW{catalogue.available_gameweeks[0]}–{catalogue.available_gameweeks[catalogue.available_gameweeks.length - 1]}.
+                The next gameweek is GW{catalogue.live_next_gameweek}, so use them to see how the model works, not to pick players.
+              </p>
+            )}
           </div>
           <div className="player-report-actions">
             <a className="report-link" href={`/api/decision-dashboard/player-report/?${reportParams}`} target="_blank" rel="noreferrer">

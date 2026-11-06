@@ -175,6 +175,12 @@ class PlayerAnalysisServiceTests(SimpleTestCase):
 
 
 class PlayerAnalysisViewTests(SimpleTestCase):
+    def setUp(self):
+        # The out-of-date check reads the database; these tests have none.
+        live = patch("etl.api_views._live_next_gameweek", return_value=None)
+        live.start()
+        self.addCleanup(live.stop)
+
     @patch("etl.api_views.build_player_analysis")
     def test_analysis_endpoint_validates_and_returns_payload(self, build):
         build.return_value = {"meta": {"focus_gameweek": 3}, "players": []}
@@ -185,6 +191,28 @@ class PlayerAnalysisViewTests(SimpleTestCase):
     def test_analysis_endpoint_rejects_more_than_eight_players(self):
         response = self.client.get("/api/decision-dashboard/player-analysis/?player_ids=1,2,3,4,5,6,7,8,9")
         self.assertEqual(response.status_code, 400)
+
+    @patch("etl.api_views._live_next_gameweek", return_value=11)
+    @patch("etl.api_views.load_latest_snapshot", return_value=_snapshot())
+    def test_catalogue_says_when_the_snapshot_is_out_of_date(self, _snapshot_file, _live):
+        body = self.client.get("/api/decision-dashboard/players/").json()
+        self.assertTrue(body["is_stale"])
+        self.assertEqual(body["live_next_gameweek"], 11)
+
+    @patch("etl.api_views._live_next_gameweek", return_value=11)
+    def test_report_labels_an_out_of_date_snapshot(self, _live):
+        with patch("etl.api_views.build_player_analysis",
+                   return_value=build_player_analysis([1, 2], gameweek=3, horizon=2, snapshot=_snapshot())):
+            html = self.client.get("/api/decision-dashboard/player-report/?player_ids=1,2&gameweek=3").content.decode()
+        self.assertIn("Out of date:", html)
+        self.assertIn("The next gameweek is GW11", html)
+
+    @patch("etl.api_views._live_next_gameweek", return_value=3)
+    @patch("etl.api_views.build_player_analysis")
+    def test_analysis_is_current_before_its_first_gameweek(self, build, _live):
+        build.return_value = {"meta": {"gameweeks": [3, 4]}, "players": []}
+        body = self.client.get("/api/decision-dashboard/player-analysis/?player_ids=1&gameweek=3").json()
+        self.assertFalse(body["meta"]["is_stale"])
 
     @patch("etl.api_views.build_player_analysis", return_value={"players": [], "meta": {}})
     def test_tex_report_is_retired(self, _build):
