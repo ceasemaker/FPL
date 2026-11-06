@@ -599,8 +599,7 @@ def _captain_record() -> dict:
     return record
 
 
-@require_GET
-def landing_snapshot(request):
+def _landing_payload() -> dict:
     current_gw = (
         AthleteStat.objects.aggregate(max_gw=Max("game_week"))["max_gw"]
         or 0
@@ -929,7 +928,22 @@ def landing_snapshot(request):
         "deadline": _next_deadline(),
     }
 
-    return JsonResponse(response)
+    return response
+
+
+LANDING_CACHE_KEY = "landing-snapshot"
+LANDING_TTL = 60
+
+
+@require_GET
+def landing_snapshot(request):
+    # Built once a minute rather than per request: it takes 2-4 s, and Render's
+    # health check calls it every few seconds on top of the homepage's visitors.
+    payload = cache.get(LANDING_CACHE_KEY)
+    if payload is None:
+        payload = _landing_payload()
+        cache.set(LANDING_CACHE_KEY, payload, LANDING_TTL)
+    return JsonResponse(payload)
 
 
 def _next_deadline() -> dict | None:

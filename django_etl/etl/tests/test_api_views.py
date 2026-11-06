@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone as dt_timezone
 from decimal import Decimal
 from unittest.mock import Mock, patch
 
+from django.core.cache import cache
 from django.test import TestCase, override_settings
 
 from ..models import (
@@ -22,6 +23,7 @@ from ..models import (
 
 class ApiViewTests(TestCase):
     def setUp(self) -> None:
+        cache.clear()  # the landing payload is cached for a minute
         self.teams = []
         for idx in range(1, 6):
             self.teams.append(
@@ -160,6 +162,14 @@ class ApiViewTests(TestCase):
         self.assertEqual(response.json()["captain_status"], "ok")
 
     @override_settings(CAPTAIN_PICK_ENABLED=True)
+    def test_landing_is_built_once_a_minute_not_per_request(self) -> None:
+        # Render's health check calls it every few seconds; each build takes 2-4 s in production.
+        with patch("etl.api_views._landing_payload", return_value={"current_gw": 9}) as build:
+            first = self.client.get("/api/landing/").json()
+            second = self.client.get("/api/landing/").json()
+        self.assertEqual(first, second)
+        build.assert_called_once()
+
     def test_landing_omits_captain_when_every_projection_is_zero(self) -> None:
         Athlete.objects.filter(id__in=[athlete.id for athlete in self.athletes]).update(status="a")
         AthletePrediction.objects.filter(game_week=2).update(predicted_points=Decimal("0"))

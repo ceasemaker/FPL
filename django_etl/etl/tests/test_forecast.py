@@ -4,6 +4,7 @@ from datetime import timedelta
 
 import numpy as np
 import pandas as pd
+from django.core.cache import cache
 from django.test import TestCase
 from django.utils import timezone
 
@@ -158,6 +159,7 @@ class BacktestHelperTests(TestCase):
 
 class ShadowPickTests(TestCase):
     def setUp(self):
+        cache.clear()  # the landing payload is cached for a minute
         team = Team.objects.create(id=1, code=11, name="T", short_name="T")
         self.players = []
         for pid, pos, cost in ((1, 4, 150), (2, 3, 130), (3, 2, 60)):
@@ -208,6 +210,7 @@ class ShadowPickTests(TestCase):
                    "captain_points_per_week": {"v3": 6.9, "premium": 5.4, "elite": 8.1},
                    "versus": {"premium": {"mean": 1.5, "low": 0.4, "high": 2.6}, "elite": {"mean": -1.2, "low": -2.0, "high": -0.4}}}
         ModelEvaluation.objects.create(name="captain", version="v3", accepted=False, summary=summary)
+        cache.clear()  # the landing payload is cached for a minute
         payload = self.client.get("/api/landing/").json()
         backtest = payload["captain_record"]["backtest"]
         self.assertTrue(payload["captain_recommendation"]["experimental"])
@@ -216,6 +219,7 @@ class ShadowPickTests(TestCase):
                          [("premium", 1.5, True), ("elite", -1.2, False)])
 
         ModelEvaluation.objects.create(name="captain", version="v3", accepted=True, summary=summary)
+        cache.clear()
         self.assertFalse(self.client.get("/api/landing/").json()["captain_recommendation"]["experimental"])
 
 
