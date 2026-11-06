@@ -294,8 +294,9 @@ function summarise(data: Calendar, cells: Record<string, Record<string, Cell>>, 
   const busiest = games.filter((g) => g.upcoming.length === most);
   const names = (gs: typeof games) => gs.length <= 3 ? gs.map((g) => g.club.name).join(gs.length === 2 ? " and " : ", ").replace(/, ([^,]*)$/, " and $1") : `${gs.length} clubs`;
   const comps = Math.max(...busiest.map((g) => g.comps));
-  let text = `Next two weeks: ${names(busiest)} ${busiest.length === 1 ? "plays" : "play"} ${count(most)} times${comps > 1 ? ` across ${count(comps)} competitions` : ""}`;
-  if (least < most) text += `; ${names(games.filter((g) => g.upcoming.length === least))} ${count(least)} ${least === 1 ? "time" : "times"}`;
+  const times = (n: number) => n === 1 ? "once" : n === 2 ? "twice" : `${count(n)} times`;
+  let text = `Next two weeks: ${names(busiest)} ${busiest.length === 1 ? "plays" : "play"} ${times(most)}${comps > 1 ? ` across ${count(comps)} competitions` : ""}`;
+  if (least < most) text += `; ${names(games.filter((g) => g.upcoming.length === least))} ${times(least)}`;
   text += ".";
   const tight = games.flatMap((g) => g.upcoming.filter((u) => u.rest != null && u.rest <= 3).map((u) => ({ club: g.club, cell: u })))
     .sort((a, b) => (a.cell.rest ?? 9) - (b.cell.rest ?? 9));

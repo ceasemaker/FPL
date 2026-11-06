@@ -140,14 +140,14 @@ export function ModelLabPage() {
       {data && (
         <section className={`ml-verdict ${data.accepted ? "pass" : "hold"}`} aria-labelledby="ml-verdict-title">
           <h2 id="ml-verdict-title">
-            {!ev ? "Not tested yet" : data.accepted ? "Captain picks passed their test" : "Captain picks are on hold"}
+            {!ev ? "Not tested yet" : data.accepted ? "Captain picks passed their test" : "Captain picks are experimental"}
           </h2>
           <p>
             {!ev
               ? "The backtest hasn't run on this server yet, so no picks are shown."
               : data.accepted
                 ? `Across ${ev.captain.weeks} past gameweeks the model's captain beat every baseline, so the homepage shows its pick.`
-                : `The model beats simple rules but not ${losses.join(" or ")}, so the homepage shows no captain. Its picks are still logged before each deadline and scored below.`}
+                : `The model beats simple rules but not ${losses.join(" or ")}, so the homepage marks its captain pick as experimental. Its picks are logged before each deadline and scored below.`}
           </p>
           {ev && (
             <p className="ml-meta">

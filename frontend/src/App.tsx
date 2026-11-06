@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, Link } from "react-router-dom";
 import { HomePage } from "./pages/HomePage";
 import { PlayersPage } from "./pages/PlayersPage";
 import { ComparePage } from "./pages/ComparePage";
@@ -60,9 +60,22 @@ export default function App() {
           {/* Retired routes kept as redirects so existing links keep working. */}
           <Route path="/optimize" element={<Navigate to="/decision-lab?mode=optimizer" replace />} />
           <Route path="/price-predictor" element={<Navigate to="/price-monitor" replace />} />
+          <Route path="*" element={<NotFound />} />
 
         </Routes>
       </Suspense>
     </>
+  );
+}
+
+// A mistyped or out-of-date link used to show an empty page under the menu.
+function NotFound() {
+  return (
+    <main className="aero-page mp-page tp-page">
+      <header className="tp-index-head">
+        <h1>Page not found</h1>
+        <p>There's nothing at this address. Try the <Link to="/">homepage</Link>, the <Link to="/players">players</Link> or the <Link to="/matches">matches</Link>.</p>
+      </header>
+    </main>
   );
 }

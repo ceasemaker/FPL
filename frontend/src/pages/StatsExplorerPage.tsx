@@ -266,7 +266,7 @@ export function StatsExplorerPage() {
           <h1>Stats Explorer</h1>
           <p>
             {data
-              ? `${data.seasonLabel} season to gameweek ${data.latestGameweek} · stats from the ${state.tab === "players" && state.scope === "all" ? "Premier League and Champions League" : "Premier League"}, FPL prices and ownership`
+              ? `${data.seasonLabel} season to gameweek ${data.latestGameweek} · ${state.tab === "players" && state.scope === "all" ? "Premier League and Champions League" : "Premier League"} matches, with FPL prices and ownership`
               : "Loading this season's stats…"}
           </p>
         </div>
