@@ -81,6 +81,33 @@ class MatchPageApiTests(TestCase):
         self.assertEqual(d["teamStats"]["2000"]["possessionPercentage"], 48.5)
         self.assertNotIn("junk", d["teamStats"]["14"])
 
+    def test_just_finished_league_match_shows_live_fpl_points(self):
+        from datetime import timedelta
+        from unittest.mock import patch
+        from django.utils import timezone
+        from ..models import Athlete, Fixture, Team
+
+        Team.objects.create(id=1, code=14, name="Liverpool", short_name="LIV")
+        Team.objects.create(id=2, code=43, name="Man City", short_name="MCI")
+        Fixture.objects.create(id=95, code=1, event=10, team_h_id=1, team_a_id=2)
+        Athlete.objects.create(id=430, code=9, first_name="Erling", second_name="Haaland", web_name="Haaland", team_code=43)
+        PlMatch.objects.create(season=2026, match_id="10", home_team_id="14", away_team_id="43", matchweek=10,
+                               kickoff=timezone.now() - timedelta(hours=2))
+        live = {"elements": [
+            {"id": 430, "explain": [{"fixture": 95, "stats": [{"identifier": "minutes", "points": 2, "value": 90},
+                                                             {"identifier": "goals_scored", "points": 4, "value": 1}]}]},
+            {"id": 431, "explain": [{"fixture": 95, "stats": [{"identifier": "minutes", "points": 0, "value": 0}]}]},
+        ]}
+        client = "etl.services.pl_stats_client.PLStatsClient"
+        with patch(f"{client}.get_match", return_value={"period": "FullTime", "homeTeam": {"score": 0}, "awayTeam": {"score": 1}}), \
+                patch(f"{client}.get_match_events", return_value={}), patch(f"{client}.get_match_lineups", return_value={}), \
+                patch(f"{client}.get_match_stats", return_value=[]), \
+                patch("etl.services.fpl_client.FPLClient.get_event_live", return_value=live):
+            d = self.client.get("/api/matches/10/").json()
+        self.assertEqual(d["status"], "finished")
+        self.assertTrue(d["fplProvisional"])
+        self.assertEqual([(p["name"], p["fpl"], p["team"], p["fplId"]) for p in d["players"]], [("Haaland", 6, "43", 430)])
+
     def test_upcoming_match_never_asks_the_feed(self):
         from unittest.mock import patch
 

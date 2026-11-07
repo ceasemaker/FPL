@@ -20,7 +20,7 @@ from ..models import (
     Athlete, Fixture, FixtureHistory, FixtureOdds, GameweekHistory, MatchGoal, PlMatch, Team, TeamSeasonStat,
 )
 
-from .live_scores import LIVE_WINDOW, live_detail, live_state
+from .live_scores import LIVE_WINDOW, live_detail, live_fpl_points, live_state
 from .match_goals import premier_league_clubs
 
 CACHE_TTL = 15 * 60
@@ -256,9 +256,15 @@ def _with_live(payload: dict) -> dict:
     ids = {"home": payload["home"]["id"], "away": payload["away"]["id"]}
     team_stats = {ids[side]: {"formation": t["formation"], **{k: t["stats"].get(k) for k in TEAM_STATS}}
                   for side, t in detail["teams"].items()}
-    return {**payload, "status": "finished" if finished else "live", "score": state["score"],
+    live = {**payload, "status": "finished" if finished else "live", "score": state["score"],
             "live": None if finished else {"period": state["period"], "clock": state["clock"]},
             "goals": detail["goals"], "teamStats": team_stats or payload["teamStats"]}
+    if finished and payload["gameweek"] and not payload["players"]:
+        # FPL points before the nightly sync stores them; flagged, since bonus may still be to come.
+        points = live_fpl_points(payload["gameweek"], payload["home"]["id"], payload["away"]["id"])
+        if points:
+            live["players"], live["fplProvisional"] = points, True
+    return live
 
 
 def match_for_fixture(fixture_id: int) -> str | None:

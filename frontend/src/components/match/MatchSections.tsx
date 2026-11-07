@@ -208,6 +208,7 @@ export function MatchContext({ data }: { data: MatchData }) {
           {pts.length === 0 ? <p className="mp-note">No FPL points stored for this match.</p> : (
             <ul className="mp-fplist">{pts.map((p) => <li key={p.id}><span>{p.fplId ? <Link to={`/players/${p.fplId}`}>{p.name}</Link> : p.name}<small>{short(p.team)}</small></span><b>{p.fpl}</b></li>)}</ul>
           )}
+          {pts.length > 0 && data.fplProvisional && <p className="mp-note">Live FPL points: bonus points are added once FPL confirms them.</p>}
         </section>
       )) : third && (
         <OddsCard data={data} />

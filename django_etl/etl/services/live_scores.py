@@ -92,3 +92,39 @@ def live_detail(match_id: str, finished: bool = False) -> dict:
     # A failed events request must not be cached as "no goals" for long.
     cache.set(key, detail, LIVE_TTL * 60 if finished and events is not None else LIVE_TTL)
     return detail
+
+
+def live_fpl_points(gameweek: int, home_code: str, away_code: str) -> list[dict]:
+    """FPL points so far for one league match, from FPL's live gameweek scores.
+
+    Stands in until the nightly sync stores the gameweek. Bonus points only
+    appear once FPL confirms them. The gameweek's scores are cached for a minute,
+    reduced to points per fixture so the whole response is never kept.
+    """
+    from ..models import Athlete, Fixture
+
+    fixture_id = Fixture.objects.filter(event=gameweek, team_h__code=int(home_code), team_a__code=int(away_code)) \
+        .values_list("id", flat=True).first()
+    if fixture_id is None:
+        return []
+    key = f"fpl-live:{gameweek}"
+    by_fixture = cache.get(key)
+    if by_fixture is None:
+        from .fpl_client import FPLClient
+
+        try:
+            data = _pool.submit(FPLClient(timeout=5).get_event_live, gameweek).result(timeout=DEADLINE)
+        except Exception as exc:  # FPL being down must not take the page with it
+            logger.warning("FPL live points for gameweek %s unavailable: %s", gameweek, exc)
+            data = {}
+        by_fixture = {}
+        for element in data.get("elements") or []:
+            for part in element.get("explain") or []:
+                stats = part.get("stats") or []
+                minutes = next((s["value"] for s in stats if s.get("identifier") == "minutes"), 0)
+                if minutes:
+                    by_fixture.setdefault(part["fixture"], {})[element["id"]] = sum(s.get("points", 0) for s in stats)
+        cache.set(key, by_fixture, LIVE_TTL if data else 15)
+    points = by_fixture.get(fixture_id) or {}
+    return [{"id": str(code), "fplId": pid, "name": name, "team": str(team), "fpl": points[pid]}
+            for pid, code, name, team in Athlete.objects.filter(id__in=points).values_list("id", "code", "web_name", "team_code")]
