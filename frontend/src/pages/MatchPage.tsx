@@ -132,6 +132,16 @@ export function MatchPage() {
           <div className="mp-sec-title"><div><h2>Every player</h2><p>{data.competitionId === 8 ? "Match sheets and FPL points. Sorted by FPL points; choose a column to sort." : "Who played and for how long, with goals and assists."}</p></div></div>
           <MatchPlayers data={data} />
         </>
+      ) : finished && Object.keys(data.teamStats).length > 0 ? (
+        // Just finished: the live team stats stand in until the overnight load.
+        <>
+          <p className="mp-note">The timeline, lineups and player stats appear once the match has been loaded overnight.</p>
+          <div className="mp-sec-title"><div><h2>The full match</h2><p>Team stats over 90 minutes. <span className="mp-badge">Full-match totals</span></p></div></div>
+          <div className="mp-full">
+            <TeamCompare data={data} />
+            <ShotZones data={data} />
+          </div>
+        </>
       ) : finished ? (
         <p className="mp-note">{data.competitionId === 8
           ? "The detailed timeline and stats for this match haven't been loaded yet."
