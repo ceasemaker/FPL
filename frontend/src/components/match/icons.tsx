@@ -3,9 +3,10 @@ import type { Kind } from "./matchModel";
 import { colour } from "../../styles/tokens";
 
 // Match event icons on the 20px grid: drawn, not glyphs. Card colours are the
-// real-world card colours; substitution arrows lime (on) and coral (off).
+// real-world card colours; substitution arrows lime (on) and coral (off); an
+// assist is a boot, in the goal's white and ink.
 
-export function EventIcon({ kind, size = 16 }: { kind: Kind | "play" | "pause"; size?: number }) {
+export function EventIcon({ kind, size = 16 }: { kind: Kind | "assist" | "play" | "pause"; size?: number }) {
   const common = { width: size, height: size, viewBox: "0 0 20 20", "aria-hidden": true as const, focusable: false as const };
   switch (kind) {
     case "goal":
@@ -14,6 +15,14 @@ export function EventIcon({ kind, size = 16 }: { kind: Kind | "play" | "pause"; 
           <circle cx="10" cy="10" r="8.25" fill={colour.white} stroke={colour.ink} strokeWidth="1.5" />
           <path d="M10 6.2l3.1 2.3-1.2 3.6H8.1L6.9 8.5z" fill={colour.ink} />
           <path d="M10 6.2V2.4M13.1 8.5l3.6-1.2M11.9 12.1l2.2 3.1M8.1 12.1l-2.2 3.1M6.9 8.5L3.3 7.3" stroke={colour.ink} strokeWidth="1.2" fill="none" />
+        </svg>
+      );
+    case "assist":
+      return (
+        <svg {...common}>
+          <path d="M4.5 2.75h5.25v6.1l5.4 2.2c1.5.6 2.35 1.65 2.35 2.95v1.25H3.25V4c0-.7.55-1.25 1.25-1.25z"
+            fill={colour.white} stroke={colour.ink} strokeWidth="1.5" strokeLinejoin="round" />
+          <path d="M5 17.25v-2M9 17.25v-2M13 17.25v-2" stroke={colour.ink} strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       );
     case "yellow":

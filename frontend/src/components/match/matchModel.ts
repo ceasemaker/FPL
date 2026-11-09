@@ -105,7 +105,7 @@ export function slots(d: MatchData): Record<string, Slot> {
   return out;
 }
 
-export interface OnPitch extends LineupPlayer { sentOff: boolean; fresh: boolean; goals: number; cards: Kind[] }
+export interface OnPitch extends LineupPlayer { sentOff: boolean; fresh: boolean; goals: number; assists: number; cards: Kind[] }
 export interface MinuteState {
   index: number; score: [number, number]; players: OnPitch[]; men: Record<string, number>;
   events: TimelineEvent[]; spell: { home: number; away: number };
@@ -128,6 +128,7 @@ export function stateAt(d: MatchData, t: Timeline, slotMap: Record<string, Slot>
     players.push({
       ...p, sentOff: red, fresh: !p.starter && i - onIdx >= 0 && i - onIdx <= 3,
       goals: seen.filter((e) => e.kind === "goal" && e.detail !== "Own" && findPlayer(d.lineups, e.team, e.player)?.player_id === p.player_id).length,
+      assists: seen.filter((e) => e.kind === "goal" && e.detail !== "Own" && findPlayer(d.lineups, e.team, e.other)?.player_id === p.player_id).length,
       cards: seen.filter((e) => ["yellow", "second_yellow", "red"].includes(e.kind) && findPlayer(d.lineups, e.team, e.player)?.player_id === p.player_id).map((e) => e.kind),
     });
   }

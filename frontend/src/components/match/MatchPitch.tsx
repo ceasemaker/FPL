@@ -68,13 +68,14 @@ export function MatchPitch({ data, state, slotMap, timeline }: { data: MatchData
           const { left, top } = place(p.team_id, s);
           return (
             <div key={p.player_id} className={`mp-tok ${p.team_id === data.home.id ? "h" : "a"}${p.sentOff ? " off" : ""}${p.fresh ? " new" : ""}`}
-              style={{ left: `${left}%`, top: `${top}%` }} title={`${p.name}${p.sentOff ? " (sent off)" : ""}`}>
+              style={{ left: `${left}%`, top: `${top}%` }} title={`${p.name}${p.goals ? ` · ${p.goals === 1 ? "goal" : `${p.goals} goals`}` : ""}${p.assists ? ` · ${p.assists === 1 ? "assist" : `${p.assists} assists`}` : ""}${p.sentOff ? " (sent off)" : ""}`}>
               <i>
                 {p.shirt}
                 {p.captain && <b className="mp-cap" aria-label="Captain">C</b>}
                 <span className="mp-marks">
                   {p.cards.map((c, k) => <EventIcon key={`c${k}`} kind={c} size={12} />)}
                   {Array.from({ length: p.goals }, (_, k) => <EventIcon key={`g${k}`} kind="goal" size={12} />)}
+                  {Array.from({ length: p.assists }, (_, k) => <EventIcon key={`a${k}`} kind="assist" size={12} />)}
                 </span>
               </i>
               <span>{lastName(p.name)}</span>
