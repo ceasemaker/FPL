@@ -316,3 +316,30 @@ class ApiViewTests(TestCase):
             {"url": "https://example.com/test.png"},
         )
         self.assertEqual(response.status_code, 400)
+
+
+class FplProxyPassThroughTests(TestCase):
+    """bootstrap-static (~2 MB) is forwarded as bytes, never parsed in the web process."""
+
+    def setUp(self):
+        from django.core.cache import cache
+
+        cache.clear()
+
+    @patch("etl.fpl_proxy_views.requests.get")
+    def test_bootstrap_is_forwarded_unparsed_and_shared_for_a_minute(self, mock_get: Mock) -> None:
+        body = b'{"elements": [{"id": 1, "web_name": "Saka"}]}'
+        mock_get.return_value = Mock(status_code=200, content=body)
+        first = self.client.get("/api/fpl/bootstrap-static/")
+        second = self.client.get("/api/fpl/bootstrap-static/")
+        self.assertEqual((first.status_code, first.content, first["Content-Type"]), (200, body, "application/json"))
+        self.assertEqual(second.content, body)
+        mock_get.assert_called_once()
+        mock_get.return_value.json.assert_not_called()
+
+    @patch("etl.fpl_proxy_views.requests.get")
+    def test_an_fpl_error_is_reported_and_not_cached(self, mock_get: Mock) -> None:
+        mock_get.return_value = Mock(status_code=503, content=b"The game is being updated.")
+        self.assertEqual(self.client.get("/api/fpl/event/3/live/").status_code, 503)
+        mock_get.return_value = Mock(status_code=200, content=b'{"elements": []}')
+        self.assertEqual(self.client.get("/api/fpl/event/3/live/").json(), {"elements": []})

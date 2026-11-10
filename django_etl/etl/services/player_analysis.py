@@ -77,19 +77,46 @@ def _round(value: float, digits: int = 4) -> float:
     return round(value, digits)
 
 
-def _poisson():
-    """scipy's Poisson distribution, imported on first use: scipy.stats costs every process ~50 MB at startup."""
-    from scipy.stats import poisson
+def _poisson_sf(k: float, rate: float) -> float:
+    """P(N > k) for a Poisson count, in plain Python.
 
-    return poisson
+    This replaced scipy.stats.poisson, which cost the web process ~65 MB the
+    first time a player-analysis page was opened. The smaller tail is summed
+    directly, so small probabilities keep their precision.
+    """
+    if k < 0:
+        return 1.0
+    if rate <= 0.0:
+        return 0.0
+    k = math.floor(k)
+    if k + 1 > rate:
+        n = k + 1
+        term = math.exp(-rate + n * math.log(rate) - math.lgamma(n + 1))
+        total = 0.0
+        while term > total * 1e-17:
+            total += term
+            n += 1
+            term *= rate / n
+        return total
+    term = cdf = math.exp(-rate)
+    for n in range(1, k + 1):
+        term *= rate / n
+        cdf += term
+    return max(0.0, 1.0 - cdf)
 
 
 def _expected_floor_poisson(rate: float, divisor: int) -> float:
     """E[floor(N/divisor)] via survival probabilities (tail < 1e-12)."""
     if rate <= 0.0:
         return 0.0
-    upper = int(_poisson().ppf(1.0 - 1e-12, rate))
-    return float(_poisson().sf(range(divisor - 1, upper, divisor), rate).sum())
+    total = 0.0
+    k = divisor - 1
+    while True:
+        tail = _poisson_sf(k, rate)
+        total += tail
+        if tail < 1e-13:
+            return total
+        k += divisor
 
 
 def _base_calculation(row: dict[str, Any], assumptions: dict[str, float]) -> dict[str, Any]:
@@ -219,7 +246,7 @@ def calculate_fixture_snapshot(
         ) if row.get("position") in ("GKP", "DEF") else 0.0
         bonus_xp = row["bonus90_shrunk"] * row["expected_minutes"] / 90.0
         dc_xp = 0.0 if prior["dc_threshold"] > 100 else 2.0 * sum(
-            probability * float(_poisson().sf(prior["dc_threshold"] - 1, max(0.0, row["dc90_shrunk"]) * minutes / 90.0))
+            probability * _poisson_sf(prior["dc_threshold"] - 1, max(0.0, row["dc90_shrunk"]) * minutes / 90.0)
             for probability, minutes in states
         )
         card_xp = -(
@@ -244,7 +271,7 @@ def calculate_fixture_snapshot(
             for probability, minutes in states:
                 conditional_lambda = attack_lambda * minutes / row["expected_minutes"]
                 return_probability += probability * -math.expm1(-conditional_lambda)
-                multiple_return_probability += probability * float(_poisson().sf(1, conditional_lambda))
+                multiple_return_probability += probability * _poisson_sf(1, conditional_lambda)
         ownership = min(1.0, max(0.0, _number(row.get("ownership"))))
         price = max(0.1, _number(row.get("price_m"), 0.1))
         final_rows.append({

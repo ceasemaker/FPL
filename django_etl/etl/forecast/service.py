@@ -27,41 +27,27 @@ from ..models import (
     GameweekHistory,
     GameweekSummary,
     ModelArtifact,
-    ModelEvaluation,
     ShadowPick,
 )
 from . import VERSION
 from .data import load_fixtures, load_opta_gameweeks, load_players
 from .features import FEATURES, FEATURES_V3, build_features, future_rows
 from .model import dumps, fit, predict, training_rows
+# Re-exported: the lookups the website needs live in ``records`` (no pandas).
+from .records import (  # noqa: F401
+    CAPTAIN_EVALUATION,
+    MIN_CHANCE,
+    MODEL_NAME,
+    available_elements,
+    captain_accepted,
+    captain_evaluation,
+    latest_evaluation,
+)
 
 logger = logging.getLogger(__name__)
 
-MODEL_NAME = "points_forecast"
 HORIZON = 3
 KEEP_ARTIFACTS = 3
-MIN_CHANCE = 75  # FPL's "75% chance of playing" is the usual line for a fit player
-
-
-def latest_evaluation() -> ModelEvaluation | None:
-    return ModelEvaluation.objects.filter(name=MODEL_NAME).order_by("-created_at").first()
-
-
-def captain_accepted() -> bool:
-    """Whether the captain backtest passed (the newer ``captain`` evaluation wins)."""
-    captain = ModelEvaluation.objects.filter(name="captain").order_by("-created_at").first()
-    if captain:
-        return captain.accepted
-    evaluation = latest_evaluation()
-    return bool(evaluation and evaluation.summary.get("accepted", {}).get("captain"))
-
-
-CAPTAIN_EVALUATION = "captain"
-
-
-def captain_evaluation() -> ModelEvaluation | None:
-    """The latest captain backtest (``manage.py evaluate_captain``)."""
-    return ModelEvaluation.objects.filter(name=CAPTAIN_EVALUATION).order_by("-created_at").first()
 
 
 def production_features() -> tuple[str, list[str]]:
@@ -70,16 +56,6 @@ def production_features() -> tuple[str, list[str]]:
     if evaluation and evaluation.summary.get("chosen") == "v3":
         return "v3.0", FEATURES_V3
     return VERSION, FEATURES
-
-
-def available_elements() -> set[int]:
-    """Players FPL lists as available, or doubtful with at least a 75% chance."""
-    ids = set()
-    for a in Athlete.objects.filter(removed=False).values("id", "status", "chance_of_playing_next_round"):
-        chance = a["chance_of_playing_next_round"]
-        if a["status"] == "a" or (a["status"] == "d" and (chance is None or chance >= MIN_CHANCE)):
-            ids.add(a["id"])
-    return ids
 
 
 def _season_and_weeks(now: datetime) -> tuple[int, int | None, datetime | None, set[int]] | None:

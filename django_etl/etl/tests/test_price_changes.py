@@ -48,3 +48,15 @@ class PriceChangeTests(TestCase):
         self.assertEqual(rows["Meunier"]["label"], "Unlikely to change")
         self.assertTrue(rows["Meunier"]["lockedUntil"].startswith("2026-10-29"))
         self.assertEqual([r["name"] for r in payload["players"]], ["Konsa", "Meunier"], "biggest movers first")
+
+    def test_refresh_writes_only_the_players_whose_tracker_moved(self):
+        refresh_price_changes(FakeClient())
+        self.assertEqual(refresh_price_changes(FakeClient())["updated"], 0, "nothing changed, nothing written")
+        moved = {**BOOTSTRAP, "elements": [{**BOOTSTRAP["elements"][0], "price_change_percent": "110.0"}, BOOTSTRAP["elements"][1]]}
+
+        class Moved:
+            def get_bootstrap_static(self):
+                return moved
+
+        self.assertEqual(refresh_price_changes(Moved())["updated"], 1)
+        self.assertEqual(Athlete.objects.get(id=1).price_change_percent, 110.0)

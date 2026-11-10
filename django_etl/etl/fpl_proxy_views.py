@@ -1,10 +1,34 @@
 """
 Proxy views for FPL API to bypass CORS restrictions.
 """
+import zlib
+
 import requests
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_GET
 from django.core.cache import cache
+
+
+def _passthrough(url, cache_key, ttl):
+    """Forward FPL's JSON as the bytes it arrived in, held briefly in the cache.
+
+    bootstrap-static is ~2 MB: parsing it and writing it out again cost the web
+    process 7-9 MB and up to a few seconds on every call. The body is passed on
+    untouched instead, and kept compressed (about a seventh of the size) so
+    visitors in the same minute share one request to FPL.
+    """
+    packed = cache.get(cache_key)
+    if packed is not None:
+        return HttpResponse(zlib.decompress(packed), content_type="application/json")
+    try:
+        response = requests.get(url, timeout=15)
+    except requests.RequestException as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    if response.status_code != 200:
+        return JsonResponse({"error": f"FPL returned {response.status_code}"}, status=response.status_code)
+    body = response.content
+    cache.set(cache_key, zlib.compress(body, 6), ttl)
+    return HttpResponse(body, content_type="application/json")
 
 
 @require_GET
@@ -73,23 +97,13 @@ def proxy_manager_picks(request, manager_id, event_id):
 @require_GET
 def proxy_bootstrap_static(request):
     """Proxy for FPL bootstrap-static endpoint (all players and teams data)."""
-    url = "https://fantasy.premierleague.com/api/bootstrap-static/"
-    try:
-        response = requests.get(url, timeout=15)
-        return JsonResponse(response.json(), safe=False, status=response.status_code)
-    except requests.RequestException as e:
-        return JsonResponse({"error": str(e)}, status=500)
+    return _passthrough("https://fantasy.premierleague.com/api/bootstrap-static/", "fpl-proxy:bootstrap:v1", 60)
 
 
 @require_GET
 def proxy_event_live(request, event_id):
     """Proxy for FPL live gameweek data endpoint."""
-    url = f"https://fantasy.premierleague.com/api/event/{event_id}/live/"
-    try:
-        response = requests.get(url, timeout=15)
-        return JsonResponse(response.json(), safe=False, status=response.status_code)
-    except requests.RequestException as e:
-        return JsonResponse({"error": str(e)}, status=500)
+    return _passthrough(f"https://fantasy.premierleague.com/api/event/{event_id}/live/", f"fpl-proxy:live:{event_id}:v1", 30)
 
 
 @require_GET

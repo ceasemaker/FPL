@@ -8,16 +8,14 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET
 
 from ..models import ForecastPrediction, GameweekSummary, ModelArtifact, ShadowPick
+# ``records``, not ``service``: the service loads pandas and scikit-learn (~120 MB).
+from .records import MODEL_NAME, captain_accepted, latest_evaluation
 
 STRATEGY_LABELS = dict(ShadowPick.STRATEGIES)
 
 
 @require_GET
 def forecast_lab(request):
-    # Imported here: the service loads pandas and scikit-learn, which every
-    # web and worker process would otherwise carry from startup (~120 MB each).
-    from .service import MODEL_NAME, captain_accepted, latest_evaluation
-
     evaluation = latest_evaluation()
     accepted = captain_accepted()
     artifact = ModelArtifact.objects.filter(name=MODEL_NAME).order_by("-created_at").first()

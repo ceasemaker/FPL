@@ -537,7 +537,7 @@ def _forecast_rows(start_gw: int, end_gw: int) -> list[dict]:
 
 def _forecast_captain(next_gw: int) -> dict | None:
     """Top points forecast for the next gameweek among available players."""
-    from etl.forecast.service import available_elements
+    from etl.forecast.records import available_elements  # not .service: that loads pandas
     from etl.models import ForecastPrediction
 
     available = available_elements()
@@ -553,7 +553,7 @@ def _captain_record() -> dict:
     The pick is shown whether or not the model passed (the user's call, Oct
     2026); ``experimental`` is true until it beats the simple rules.
     """
-    from etl.forecast.service import captain_evaluation
+    from etl.forecast.records import captain_evaluation  # not .service: that loads pandas
     from etl.models import GameweekSummary, ShadowPick
 
     record = {"experimental": True, "backtest": None, "live": None}

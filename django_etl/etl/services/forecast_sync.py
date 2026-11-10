@@ -17,7 +17,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Sequence
 
-import pandas as pd
 from django.db import transaction
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -58,6 +57,8 @@ def current_season() -> int | None:
 
 def load_history_files(data_dir: Path = DATA_DIR) -> dict[str, int]:
     """Upsert the committed past-season files into the history tables."""
+    import pandas as pd  # here, not at the top: the worker imports this module for next_deadline
+
     players = pd.read_csv(data_dir / "gameweek_history.csv.gz")
     fixtures = pd.read_csv(data_dir / "fixture_history.csv.gz")
     seasons = sorted(players["season"].unique().tolist())
@@ -93,6 +94,8 @@ def load_history_files(data_dir: Path = DATA_DIR) -> dict[str, int]:
 
 
 def elite_squads(data_dir: Path = DATA_DIR) -> pd.DataFrame:
+    import pandas as pd
+
     with gzip.open(data_dir / "elite_squads.csv.gz") as handle:
         return pd.read_csv(handle)
 

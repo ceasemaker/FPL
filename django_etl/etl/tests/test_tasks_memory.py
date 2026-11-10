@@ -166,6 +166,11 @@ class StartupMemoryTests(SimpleTestCase):
             "import sys, django; django.setup()\n"
             "from django.urls import get_resolver; get_resolver().url_patterns\n"
             "from fpl_platform.celery import app; app.loader.import_default_modules()\n"
+            # Modules that requests and the worker's small tasks import on first use: the
+            # homepage (also Render's health check), Model Lab, the player-analysis pages
+            # and the 15-minute and 3-hourly tasks.
+            "import etl.forecast.records, etl.forecast.views, etl.services.player_analysis\n"
+            "import etl.services.forecast_sync, etl.services.price_changes, etl.services.planner\n"
             "print('LOADED=' + ','.join(m for m in ('pandas', 'numpy', 'scipy', 'sklearn', 'joblib') if m in sys.modules))\n"
         )
         env = {**os.environ, "DJANGO_SETTINGS_MODULE": "fpl_platform.settings"}

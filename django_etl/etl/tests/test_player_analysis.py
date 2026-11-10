@@ -4,6 +4,8 @@ from unittest.mock import patch
 from django.test import SimpleTestCase
 
 from etl.services.player_analysis import (
+    _expected_floor_poisson,
+    _poisson_sf,
     build_player_analysis,
     calculate_fixture_snapshot,
     calculate_snapshot,
@@ -218,3 +220,20 @@ class PlayerAnalysisViewTests(SimpleTestCase):
     def test_tex_report_is_retired(self, _build):
         response = self.client.get("/api/decision-dashboard/player-report/?player_ids=1&format=tex")
         self.assertEqual(response.status_code, 400)
+
+
+class PoissonTests(SimpleTestCase):
+    """The plain-Python Poisson tail that replaced scipy.stats.poisson."""
+
+    def test_tail_probabilities(self):
+        self.assertAlmostEqual(_poisson_sf(0, 1.0), 1 - math.exp(-1), places=14)
+        self.assertAlmostEqual(_poisson_sf(1, 2.0), 1 - 3 * math.exp(-2), places=14)
+        self.assertAlmostEqual(_poisson_sf(9, 4.0), 0.008132242796933871, places=14)  # scipy's value
+        self.assertEqual(_poisson_sf(-1, 3.0), 1.0)
+        self.assertEqual(_poisson_sf(2, 0.0), 0.0)
+
+    def test_expected_whole_pairs_conceded(self):
+        # E[floor(N/2)] for N ~ Poisson(1.5), summed term by term.
+        pmf = [math.exp(-1.5) * 1.5 ** n / math.factorial(n) for n in range(60)]
+        self.assertAlmostEqual(_expected_floor_poisson(1.5, 2), sum((n // 2) * p for n, p in enumerate(pmf)), places=11)
+        self.assertEqual(_expected_floor_poisson(0.0, 2), 0.0)

@@ -83,13 +83,20 @@ def refresh_price_changes(client=None) -> dict:
     else:
         bootstrap = client.get_bootstrap_static()
     fields = {e["id"]: price_change_fields(e) for e in bootstrap.get("elements", []) if "id" in e}
-    athletes = list(Athlete.objects.filter(id__in=fields).only("id", *FIELDS))
-    for athlete in athletes:
-        for name, value in fields[athlete.id].items():
-            setattr(athlete, name, value)
-    Athlete.objects.bulk_update(athletes, FIELDS, batch_size=500)
+    # Write only the players whose tracker moved: between FPL's updates (and
+    # overnight) most rows are unchanged, and rewriting all ~700 every 15 minutes
+    # builds a large UPDATE in the worker and churns the 256 MB database.
+    changed = []
+    for athlete in Athlete.objects.filter(id__in=fields).only("id", *FIELDS).iterator():
+        new = fields[athlete.id]
+        if any(getattr(athlete, name) != value for name, value in new.items()):
+            for name, value in new.items():
+                setattr(athlete, name, value)
+            changed.append(athlete)
+    if changed:
+        Athlete.objects.bulk_update(changed, FIELDS, batch_size=200)
     meta = store_meta(bootstrap)
-    return {"updated": len(athletes), "lastUpdated": meta["lastUpdated"]}
+    return {"updated": len(changed), "lastUpdated": meta["lastUpdated"]}
 
 
 def build_payload() -> dict:
