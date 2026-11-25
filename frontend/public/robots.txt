@@ -1,0 +1,24 @@
+# AeroFPL crawler rules.
+# Search engines and AI assistants that send people here are welcome.
+# SEO-tool and bulk-scraping crawlers are not: they bring no visitors and
+# loaded thousands of pages in a day (AhrefsBot, 24 Nov 2026).
+
+User-agent: AhrefsBot
+User-agent: AhrefsSiteAudit
+User-agent: SemrushBot
+User-agent: SemrushBot-SA
+User-agent: MJ12bot
+User-agent: DotBot
+User-agent: BLEXBot
+User-agent: DataForSeoBot
+User-agent: SeznamBot
+User-agent: PetalBot
+User-agent: Bytespider
+User-agent: CCBot
+User-agent: ExaSearchBot
+User-agent: Amazonbot
+User-agent: ImagesiftBot
+Disallow: /
+
+User-agent: *
+Disallow: /admin/
